@@ -1,0 +1,51 @@
+## Interface: 11506
+## Title: UltraHardcore
+## Version: 1.1.2
+## Author: Bonnie
+## Notes: Making the game more difficult in various ways.
+## SavedVariables: UltraHardcoreDB
+
+UltraHardcore.lua
+
+## Functions
+Functions/SetPlayerFrameDisplay.lua
+Functions/SetMinimapDisplay.lua
+Functions/SetCustomBuffFrame.lua
+Functions/SetTargetFrameDisplay.lua
+Functions/SetTargetTooltipDisplay.lua
+Functions/SetUIErrorsDisplay.lua
+Functions/SetQuestDisplay.lua
+Functions/DeathIndicator.lua
+Functions/OnCombatLogEvent.lua
+Functions/WelcomeMessage.lua
+Functions/JoinParty.lua
+Functions/TradeRestriction.lua
+Functions/SetEnemyNameplate.lua
+Functions/JoinUHCChannel.lua
+
+Functions/Utils/RotateScreenEffect.lua
+Functions/Utils/UpdateKeyBindings.lua
+Functions/Utils/ShowImmunityIcon.lua
+
+Functions/DB/LoadDBData.lua
+Functions/DB/SaveDBData.lua
+
+Functions/Checks/IsEnemyElite.lua
+
+Functions/Overlays/ApplyDeathIndicatorChange.lua
+Functions/Overlays/BuffMessages.lua
+Functions/Overlays/Challenges.lua
+Functions/Overlays/UpdateResourceIndicator.lua
+Functions/Overlays/ResourceBar.lua
+Functions/Overlays/ShowDazedOverlay.lua
+
+Functions/Utils/RemoveDeathIndicator.lua
+Functions/Utils/ResetVengeanceScore.lua
+Functions/Utils/GetCurrentResourceType.lua
+
+Functions/Sounds/Heartbeat.lua
+
+Settings/Settings.lua
+
+## Constants
+Constants/WolfLikeNPCs.lua
