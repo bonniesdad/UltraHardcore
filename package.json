@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "prettier": "prettier --write .",
+    "zip": "rsync -av --exclude='.*' Functions Constants Settings Sounds Textures UltraHardcore.lua UltraHardcore.toc ToBeZipped/UltraHardcore && cd ToBeZipped && zip -r UltraHardcore.zip UltraHardcore  -x '*.DS_Store'"
+  },
+  "devDependencies": {
+    "@prettier/plugin-lua": "^0.0.3",
+    "prettier": "^3.4.2"
+  }
+}
