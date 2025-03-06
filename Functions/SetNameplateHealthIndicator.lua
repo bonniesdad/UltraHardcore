@@ -13,7 +13,6 @@ NAME_PLATE_HEALTH_INDICATOR_FRAMES = {}
 
 
 function SetNameplateHealthIndicator(enabled, unit)
-
   if not enabled then
     return
   end
@@ -55,21 +54,19 @@ function UpdateHealthIndicator(enabled, unit)
     return
   end
 
-  if healthIndicator then
-    local health = UnitHealth(unit)
-    local maxHealth = UnitHealthMax(unit)
-    local healthRatio = health / maxHealth
+  local health = UnitHealth(unit)
+  local maxHealth = UnitHealthMax(unit)
+  local healthRatio = health / maxHealth
 
-    local alpha = 0.0
-    for _, step in pairs(NAME_PLATE_HEALTH_INDICATOR_STEPS) do
-      if healthRatio <= step.health then
-        alpha = step.alpha
-        break
-      end
+  local alpha = 0.0
+  for _, step in pairs(NAME_PLATE_HEALTH_INDICATOR_STEPS) do
+    if healthRatio <= step.health then
+      alpha = step.alpha
+      break
     end
-
-    healthIndicator:SetAlpha(alpha)
   end
+
+  healthIndicator:SetAlpha(alpha)
 end
 
 function ForceShowFriendlyNameplates(enabled)
