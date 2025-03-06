@@ -31,6 +31,15 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Show Crit Screen Shift Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
+}, {
+  name = 'Hide Action Bars when not resting',
+  dbSettingsValueName = 'hideActionBars',
+}, {
+  name = 'Hide Group Health',
+  dbSettingsValueName = 'hideGroupHealth',
+}, {
+  name = 'Show Nameplate Health Indicator',
+  dbSettingsValueName = 'showNameplateHealthIndicator',
 } }
 
 local presets = { {
@@ -46,6 +55,9 @@ local presets = { {
   hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
+  hideActionBars = false,
+  hideGroupHealth = false,
+  showNameplateHealthIndicator = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -59,6 +71,9 @@ local presets = { {
   hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = false,
+  hideActionBars = false,
+  hideGroupHealth = true,
+  showNameplateHealthIndicator = true,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -72,6 +87,9 @@ local presets = { {
   hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
+  hideActionBars = true,
+  hideGroupHealth = true,
+  showNameplateHealthIndicator = true,
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
