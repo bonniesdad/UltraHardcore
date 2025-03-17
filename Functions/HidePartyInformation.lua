@@ -25,17 +25,21 @@ function SetPartyFrameInfo(n)
   for _, subFrame in ipairs(PARTY_MEMBER_SUBFRAMES_TO_HIDE) do
     HidePartySubFrame(n, subFrame)
 
-    -- move Name subframe down a few pixel to be centered with the portrait
+    -- Move Name subframe down a few pixels to be centered with the portrait
     local nameFrame = _G['PartyMemberFrame' .. n .. "Name"]
-    nameFrame:SetPoint("BOTTOMLEFT", 55, 25)
-
-    -- TODO move buffs/debuffs up
+    
+    if nameFrame then
+      nameFrame:SetPoint("BOTTOMLEFT", 55, 25)
+    end
   end
+  -- TODO move buffs/debuffs up
 end
 
 function HidePartySubFrame(n, subFrame)
   local frame = _G['PartyMemberFrame' .. n .. subFrame]
-  ForceHideFrame(frame)
+  if frame then
+    ForceHideFrame(frame)
+  end
 end
 
 function ForcePartyFrames()
@@ -45,6 +49,8 @@ end
 -- Ensure that party frames are always configured
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('CVAR_UPDATE')
+frame:RegisterEvent('GROUP_ROSTER_UPDATE')
+frame:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 frame:SetScript('OnEvent', function(self, event, cvar)
   if GLOBAL_SETTINGS.hideGroupHealth then
