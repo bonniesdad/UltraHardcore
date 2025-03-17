@@ -2,10 +2,10 @@ local GetNamePlateForUnit   = _G.C_NamePlate.GetNamePlateForUnit
 
 -- in line with the own death indicator (health ratio to icon alpha)
 NAME_PLATE_HEALTH_INDICATOR_STEPS =  {
-  {health = 0.2, alpha = 1.0},
-  {health = 0.5, alpha = 0.7},
-  {health = 0.7, alpha = 0.4},
-  {health = 0.9, alpha = 0.2},
+  {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
+  {health = 0.5, alpha = 0.7, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.7, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 0.9, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
 }
 
 -- cache of all nameplate indicators
@@ -62,6 +62,7 @@ function UpdateHealthIndicator(enabled, unit)
   for _, step in pairs(NAME_PLATE_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
+      healthIndicator:SetTexture(step.texture)
       break
     end
   end
@@ -71,6 +72,7 @@ end
 
 function ForceShowFriendlyNameplates(enabled)
   if enabled then
+    -- TODO: This causes names to appear above all NPCs
     SetCVar('nameplateShowFriends', 1)
   end
 end
