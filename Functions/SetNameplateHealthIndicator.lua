@@ -3,9 +3,11 @@ local GetNamePlateForUnit   = _G.C_NamePlate.GetNamePlateForUnit
 -- in line with the own death indicator (health ratio to icon alpha)
 NAME_PLATE_HEALTH_INDICATOR_STEPS =  {
   {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
-  {health = 0.5, alpha = 0.7, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
-  {health = 0.7, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 0.4, alpha = 0.8, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
+  {health = 0.5, alpha = 0.6, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.7, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
   {health = 0.9, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 1, alpha = 0.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
 }
 
 -- cache of all nameplate indicators
@@ -22,12 +24,12 @@ function SetNameplateHealthIndicator(enabled, unit)
   -- hide the default health bar
   nameplateFrame.UnitFrame.healthBar:Hide()
   nameplateFrame.UnitFrame.LevelFrame:Hide()
+  nameplateFrame.UnitFrame.name:SetAlpha(0) -- Hide NPC name
 
   -- add the custom health indicator
   local healthIndicator = nameplateFrame:CreateTexture(nil, 'ARTWORK')
   healthIndicator:SetSize(30, 30)
   healthIndicator:SetPoint('BOTTOM', nameplateFrame.UnitFrame, 'TOP', 0, 0)
-  healthIndicator:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png')
   healthIndicator:SetAlpha(0.0)
 
   -- cache for event lookup
@@ -53,11 +55,11 @@ function UpdateHealthIndicator(enabled, unit)
     -- shouldn't happen
     return
   end
-
+  
   local health = UnitHealth(unit)
   local maxHealth = UnitHealthMax(unit)
   local healthRatio = health / maxHealth
-
+  
   local alpha = 0.0
   for _, step in pairs(NAME_PLATE_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
@@ -71,6 +73,7 @@ function UpdateHealthIndicator(enabled, unit)
 end
 
 function ForceShowFriendlyNameplates(enabled)
+  print(enabled)
   if enabled then
     -- TODO: This causes names to appear above all NPCs
     SetCVar('nameplateShowFriends', 1)
@@ -81,7 +84,17 @@ end
 -- Ensure that friendly nameplaces are always configured
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('CVAR_UPDATE')
+frame:RegisterEvent('NAME_PLATE_UNIT_REMOVED')
 
-frame:SetScript('OnEvent', function(self, event, cvar)
-  ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator)
+frame:SetScript('OnEvent', function(self, event, unit)
+  if event == 'CVAR_UPDATE' then
+    ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator)
+  elseif event == 'NAME_PLATE_UNIT_REMOVED' then
+    -- Cleanup when nameplate disappears
+    local healthIndicator = NAME_PLATE_HEALTH_INDICATOR_FRAMES[unit]
+    if healthIndicator then
+      healthIndicator:Hide()
+      NAME_PLATE_HEALTH_INDICATOR_FRAMES[unit] = nil
+    end
+  end
 end)
