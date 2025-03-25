@@ -20,6 +20,9 @@ function LoadDBData()
       showTunnelVision = true,
       showDazedEffect = true,
       showCritScreenMoveEffect = true,
+      hideActionBars = true,
+      hideGroupHealth = true,
+      showNameplateHealthIndicator = true,
     }
   end
 
