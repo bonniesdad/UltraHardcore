@@ -22,10 +22,14 @@ Functions/JoinParty.lua
 Functions/TradeRestriction.lua
 Functions/SetEnemyNameplate.lua
 Functions/JoinUHCChannel.lua
+Functions/SetActionBarVisibility.lua
+Functions/HidePartyInformation.lua
+Functions/SetNameplateHealthIndicator.lua
 
 Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/UpdateKeyBindings.lua
 Functions/Utils/ShowImmunityIcon.lua
+Functions/Utils/ForceHideFrame.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
