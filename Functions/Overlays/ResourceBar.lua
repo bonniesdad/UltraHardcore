@@ -1,6 +1,6 @@
 local resourceBar = CreateFrame('StatusBar', nil, UIParent)
 resourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
-resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 110)
+resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 resourceBar:SetMinMaxValues(0, UnitPowerMax('player', Enum.PowerType.Mana))
 
