@@ -73,7 +73,6 @@ function UpdateHealthIndicator(enabled, unit)
 end
 
 function ForceShowFriendlyNameplates(enabled)
-  print(enabled)
   if enabled then
     -- TODO: This causes names to appear above all NPCs
     SetCVar('nameplateShowFriends', 1)
