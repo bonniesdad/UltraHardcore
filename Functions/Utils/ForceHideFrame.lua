@@ -1,25 +1,27 @@
 ORIGINAL_FRAME_SHOW_FUNCTIONS = {}
 
 function ForceHideFrame(frame)
+
   if not frame then
-    return -- Avoid errors if the frame is nil
+    return
   end
 
-  -- store original function for restore later
-  ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] = frame.Show
+  -- Store original function only if not already stored
+  if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] == nil then
+    ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] = frame.Show
+  end
 
-  frame.Show = function(_) end -- noop; block others from showing the frame again
-
-  -- actually hide it now
+  frame.Show = function(_) end -- Prevent others from showing the frame
   frame:Hide()
 end
+
   
 function RestoreAndShowFrame(frame)
+
   if not frame then
-    return -- Avoid errors if the frame is nil
+    return
   end
 
-  -- restore original show function if stored earlier
   if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] ~= nil then
     frame.Show = ORIGINAL_FRAME_SHOW_FUNCTIONS[frame]
   end
