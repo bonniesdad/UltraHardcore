@@ -93,7 +93,7 @@ local presets = { {
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
-settingsFrame:SetSize(400, 500)
+settingsFrame:SetSize(400, 550)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER')
 settingsFrame:Hide()
 
@@ -117,8 +117,27 @@ titleBar:SetPoint('TOP', settingsFrame, 'TOP')
 
 local settingsTitle = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 settingsTitle:SetPoint('LEFT', titleBar, 'LEFT', 12, -3)
-settingsTitle:SetText('Ultra Hardcore Settings')
+settingsTitle:SetText('Ultra Hardcore')
 settingsTitle:SetFontObject('GameFontHighlightLarge')
+
+-- Create Statistics section
+local statsFrame = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
+statsFrame:SetSize(360, 60)
+statsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -45)
+
+-- Add Statistics title
+local statsTitle = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+statsTitle:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 0, 0)
+statsTitle:SetText('Statistics')
+statsTitle:SetFontObject('GameFontNormalLarge')
+
+-- Create the lowest health text frame at the global scope
+local lowestHealthText = nil
+
+-- Create the lowest health score display in the stats section
+lowestHealthText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestHealthText:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -25)
+lowestHealthText:SetText('Lowest Health Reached: ' .. string.format("%.1f", lowestHealthScore or 100) .. '%')
 
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, -3)
@@ -127,10 +146,16 @@ closeButton:SetScript('OnClick', function()
   settingsFrame:Hide()
 end)
 
+-- Add Settings title above the preset buttons
+local settingsSectionTitle = settingsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+settingsSectionTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -110) -- Moved further right
+settingsSectionTitle:SetText('Settings')
+settingsSectionTitle:SetFontObject('GameFontNormalLarge')
+
 -- Frame for selectable preset buttons
 local presetButtonsFrame = CreateFrame('Frame', nil, settingsFrame)
 presetButtonsFrame:SetSize(360, 50)
-presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -45)
+presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -140) -- Adjusted to be below Settings title
 
 local checkboxes = {}
 local presetButtons = {}
@@ -215,13 +240,13 @@ end
 
 -- ScrollFrame to enable scrolling
 local scrollFrame = CreateFrame('ScrollFrame', nil, settingsFrame, 'UIPanelScrollFrameTemplate')
-scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -160) -- Adjusted below images
-scrollFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -30, 40)
+scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -280)
+scrollFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -30, 60) -- Increased bottom padding
 
 -- ScrollChild contains all checkboxes
 local scrollChild = CreateFrame('Frame')
 scrollFrame:SetScrollChild(scrollChild)
-scrollChild:SetSize(360, #settingsCheckboxOptions * 30 + 20)
+scrollChild:SetSize(360, #settingsCheckboxOptions * 30 + 40) -- Increased padding in scroll content
 
 local function createCheckboxes()
   local yOffset = -10
@@ -251,12 +276,20 @@ saveButton:SetScript('OnClick', function()
   ReloadUI()
 end)
 
+-- Update the lowest health display
+local function UpdateLowestHealthDisplay()
+  if lowestHealthText then
+    lowestHealthText:SetText('Lowest Health Reached: ' .. string.format("%.1f", lowestHealthScore or 100) .. '%')
+  end
+end
+
 function ToggleSettings()
   if settingsFrame:IsShown() then
     settingsFrame:Hide()
   else
     settingsFrame:Show()
     updateCheckboxes()
+    UpdateLowestHealthDisplay()
   end
 end
 

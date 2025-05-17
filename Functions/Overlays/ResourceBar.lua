@@ -4,6 +4,17 @@ resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 resourceBar:SetMinMaxValues(0, UnitPowerMax('player', Enum.PowerType.Mana))
 
+-- Make the resource bar draggable
+resourceBar:SetMovable(true)
+resourceBar:EnableMouse(true)
+resourceBar:RegisterForDrag('LeftButton')
+resourceBar:SetScript('OnDragStart', function(self)
+    self:StartMoving()
+end)
+resourceBar:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+end)
+
 -- Create a frame for the combo points
 local comboFrame = CreateFrame('Frame', nil, UIParent)
 comboFrame:SetSize(200, 32)

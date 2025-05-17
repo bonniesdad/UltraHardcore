@@ -7,6 +7,7 @@ function LoadDBData()
   vengeanceScore = UltraHardcoreDB.vengeanceScore or 0
   elitesSlain = UltraHardcoreDB.elitesSlain or 0
   WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
+  lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
 
   if not UltraHardcoreDB.GLOBAL_SETTINGS then
     UltraHardcoreDB.GLOBAL_SETTINGS = {
