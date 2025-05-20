@@ -7,20 +7,11 @@ function SetPlayerFrameDisplay(value)
 end
 
 function HidePlayerFrame()
-  PlayerFrame:UnregisterAllEvents() -- Stop updates
-  PlayerFrame:SetScript('OnUpdate', nil) -- Remove update scripts
-  PlayerFrame:SetScript('OnEvent', nil) -- Remove event handling
-  PlayerFrame:SetScript('OnShow', function(self)
-    self:Hide()
-  end)
-
-  hooksecurefunc(PlayerFrame, 'Show', function(self)
-    self:Hide()
-  end)
-
-  PlayerFrame:Hide()
+  ForceHideFrame(PlayerFrame)
+  ForceHideFrame(TargetFrameToT)
 end
 
 function ShowPlayerFrame()
-  PlayerFrame:Show() -- Ensure it shows up again
+  RestoreAndShowFrame(PlayerFrame)
+  RestoreAndShowFrame(TargetFrameToT)
 end
