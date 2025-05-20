@@ -44,14 +44,14 @@ local settingsCheckboxOptions = { {
 
 local presets = { {
   -- Preset 1: Lite
-  hidePlayerFrame = false,
+  hidePlayerFrame = true,
   hideMinimap = false,
   hideBuffFrame = false,
-  hideTargetFrame = true,
-  hideTargetTooltip = true,
-  hideEnemyNameplates = true,
+  hideTargetFrame = false,
+  hideTargetTooltip = false,
+  hideEnemyNameplates = false,
   guildSelfFound = false,
-  showTunnelVision = false,
+  showTunnelVision = true,
   hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
