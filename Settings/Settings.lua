@@ -185,7 +185,7 @@ enemiesSlainText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -55)
 enemiesSlainText:SetText('0')
 
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
-closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, -3)
+closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, 0)
 closeButton:SetSize(32, 32)
 closeButton:SetScript('OnClick', function()
   settingsFrame:Hide()
