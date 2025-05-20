@@ -21,6 +21,12 @@ function SetNameplateHealthIndicator(enabled, unit)
 
   local nameplateFrame = GetNamePlateForUnit(unit);
 
+  -- Show health indicator for party members, player, and player's pet
+  if not (UnitInParty(unit) or UnitIsUnit(unit, "player") or UnitIsUnit(unit, "pet")) then
+    nameplateFrame:Hide()
+    return
+  end
+
   -- hide the default health bar
   nameplateFrame.UnitFrame.healthBar:Hide()
   nameplateFrame.UnitFrame.LevelFrame:Hide()

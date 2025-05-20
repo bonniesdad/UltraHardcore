@@ -2,10 +2,7 @@ addonName = ...
 UltraHardcore = CreateFrame('Frame')
 
 -- DB Values
-vengeanceScore = 0
-elitesSlain = 0
 WELCOME_MESSAGE_CLOSED = false
-lowestHealthScore = 100
 GLOBAL_SETTINGS = {
   hidePlayerFrame = true,
   hideMinimap = true,

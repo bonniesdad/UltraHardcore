@@ -4,10 +4,10 @@ function LoadDBData()
     UltraHardcoreDB = {} -- Ensure the table exists
   end
 
-  vengeanceScore = UltraHardcoreDB.vengeanceScore or 0
+  enemiesSlain = UltraHardcoreDB.enemiesSlain or 0
   elitesSlain = UltraHardcoreDB.elitesSlain or 0
-  WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
   lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
+  WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
 
   if not UltraHardcoreDB.GLOBAL_SETTINGS then
     UltraHardcoreDB.GLOBAL_SETTINGS = {

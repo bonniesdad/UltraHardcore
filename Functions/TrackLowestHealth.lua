@@ -4,9 +4,9 @@ function TrackLowestHealth()
   local maxHealth = UnitHealthMax('player')
   local healthPercent = (health / maxHealth) * 100
 
-  if healthPercent < lowestHealthScore then
-    lowestHealthScore = healthPercent
-    SaveDBData('lowestHealthScore', lowestHealthScore)
+  local currentLowestHealth = CharacterStats:GetStat('lowestHealth')
+  if healthPercent < currentLowestHealth then
+    CharacterStats:UpdateStat('lowestHealth', healthPercent)
   end
 end
 
