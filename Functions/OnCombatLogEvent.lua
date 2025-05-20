@@ -32,14 +32,12 @@ function OnCombatLogEvent(self, event)
   -- Party kill
   if subEvent == 'PARTY_KILL' then
     if IsEnemyElite(destGUID) then
-      elitesSlain = elitesSlain + 1
-      SaveDBData('elitesSlain', elitesSlain)
+      local currentElites = CharacterStats:GetStat('elitesSlain') or 0
+      CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
     end
 
-    if wolfLikeNPCs[enemyName] then
-      vengeanceScore = vengeanceScore + 1
-      SaveDBData('vengeanceScore', vengeanceScore)
-    end
+    local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
+    CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
   end
 
   -- Dazed!

@@ -27,7 +27,7 @@ end
 function OnPlayerLevelUpEvent(self, _, hideActionBars, playerLevel)
   SetActionBarVisibility(hideActionBars, playerLevel)
 
-  if playerLevel == MIN_LEVEL_HIDE_ACTION_BARS then
+  if hideActionBars and playerLevel == MIN_LEVEL_HIDE_ACTION_BARS then
     ShowHideActionBarsIntro()
   end
 end
@@ -64,5 +64,15 @@ function ShowActionBars()
 end
 
 function ShowHideActionBarsIntro()
-  message("Congratulations! You have reached level " .. MIN_LEVEL_HIDE_ACTION_BARS .. "!\n\nYour action bars will now be hidden. Visit an inn or travel to a capital to change them.")
+  StaticPopupDialogs['ULTRA_HARDCORE_ACTION_BARS'] = {
+    text = "Congratulations! You have reached level " .. MIN_LEVEL_HIDE_ACTION_BARS .. "!\n\nYour action bars will now be hidden. Visit an inn or travel to a capital to change them.",
+    button1 = "I Understand",
+    OnAccept = function()
+      SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, MIN_LEVEL_HIDE_ACTION_BARS)
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+  }
+  StaticPopup_Show('ULTRA_HARDCORE_ACTION_BARS')
 end

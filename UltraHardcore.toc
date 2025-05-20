@@ -34,6 +34,7 @@ Functions/Utils/ForceHideFrame.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
+Functions/DB/CharacterStats.lua
 
 Functions/Checks/IsEnemyElite.lua
 
@@ -45,7 +46,6 @@ Functions/Overlays/ResourceBar.lua
 Functions/Overlays/ShowDazedOverlay.lua
 
 Functions/Utils/RemoveDeathIndicator.lua
-Functions/Utils/ResetVengeanceScore.lua
 Functions/Utils/GetCurrentResourceType.lua
 
 Functions/Sounds/Heartbeat.lua

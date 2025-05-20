@@ -93,7 +93,7 @@ local presets = { {
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
-settingsFrame:SetSize(400, 550)
+settingsFrame:SetSize(400, 650)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER')
 settingsFrame:Hide()
 
@@ -112,32 +112,77 @@ settingsFrame:SetBackdrop({
 })
 
 local titleBar = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-titleBar:SetSize(400, 40)
+titleBar:SetSize(400, 50) -- Increased height for header
 titleBar:SetPoint('TOP', settingsFrame, 'TOP')
+titleBar:SetBackdrop({
+  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+  tile = true,
+  tileSize = 64,
+  edgeSize = 16,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
 
 local settingsTitle = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-settingsTitle:SetPoint('LEFT', titleBar, 'LEFT', 12, -3)
+settingsTitle:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
 settingsTitle:SetText('Ultra Hardcore')
-settingsTitle:SetFontObject('GameFontHighlightLarge')
-
--- Create Statistics section
-local statsFrame = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-statsFrame:SetSize(360, 60)
-statsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -45)
+settingsTitle:SetFont('Fonts\\FRIZQT__.TTF', 24, 'OUTLINE')
 
 -- Add Statistics title
-local statsTitle = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-statsTitle:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 0, 0)
+local statsTitle = settingsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+statsTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -60)
 statsTitle:SetText('Statistics')
 statsTitle:SetFontObject('GameFontNormalLarge')
 
--- Create the lowest health text frame at the global scope
-local lowestHealthText = nil
+-- Create Statistics section
+local statsFrame = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
+statsFrame:SetSize(360, 80) -- Reduced height from 100 to 80
+statsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -85)
+statsFrame:SetBackdrop({
+  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+  tile = true,
+  tileSize = 64,
+  edgeSize = 16,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
 
--- Create the lowest health score display in the stats section
+-- Create the lowest health text display in the stats section
+local lowestHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 20, -15)
+lowestHealthLabel:SetText('Lowest Health Reached:')
+
 lowestHealthText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthText:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -25)
-lowestHealthText:SetText('Lowest Health Reached: ' .. string.format("%.1f", lowestHealthScore or 100) .. '%')
+lowestHealthText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -15)
+lowestHealthText:SetText(string.format("%.1f", lowestHealthScore or 100) .. '%')
+
+-- Create the elites slain text display
+local elitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+elitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 20, -35)
+elitesSlainLabel:SetText('Elites Slain:')
+
+local elitesSlainText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+elitesSlainText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -35)
+elitesSlainText:SetText('0')
+
+-- Create the enemies slain text display
+local enemiesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+enemiesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 20, -55)
+enemiesSlainLabel:SetText('Enemies Slain:')
+
+local enemiesSlainText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+enemiesSlainText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -55)
+enemiesSlainText:SetText('0')
 
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, -3)
@@ -146,16 +191,16 @@ closeButton:SetScript('OnClick', function()
   settingsFrame:Hide()
 end)
 
--- Add Settings title above the preset buttons
-local settingsSectionTitle = settingsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-settingsSectionTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -110) -- Moved further right
-settingsSectionTitle:SetText('Settings')
-settingsSectionTitle:SetFontObject('GameFontNormalLarge')
-
 -- Frame for selectable preset buttons
 local presetButtonsFrame = CreateFrame('Frame', nil, settingsFrame)
 presetButtonsFrame:SetSize(360, 50)
-presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -140) -- Adjusted to be below Settings title
+presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -205)
+
+-- Add Settings title above the preset buttons
+local settingsSectionTitle = settingsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+settingsSectionTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -180)
+settingsSectionTitle:SetText('Settings')
+settingsSectionTitle:SetFontObject('GameFontNormalLarge')
 
 local checkboxes = {}
 local presetButtons = {}
@@ -240,8 +285,8 @@ end
 
 -- ScrollFrame to enable scrolling
 local scrollFrame = CreateFrame('ScrollFrame', nil, settingsFrame, 'UIPanelScrollFrameTemplate')
-scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -280)
-scrollFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -30, 60) -- Increased bottom padding
+scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -325)
+scrollFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -30, 60)
 
 -- ScrollChild contains all checkboxes
 local scrollChild = CreateFrame('Frame')
@@ -278,8 +323,23 @@ end)
 
 -- Update the lowest health display
 local function UpdateLowestHealthDisplay()
+  if not UltraHardcoreDB then
+    LoadDBData()
+  end
+  
   if lowestHealthText then
-    lowestHealthText:SetText('Lowest Health Reached: ' .. string.format("%.1f", lowestHealthScore or 100) .. '%')
+    local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
+    lowestHealthText:SetText(string.format("%.1f", currentLowestHealth) .. '%')
+  end
+  
+  if elitesSlainText then
+    local elites = CharacterStats:GetStat('elitesSlain') or 0
+    elitesSlainText:SetText(elites)
+  end
+  
+  if enemiesSlainText then
+    local enemies = CharacterStats:GetStat('enemiesSlain') or 0
+    enemiesSlainText:SetText(enemies)
   end
 end
 
