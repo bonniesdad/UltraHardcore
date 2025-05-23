@@ -1,13 +1,13 @@
 local settingsCheckboxOptions = { {
+  -- Lite Preset Settings
   name = 'Hide Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
 }, {
-  name = 'Hide Minimap',
-  dbSettingsValueName = 'hideMinimap',
-}, {
-  name = 'Use Custom Buff Frame',
-  dbSettingsValueName = 'hideBuffFrame',
-}, {
+  name = 'Death Indicator (Tunnel Vision)',
+  dbSettingsValueName = 'showTunnelVision',
+}, 
+-- Recommended Preset Settings
+ {
   name = 'Hide Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
 }, {
@@ -17,29 +17,34 @@ local settingsCheckboxOptions = { {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
 }, {
-  name = 'Hide Quest UI',
-  dbSettingsValueName = 'hideQuestFrame',
-}, {
-  name = 'Group Found (Guild Only Self Found)',
-  dbSettingsValueName = 'guildSelfFound',
-}, {
-  name = 'Death Indicator (Tunnel Vision)',
-  dbSettingsValueName = 'showTunnelVision',
-}, {
   name = 'Show Dazed effect',
   dbSettingsValueName = 'showDazedEffect',
-}, {
-  name = 'Show Crit Screen Shift Effect',
-  dbSettingsValueName = 'showCritScreenMoveEffect',
-}, {
-  name = 'Hide Action Bars when not resting',
-  dbSettingsValueName = 'hideActionBars',
 }, {
   name = 'Hide Group Health',
   dbSettingsValueName = 'hideGroupHealth',
 }, {
   name = 'Show Nameplate Health Indicator',
   dbSettingsValueName = 'showNameplateHealthIndicator',
+}, {
+  name = 'Hide Minimap',
+  dbSettingsValueName = 'hideMinimap',
+}, {
+  name = 'Hide Quest UI',
+  dbSettingsValueName = 'hideQuestFrame',
+}, {
+  name = 'Use Custom Buff Frame',
+  dbSettingsValueName = 'hideBuffFrame',
+},
+-- Experimental Preset Settings
+ {
+  name = 'Group Found (Guild Only Self Found)',
+  dbSettingsValueName = 'guildSelfFound',
+}, {
+  name = 'Show Crit Screen Shift Effect',
+  dbSettingsValueName = 'showCritScreenMoveEffect',
+}, {
+  name = 'Hide Action Bars when not resting',
+  dbSettingsValueName = 'hideActionBars',
 } }
 
 local presets = { {
