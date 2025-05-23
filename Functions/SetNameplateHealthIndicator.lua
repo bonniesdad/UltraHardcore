@@ -15,19 +15,22 @@ NAME_PLATE_HEALTH_INDICATOR_FRAMES = {}
 
 
 function SetNameplateHealthIndicator(enabled, unit)
-  if not enabled then
-    return
-  end
-
   local nameplateFrame = GetNamePlateForUnit(unit);
+  if not nameplateFrame then return end
 
-  -- Show health indicator for party members, player, and player's pet
+  -- Always hide nameplates for non-party members
   if not (UnitInParty(unit) or UnitIsUnit(unit, "player") or UnitIsUnit(unit, "pet")) then
     nameplateFrame:Hide()
     return
   end
 
-  -- hide the default health bar
+  -- Show nameplate for party members
+  nameplateFrame:Show()
+
+  -- If health indicator is disabled, we're done
+  if not enabled then return end
+
+  -- Apply custom health indicator
   nameplateFrame.UnitFrame.healthBar:Hide()
   nameplateFrame.UnitFrame.LevelFrame:Hide()
   nameplateFrame.UnitFrame.name:SetAlpha(0) -- Hide NPC name
@@ -41,7 +44,7 @@ function SetNameplateHealthIndicator(enabled, unit)
   -- cache for event lookup
   NAME_PLATE_HEALTH_INDICATOR_FRAMES[unit] = healthIndicator
 
-  -- update the health indicator immidiately
+  -- update the health indicator immediately
   UpdateHealthIndicator(enabled, unit)
 end
 
@@ -90,6 +93,7 @@ end
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('CVAR_UPDATE')
 frame:RegisterEvent('NAME_PLATE_UNIT_REMOVED')
+frame:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 frame:SetScript('OnEvent', function(self, event, unit)
   if event == 'CVAR_UPDATE' then
@@ -101,5 +105,8 @@ frame:SetScript('OnEvent', function(self, event, unit)
       healthIndicator:Hide()
       NAME_PLATE_HEALTH_INDICATOR_FRAMES[unit] = nil
     end
+  elseif event == 'PLAYER_ENTERING_WORLD' then
+    -- Turn off friendly nameplates on login
+    SetCVar('nameplateShowFriends', 0)
   end
 end)

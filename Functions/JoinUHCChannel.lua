@@ -13,8 +13,17 @@ function JoinUHCChannel()
   -- Try to join the channel
   local success = JoinChannelByName(channelName)
   if success then
-    ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+    -- Add a small delay before adding to chat frame
+    C_Timer.After(0.5, function()
+      local channelID = GetChannelName(channelName)
+      if channelID then
+        ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+      else
+        print("UltraHardcore: Failed to get channel ID for " .. channelName)
+      end
+    end)
   else
+    print("UltraHardcore: Failed to join channel " .. channelName)
     -- If we failed to join, try again in 5 seconds
     C_Timer.After(5, function()
       JoinUHCChannel()
