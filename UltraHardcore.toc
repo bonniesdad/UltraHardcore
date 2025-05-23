@@ -26,6 +26,7 @@ Functions/SetActionBarVisibility.lua
 Functions/HidePartyInformation.lua
 Functions/SetNameplateHealthIndicator.lua
 Functions/TrackLowestHealth.lua
+Functions/PartyLeaveButton.lua
 
 Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/UpdateKeyBindings.lua
