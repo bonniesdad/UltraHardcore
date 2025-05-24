@@ -1,34 +1,20 @@
 function JoinUHCChannel()
   local channelName = 'uhc'
-
-  -- Check if already in the channel
-  local numChannels = GetNumDisplayChannels()
-  for i = 1, numChannels do
-    local name = GetChannelDisplayInfo(i)
-    if name == channelName then
-      return -- Already in the channel
-    end
-  end
-
-  -- Try to join the channel
-  local success = JoinChannelByName(channelName)
-  if success then
-    -- Add a small delay before adding to chat frame
-    C_Timer.After(0.5, function()
-      local channelID = GetChannelName(channelName)
-      if channelID then
+  
+  -- Always try to leave any existing channel first
+  LeaveChannelByName(channelName)
+  
+  -- Wait a moment for the leave to take effect
+  C_Timer.After(0.5, function()
+    -- Try to create and join the channel
+    local success = JoinChannelByName(channelName, "")
+    if success then
+      -- Add to chat frame
+      C_Timer.After(0.5, function()
         ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
-      else
-        print("UltraHardcore: Failed to get channel ID for " .. channelName)
-      end
-    end)
-  else
-    print("UltraHardcore: Failed to join channel " .. channelName)
-    -- If we failed to join, try again in 5 seconds
-    C_Timer.After(5, function()
-      JoinUHCChannel()
-    end)
-  end
+      end)
+    end
+  end)
 end
 
 -- Function to send death message to UHC channel
@@ -57,13 +43,13 @@ local function SendLevelUpMessage(newLevel)
   end
 end
 
--- Register for ADDON_LOADED to try joining the channel when the addon loads
+-- Register for events
 local frame = CreateFrame('Frame')
-frame:RegisterEvent('ADDON_LOADED')
+frame:RegisterEvent('PLAYER_ENTERING_WORLD')
 frame:RegisterEvent('PLAYER_DEAD')
 frame:RegisterEvent('PLAYER_LEVEL_UP')
 frame:SetScript('OnEvent', function(self, event, addonName, newLevel)
-  if event == 'ADDON_LOADED' and addonName == 'UltraHardcore' then
+  if event == 'PLAYER_ENTERING_WORLD' then
     JoinUHCChannel()
   elseif event == 'PLAYER_DEAD' then
     SendDeathMessage()
