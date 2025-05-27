@@ -18,22 +18,13 @@ function SetNameplateHealthIndicator(enabled, unit)
   local nameplateFrame = GetNamePlateForUnit(unit);
   if not nameplateFrame then return end
 
-  -- Always hide nameplates for non-party members
-  if not (UnitInParty(unit) or UnitIsUnit(unit, "player") or UnitIsUnit(unit, "pet")) then
-    nameplateFrame:Hide()
-    return
-  end
-
-  -- Show nameplate for party members
-  nameplateFrame:Show()
-
-  -- If health indicator is disabled, we're done
-  if not enabled then return end
-
-  -- Apply custom health indicator
+  -- Hide the nameplate UI elements but keep the frame for health indicator
   nameplateFrame.UnitFrame.healthBar:Hide()
   nameplateFrame.UnitFrame.LevelFrame:Hide()
   nameplateFrame.UnitFrame.name:SetAlpha(0) -- Hide NPC name
+
+  -- If health indicator is disabled, we're done
+  if not enabled then return end
 
   -- add the custom health indicator
   local healthIndicator = nameplateFrame:CreateTexture(nil, 'ARTWORK')
