@@ -51,9 +51,14 @@ local frame = CreateFrame('Frame')
 frame:RegisterEvent('CVAR_UPDATE')
 frame:RegisterEvent('GROUP_ROSTER_UPDATE')
 frame:RegisterEvent('PLAYER_ENTERING_WORLD')
+frame:RegisterEvent('PLAYER_LOGIN')
 
 frame:SetScript('OnEvent', function(self, event, cvar)
   if GLOBAL_SETTINGS.hideGroupHealth then
     ForcePartyFrames()
+    -- Apply styling to all party frames
+    for n = 1, 5 do
+      SetPartyFrameInfo(n)
+    end
   end
 end)
