@@ -18,6 +18,7 @@ GLOBAL_SETTINGS = {
   hideActionBars = false,
   hideGroupHealth = true,
   showNameplateHealthIndicator = true,
+  hideUIErrors = true,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -38,7 +39,6 @@ UltraHardcore:RegisterEvent('NAME_PLATE_UNIT_ADDED')
 UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
-    JoinUHCChannel()
     ShowWelcomeMessage()
     SetPlayerFrameDisplay(GLOBAL_SETTINGS.hidePlayerFrame or false)
     SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
