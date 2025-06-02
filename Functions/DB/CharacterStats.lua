@@ -33,35 +33,31 @@ end
 
 -- Reset stats to default values for current character
 function CharacterStats:ResetStats()
-  local characterName = UnitName('player')
-  local realmName = GetRealmName()
-  local fullCharacterKey = characterName .. '-' .. realmName
+  local characterGUID = UnitGUID('player')
   
   if not UltraHardcoreDB.characterStats then
     UltraHardcoreDB.characterStats = {}
   end
   
-  UltraHardcoreDB.characterStats[fullCharacterKey] = self.defaults
+  UltraHardcoreDB.characterStats[characterGUID] = self.defaults
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
   print("UHC - Character stats have been reset to default values.")
 end
 
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
-  local characterName = UnitName('player')
-  local realmName = GetRealmName()
-  local fullCharacterKey = characterName .. '-' .. realmName
+  local characterGUID = UnitGUID('player')
   
   -- Initialize character stats if they don't exist
   if not UltraHardcoreDB.characterStats then
     UltraHardcoreDB.characterStats = {}
   end
   
-  if not UltraHardcoreDB.characterStats[fullCharacterKey] then
-    UltraHardcoreDB.characterStats[fullCharacterKey] = self.defaults
+  if not UltraHardcoreDB.characterStats[characterGUID] then
+    UltraHardcoreDB.characterStats[characterGUID] = self.defaults
   end
   
-  return UltraHardcoreDB.characterStats[fullCharacterKey]
+  return UltraHardcoreDB.characterStats[characterGUID]
 end
 
 -- Update a specific stat for the current character
@@ -82,11 +78,10 @@ function CharacterStats:GetAllStats()
   return self:GetCurrentCharacterStats()
 end
 
--- Get stats for a specific character
-function CharacterStats:GetCharacterStats(characterName, realmName)
-  local fullCharacterKey = characterName .. '-' .. realmName
-  if UltraHardcoreDB.characterStats and UltraHardcoreDB.characterStats[fullCharacterKey] then
-    return UltraHardcoreDB.characterStats[fullCharacterKey]
+-- Get stats for a specific character by GUID
+function CharacterStats:GetCharacterStatsByGUID(characterGUID)
+  if UltraHardcoreDB.characterStats and UltraHardcoreDB.characterStats[characterGUID] then
+    return UltraHardcoreDB.characterStats[characterGUID]
   end
   return self.defaults
 end
@@ -98,8 +93,8 @@ function CharacterStats:GetAllCharacters()
   end
   
   local characters = {}
-  for characterKey, _ in pairs(UltraHardcoreDB.characterStats) do
-    table.insert(characters, characterKey)
+  for characterGUID, _ in pairs(UltraHardcoreDB.characterStats) do
+    table.insert(characters, characterGUID)
   end
   return characters
 end
