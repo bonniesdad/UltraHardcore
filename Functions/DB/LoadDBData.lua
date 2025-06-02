@@ -24,6 +24,7 @@ function LoadDBData()
       hideActionBars = true,
       hideGroupHealth = true,
       showNameplateHealthIndicator = true,
+      hideUIErrors = true,
     }
   end
 

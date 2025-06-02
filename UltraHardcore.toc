@@ -21,7 +21,6 @@ Functions/WelcomeMessage.lua
 Functions/JoinParty.lua
 Functions/TradeRestriction.lua
 Functions/SetEnemyNameplate.lua
-Functions/JoinUHCChannel.lua
 Functions/SetActionBarVisibility.lua
 Functions/HidePartyInformation.lua
 Functions/SetNameplateHealthIndicator.lua
@@ -48,8 +47,6 @@ Functions/Overlays/ShowDazedOverlay.lua
 
 Functions/Utils/RemoveDeathIndicator.lua
 Functions/Utils/GetCurrentResourceType.lua
-
-Functions/Sounds/Heartbeat.lua
 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
