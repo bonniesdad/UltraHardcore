@@ -26,6 +26,7 @@ Functions/HidePartyInformation.lua
 Functions/SetNameplateHealthIndicator.lua
 Functions/TrackLowestHealth.lua
 Functions/PartyLeaveButton.lua
+Functions/JoinUHCChannel.lua
 
 Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/UpdateKeyBindings.lua
