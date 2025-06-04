@@ -10,7 +10,6 @@ GLOBAL_SETTINGS = {
   hideTargetFrame = true,
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
-  guildSelfFound = true,
   showTunnelVision = true,
   hideQuestFrame = true,
   showDazedEffect = true,
