@@ -36,10 +36,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideBuffFrame',
 },
 -- Experimental Preset Settings
- {
-  name = 'Group Found (Guild Only Self Found)',
-  dbSettingsValueName = 'guildSelfFound',
-}, {
+{
   name = 'Show Crit Screen Shift Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
 }, {
@@ -55,7 +52,6 @@ local presets = { {
   hideTargetFrame = false,
   hideTargetTooltip = false,
   hideEnemyNameplates = false,
-  guildSelfFound = false,
   showTunnelVision = true,
   hideQuestFrame = false,
   showDazedEffect = false,
@@ -71,7 +67,6 @@ local presets = { {
   hideTargetFrame = true,
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
-  guildSelfFound = false,
   showTunnelVision = true,
   hideQuestFrame = true,
   showDazedEffect = true,
@@ -87,7 +82,6 @@ local presets = { {
   hideTargetFrame = true,
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
-  guildSelfFound = true,
   showTunnelVision = true,
   hideQuestFrame = true,
   showDazedEffect = true,
