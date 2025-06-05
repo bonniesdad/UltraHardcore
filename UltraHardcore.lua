@@ -48,7 +48,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator or false)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
-    DeathIndicator(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
+    TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showTunnelVision, self, event, unit)
   elseif event == 'QUEST_WATCH_UPDATE' or event == 'QUEST_LOG_UPDATE' then

@@ -1,9 +1,9 @@
-function RemoveDeathIndicator()
-  if UltraHardcore.deathIndicatorFrame then
-    if UltraHardcore.deathIndicatorFrame:IsShown() then
-      UIFrameFadeOut(UltraHardcore.deathIndicatorFrame, 1, 1, 0) -- Fade out backupDeathIndicatorFrame
+function RemoveTunnelVision()
+  if UltraHardcore.tunnelVisionFrame then
+    if UltraHardcore.tunnelVisionFrame:IsShown() then
+      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out backupDeathIndicatorFrame
       C_Timer.After(1, function()
-        UltraHardcore.deathIndicatorFrame:Hide() -- Hide the blur effect
+        UltraHardcore.tunnelVisionFrame:Hide() -- Hide the blur effect
       end)
       lastCalledBlurIntensity = 0
     end
