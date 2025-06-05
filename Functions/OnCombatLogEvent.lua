@@ -17,9 +17,6 @@ function OnCombatLogEvent(self, event)
 
   amount, _, _, _, _, _, critical = select(12, CombatLogGetCurrentEventInfo())
 
-  -- TODO: Not ready... Keys get stuck!
-  -- UpdateKeyBindings()
-
   -- Critical hit!
   if GLOBAL_SETTINGS.showCritScreenMoveEffect then
     if subEvent == 'SWING_DAMAGE' or subEvent == 'SPELL_DAMAGE' then
@@ -48,13 +45,6 @@ function OnCombatLogEvent(self, event)
       'player'
     ) and spellID == 1604 then
       ShowDazedOverlay(false) -- Daze ended, disable blur
-    end
-  end
-
-  -- Detect Immunity
-  if subEvent == 'SPELL_CAST_FAILED' and destGUID == UnitGUID('target') then
-    if string.match(spellName, 'Immune') then
-      ShowImmunityIcon()
     end
   end
 end

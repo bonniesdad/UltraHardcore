@@ -2,20 +2,20 @@ local isDeathIndicatorVisible = false
 
 lastCalledBlurIntensity = 0
 -- 🟢 Function to apply blur with increasing intensity based on health percentage
-function ApplyDeathIndicatorChange(blurIntensity)
+function ShowTunnelVision(blurIntensity)
   if (blurIntensity == lastCalledBlurIntensity) then return end
 
   lastCalledBlurIntensity = blurIntensity
 
-  if not UltraHardcore.deathIndicatorFrame then
-    local deathIndicatorFrame = CreateFrame('Frame', nil, UIParent)
-    deathIndicatorFrame:SetAllPoints(UIParent)
-    deathIndicatorFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
-    deathIndicatorFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
-    deathIndicatorFrame.texture = deathIndicatorFrame:CreateTexture(nil, 'BACKGROUND')
-    deathIndicatorFrame.texture:SetAllPoints()
-    deathIndicatorFrame.texture:SetColorTexture(0, 0, 0, 0)
-    UltraHardcore.deathIndicatorFrame = deathIndicatorFrame
+  if not UltraHardcore.tunnelVisionFrame then
+    local tunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
+    tunnelVisionFrame:SetAllPoints(UIParent)
+    tunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
+    tunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
+    tunnelVisionFrame.texture = tunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
+    tunnelVisionFrame.texture:SetAllPoints()
+    tunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
+    UltraHardcore.tunnelVisionFrame = tunnelVisionFrame
   end
 
   if not UltraHardcore.backupDeathIndicatorFrame then
@@ -37,16 +37,16 @@ function ApplyDeathIndicatorChange(blurIntensity)
     ) .. '.png'
 
   if isDeathIndicatorVisible then
-    -- Fade out the deathIndicatorFrame and fade in the backupDeathIndicatorFrame
+    -- Fade out the tunnelVisionFrame and fade in the backupDeathIndicatorFrame
     UltraHardcore.backupDeathIndicatorFrame.texture:SetTexture(texturePath)
     UltraHardcore.backupDeathIndicatorFrame:Show()
     UIFrameFadeIn(UltraHardcore.backupDeathIndicatorFrame, 1, 0, 1) -- Fade in backupDeathIndicatorFrame
-    UIFrameFadeOut(UltraHardcore.deathIndicatorFrame, 1, 1, 0) -- Fade out deathIndicatorFrame
+    UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out tunnelVisionFrame
   else
-    -- Fade out the backupDeathIndicatorFrame and fade in the deathIndicatorFrame
-    UltraHardcore.deathIndicatorFrame.texture:SetTexture(texturePath)
-    UltraHardcore.deathIndicatorFrame:Show()
-    UIFrameFadeIn(UltraHardcore.deathIndicatorFrame, 1, 0, 1) -- Fade in deathIndicatorFrame
+    -- Fade out the backupDeathIndicatorFrame and fade in the tunnelVisionFrame
+    UltraHardcore.tunnelVisionFrame.texture:SetTexture(texturePath)
+    UltraHardcore.tunnelVisionFrame:Show()
+    UIFrameFadeIn(UltraHardcore.tunnelVisionFrame, 1, 0, 1) -- Fade in tunnelVisionFrame
     UIFrameFadeOut(UltraHardcore.backupDeathIndicatorFrame, 1, 1, 0) -- Fade out backupDeathIndicatorFrame
   end
 
