@@ -50,6 +50,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     DeathIndicator(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
+    FullHealthReachedIndicator(GLOBAL_SETTINGS.showTunnelVision, self, event, unit)
   elseif event == 'QUEST_WATCH_UPDATE' or event == 'QUEST_LOG_UPDATE' then
     SetQuestDisplay(GLOBAL_SETTINGS.hideQuestFrame or false)
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
