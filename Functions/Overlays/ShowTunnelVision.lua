@@ -18,15 +18,15 @@ function ShowTunnelVision(blurIntensity)
     UltraHardcore.tunnelVisionFrame = tunnelVisionFrame
   end
 
-  if not UltraHardcore.backupDeathIndicatorFrame then
-    local backupDeathIndicatorFrame = CreateFrame('Frame', nil, UIParent)
-    backupDeathIndicatorFrame:SetAllPoints(UIParent)
-    backupDeathIndicatorFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
-    backupDeathIndicatorFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
-    backupDeathIndicatorFrame.texture = backupDeathIndicatorFrame:CreateTexture(nil, 'BACKGROUND')
-    backupDeathIndicatorFrame.texture:SetAllPoints()
-    backupDeathIndicatorFrame.texture:SetColorTexture(0, 0, 0, 0)
-    UltraHardcore.backupDeathIndicatorFrame = backupDeathIndicatorFrame
+  if not UltraHardcore.backupTunnelVisionFrame then
+    local backupTunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
+    backupTunnelVisionFrame:SetAllPoints(UIParent)
+    backupTunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
+    backupTunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
+    backupTunnelVisionFrame.texture = backupTunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
+    backupTunnelVisionFrame.texture:SetAllPoints()
+    backupTunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
+    UltraHardcore.backupTunnelVisionFrame = backupTunnelVisionFrame
   end
 
   -- Apply the texture to both frames immediately
@@ -37,19 +37,23 @@ function ShowTunnelVision(blurIntensity)
     ) .. '.png'
 
   if isDeathIndicatorVisible then
-    -- Fade out the tunnelVisionFrame and fade in the backupDeathIndicatorFrame
-    UltraHardcore.backupDeathIndicatorFrame.texture:SetTexture(texturePath)
-    UltraHardcore.backupDeathIndicatorFrame:Show()
-    UIFrameFadeIn(UltraHardcore.backupDeathIndicatorFrame, 1, 0, 1) -- Fade in backupDeathIndicatorFrame
-    UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out tunnelVisionFrame
+    -- Fade out the tunnelVisionFrame and fade in the backupTunnelVisionFrame
+    UltraHardcore.backupTunnelVisionFrame.texture:SetTexture(texturePath)
+    UltraHardcore.backupTunnelVisionFrame:Show()
+    UIFrameFadeIn(UltraHardcore.backupTunnelVisionFrame, 1, 0, 1) -- Fade in backupTunnelVisionFrame
+    C_Timer.After(1, function()
+      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out tunnelVisionFrame
+    end)
   else
-    -- Fade out the backupDeathIndicatorFrame and fade in the tunnelVisionFrame
+    -- Fade out the backupTunnelVisionFrame and fade in the tunnelVisionFrame
     UltraHardcore.tunnelVisionFrame.texture:SetTexture(texturePath)
     UltraHardcore.tunnelVisionFrame:Show()
     UIFrameFadeIn(UltraHardcore.tunnelVisionFrame, 1, 0, 1) -- Fade in tunnelVisionFrame
-    UIFrameFadeOut(UltraHardcore.backupDeathIndicatorFrame, 1, 1, 0) -- Fade out backupDeathIndicatorFrame
+    C_Timer.After(1, function()
+      UIFrameFadeOut(UltraHardcore.backupTunnelVisionFrame, 1, 1, 0) -- Fade out backupTunnelVisionFrame
+    end)
   end
 
   -- Toggle the visibility flag for the next call
-  isDeathIndicatorVisible = not UltraHardcore.isDeathIndicatorVisible
+  isDeathIndicatorVisible = not isDeathIndicatorVisible
 end
