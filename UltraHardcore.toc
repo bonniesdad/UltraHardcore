@@ -26,6 +26,7 @@ Functions/SetNameplateHealthIndicator.lua
 Functions/TrackLowestHealth.lua
 Functions/PartyLeaveButton.lua
 Functions/JoinUHCChannel.lua
+Functions/FullHealthReachedIndicator.lua
 
 Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/UpdateKeyBindings.lua
@@ -44,6 +45,7 @@ Functions/Overlays/Challenges.lua
 Functions/Overlays/UpdateResourceIndicator.lua
 Functions/Overlays/ResourceBar.lua
 Functions/Overlays/ShowDazedOverlay.lua
+Functions/Overlays/ShowFullHealthOverlay.lua
 
 Functions/Utils/RemoveDeathIndicator.lua
 Functions/Utils/GetCurrentResourceType.lua

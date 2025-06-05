@@ -5,12 +5,18 @@ function SetCustomBuffFrame(hideBuffFrame)
 end
 
 function SetBuffFrame()
-  BuffFrame:ClearAllPoints()
-
-  BuffFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -175, 90)
-  hooksecurefunc('BuffFrame_UpdateAllBuffAnchors', function()
-    BuffFrame:ClearAllPoints()
-
-    BuffFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -175, 90)
+  -- Make the buff frame draggable
+  BuffFrame:SetMovable(true)
+  BuffFrame:EnableMouse(true)
+  BuffFrame:RegisterForDrag('LeftButton')
+  BuffFrame:SetScript('OnDragStart', function(self)
+    self:StartMoving()
   end)
+  BuffFrame:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+  end)
+
+  BuffFrame:ClearAllPoints()
+  BuffFrame:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -175, 90)
+
 end
