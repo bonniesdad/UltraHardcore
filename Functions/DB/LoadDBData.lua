@@ -19,11 +19,14 @@ function LoadDBData()
       hideEnemyNameplates = true,
       hideQuestFrame = true,
       showTunnelVision = true,
+      showFullHealthIndicator = true,
       showDazedEffect = true,
       showCritScreenMoveEffect = true,
+      showIncomingDamageEffect = true,
       hideActionBars = true,
       hideGroupHealth = true,
       showNameplateHealthIndicator = true,
+      petsDiePermanently = false,
       hideUIErrors = true,
     }
   end

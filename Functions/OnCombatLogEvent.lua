@@ -17,6 +17,62 @@ function OnCombatLogEvent(self, event)
 
   amount, _, _, _, _, _, critical = select(12, CombatLogGetCurrentEventInfo())
 
+  -- Incoming spell damage
+  if GLOBAL_SETTINGS.showIncomingDamageEffect then
+    if subEvent == 'SWING_DAMAGE' then
+      if destGUID == UnitGUID('player') then
+        ShowPhysicalDamageOverlay()
+      end
+    end
+    if subEvent == 'SPELL_DAMAGE' or subEvent == 'SPELL_PERIODIC_DAMAGE' then
+      if destGUID == UnitGUID('player') then
+        local school = select(15, CombatLogGetCurrentEventInfo())
+        local schoolNames = {
+          [2] = "Fire",
+          [3] = "Fire",
+          [4] = "Fire",
+          [5] = "Shadow",
+          [8] = "Nature",
+          [11] = "Physical",
+          [12] = "Physical",
+          [16] = "Frost",
+          [32] = "Shadow",
+          [64] = "Arcane"
+        }
+        local schoolName = schoolNames[school] or "Unknown"
+        
+        -- Use OverTime variant for periodic damage
+        if subEvent == 'SPELL_PERIODIC_DAMAGE' then
+          if schoolName == "Physical" then
+            ShowPhysicalDamageOverTimeOverlay()
+          elseif schoolName == "Shadow" then
+            ShowShadowDamageOverTimeOverlay()
+          elseif schoolName == "Holy" then
+            ShowHolyDamageOverTimeOverlay()
+          elseif schoolName == "Arcane" then
+            ShowArcaneDamageOverTimeOverlay()
+          elseif schoolName == "Nature" then
+            ShowNatureDamageOverTimeOverlay()
+          elseif schoolName == "Fire" then
+            ShowFireDamageOverTimeOverlay()
+          end
+        else
+          if schoolName == "Shadow" then
+            ShowShadowDamageOverlay()
+          elseif schoolName == "Holy" then
+            ShowHolyDamageOverlay()
+          elseif schoolName == "Arcane" then
+            ShowArcaneDamageOverlay()
+          elseif schoolName == "Nature" then
+            ShowNatureDamageOverlay()
+          elseif schoolName == "Fire" then
+            ShowFireDamageOverlay()
+          end
+        end
+      end
+    end
+  end
+
   -- Critical hit!
   if GLOBAL_SETTINGS.showCritScreenMoveEffect then
     if subEvent == 'SWING_DAMAGE' or subEvent == 'SPELL_DAMAGE' then

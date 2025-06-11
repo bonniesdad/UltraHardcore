@@ -26,6 +26,7 @@ Functions/SetNameplateHealthIndicator.lua
 Functions/PartyLeaveButton.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
+Functions/PetsDiePermenantly.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 
@@ -54,6 +55,16 @@ Functions/Overlays/UpdateResourceIndicator.lua
 Functions/Overlays/CustomResourceBar.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
+Functions/Overlays/ShowPhysicalDamageOverlay.lua
+Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
+Functions/Overlays/ShowShadowDamageOverlay.lua
+Functions/Overlays/ShowShadowDamageOverTimeOverlay.lua
+Functions/Overlays/ShowHolyDamageOverlay.lua
+Functions/Overlays/ShowHolyDamageOverTimeOverlay.lua
+Functions/Overlays/ShowArcaneDamageOverlay.lua
+Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
+Functions/Overlays/ShowFireDamageOverlay.lua
+Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
