@@ -24,6 +24,11 @@ frame:SetScript('OnEvent', function(self, event, ...)
           showTunnelVision = false,
           showDazedEffect = false,
           showCritScreenMoveEffect = false,
+          showIncomingDamageEffect = false,
+          showNameplateHealthIndicator = false,
+          petsDiePermanently = false,
+          hideGroupHealth = false,
+          hideActionBars = false,
         })
         ReloadUI()
       end,

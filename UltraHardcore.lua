@@ -11,13 +11,16 @@ GLOBAL_SETTINGS = {
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
   showTunnelVision = true,
+  showFullHealthIndicator = true,
   hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
-  hideActionBars = false,
-  hideGroupHealth = true,
+  showIncomingDamageEffect = true,
   showNameplateHealthIndicator = true,
   hideUIErrors = true,
+  petsDiePermanently = false,
+  hideActionBars = false,
+  hideGroupHealth = true,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -50,7 +53,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
-    FullHealthReachedIndicator(GLOBAL_SETTINGS.showTunnelVision, self, event, unit)
+    FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
   elseif event == 'QUEST_WATCH_UPDATE' or event == 'QUEST_LOG_UPDATE' then
     SetQuestDisplay(GLOBAL_SETTINGS.hideQuestFrame or false)
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then

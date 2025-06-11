@@ -5,7 +5,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Death Indicator (Tunnel Vision)',
   dbSettingsValueName = 'showTunnelVision',
-}, 
+},
 -- Recommended Preset Settings
  {
   name = 'Hide Target Frame',
@@ -42,6 +42,15 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Hide Action Bars when not resting',
   dbSettingsValueName = 'hideActionBars',
+}, {
+  name = 'Pets Die Permanently',
+  dbSettingsValueName = 'petsDiePermanently',
+}, {
+  name = 'Show Full Health Indicator',
+  dbSettingsValueName = 'showFullHealthIndicator',
+}, {
+  name = 'Show Incoming Damage Effect',
+  dbSettingsValueName = 'showIncomingDamageEffect',
 } }
 
 local presets = { {
@@ -56,9 +65,12 @@ local presets = { {
   hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
+  showNameplateHealthIndicator = false,
   hideActionBars = false,
   hideGroupHealth = false,
-  showNameplateHealthIndicator = false,
+  petsDiePermanently = false,
+  showFullHealthIndicator = false,
+  showIncomingDamageEffect = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -70,10 +82,13 @@ local presets = { {
   showTunnelVision = true,
   hideQuestFrame = true,
   showDazedEffect = true,
-  showCritScreenMoveEffect = false,
-  hideActionBars = false,
   hideGroupHealth = true,
   showNameplateHealthIndicator = true,
+  showCritScreenMoveEffect = false,
+  hideActionBars = false,
+  petsDiePermanently = false,
+  showFullHealthIndicator = false,
+  showIncomingDamageEffect = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -83,12 +98,15 @@ local presets = { {
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
   showTunnelVision = true,
+  showFullHealthIndicator = true,
+  showIncomingDamageEffect = true,
   hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
   hideActionBars = true,
   hideGroupHealth = true,
   showNameplateHealthIndicator = true,
+  petsDiePermanently = true,
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
