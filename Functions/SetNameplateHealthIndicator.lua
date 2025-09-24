@@ -75,7 +75,7 @@ end
 function ForceShowFriendlyNameplates(enabled)
   if enabled then
     -- TODO: This causes names to appear above all NPCs
-    SetCVar('nameplateShowFriends', 0)
+    SetCVar('nameplateShowFriends', 1)
   end
 end
 
