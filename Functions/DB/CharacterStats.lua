@@ -5,6 +5,8 @@ local CharacterStats = {
     lowestHealth = 100,
     elitesSlain = 0,
     enemiesSlain = 0,
+    xpGainedWithoutAddon = 0, -- XP gained without addon active
+    lastSessionXP = 0, -- XP at the end of last session
     -- Add more stats here as needed
   }
 }
@@ -29,6 +31,14 @@ function CharacterStats:ResetEnemiesSlain()
   stats.enemiesSlain = self.defaults.enemiesSlain
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
   print("UHC - Enemies slain has been reset to " .. self.defaults.enemiesSlain)
+end
+
+function CharacterStats:ResetXPWithoutAddon()
+  local stats = self:GetCurrentCharacterStats()
+  stats.xpGainedWithoutAddon = self.defaults.xpGainedWithoutAddon
+  stats.lastSessionXP = UnitXP("player") -- Reset to current XP
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  print("UHC - XP gained without addon has been reset to " .. self.defaults.xpGainedWithoutAddon)
 end
 
 -- Reset stats to default values for current character
@@ -116,6 +126,11 @@ end
 SLASH_RESETENEMIESSLAIN1 = "/resetenemiesslain"
 SlashCmdList["RESETENEMIESSLAIN"] = function()
   CharacterStats:ResetEnemiesSlain()
+end
+
+SLASH_RESETXP1 = "/resetxp"
+SlashCmdList["RESETXP"] = function()
+  CharacterStats:ResetXPWithoutAddon()
 end
 
 -- Register slash command to reset stats

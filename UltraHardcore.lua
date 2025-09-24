@@ -21,6 +21,7 @@ GLOBAL_SETTINGS = {
   petsDiePermanently = false,
   hideActionBars = false,
   hideGroupHealth = true,
+  defaultGameOptions = true,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -50,6 +51,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator or false)
+    SetUHCRecommendedUIOptions(GLOBAL_SETTINGS.defaultGameOptions or false)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)

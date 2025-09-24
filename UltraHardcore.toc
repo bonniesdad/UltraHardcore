@@ -21,12 +21,14 @@ Functions/WelcomeMessage.lua
 Functions/JoinParty.lua
 Functions/SetEnemyNameplate.lua
 Functions/SetActionBarVisibility.lua
+Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
 Functions/SetNameplateHealthIndicator.lua
 Functions/PartyLeaveButton.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/PetsDiePermenantly.lua
+Functions/SetUHCRecommendedUIOptions.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 
