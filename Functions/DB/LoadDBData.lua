@@ -28,6 +28,7 @@ function LoadDBData()
       showNameplateHealthIndicator = true,
       petsDiePermanently = false,
       hideUIErrors = true,
+      defaultGameOptions = true,
     }
   end
 

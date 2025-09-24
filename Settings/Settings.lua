@@ -6,6 +6,10 @@ local settingsCheckboxOptions = { {
   name = 'Death Indicator (Tunnel Vision)',
   dbSettingsValueName = 'showTunnelVision',
 },
+{
+  name = 'Default UHC Game Options',
+  dbSettingsValueName = 'defaultGameOptions',
+},
 -- Recommended Preset Settings
  {
   name = 'Hide Target Frame',
@@ -56,6 +60,7 @@ local settingsCheckboxOptions = { {
 local presets = { {
   -- Preset 1: Lite
   hidePlayerFrame = true,
+  defaultGameOptions = true,
   hideMinimap = false,
   hideBuffFrame = false,
   hideTargetFrame = false,
@@ -74,6 +79,7 @@ local presets = { {
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
+  defaultGameOptions = true,
   hideMinimap = true,
   hideBuffFrame = true,
   hideTargetFrame = true,
@@ -92,6 +98,7 @@ local presets = { {
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
+  defaultGameOptions = true,
   hideMinimap = true,
   hideBuffFrame = true,
   hideTargetFrame = true,
@@ -158,7 +165,7 @@ statsTitle:SetFontObject('GameFontNormalLarge')
 
 -- Create Statistics section
 local statsFrame = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-statsFrame:SetSize(360, 80) -- Reduced height from 100 to 80
+statsFrame:SetSize(360, 100) -- Increased height to accommodate XP tracking
 statsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -85)
 statsFrame:SetBackdrop({
   bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -201,6 +208,15 @@ local enemiesSlainText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHi
 enemiesSlainText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -55)
 enemiesSlainText:SetText('0')
 
+-- Create the XP gained without addon text display
+local xpLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 20, -75)
+xpLabel:SetText('XP Gained Without Addon:')
+
+local xpText = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpText:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -20, -75)
+xpText:SetText('0')
+
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, 0)
 closeButton:SetSize(32, 32)
@@ -211,11 +227,11 @@ end)
 -- Frame for selectable preset buttons
 local presetButtonsFrame = CreateFrame('Frame', nil, settingsFrame)
 presetButtonsFrame:SetSize(360, 50)
-presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -205)
+presetButtonsFrame:SetPoint('TOP', settingsFrame, 'TOP', 0, -225)
 
 -- Add Settings title above the preset buttons
 local settingsSectionTitle = settingsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-settingsSectionTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -180)
+settingsSectionTitle:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 20, -200)
 settingsSectionTitle:SetText('Settings')
 settingsSectionTitle:SetFontObject('GameFontNormalLarge')
 
@@ -251,9 +267,9 @@ end
 -- Create preset buttons
 local presetIcons =
   {
-    'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 0 .. '.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 4 .. '.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 5 .. '.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull' .. 1 .. '.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull' .. 2 .. '.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull' .. 3 .. '.png',
   }
 
 local buttonSize = 100 -- Increased size for better visibility
@@ -302,7 +318,7 @@ end
 
 -- ScrollFrame to enable scrolling
 local scrollFrame = CreateFrame('ScrollFrame', nil, settingsFrame, 'UIPanelScrollFrameTemplate')
-scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -325)
+scrollFrame:SetPoint('TOPLEFT', settingsFrame, 'TOPLEFT', 10, -345)
 scrollFrame:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -30, 60)
 
 -- ScrollChild contains all checkboxes
@@ -357,6 +373,11 @@ local function UpdateLowestHealthDisplay()
   if enemiesSlainText then
     local enemies = CharacterStats:GetStat('enemiesSlain') or 0
     enemiesSlainText:SetText(enemies)
+  end
+  
+  if xpText then
+    local xp = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
+    xpText:SetText(xp)
   end
 end
 
