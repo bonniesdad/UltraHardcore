@@ -23,6 +23,7 @@ GLOBAL_SETTINGS = {
   hideActionBars = false,
   hideGroupHealth = true,
   defaultGameOptions = true,
+  hideBreathIndicator = false,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -37,6 +38,8 @@ UltraHardcore:RegisterEvent('PLAYER_UPDATE_RESTING')
 UltraHardcore:RegisterEvent('PLAYER_LEVEL_UP')
 UltraHardcore:RegisterEvent('GROUP_ROSTER_UPDATE')
 UltraHardcore:RegisterEvent('NAME_PLATE_UNIT_ADDED')
+UltraHardcore:RegisterEvent('MIRROR_TIMER_START')
+UltraHardcore:RegisterEvent('MIRROR_TIMER_STOP')
 
 
 -- 🟢 Event handler to apply all funcitons on login
@@ -53,6 +56,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator or false)
     SetUHCRecommendedUIOptions(GLOBAL_SETTINGS.defaultGameOptions or false)
+    SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
@@ -69,5 +73,18 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
   elseif event == 'NAME_PLATE_UNIT_ADDED' then
     SetNameplateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
+  elseif event == 'MIRROR_TIMER_START' then
+    -- Start breath monitoring when underwater
+    -- Mirror timer events pass timerName as the first parameter after event
+    local timerName = unit
+    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
+      OnBreathStart()
+    end
+  elseif event == 'MIRROR_TIMER_STOP' then
+    -- Stop breath monitoring when surfacing
+    local timerName = unit
+    if timerName == 'BREATH' then
+      OnBreathStop()
+    end
   end
 end)
