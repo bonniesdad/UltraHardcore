@@ -2,7 +2,6 @@
 local function PreventPetRevival()
     -- Hook into the revive pet spell
     hooksecurefunc("CastSpellByName", function(spellName)
-        print(spellName)
         if spellName == "Revive Pet" then
             -- Check if the player is a hunter
             local _, playerClass = UnitClass("player")
