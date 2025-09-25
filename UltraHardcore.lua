@@ -11,6 +11,7 @@ GLOBAL_SETTINGS = {
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
   showTunnelVision = true,
+  tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
   hideQuestFrame = true,
   showDazedEffect = true,

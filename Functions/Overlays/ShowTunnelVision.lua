@@ -12,8 +12,16 @@ function ShowTunnelVision(blurIntensity)
   if not UltraHardcore.tunnelVisionFrame then
     local tunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
     tunnelVisionFrame:SetAllPoints(UIParent)
-    tunnelVisionFrame:SetFrameStrata('TOOLTIP')
-    tunnelVisionFrame:SetFrameLevel(1000)
+    
+    -- Set frame strata and level based on tunnelVisionMaxStrata setting
+    if GLOBAL_SETTINGS.tunnelVisionMaxStrata then
+      tunnelVisionFrame:SetFrameStrata('FULLSCREEN_DIALOG')
+      tunnelVisionFrame:SetFrameLevel(1000)
+    else
+      tunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
+      tunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
+    end
+    
     tunnelVisionFrame.texture = tunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
     tunnelVisionFrame.texture:SetAllPoints()
     tunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
@@ -23,8 +31,16 @@ function ShowTunnelVision(blurIntensity)
   if not UltraHardcore.backupTunnelVisionFrame then
     local backupTunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
     backupTunnelVisionFrame:SetAllPoints(UIParent)
-    backupTunnelVisionFrame:SetFrameStrata('TOOLTIP')
-    backupTunnelVisionFrame:SetFrameLevel(1000)
+    
+    -- Set frame strata and level based on tunnelVisionMaxStrata setting
+    if GLOBAL_SETTINGS.tunnelVisionMaxStrata then
+      backupTunnelVisionFrame:SetFrameStrata('FULLSCREEN_DIALOG')
+      backupTunnelVisionFrame:SetFrameLevel(1000)
+    else
+      backupTunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
+      backupTunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
+    end
+    
     backupTunnelVisionFrame.texture = backupTunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
     backupTunnelVisionFrame.texture:SetAllPoints()
     backupTunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
