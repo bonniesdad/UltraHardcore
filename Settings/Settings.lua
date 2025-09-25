@@ -12,6 +12,9 @@ local settingsCheckboxOptions = { {
 },
 -- Recommended Preset Settings
  {
+  name = 'Tunnel Vision Covers Everything',
+  dbSettingsValueName = 'tunnelVisionMaxStrata',
+}, {
   name = 'Hide Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
 }, {
@@ -67,6 +70,7 @@ local presets = { {
   hideTargetTooltip = false,
   hideEnemyNameplates = false,
   showTunnelVision = true,
+  tunnelVisionMaxStrata = false,
   hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
@@ -86,6 +90,7 @@ local presets = { {
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
   showTunnelVision = true,
+  tunnelVisionMaxStrata = true,
   hideQuestFrame = true,
   showDazedEffect = true,
   hideGroupHealth = true,
@@ -105,6 +110,7 @@ local presets = { {
   hideTargetTooltip = true,
   hideEnemyNameplates = true,
   showTunnelVision = true,
+  tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
   showIncomingDamageEffect = true,
   hideQuestFrame = true,
