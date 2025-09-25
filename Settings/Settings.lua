@@ -41,9 +41,10 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Use Custom Buff Frame',
   dbSettingsValueName = 'hideBuffFrame',
-},
--- Experimental Preset Settings
-{
+}, {
+  name = 'Breath Indicator (Red Overlay)',
+  dbSettingsValueName = 'hideBreathIndicator',
+}, {
   name = 'Show Crit Screen Shift Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
 }, {
@@ -80,6 +81,7 @@ local presets = { {
   petsDiePermanently = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
+  hideBreathIndicator = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -100,6 +102,7 @@ local presets = { {
   petsDiePermanently = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
+  hideBreathIndicator = true,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -120,6 +123,7 @@ local presets = { {
   hideGroupHealth = true,
   showNameplateHealthIndicator = true,
   petsDiePermanently = true,
+  hideBreathIndicator = true,
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
