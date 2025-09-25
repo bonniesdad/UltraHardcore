@@ -1,19 +1,22 @@
 function RemoveTunnelVision()
   if UltraHardcore.tunnelVisionFrame then
-    if UltraHardcore.tunnelVisionFrame:IsShown() then
-      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out tunnelVisionFrame
-      C_Timer.After(1, function()
-        UltraHardcore.tunnelVisionFrame:Hide() -- Hide the blur effect
+    local fadeDuration = 0.8 -- Match the fade duration from ShowTunnelVision
+    
+    -- Fade out whichever frame is currently visible
+    if UltraHardcore.tunnelVisionFrame:IsShown() and UltraHardcore.tunnelVisionFrame:GetAlpha() > 0 then
+      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, fadeDuration, UltraHardcore.tunnelVisionFrame:GetAlpha(), 0)
+      C_Timer.After(fadeDuration + 0.1, function()
+        UltraHardcore.tunnelVisionFrame:Hide()
       end)
-      lastCalledBlurIntensity = 0
     end
 
-    if UltraHardcore.backupTunnelVisionFrame:IsShown() then
-      UIFrameFadeOut(UltraHardcore.backupTunnelVisionFrame, 1, 1, 0) -- Fade out backupTunnelVisionFrame
-      C_Timer.After(1, function()
-        UltraHardcore.backupTunnelVisionFrame:Hide() -- Hide the blur effect
+    if UltraHardcore.backupTunnelVisionFrame:IsShown() and UltraHardcore.backupTunnelVisionFrame:GetAlpha() > 0 then
+      UIFrameFadeOut(UltraHardcore.backupTunnelVisionFrame, fadeDuration, UltraHardcore.backupTunnelVisionFrame:GetAlpha(), 0)
+      C_Timer.After(fadeDuration + 0.1, function()
+        UltraHardcore.backupTunnelVisionFrame:Hide()
       end)
-      lastCalledBlurIntensity = 0
     end
+    
+    lastCalledBlurIntensity = 0
   end
 end

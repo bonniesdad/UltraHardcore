@@ -1,4 +1,5 @@
-local isDeathIndicatorVisible = false
+local isTransitioning = false
+local currentActiveFrame = nil
 
 lastCalledBlurIntensity = 0
 -- 🟢 Function to apply blur with increasing intensity based on health percentage
@@ -7,6 +8,7 @@ function ShowTunnelVision(blurIntensity)
 
   lastCalledBlurIntensity = blurIntensity
 
+  -- Initialize frames if they don't exist
   if not UltraHardcore.tunnelVisionFrame then
     local tunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
     tunnelVisionFrame:SetAllPoints(UIParent)
@@ -29,31 +31,48 @@ function ShowTunnelVision(blurIntensity)
     UltraHardcore.backupTunnelVisionFrame = backupTunnelVisionFrame
   end
 
-  -- Apply the texture to both frames immediately
+  -- Determine which frame is currently active
+  local activeFrame = nil
+  local inactiveFrame = nil
+  
+  if UltraHardcore.tunnelVisionFrame:IsShown() and UltraHardcore.tunnelVisionFrame:GetAlpha() > 0 then
+    activeFrame = UltraHardcore.tunnelVisionFrame
+    inactiveFrame = UltraHardcore.backupTunnelVisionFrame
+  elseif UltraHardcore.backupTunnelVisionFrame:IsShown() and UltraHardcore.backupTunnelVisionFrame:GetAlpha() > 0 then
+    activeFrame = UltraHardcore.backupTunnelVisionFrame
+    inactiveFrame = UltraHardcore.tunnelVisionFrame
+  else
+    -- No frame is currently active, use tunnelVisionFrame as default
+    activeFrame = UltraHardcore.tunnelVisionFrame
+    inactiveFrame = UltraHardcore.backupTunnelVisionFrame
+  end
+
+  -- Set the texture on the inactive frame first
   local texturePath =
     'Interface\\AddOns\\UltraHardcore\\textures\\tinted_foggy_' .. string.format(
       '%02d',
       blurIntensity
     ) .. '.png'
+  
+  inactiveFrame.texture:SetTexture(texturePath)
+  inactiveFrame:SetAlpha(0)
+  inactiveFrame:Show()
 
-  if isDeathIndicatorVisible then
-    -- Fade out the tunnelVisionFrame and fade in the backupTunnelVisionFrame
-    UltraHardcore.backupTunnelVisionFrame.texture:SetTexture(texturePath)
-    UltraHardcore.backupTunnelVisionFrame:Show()
-    UIFrameFadeIn(UltraHardcore.backupTunnelVisionFrame, 1, 0, 1) -- Fade in backupTunnelVisionFrame
-    C_Timer.After(1, function()
-      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, 1, 1, 0) -- Fade out tunnelVisionFrame
-    end)
-  else
-    -- Fade out the backupTunnelVisionFrame and fade in the tunnelVisionFrame
-    UltraHardcore.tunnelVisionFrame.texture:SetTexture(texturePath)
-    UltraHardcore.tunnelVisionFrame:Show()
-    UIFrameFadeIn(UltraHardcore.tunnelVisionFrame, 1, 0, 1) -- Fade in tunnelVisionFrame
-    C_Timer.After(1, function()
-      UIFrameFadeOut(UltraHardcore.backupTunnelVisionFrame, 1, 1, 0) -- Fade out backupTunnelVisionFrame
-    end)
-  end
-
-  -- Toggle the visibility flag for the next call
-  isDeathIndicatorVisible = not isDeathIndicatorVisible
+  -- Smooth transition: fade out active frame while fading in inactive frame
+  local fadeDuration = 0.8 -- Slightly faster transition for smoother feel
+  
+  -- Stop any existing transitions
+  UIFrameFadeOut(activeFrame, 0, activeFrame:GetAlpha(), activeFrame:GetAlpha())
+  UIFrameFadeOut(inactiveFrame, 0, inactiveFrame:GetAlpha(), inactiveFrame:GetAlpha())
+  
+  -- Start the cross-fade transition
+  UIFrameFadeOut(activeFrame, fadeDuration, activeFrame:GetAlpha(), 0)
+  UIFrameFadeIn(inactiveFrame, fadeDuration, 0, 1)
+  
+  -- Hide the old frame after transition completes
+  C_Timer.After(fadeDuration + 0.1, function()
+    if activeFrame:GetAlpha() == 0 then
+      activeFrame:Hide()
+    end
+  end)
 end
