@@ -287,14 +287,12 @@ GLOBAL_SETTINGS = {
     hideBuffFrame = true,         -- Remove buff/debuff indicators
     hideTargetFrame = true,       -- Hide target information
     hideTargetTooltip = true,     -- Remove target tooltips
-    hideEnemyNameplates = true,   -- Hide enemy nameplate information
     showTunnelVision = true,      -- Enable death indicator screen effect
     hideQuestFrame = true,        -- Hide quest tracking information
     showDazedEffect = true,       -- Enable dazed blur overlay
     showCritScreenMoveEffect = true, -- Enable critical hit screen rotation
     hideActionBars = false,       -- Control action bar visibility (rested areas only)
     hideGroupHealth = true,       -- Hide party member health bars
-    showNameplateHealthIndicator = true, -- Show ally health icons
     hideUIErrors = true          -- Remove UI error messages
 }
 ```

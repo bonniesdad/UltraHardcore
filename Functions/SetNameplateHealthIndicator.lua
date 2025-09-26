@@ -88,7 +88,7 @@ frame:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 frame:SetScript('OnEvent', function(self, event, unit)
   if event == 'CVAR_UPDATE' then
-    ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator)
+    ForceShowFriendlyNameplates(true)
   elseif event == 'NAME_PLATE_UNIT_REMOVED' then
     -- Cleanup when nameplate disappears
     local healthIndicator = NAME_PLATE_HEALTH_INDICATOR_FRAMES[unit]

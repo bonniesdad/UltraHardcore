@@ -9,7 +9,6 @@ GLOBAL_SETTINGS = {
   hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
-  hideEnemyNameplates = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
@@ -17,7 +16,6 @@ GLOBAL_SETTINGS = {
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
   showIncomingDamageEffect = true,
-  showNameplateHealthIndicator = true,
   hideUIErrors = true,
   petsDiePermanently = false,
   hideActionBars = false,
@@ -54,11 +52,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
-    ForceShowFriendlyNameplates(GLOBAL_SETTINGS.showNameplateHealthIndicator or false)
+    ForceShowFriendlyNameplates(true)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
-    UpdateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
+    UpdateHealthIndicator(true, unit)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
   elseif event == 'QUEST_WATCH_UPDATE' or event == 'QUEST_LOG_UPDATE' then
     SetQuestDisplay(GLOBAL_SETTINGS.hideQuestFrame or false)
@@ -71,7 +69,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
   elseif event == 'NAME_PLATE_UNIT_ADDED' then
-    SetNameplateHealthIndicator(GLOBAL_SETTINGS.showNameplateHealthIndicator or false, unit)
+    SetNameplateHealthIndicator(true, unit)
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event

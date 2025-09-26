@@ -3,11 +3,11 @@ local settingsCheckboxOptions = { {
   name = 'Hide Own Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
 }, {
-  name = 'Death Indicator (Tunnel Vision)',
-  dbSettingsValueName = 'showTunnelVision',
-}, {
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
+}, {
+  name = 'Tunnel Vision',
+  dbSettingsValueName = 'showTunnelVision',
 },
 -- Recommended Preset Settings
  {
@@ -17,20 +17,14 @@ local settingsCheckboxOptions = { {
   name = 'Hide Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
 }, {
-  name = 'Hide Nameplates',
-  dbSettingsValueName = 'hideEnemyNameplates',
-}, {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
 }, {
   name = 'Show Dazed effect',
   dbSettingsValueName = 'showDazedEffect',
 }, {
-  name = 'Hide Group Health',
+  name = 'Use UHC Party Frames',
   dbSettingsValueName = 'hideGroupHealth',
-}, {
-  name = 'Show Nameplate Health Indicator',
-  dbSettingsValueName = 'showNameplateHealthIndicator',
 }, {
   name = 'Hide Minimap',
   dbSettingsValueName = 'hideMinimap',
@@ -38,13 +32,13 @@ local settingsCheckboxOptions = { {
   name = 'Hide Quest UI',
   dbSettingsValueName = 'hideQuestFrame',
 }, {
-  name = 'Use Custom Buff Frame',
+  name = 'Use UHC Buff Frame',
   dbSettingsValueName = 'hideBuffFrame',
 }, {
-  name = 'Breath Indicator (Red Overlay)',
+  name = 'Use UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
 }, {
-  name = 'Show Crit Screen Shift Effect',
+  name = 'Use UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
 }, {
   name = 'Hide Action Bars when not resting',
@@ -53,10 +47,10 @@ local settingsCheckboxOptions = { {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
 }, {
-  name = 'Show Full Health Indicator',
+  name = 'Use UHC Full Health Indicator',
   dbSettingsValueName = 'showFullHealthIndicator',
 }, {
-  name = 'Show Incoming Damage Effect',
+  name = 'Use UHC Incoming Damage Effect',
   dbSettingsValueName = 'showIncomingDamageEffect',
 } }
 
@@ -67,13 +61,11 @@ local presets = { {
   hideBuffFrame = false,
   hideTargetFrame = false,
   hideTargetTooltip = false,
-  hideEnemyNameplates = false,
   showTunnelVision = true,
   tunnelVisionMaxStrata = false,
   hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
-  showNameplateHealthIndicator = false,
   hideActionBars = false,
   hideGroupHealth = false,
   petsDiePermanently = false,
@@ -88,13 +80,11 @@ local presets = { {
   hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
-  hideEnemyNameplates = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
   hideQuestFrame = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  showNameplateHealthIndicator = true,
   showCritScreenMoveEffect = false,
   hideActionBars = false,
   petsDiePermanently = false,
@@ -109,7 +99,6 @@ local presets = { {
   hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
-  hideEnemyNameplates = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
@@ -119,7 +108,6 @@ local presets = { {
   showCritScreenMoveEffect = true,
   hideActionBars = true,
   hideGroupHealth = true,
-  showNameplateHealthIndicator = true,
   petsDiePermanently = true,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
