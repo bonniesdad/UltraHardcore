@@ -5,10 +5,6 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Death Indicator (Tunnel Vision)',
   dbSettingsValueName = 'showTunnelVision',
-},
-{
-  name = 'Default UHC Game Options',
-  dbSettingsValueName = 'defaultGameOptions',
 }, {
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
@@ -67,7 +63,6 @@ local settingsCheckboxOptions = { {
 local presets = { {
   -- Preset 1: Lite
   hidePlayerFrame = true,
-  defaultGameOptions = true,
   hideMinimap = false,
   hideBuffFrame = false,
   hideTargetFrame = false,
@@ -89,7 +84,6 @@ local presets = { {
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
-  defaultGameOptions = true,
   hideMinimap = true,
   hideBuffFrame = true,
   hideTargetFrame = true,
@@ -111,7 +105,6 @@ local presets = { {
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
-  defaultGameOptions = true,
   hideMinimap = true,
   hideBuffFrame = true,
   hideTargetFrame = true,

@@ -28,7 +28,6 @@ Functions/PartyLeaveButton.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/PetsDiePermenantly.lua
-Functions/SetUHCRecommendedUIOptions.lua
 Functions/SetBreathBarDisplay.lua
 
 Functions/Statistics/TrackLowestHealth.lua
