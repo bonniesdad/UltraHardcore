@@ -24,6 +24,7 @@ GLOBAL_SETTINGS = {
   hideGroupHealth = true,
   defaultGameOptions = true,
   hideBreathIndicator = false,
+  showOnScreenStatistics = true,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
