@@ -1,6 +1,6 @@
 local settingsCheckboxOptions = { {
   -- Lite Preset Settings
-  name = 'Hide Player Frame',
+  name = 'Hide Own Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
 }, {
   name = 'Death Indicator (Tunnel Vision)',
@@ -9,6 +9,9 @@ local settingsCheckboxOptions = { {
 {
   name = 'Default UHC Game Options',
   dbSettingsValueName = 'defaultGameOptions',
+}, {
+  name = 'On Screen Statistics',
+  dbSettingsValueName = 'showOnScreenStatistics',
 },
 -- Recommended Preset Settings
  {
@@ -82,6 +85,7 @@ local presets = { {
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   hideBreathIndicator = false,
+  showOnScreenStatistics = true,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -103,6 +107,7 @@ local presets = { {
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   hideBreathIndicator = true,
+  showOnScreenStatistics = true,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -124,6 +129,7 @@ local presets = { {
   showNameplateHealthIndicator = true,
   petsDiePermanently = true,
   hideBreathIndicator = true,
+  showOnScreenStatistics = true,
 } }
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')

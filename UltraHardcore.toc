@@ -57,6 +57,7 @@ Functions/Overlays/RemoveTunnelVision.lua
 Functions/Overlays/ShowBreathOverlay.lua
 Functions/Overlays/UpdateResourceIndicator.lua
 Functions/Overlays/CustomResourceBar.lua
+Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverlay.lua
