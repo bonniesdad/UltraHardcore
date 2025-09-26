@@ -61,6 +61,15 @@ xpValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
 xpValue:SetText('0')
 xpValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Hide the frame if the statistics setting is off
+local function CheckAddonEnabled()
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showOnScreenStatistics then
+    statsFrame:Hide()
+  else
+    statsFrame:Show()
+  end
+end
+
 -- Function to update all statistics
 local function UpdateStatistics()
   if not UltraHardcoreDB then
@@ -116,16 +125,6 @@ end)
 
 -- Initial update
 UpdateStatistics()
-
--- Hide the frame if the statistics setting is off
-local function CheckAddonEnabled()
-  
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showOnScreenStatistics then
-    statsFrame:Hide()
-  else
-    statsFrame:Show()
-  end
-end
 
 -- Initial check with delay to ensure GLOBAL_SETTINGS is loaded
 C_Timer.After(1, function()
