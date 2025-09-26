@@ -16,7 +16,6 @@ function LoadDBData()
       hideBuffFrame = true,
       hideTargetFrame = true,
       hideTargetTooltip = true,
-      hideEnemyNameplates = true,
       hideQuestFrame = true,
       showTunnelVision = true,
       showFullHealthIndicator = true,
@@ -25,7 +24,6 @@ function LoadDBData()
       showIncomingDamageEffect = true,
       hideActionBars = true,
       hideGroupHealth = true,
-      showNameplateHealthIndicator = true,
       petsDiePermanently = false,
       hideUIErrors = true,
     }
