@@ -19,7 +19,6 @@ Functions/TunnelVision.lua
 Functions/OnCombatLogEvent.lua
 Functions/WelcomeMessage.lua
 Functions/JoinParty.lua
-Functions/SetEnemyNameplate.lua
 Functions/SetActionBarVisibility.lua
 Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
