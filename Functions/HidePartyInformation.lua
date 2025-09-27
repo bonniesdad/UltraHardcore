@@ -8,7 +8,6 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE = {
   'ManaBar',
   'Texture',
   'Background',
-  'Name',
 }
 
 function SetPartyFramesInfo(hideGroupHealth)
@@ -32,6 +31,23 @@ function SetPartyFrameInfo(n)
       nameFrame:SetPoint("BOTTOMLEFT", 55, 25)
     end
   end
+  
+  -- Move the entire party frame to the right by 100px and stack vertically
+  local partyFrame = _G['PartyMemberFrame' .. n]
+  if partyFrame then
+    -- Position each party frame vertically below the previous one
+    local verticalOffset = -120 - ((n - 1) * 60) -- 60px spacing between frames
+    partyFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 80, verticalOffset)
+    
+    -- Set party frame to highest tooltip level (above 1000)
+    partyFrame:SetFrameLevel(1500)
+  end
+  
+  -- Reposition target highlights to match the moved party frame
+  if RepositionAllPartyTargetHighlights then
+    RepositionAllPartyTargetHighlights()
+  end
+  
   -- TODO move buffs/debuffs up
 end
 
