@@ -20,6 +20,9 @@ local settingsCheckboxOptions = { {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
 }, {
+  name = 'Disable Nameplate Information',
+  dbSettingsValueName = 'disableNameplateHealth',
+}, {
   name = 'Show Dazed effect',
   dbSettingsValueName = 'showDazedEffect',
 }, {
@@ -70,6 +73,7 @@ local presets = { {
   hideGroupHealth = false,
   petsDiePermanently = false,
   showFullHealthIndicator = false,
+  disableNameplateHealth = false,
   showIncomingDamageEffect = false,
   hideBreathIndicator = false,
   showOnScreenStatistics = true,
@@ -89,6 +93,7 @@ local presets = { {
   hideActionBars = false,
   petsDiePermanently = false,
   showFullHealthIndicator = false,
+  disableNameplateHealth = true,
   showIncomingDamageEffect = false,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
@@ -102,6 +107,7 @@ local presets = { {
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
+  disableNameplateHealth = true,
   showIncomingDamageEffect = true,
   hideQuestFrame = true,
   showDazedEffect = true,

@@ -22,8 +22,8 @@ Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
 Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
-Functions/SetNameplateHealthIndicator.lua
 Functions/SetPartyHealthIndicator.lua
+Functions/SetNameplateHealthDisplay.lua
 Functions/PartyLeaveButton.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
