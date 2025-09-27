@@ -290,6 +290,7 @@ local partyHealthFrame = CreateFrame('Frame')
 partyHealthFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 partyHealthFrame:RegisterEvent('UNIT_HEALTH')
 partyHealthFrame:RegisterEvent('GROUP_ROSTER_UPDATE')
+partyHealthFrame:RegisterEvent('GROUP_JOINED')
 partyHealthFrame:RegisterEvent('PARTY_MEMBER_ENABLE')
 partyHealthFrame:RegisterEvent('PARTY_MEMBER_DISABLE')
 partyHealthFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
@@ -305,11 +306,12 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
         UpdatePartyHealthIndicator(partyIndex)
       end
     end
-  elseif event == 'GROUP_ROSTER_UPDATE' or event == 'PARTY_MEMBER_ENABLE' or event == 'PARTY_MEMBER_DISABLE' then
+  elseif event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'PARTY_MEMBER_ENABLE' or event == 'PARTY_MEMBER_DISABLE' then
     -- Update all party indicators when party composition changes
     -- Add a small delay to ensure health data is loaded
     C_Timer.After(0.1, function()
       UpdateAllPartyHealthIndicators()
+      UpdatePartyTargetHighlights()
     end)
   elseif event == 'PLAYER_TARGET_CHANGED' then
     -- Update target highlights when target changes
