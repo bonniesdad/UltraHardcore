@@ -3,11 +3,12 @@
 
 -- Use the same health indicator steps as nameplates
 PARTY_HEALTH_INDICATOR_STEPS = {
+  {health = 0, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-black.png'},
   {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
-  {health = 0.4, alpha = 0.8, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
-  {health = 0.5, alpha = 0.6, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
-  {health = 0.7, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
-  {health = 0.9, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 0.3, alpha = 0.8, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
+  {health = 0.4, alpha = 0.6, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.6, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.8, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
   {health = 1, alpha = 0.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
 }
 
@@ -77,22 +78,31 @@ function UpdatePartyHealthIndicator(partyIndex)
 
   local healthRatio = health / maxHealth
   
-  -- Show indicator for all health levels to see all transitions
-  -- Remove the 40% threshold check
+  -- Handle dead party members (0 health)
+  if health == 0 or UnitIsDead(unit) then
+    healthRatio = 0
+  end
   
+  -- Find the appropriate health step
   local alpha = 0.0
+  local texture = nil
+  
   for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
-      healthIndicator:SetTexture(step.texture)
+      texture = step.texture
       break
     end
   end
 
-  -- Only show if we have a valid alpha
+  -- Only show if we have a valid alpha > 0
   if alpha > 0 then
+    healthIndicator:SetTexture(texture)
     healthIndicator:SetAlpha(alpha)
     healthIndicator:Show()
+  else
+    -- Ensure it's hidden when alpha is 0
+    healthIndicator:Hide()
   end
 end
 
@@ -103,7 +113,18 @@ function UpdateAllPartyHealthIndicators()
 end
 
 function SetAllPartyHealthIndicators(enabled)
-  -- Force show test indicators for all party members
+  if not enabled then
+    -- Hide all health indicators
+    for i = 1, 4 do
+      local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
+      if healthIndicator then
+        healthIndicator:Hide()
+      end
+    end
+    return
+  end
+
+  -- Create health indicators for all party members and update them based on actual health
   for i = 1, 4 do -- Party members 1-4
     local partyFrame = _G['PartyMemberFrame' .. i]
     if not partyFrame then 
@@ -119,20 +140,17 @@ function SetAllPartyHealthIndicators(enabled)
       local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
       if not healthIndicator then
         healthIndicator = partyFrame:CreateTexture(nil, 'OVERLAY')
-        healthIndicator:SetSize(32, 32) -- Normal size
-        -- Position to the right of the party frame, very close
+        healthIndicator:SetSize(32, 32)
         healthIndicator:SetPoint('RIGHT', partyFrame, 'LEFT', -5, 0)
-        healthIndicator:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png')
-        healthIndicator:SetAlpha(1.0) -- Always visible for testing
-        healthIndicator:Show()
+        healthIndicator:SetAlpha(0.0)
+        healthIndicator:Hide()
         
         -- Cache for updates
         PARTY_HEALTH_INDICATOR_FRAMES[i] = healthIndicator
-      else
-        healthIndicator:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png')
-        healthIndicator:SetAlpha(1.0)
-        healthIndicator:Show()
       end
+      
+      -- Update the indicator based on actual health
+      UpdatePartyHealthIndicator(i)
     end
   end
   
@@ -153,20 +171,17 @@ function SetAllPartyHealthIndicators(enabled)
         local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
         if not healthIndicator then
           healthIndicator = partyFrame:CreateTexture(nil, 'OVERLAY')
-          healthIndicator:SetSize(32, 32) -- Normal size
-          -- Position to the right of the party frame, very close
+          healthIndicator:SetSize(32, 32)
           healthIndicator:SetPoint('RIGHT', partyFrame, 'LEFT', -5, 0)
-          healthIndicator:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png')
-          healthIndicator:SetAlpha(1.0) -- Always visible for testing
-          healthIndicator:Show()
+          healthIndicator:SetAlpha(0.0)
+          healthIndicator:Hide()
           
           -- Cache for updates
           PARTY_HEALTH_INDICATOR_FRAMES[i] = healthIndicator
-        else
-          healthIndicator:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png')
-          healthIndicator:SetAlpha(1.0)
-          healthIndicator:Show()
         end
+        
+        -- Update the indicator based on actual health
+        UpdatePartyHealthIndicator(i)
       end
     end
   end)
