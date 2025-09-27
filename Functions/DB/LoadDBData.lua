@@ -25,6 +25,7 @@ function LoadDBData()
       hideActionBars = true,
       hideGroupHealth = true,
       petsDiePermanently = false,
+      disableNameplateHealth = true,
       hideUIErrors = true,
     }
   end
