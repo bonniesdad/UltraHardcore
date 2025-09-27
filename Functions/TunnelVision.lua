@@ -1,7 +1,9 @@
 function TunnelVision(self, event, unit, showTunnelVision)
   if showTunnelVision then
     local healthPercent = (UnitHealth('player') / UnitHealthMax('player')) * 100
-    if healthPercent <= 20 then
+    if healthPercent <= 0 then
+      RemoveTunnelVision()
+    elseif healthPercent <= 20 then
       ShowTunnelVision(19)
     elseif healthPercent <= 40 then
       ShowTunnelVision(14)
