@@ -54,6 +54,8 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     ForceShowFriendlyNameplates(true)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
+    SetAllPartyHealthIndicators(true)
+    SetAllPartyTargetHighlights(true)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     UpdateHealthIndicator(true, unit)
@@ -68,6 +70,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     OnPlayerLevelUpEvent(self, event, GLOBAL_SETTINGS.hideActionBars, unit)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
+    SetAllPartyHealthIndicators(true)
   elseif event == 'NAME_PLATE_UNIT_ADDED' then
     SetNameplateHealthIndicator(true, unit)
   elseif event == 'MIRROR_TIMER_START' then
