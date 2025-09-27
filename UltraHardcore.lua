@@ -70,6 +70,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
     SetAllPartyHealthIndicators(true)
+    SetAllPartyTargetHighlights(true)
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event
