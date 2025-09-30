@@ -109,6 +109,141 @@ function CharacterStats:GetAllCharacters()
   return characters
 end
 
+-- Function to log stats directly to a specific channel (for slash commands)
+function CharacterStats:LogStatsToSpecificChannel(channel)
+  local stats = self:GetCurrentCharacterStats()
+  local playerName = UnitName("player")
+  local playerLevel = UnitLevel("player")
+  local playerClass = UnitClass("player")
+  
+  local function sendMessage(text)
+    SendChatMessage(text, channel)
+  end
+  
+  -- if channel == 'GUILD' then
+    -- Condensed single line for guild chat to avoid spam
+    local condensedMessage = "UHC Stats - " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
+    sendMessage(condensedMessage)
+  -- else
+  --   -- Multi-line format for say/party chat
+  --   sendMessage("-------- UHC STATS --------")
+  --   sendMessage(playerName .. " (" .. playerClass .. " Level " .. playerLevel .. ")")
+    
+  --   -- Send each stat on its own line with lots of spacing and right-aligned numbers
+  --   sendMessage("Lowest Health ---------------" .. string.format("%8.1f", stats.lowestHealth) .. "%")
+  --   sendMessage("Elites Slain -------------------" .. string.format("%8d", stats.elitesSlain))
+  --   sendMessage("Enemies Slain ---------------" .. string.format("%8d", stats.enemiesSlain))
+  --   sendMessage("XP Without Addon: --------" .. string.format("%8d", stats.xpGainedWithoutAddon))
+  -- end
+end
+
+-- Function to show chat channel selection dialog
+function CharacterStats:ShowChatChannelDialog()
+  local stats = self:GetCurrentCharacterStats()
+  local playerName = UnitName("player")
+  local playerLevel = UnitLevel("player")
+  local playerClass = UnitClass("player")
+  
+  -- Create dialog frame (slimmer with darker background)
+  local dialog = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
+  dialog:SetSize(250, 140)
+  dialog:SetPoint('CENTER', UIParent, 'CENTER')
+  dialog:SetFrameStrata('DIALOG')
+  dialog:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background-Dark',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 32,
+    edgeSize = 12,
+    insets = {
+      left = 2,
+      right = 2,
+      top = 2,
+      bottom = 2,
+    },
+  })
+  dialog:SetBackdropColor(0, 0, 0, 0.95) -- Darker background
+  
+  -- Title
+  local title = dialog:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  title:SetPoint('TOP', dialog, 'TOP', 0, -20)
+  title:SetText('Post UHC Stats to Chat')
+  title:SetFont('Fonts\\FRIZQT__.TTF', 16, 'OUTLINE')
+  
+  -- Close button
+  local closeButton = CreateFrame('Button', nil, dialog, 'UIPanelCloseButton')
+  closeButton:SetPoint('TOPRIGHT', dialog, 'TOPRIGHT', -4, -4)
+  closeButton:SetSize(32, 32)
+  closeButton:SetScript('OnClick', function()
+    dialog:Hide()
+  end)
+  
+  -- Function to send stats to specific channel
+  local function sendStatsToChannel(channel)
+    local function sendMessage(text)
+      SendChatMessage(text, channel)
+    end
+    
+    -- if channel == 'GUILD' then
+      -- Condensed single line for guild chat to avoid spam
+    local condensedMessage = "UHC Stats - " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
+    sendMessage(condensedMessage)
+    -- else
+      -- Multi-line format for say/party chat
+      -- sendMessage("-------- UHC STATS --------")
+      -- sendMessage(playerName .. " (" .. playerClass .. " Level " .. playerLevel .. ")")
+      
+      -- -- Send each stat on its own line with lots of spacing and right-aligned numbers
+      -- sendMessage("Lowest Health ---------------" .. string.format("%8.1f", stats.lowestHealth) .. "%")
+      -- sendMessage("Elites Slain -------------------" .. string.format("%8d", stats.elitesSlain))
+      -- sendMessage("Enemies Slain ---------------" .. string.format("%8d", stats.enemiesSlain))
+      -- sendMessage("XP Without Addon: --------" .. string.format("%8d", stats.xpGainedWithoutAddon))
+    -- end
+    
+    dialog:Hide()
+  end
+  
+  -- Say button
+  local sayButton = CreateFrame('Button', nil, dialog, 'UIPanelButtonTemplate')
+  sayButton:SetSize(100, 25)
+  sayButton:SetPoint('CENTER', dialog, 'CENTER', 0, 15)
+  sayButton:SetText('Say')
+  sayButton:SetScript('OnClick', function()
+    sendStatsToChannel('SAY')
+  end)
+  
+  -- Party button
+  local partyButton = CreateFrame('Button', nil, dialog, 'UIPanelButtonTemplate')
+  partyButton:SetSize(100, 25)
+  partyButton:SetPoint('CENTER', dialog, 'CENTER', 0, -10)
+  partyButton:SetText('Party')
+  partyButton:SetScript('OnClick', function()
+    sendStatsToChannel('PARTY')
+  end)
+  
+  -- Guild button
+  local guildButton = CreateFrame('Button', nil, dialog, 'UIPanelButtonTemplate')
+  guildButton:SetSize(100, 25)
+  guildButton:SetPoint('CENTER', dialog, 'CENTER', 0, -35)
+  guildButton:SetText('Guild')
+  guildButton:SetScript('OnClick', function()
+    sendStatsToChannel('GUILD')
+  end)
+  
+  -- Disable guild button if not in guild
+  if not IsInGuild() then
+    guildButton:Disable()
+    guildButton:SetText('Guild (Not Available)')
+  end
+  
+  dialog:Show()
+end
+
+-- Function to log all current UHC stats to chat (for slash command compatibility)
+function CharacterStats:LogStatsToChat()
+  self:ShowChatChannelDialog()
+end
+
 -- Export the CharacterStats object
 _G.CharacterStats = CharacterStats
 
@@ -137,4 +272,27 @@ end
 SLASH_RESETSTATS1 = "/resetstats"
 SlashCmdList["RESETSTATS"] = function()
   CharacterStats:ResetStats()
+end
+
+-- Register slash commands to log stats to specific channels
+SLASH_LOGSTATSS1 = "/logstatss"
+SlashCmdList["LOGSTATSS"] = function()
+  CharacterStats:LogStatsToSpecificChannel('SAY')
+end
+
+SLASH_LOGSTATSP1 = "/logstatsp"
+SlashCmdList["LOGSTATSP"] = function()
+  CharacterStats:LogStatsToSpecificChannel('PARTY')
+end
+
+SLASH_LOGSTATSG1 = "/logstatsg"
+SlashCmdList["LOGSTATSG"] = function()
+  CharacterStats:LogStatsToSpecificChannel('GUILD')
+end
+
+-- Keep the general command for backward compatibility
+SLASH_LOGSTATS1 = "/logstats"
+SLASH_LOGSTATS2 = "/uhcstats"
+SlashCmdList["LOGSTATS"] = function()
+  CharacterStats:LogStatsToChat()
 end 

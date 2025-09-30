@@ -357,6 +357,39 @@ saveButton:SetScript('OnClick', function()
   ReloadUI()
 end)
 
+-- Add Log Stats button next to Save button (with file icon)
+local logStatsButton = CreateFrame('Button', nil, settingsFrame, 'BackdropTemplate')
+logStatsButton:SetSize(30, 30)
+logStatsButton:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -10, 10)
+logStatsButton:SetBackdrop({
+  edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+  edgeSize = 8,
+})
+logStatsButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
+
+-- Add file icon texture (UI button style)
+local fileIcon = logStatsButton:CreateTexture(nil, 'ARTWORK')
+fileIcon:SetAllPoints()
+fileIcon:SetTexture('Interface\\Buttons\\UI-Panel-BiggerButton-Up') -- UI button style
+
+-- Add tooltip
+logStatsButton:SetScript('OnEnter', function()
+  GameTooltip:SetOwner(logStatsButton, 'ANCHOR_RIGHT')
+  GameTooltip:SetText('Log UHC Stats to Chat')
+  GameTooltip:Show()
+end)
+logStatsButton:SetScript('OnLeave', function()
+  GameTooltip:Hide()
+end)
+
+logStatsButton:SetScript('OnClick', function()
+  if CharacterStats and CharacterStats.LogStatsToChat then
+    CharacterStats:LogStatsToChat()
+  else
+    print("UHC - CharacterStats not available. Please reload UI.")
+  end
+end)
+
 -- Update the lowest health display
 local function UpdateLowestHealthDisplay()
   if not UltraHardcoreDB then
