@@ -15,8 +15,48 @@ local POWER_COLORS = {
     MANA = {0, 0, 1}
 }
 
--- Make the resource bar draggable
-MakeFrameDraggable(resourceBar)
+-- Position persistence functions
+local function LoadResourceBarPosition()
+    if not UltraHardcoreDB then
+        UltraHardcoreDB = {}
+    end
+    
+    local pos = UltraHardcoreDB.resourceBarPosition
+    -- Clear existing points first to avoid anchor conflicts
+    resourceBar:ClearAllPoints()
+    -- Always anchor to UIParent to avoid frame reference issues
+    resourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+end
+
+local function SaveResourceBarPosition()
+    if not UltraHardcoreDB then
+        UltraHardcoreDB = {}
+    end
+    
+    local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
+    -- Always save UIParent as the relativeTo frame to avoid reference issues
+    UltraHardcoreDB.resourceBarPosition = {
+        point = point,
+        relativeTo = "UIParent",
+        relativePoint = relativePoint,
+        xOfs = xOfs,
+        yOfs = yOfs
+    }
+    
+    SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
+end
+
+-- Make the resource bar draggable with position saving
+resourceBar:SetMovable(true)
+resourceBar:EnableMouse(true)
+resourceBar:RegisterForDrag('LeftButton')
+resourceBar:SetScript('OnDragStart', function(self)
+    self:StartMoving()
+end)
+resourceBar:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+    SaveResourceBarPosition()
+end)
 
 -- Create a frame for the combo points
 local comboFrame = CreateFrame('Frame', nil, UIParent)
@@ -123,6 +163,10 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     if event == 'PLAYER_ENTERING_WORLD' then
         HideComboPointsForNonUsers()
         UpdateResourcePoints()
+        -- Load saved position after database is available
+        C_Timer.After(0.1, function()
+            LoadResourceBarPosition()
+        end)
     elseif event == 'UNIT_POWER_FREQUENT' and unit == 'player' then
         UpdateResourcePoints()
     end
