@@ -20,7 +20,7 @@ local settingsCheckboxOptions = { {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
 }, {
-  name = 'Disable Nameplate Information',
+  name = 'Disable Nameplates',
   dbSettingsValueName = 'disableNameplateHealth',
 }, {
   name = 'Show Dazed effect',
