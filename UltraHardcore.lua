@@ -67,6 +67,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     OnPlayerUpdateRestingEvent(self, event, GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_LEVEL_UP' then
     OnPlayerLevelUpEvent(self, event, GLOBAL_SETTINGS.hideActionBars, unit)
+    AnnounceLevelUpToGuild()
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
     SetAllPartyHealthIndicators(true)

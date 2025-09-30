@@ -122,7 +122,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "UHC Stats - " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -186,7 +186,7 @@ function CharacterStats:ShowChatChannelDialog()
     
     -- if channel == 'GUILD' then
       -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "UHC Stats - " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain .. " - XP Without: " .. stats.xpGainedWithoutAddon
     sendMessage(condensedMessage)
     -- else
       -- Multi-line format for say/party chat
