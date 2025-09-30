@@ -34,7 +34,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
       OnCancel = function()
         local chatType = IsInRaid() and 'RAID' or 'PARTY'
         SendChatMessage(
-          '!! BEWARE !! I am using the Ultra Hardcore addon. The chances of my dying are much higher. You have been warned.',
+          '!! BEWARE !! I am using the Ultra Hardcore addon. The chances of my demise are much higher. You have been warned.',
           chatType
         )
       end,

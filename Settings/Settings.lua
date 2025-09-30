@@ -55,6 +55,9 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Use UHC Incoming Damage Effect',
   dbSettingsValueName = 'showIncomingDamageEffect',
+}, {
+  name = 'Use UHC Incoming Healing Effect',
+  dbSettingsValueName = 'showHealingIndicator',
 } }
 
 local presets = { {
@@ -75,6 +78,7 @@ local presets = { {
   showFullHealthIndicator = false,
   disableNameplateHealth = false,
   showIncomingDamageEffect = false,
+  showHealingIndicator = false,
   hideBreathIndicator = false,
   showOnScreenStatistics = true,
 }, {
@@ -95,6 +99,7 @@ local presets = { {
   showFullHealthIndicator = false,
   disableNameplateHealth = true,
   showIncomingDamageEffect = false,
+  showHealingIndicator = false,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
 }, {
@@ -109,6 +114,7 @@ local presets = { {
   showFullHealthIndicator = true,
   disableNameplateHealth = true,
   showIncomingDamageEffect = true,
+  showHealingIndicator = true,
   hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
