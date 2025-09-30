@@ -119,6 +119,16 @@ local presets = { {
   showOnScreenStatistics = true,
 } }
 
+-- Temporary settings storage and initialization function
+local tempSettings = {}
+
+local function initializeTempSettings()
+  -- Copy current GLOBAL_SETTINGS to temporary storage
+  for key, value in pairs(GLOBAL_SETTINGS) do
+    tempSettings[key] = value
+  end
+end
+
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
 settingsFrame:SetSize(400, 650)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER')
@@ -224,6 +234,8 @@ local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, 0)
 closeButton:SetSize(32, 32)
 closeButton:SetScript('OnClick', function()
+  -- Discard temporary changes by reinitializing temp settings
+  initializeTempSettings()
   settingsFrame:Hide()
 end)
 
@@ -246,15 +258,18 @@ local function updateCheckboxes()
   for _, checkboxItem in ipairs(settingsCheckboxOptions) do
     local checkbox = checkboxes[checkboxItem.dbSettingsValueName]
     if checkbox then
-      checkbox:SetChecked(GLOBAL_SETTINGS[checkboxItem.dbSettingsValueName])
+      checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
     end
   end
 end
 
 local function applyPreset(presetIndex)
-  GLOBAL_SETTINGS = presets[presetIndex]
-
   if not presets[presetIndex] then return end
+
+  -- Copy preset to temporary settings
+  for key, value in pairs(presets[presetIndex]) do
+    tempSettings[key] = value
+  end
 
   -- Update checkboxes
   updateCheckboxes()
@@ -335,12 +350,12 @@ local function createCheckboxes()
     local checkbox = CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
     checkbox:SetPoint('TOPLEFT', 10, yOffset)
     checkbox.Text:SetText(checkboxItem.name)
-    checkbox:SetChecked(GLOBAL_SETTINGS[checkboxItem.dbSettingsValueName])
+    checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
     checkboxes[checkboxItem.dbSettingsValueName] = checkbox
 
     checkbox:SetScript('OnClick', function(self)
-      GLOBAL_SETTINGS[checkboxItem.dbSettingsValueName] = self:GetChecked()
+      tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
     end)
 
     yOffset = yOffset - 30
@@ -352,6 +367,11 @@ saveButton:SetSize(120, 30)
 saveButton:SetPoint('BOTTOM', settingsFrame, 'BOTTOM', 0, 10)
 saveButton:SetText('Save')
 saveButton:SetScript('OnClick', function()
+  -- Copy temporary settings to GLOBAL_SETTINGS
+  for key, value in pairs(tempSettings) do
+    GLOBAL_SETTINGS[key] = value
+  end
+  
   UltraHardcoreDB.GLOBAL_SETTINGS = GLOBAL_SETTINGS
   SaveDBData('GLOBAL_SETTINGS', GLOBAL_SETTINGS)
   ReloadUI()
@@ -421,6 +441,15 @@ function ToggleSettings()
   if settingsFrame:IsShown() then
     settingsFrame:Hide()
   else
+    -- Initialize temporary settings when opening
+    initializeTempSettings()
+    
+    -- Reset preset button highlighting
+    if selectedPreset then
+      selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
+      selectedPreset = nil
+    end
+    
     settingsFrame:Show()
     updateCheckboxes()
     UpdateLowestHealthDisplay()
@@ -430,4 +459,6 @@ end
 SLASH_TOGGLESETTINGS1 = '/uhc'
 SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
 
+-- Initialize temporary settings and create checkboxes
+initializeTempSettings()
 createCheckboxes()
