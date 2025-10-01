@@ -147,6 +147,7 @@ end
 -- Event Handling
 resourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
+resourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
@@ -169,6 +170,11 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
         end)
     elseif event == 'UNIT_POWER_FREQUENT' and unit == 'player' then
         UpdateResourcePoints()
+    elseif event == 'UPDATE_SHAPESHIFT_FORM' then
+        -- Update resource bar and combo points when shapeshifting
+        UpdateResourcePoints()
+        HideComboPointsForNonUsers()
+        UpdateComboPoints()
     end
 end)
 
