@@ -83,15 +83,45 @@ function OnCombatLogEvent(self, event)
   end
 
   -- Party kill
-  if subEvent == 'PARTY_KILL' then
+  if subEvent == "PARTY_KILL" and (sourceGUID == UnitGUID("player") or sourceGUID == UnitGUID("pet")) then
     if IsEnemyElite(destGUID) then
-      local currentElites = CharacterStats:GetStat('elitesSlain') or 0
-      CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
+      local solo = true
+
+      if IsInGroup() then
+        if IsInRaid() then
+          local n = GetNumGroupMembers()
+          for i = 1, n do
+            local u = "raid"..i
+            if not UnitIsUnit(u, "player") and UnitInRange(u) then
+              solo = false
+              break
+            end
+          end
+        else
+          local n = GetNumSubgroupMembers()
+          for i = 1, n do
+            local u = "party"..i
+            if UnitInRange(u) then
+              solo = false
+              break
+            end
+          end
+        end
+      end
+
+      if solo then
+        local soloElites = CharacterStats:GetStat("soloElitesSlain") or 0
+        CharacterStats:UpdateStat("soloElitesSlain", soloElites + 1)
+      end
+
+      local currentElites = CharacterStats:GetStat("elitesSlain") or 0
+      CharacterStats:UpdateStat("elitesSlain", currentElites + 1)
     end
 
-    local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
-    CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
+    local currentEnemies = CharacterStats:GetStat("enemiesSlain") or 0
+    CharacterStats:UpdateStat("enemiesSlain", currentEnemies + 1)
   end
+
 
   -- Dazed!
   if GLOBAL_SETTINGS.showDazedEffect then
