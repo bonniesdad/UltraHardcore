@@ -1,27 +1,27 @@
 function JoinUHCChannel()
   local channelName = 'uhc'
   
-  -- Always try to leave any existing channel first
-  LeaveChannelByName(channelName)
-  
-  -- Wait a moment for the leave to take effect
-  C_Timer.After(0.5, function()
-    -- Try to create and join the channel
-    local success = JoinChannelByName(channelName, "")
-    if success then
-      -- Add to chat frame
-      C_Timer.After(0.5, function()
-        ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
-      end)
-    end
-  end)
-end
+  -- Wait a moment on login
+  function JoinUHCChannel()
+    local channelName = 'uhc'
+    C_Timer.After(0.5, function()
+      local channelID = GetChannelName(channelName)
+      if channelID == 0 then
+        local success = JoinChannelByName(channelName, "")
+        if success then
+          C_Timer.After(0.5, function()
+            ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+          end)
+        end
+      end
+    end)
+  end
 
 -- Function to send death message to UHC channel
 local function SendDeathMessage()
   local channelName = "uhc"
   local channelID = GetChannelName(channelName)
-  if channelID then
+  if channelID and channelID > 0 then
     local characterName = UnitName("player")
     local level = UnitLevel("player")
     local class = UnitClass("player")
@@ -32,10 +32,10 @@ end
 -- Function to send level up message to UHC channel
 local function SendLevelUpMessage(newLevel)
   -- Only send message for every 5th level
-  if newLevel % 5 == 0 then
+if newLevel % 5 == 0 then
     local channelName = "uhc"
     local channelID = GetChannelName(channelName)
-    if channelID then
+    if channelID and channelID > 0 then
       local characterName = UnitName("player")
       local class = UnitClass("player")
       SendChatMessage(characterName .. " (" .. class .. ") has reached level " .. newLevel .. "!", "CHANNEL", nil, channelID)
