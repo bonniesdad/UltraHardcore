@@ -16,6 +16,7 @@ function JoinUHCChannel()
       end
     end)
   end
+end
 
 -- Function to send death message to UHC channel
 local function SendDeathMessage()
