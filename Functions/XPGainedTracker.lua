@@ -1,73 +1,104 @@
---[[
+--[[ 
   XP Tracking System - Tracks XP gained without the addon active
-  This system automatically tracks XP by comparing session start/end XP values
+  Compares "current total XP" to the last saved session end XP.
+  If first-time install (no lastSessionXP) and you are already > level 1 (or have nonzero XP),
+  we treat all current XP as "gained without the addon".
 ]]
+
+-- Static XP table (Classic Era/HC: XP to go from 1 -> 60)
+local xpForLevel = {
+  [1]=400,[2]=900,[3]=1400,[4]=2100,[5]=2800,[6]=3600,[7]=4500,[8]=5400,[9]=6500,
+  [10]=7600,[11]=8800,[12]=10100,[13]=11400,[14]=12900,[15]=14400,[16]=16000,[17]=17700,[18]=19400,[19]=21300,
+  [20]=23200,[21]=25200,[22]=27300,[23]=29400,[24]=31700,[25]=34000,[26]=36400,[27]=38900,[28]=41400,[29]=44300,
+  [30]=47400,[31]=50800,[32]=54500,[33]=58600,[34]=62800,[35]=67100,[36]=71600,[37]=76100,[38]=80800,[39]=85700,
+  [40]=90700,[41]=95800,[42]=101000,[43]=106300,[44]=111800,[45]=117500,[46]=123200,[47]=129100,[48]=135100,[49]=141200,
+  [50]=147500,[51]=153900,[52]=160400,[53]=167100,[54]=173900,[55]=180800,[56]=187900,[57]=195000,[58]=202300,[59]=209800,
+  [60]=217400,
+}
 
 -- Session tracking variables
 local sessionStartXP = nil
-local lastSessionEndXP = nil
-local isAddonActive = true
+
+-- Calculate how much xp has been gained total
+local sessionStartXP = nil
+
+local function GetTotalXP()
+  -- Cumulative XP since level 1
+  local lvl = UnitLevel("player") or 1
+  local inLevelXP = UnitXP("player") or 0
+  local sum = 0
+  for L = 1, (lvl - 1) do
+    sum = sum + (xpForLevel[L] or 0)
+  end
+  return sum + inLevelXP
+end
+
+local function CS_GetStats()
+  if CharacterStats and CharacterStats.GetCurrentCharacterStats then
+    return CharacterStats:GetCurrentCharacterStats() or {}
+  end
+  return {}
+end
+
+local function CS_Update(key, value)
+  if CharacterStats and CharacterStats.UpdateStat then
+    CharacterStats:UpdateStat(key, value)
+  end
+end
 
 -- Function to initialize session tracking
 local function InitializeSessionTracking()
-  local characterGUID = UnitGUID('player')
-  local stats = CharacterStats:GetCurrentCharacterStats()
-  
-  -- Get the last session end XP from saved data
-  lastSessionEndXP = stats.lastSessionXP or 0
-  
-  -- Get current XP
-  local currentXP = UnitXP("player")
-  
-  -- If we have a last session end XP, calculate XP gained without addon
-  if lastSessionEndXP > 0 and currentXP > lastSessionEndXP then
-    local xpGainedWithoutAddon = currentXP - lastSessionEndXP
-    
-    -- Add this XP to the total XP gained without addon
-    local currentXPWithoutAddon = stats.xpGainedWithoutAddon or 0
-    local newXPWithoutAddon = currentXPWithoutAddon + xpGainedWithoutAddon
-    
-    CharacterStats:UpdateStat('xpGainedWithoutAddon', newXPWithoutAddon)
-    
+  local stats = CS_GetStats()
+  local lastSessionEndXP = tonumber(stats.lastSessionXP) or 0
+  local xpGainedWithoutAddon = tonumber(stats.xpGainedWithoutAddon) or 0
+
+  local currentXP = GetTotalXP()
+
+  -- Determine if player has used the addon before, if not ensure player is new (level 1)
+  if lastSessionEndXP > 0 then
+    local newXPWithoutAddon = currentXP - lastSessionEndXP
+    if newXPWithoutAddon > 0 then
+      CS_Update("xpGainedWithoutAddon", xpGainedWithoutAddon + newXPWithoutAddon)
+    end
+  else
+    local lvl = UnitLevel("player") or 1
+    local inLevelXP = UnitXP("player") or 0
+    if lvl > 1 or inLevelXP > 0 then
+      CS_Update("xpGainedWithoutAddon", currentXP)
+    end
   end
-  
-  -- Start new session with current XP
+
   sessionStartXP = currentXP
-  isAddonActive = true
-  
 end
 
 -- Function to end session and save data
 local function EndSession()
   if sessionStartXP then
-    local currentXP = UnitXP("player")
-    
-    -- Save the current XP as the last session end XP
-    CharacterStats:UpdateStat('lastSessionXP', currentXP)
-    
+    local currentXP = GetTotalXP()
+    CS_Update("lastSessionXP", currentXP)
   end
 end
 
 -- Function to get XP gained with addon (current session)
-local function GetXPWithAddon()
+ocal function GetXPWithAddon()
   if sessionStartXP then
-    local currentXP = UnitXP("player")
-    return currentXP - sessionStartXP
+    local currentXP = GetTotalXP()
+    return math.max(0, currentXP - sessionStartXP)
   end
   return 0
 end
 
 -- Function to display current XP tracking
 local function DisplayXP()
-  local xpWithout = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
+  local stats = CS_GetStats()
+  local xpWithout = tonumber(stats.xpGainedWithoutAddon) or 0
   local xpWith = GetXPWithAddon()
-  local currentXP = UnitXP("player")
-  
+  local currentXP = GetTotalXP()
+  local totalXPGained = xpWithout + xpWith
+
   print("UHC - XP gained with addon (this session): " .. xpWith)
   print("UHC - Total XP gained without addon: " .. xpWithout)
-  print("UHC - Current character XP: " .. currentXP)
-  
-  local totalXPGained = xpWithout + xpWith
+  print("UHC - Current character XP (lifetime): " .. currentXP)
   print("UHC - Total XP gained across all sessions: " .. totalXPGained)
 end
 
