@@ -80,7 +80,7 @@ local function EndSession()
 end
 
 -- Function to get XP gained with addon (current session)
-ocal function GetXPWithAddon()
+local function GetXPWithAddon()
   if sessionStartXP then
     local currentXP = GetTotalXP()
     return math.max(0, currentXP - sessionStartXP)
