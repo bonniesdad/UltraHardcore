@@ -28,7 +28,8 @@ local function GetTotalXP()
   for L = 1, (lvl - 1) do
     sum = sum + (xpForLevel[L] or 0)
   end
-  return sum + inLevelXP
+  lastKnownTotalXP = sum + inLevelXP -- use it on initialize in case we login and log back out without changing xp
+  return lastKnownTotalXP
 end
 
 local function CS_GetStats()
@@ -51,7 +52,6 @@ local function InitializeSessionTracking()
   local xpGainedWithoutAddon = tonumber(stats.xpGainedWithoutAddon) or 0
 
   local currentXP = GetTotalXP()
-  lastKnownTotalXP = currentXP
 
   -- Determine if player has used the addon before, if not ensure player is new (level 1)
   if lastSessionEndXP > 0 then
@@ -73,6 +73,7 @@ end
 -- Function to end session and save data
 local function EndSession()
   if sessionStartXP then
+    --local currentXP = GetTotalXP()
     CS_Update("lastSessionXP", lastKnownTotalXP)
   end
 end
@@ -117,11 +118,14 @@ local sessionFrame = CreateFrame("Frame")
 sessionFrame:RegisterEvent("PLAYER_LOGOUT")
 sessionFrame:RegisterEvent("PLAYER_LEAVING_WORLD")
 sessionFrame:RegisterEvent("ADDON_LOADED")
+sessionFrame:RegisterEvent("PLAYER_XP_UPDATE")
 sessionFrame:SetScript("OnEvent", function(self, event, ...)
   if event == "PLAYER_LOGOUT" or event == "PLAYER_LEAVING_WORLD" then
     EndSession()
   elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
     -- Initialize session tracking when addon loads
     InitializeSessionTracking()
+  elseif event == "PLAYER_XP_UPDATE" then
+    GetTotalXP() -- refresh last known xp for use in end session
   end
 end)
