@@ -1,9 +1,9 @@
 local frame = CreateFrame('Frame')
 
-frame:RegisterEvent('GROUP_JOINED')
+frame:RegisterEvent('GROUP_FORMED') -- Updated to popup when the group is actually formed
 
 frame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'GROUP_JOINED' then
+  if event == 'GROUP_FORMED' then
     StaticPopupDialogs['ULTRA_HARDCORE_WARNING'] = {
       text = 'You should only do dungeons and raids with other players who are using the Ultra Hardcore addon. To join a group on non ultimates is putting them in increased danger and can be seen as griefing. Would you like to disable the addon?',
       button1 = 'Disable Addon',
