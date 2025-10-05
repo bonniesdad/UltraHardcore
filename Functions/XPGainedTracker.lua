@@ -18,9 +18,7 @@ local xpForLevel = {
 
 -- Session tracking variables
 local sessionStartXP = nil
-
--- Calculate how much xp has been gained total
-local sessionStartXP = nil
+local lastKnownTotalXP = 0 -- When the player logs out UnitXP returns nil because it is too late. So we have to cache the players XP (on init)  for use when we EndSession()
 
 local function GetTotalXP()
   -- Cumulative XP since level 1
@@ -53,6 +51,7 @@ local function InitializeSessionTracking()
   local xpGainedWithoutAddon = tonumber(stats.xpGainedWithoutAddon) or 0
 
   local currentXP = GetTotalXP()
+  lastKnownTotalXP = currentXP
 
   -- Determine if player has used the addon before, if not ensure player is new (level 1)
   if lastSessionEndXP > 0 then
@@ -74,8 +73,7 @@ end
 -- Function to end session and save data
 local function EndSession()
   if sessionStartXP then
-    local currentXP = GetTotalXP()
-    CS_Update("lastSessionXP", currentXP)
+    CS_Update("lastSessionXP", lastKnownTotalXP)
   end
 end
 
