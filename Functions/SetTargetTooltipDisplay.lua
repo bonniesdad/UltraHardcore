@@ -17,11 +17,6 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
       -- Hide health bar graphic under tooltip
       GameTooltipStatusBar:Hide()
 
-      -- If this is a friendly NPC and NOT a player, leave all text lines alone so Questie can show quests
-      if UnitIsFriend("player", unit) and not UnitIsPlayer(unit) then
-        return
-      end
-
       -- Remove level line but leave Questie / other addon lines intact
       for i = 2, self:NumLines() do
         local line = _G['GameTooltipTextLeft' .. i]
