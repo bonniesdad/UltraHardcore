@@ -2,16 +2,27 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
   if not hideTargetTooltip then return end
 
   hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent)
-    tooltip:SetOwner(parent, 'ANCHOR_NONE') -- Remove default behavior
-    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200) -- Move up 50px
-    tooltip:SetScript('OnTooltipSetUnit', function(self)
-      local unit = select(2, self:GetUnit())
+    tooltip:SetOwner(parent, 'ANCHOR_NONE')
+    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200)
+  end)
+
+  -- Only hook once
+  if not GameTooltip._MyAddon_UnitHooked then
+    GameTooltip._MyAddon_UnitHooked = true
+
+    GameTooltip:HookScript('OnTooltipSetUnit', function(self)
+      local _, unit = self:GetUnit()
       if not unit then return end
 
       -- Hide health bar graphic under tooltip
       GameTooltipStatusBar:Hide()
 
-      -- Modify tooltip lines
+      -- If this is a friendly NPC and NOT a player, leave all text lines alone so Questie can show quests
+      if UnitIsFriend("player", unit) and not UnitIsPlayer(unit) then
+        return
+      end
+
+      -- Remove level line but leave Questie / other addon lines intact
       for i = 2, self:NumLines() do
         local line = _G['GameTooltipTextLeft' .. i]
         if line then
@@ -22,5 +33,5 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
         end
       end
     end)
-  end)
+  end
 end
