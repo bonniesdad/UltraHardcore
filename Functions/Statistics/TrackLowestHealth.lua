@@ -5,7 +5,7 @@ function TrackLowestHealth()
   local healthPercent = (health / maxHealth) * 100
 
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth')
-  if healthPercent < currentLowestHealth then
+  if currentLowestHealth and healthPercent < currentLowestHealth then
     CharacterStats:UpdateStat('lowestHealth', healthPercent)
   end
 end
