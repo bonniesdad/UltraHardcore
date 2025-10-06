@@ -6,27 +6,41 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
     tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200)
   end)
 
-  -- Only hook once
   if not GameTooltip._MyAddon_UnitHooked then
     GameTooltip._MyAddon_UnitHooked = true
 
-    GameTooltip:HookScript('OnTooltipSetUnit', function(self)
+    local frame = GameTooltip
+    frame:HookScript('OnTooltipSetUnit', function(self)
       local _, unit = self:GetUnit()
-      if not unit then return end
+      if not unit or UnitIsPlayer(unit) then return end
 
-      -- Hide health bar graphic under tooltip
+      -- Hide health bar
       GameTooltipStatusBar:Hide()
 
-      -- Remove level line but leave Questie / other addon lines intact
       for i = 2, self:NumLines() do
         local line = _G['GameTooltipTextLeft' .. i]
         if line then
+           -- Cache the original font size
+          if not line._defaultFontHeight then
+            line._defaultFontHeight = math.ceil(select(2, line:GetFont()))
+          end
+
           local text = line:GetText()
-          if text and text:match('^Level') and not UnitIsPlayer(unit) then
-            line:SetText('') -- Remove level display for NPCs and enemies
+          if text then
+            local levelPatternNumber = string.format("^%s %%d+.*$", LEVEL)
+            local levelPatternQuestionMark = string.format("^%s %%%%?%%%%?.*$", LEVEL)
+            if text:match(levelPatternNumber) or text:match(levelPatternQuestionMark) then
+              line:SetTextHeight(1)
+              line:SetAlpha(0)
+            else -- ensure we reset it for the subsequent lines
+              line:SetTextHeight(line._defaultFontHeight)
+              line:SetAlpha(1)
+            end
           end
         end
       end
+      -- Refresh tooltip to remove empty line
+      self:Show()
     end)
   end
 end
