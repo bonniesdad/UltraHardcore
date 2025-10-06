@@ -124,7 +124,8 @@ sessionFrame:SetScript("OnEvent", function(self, event, ...)
     EndSession()
   elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
     -- Initialize session tracking when addon loads
-    InitializeSessionTracking()
+    -- Wait a couple seconds so UnitXP can be obtained
+    C_Timer.After(2, InitializeSessionTracking)
   elseif event == "PLAYER_XP_UPDATE" then
     GetTotalXP() -- refresh last known xp for use in end session
   end
