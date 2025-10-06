@@ -2,25 +2,42 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
   if not hideTargetTooltip then return end
 
   hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent)
-    tooltip:SetOwner(parent, 'ANCHOR_NONE') -- Remove default behavior
-    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200) -- Move up 50px
-    tooltip:SetScript('OnTooltipSetUnit', function(self)
-      local unit = select(2, self:GetUnit())
-      if not unit then return end
+    tooltip:SetOwner(parent, 'ANCHOR_NONE')
+    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200)
+  end)
 
-      -- Hide health bar graphic under tooltip
+  if not GameTooltip._MyAddon_UnitHooked then
+    GameTooltip._MyAddon_UnitHooked = true
+
+    local frame = GameTooltip
+    frame:HookScript('OnTooltipSetUnit', function(self)
+      local _, unit = self:GetUnit()
+      if not unit or UnitIsPlayer(unit) then return end
+
+      -- Hide health bar
       GameTooltipStatusBar:Hide()
 
-      -- Modify tooltip lines
-      for i = 2, self:NumLines() do
-        local line = _G['GameTooltipTextLeft' .. i]
-        if line then
-          local text = line:GetText()
-          if text and text:match('^Level') and not UnitIsPlayer(unit) then
-            line:SetText('') -- Remove level display for NPCs and enemies
+      -- Delay the level line removal to ensure tooltip is fully built (this makes it so it runs last and retains information each time you hover)
+      C_Timer.After(0.0, function()
+        for i = 2, self:NumLines() do
+          local line = _G['GameTooltipTextLeft' .. i]
+          if line then
+            local text = line:GetText()
+            if text then
+              -- Optional approaches to pattern match specifically lines that say "Level ..." or "Level ??"
+              --local levelPatternNumber = string.format("^%s %%d+.*$", LEVEL) -- General mobs that show level
+              --local levelPatternQuestionMark = string.format("^%s %%%%?%%%%?.*$", LEVEL) -- Mobs that show ??
+              --if text:match(levelPatternNumber) or text:match(levelPatternQuestionMark) then
+              if text:match(LEVEL) then
+                line:SetText(nil)
+                break -- Stop after removing the level line
+              end
+            end
           end
         end
-      end
+        -- Refresh tooltip to remove empty line
+        self:Show()
+      end)
     end)
-  end)
+  end
 end
