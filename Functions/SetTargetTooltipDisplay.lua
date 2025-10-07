@@ -12,7 +12,7 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
     local frame = GameTooltip
     frame:HookScript('OnTooltipSetUnit', function(self)
       local _, unit = self:GetUnit()
-      if not unit or UnitIsPlayer(unit) then return end
+      if not unit then return end
 
       -- Hide health bar
       GameTooltipStatusBar:Hide()
@@ -28,7 +28,7 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
               --local levelPatternNumber = string.format("^%s %%d+.*$", LEVEL) -- General mobs that show level
               --local levelPatternQuestionMark = string.format("^%s %%%%?%%%%?.*$", LEVEL) -- Mobs that show ??
               --if text:match(levelPatternNumber) or text:match(levelPatternQuestionMark) then
-              if text:match(LEVEL) then
+              if text:match(LEVEL) and not UnitIsPlayer(unit) then
                 line:SetText(nil)
                 break -- Stop after removing the level line
               end
