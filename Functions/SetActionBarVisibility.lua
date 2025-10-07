@@ -76,11 +76,11 @@ end
   Event handlers
 ]]
 
-local function OnPlayerUpdateRestingEvent(self)
+function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
 end
 
-local function OnPlayerLevelUpEvent(self, _, playerLevel)
+function OnPlayerLevelUpEvent(self, _, playerLevel)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, playerLevel)
   if GLOBAL_SETTINGS.hideActionBars and playerLevel == MIN_LEVEL_HIDE_ACTION_BARS then
     ShowHideActionBarsIntro()
