@@ -3,6 +3,7 @@ local CharacterStats = {
   -- Default values for new characters
   defaults = {
     lowestHealth = 100,
+    soloElitesSlain = 0, -- NEW DATABASE STAT
     elitesSlain = 0,
     enemiesSlain = 0,
     xpGainedWithoutAddon = 0, -- XP gained without addon active
