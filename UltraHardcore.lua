@@ -18,7 +18,7 @@ GLOBAL_SETTINGS = {
   showIncomingDamageEffect = true,
   showHealingIndicator = false,
   hideUIErrors = true,
-  petsDiePermanently = false,
+  petsDiePermanently = true,
   hideActionBars = false,
   hideGroupHealth = true,
   hideBreathIndicator = false,
@@ -60,6 +60,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
+    -- Check for pet death/abandonment
+    if unit == "pet" and GLOBAL_SETTINGS.petsDiePermanently then
+      CheckAndAbandonPet()
+    end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)
