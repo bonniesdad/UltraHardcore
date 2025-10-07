@@ -27,9 +27,11 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
 
           local text = line:GetText()
           if text then
-            local levelPatternNumber = string.format("^%s %%d+.*$", LEVEL)
-            local levelPatternQuestionMark = string.format("^%s %%%%?%%%%?.*$", LEVEL)
-            if (text:match(levelPatternNumber) or text:match(levelPatternQuestionMark)) and not UnitIsPlayer(unit) then
+            -- Optional approaches to pattern match specifically lines that say "Level ..." or "Level ??"
+            --local levelPatternNumber = string.format("^%s %%d+.*$", LEVEL) -- General mobs that show level
+            --local levelPatternQuestionMark = string.format("^%s %%%%?%%%%?.*$", LEVEL) -- Mobs that show ??
+            --if text:match(levelPatternNumber) or text:match(levelPatternQuestionMark) and not UnitIsPlayer(unit) then
+            if text:match(LEVEL) and not UnitIsPlayer(unit) then
               line:SetTextHeight(1)
               line:SetAlpha(0)
             else -- ensure we reset it for the subsequent lines
