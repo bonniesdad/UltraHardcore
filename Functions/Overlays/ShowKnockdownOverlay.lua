@@ -3,7 +3,7 @@
 -- Mirrors the structure of your breath overlay functions.
 -- Can be tested with /run if UltraHardcore and UltraHardcore.TriggerFlashBang then UltraHardcore.TriggerFlashBang(4, 1) end
 
--- ⚙️ Debuffs that should trigger a flash (add/remove as you like)
+-- Debuffs that should trigger a flash
 UltraHardcore = UltraHardcore or {}
 UltraHardcore.KnockdownDebuffs = UltraHardcore.KnockdownDebuffs or {
   ["Knockdown"]      = true,
@@ -11,13 +11,11 @@ UltraHardcore.KnockdownDebuffs = UltraHardcore.KnockdownDebuffs or {
   ["Charge Stun"]  = true,
 }
 
--- Internal state
 local FLASH_DURATION   = 4.0   -- seconds to fade out
 local FLASH_MAX_ALPHA  = 1  -- how bright the white flash gets
 local flashElapsed     = 0
 local flashActive      = false
 
--- 🟢 Create overlay frame (same strata logic used by your breath overlay)
 local function EnsureFlashFrame()
   if UltraHardcore.knockdownFlashFrame then return end
 
@@ -40,7 +38,6 @@ local function EnsureFlashFrame()
   UltraHardcore.knockdownFlashFrame = f
 end
 
--- 🟢 Start a flash: quick pop to white, then fade out via OnUpdate
 local function StartKnockdownFlash(duration, maxAlpha)
   EnsureFlashFrame()
 
@@ -76,12 +73,11 @@ local function StartKnockdownFlash(duration, maxAlpha)
   end)
 end
 
--- 🟢 Public helper (so you can macro it or call from other files)
+-- Helper (so you can macro it or call from other files)
 function UltraHardcore.TriggerKnockdownFlash(duration, maxAlpha)
   StartKnockdownFlash(duration, maxAlpha)
 end
 
--- 🟢 Auto-trigger on knockdown-like debuffs using UNIT_AURA
 local auraWatcher = CreateFrame("Frame")
 auraWatcher:RegisterEvent("UNIT_AURA")
 auraWatcher:SetScript("OnEvent", function(_, _, unit)
@@ -98,13 +94,3 @@ auraWatcher:SetScript("OnEvent", function(_, _, unit)
     i = i + 1
   end
 end)
-
--- 🟢 Optional: simple stop in case you ever need to cancel mid-fade
-function UltraHardcore.StopKnockdownFlash()
-  flashActive = false
-  if UltraHardcore.knockdownFlashFrame then
-    UltraHardcore.knockdownFlashFrame.texture:SetAlpha(0)
-    UltraHardcore.knockdownFlashFrame:Hide()
-    UltraHardcore.knockdownFlashFrame:SetScript("OnUpdate", nil)
-  end
-end
