@@ -94,7 +94,7 @@ local function UpdateStatistics()
   
   -- Update XP gained without addon
   local xp = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
-  xpValue:SetText(tostring(xp))
+  xpValue:SetText(string.format("%.1fk", tostring(xp / 1000)))
 end
 
 -- Register events to update statistics when they change
