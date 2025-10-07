@@ -55,8 +55,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
-    SetAllPartyHealthIndicators(true)
-    SetAllPartyTargetHighlights(true)
+    SetAllGroupIndicators()
+    DisablePetCombatText()
+    RepositionPetHappinessTexture()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
@@ -76,8 +77,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     AnnounceLevelUpToGuild()
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
-    SetAllPartyHealthIndicators(true)
-    SetAllPartyTargetHighlights(true)
+    SetAllGroupIndicators()
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event

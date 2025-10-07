@@ -8,6 +8,10 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE = {
   'ManaBar',
   'Texture',
   'Background',
+  'PetFrameBackground',
+  'PetFrameTexture',
+  'PetFrameHealthBar',
+  'PetFrameManaBar',
 }
 
 function SetPartyFramesInfo(hideGroupHealth)

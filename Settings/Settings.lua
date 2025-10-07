@@ -1,6 +1,6 @@
 local settingsCheckboxOptions = { {
   -- Lite Preset Settings
-  name = 'Hide Own Player Frame',
+  name = 'Use UHC Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
 }, {
   name = 'On Screen Statistics',
