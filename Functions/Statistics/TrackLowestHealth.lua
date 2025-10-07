@@ -13,7 +13,7 @@ local function TrackLowestHealth(event)
     -- End pause after 1) not dueling, 2) HP% is above or equal to previous lowest, or you somehow died
     if not isDueling and (healthPercent >= currentLowestHealth or health == 0) then
       pvpPause = false
-      print("|cfff44336[Ultra Hardcore]|r |cfff0f000Health has returned above your previous lowest health stat. Lowest Health tracking has resumed!|r")
+      print("|cfff44336[UHC]|r |cfff0f000Health has returned above your previous lowest health stat. Lowest Health tracking has resumed!|r")
     else
       return
     end
@@ -39,10 +39,10 @@ frame:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
   if event == "DUEL_REQUESTED" or (event == "UNIT_SPELLCAST_SUCCEEDED" and arg1 == "player" and arg3 == 7266) then
     pvpPause = true
     isDueling = true
-    print("|cfff44336[Ultra Hardcore]|r |cfff0f000A duel has been initiated. Lowest Health tracking is paused.|r")
+    print("|cfff44336[UHC]|r |cfff0f000A duel has been initiated. Lowest Health tracking is paused.|r")
   elseif event == "DUEL_FINISHED" then
     isDueling = false
-    print("|cfff44336[Ultra Hardcore]|r |cfff0f000Dueling has finished. Please wait for your health to return above your previous lowest health stat.|r")
+    print("|cfff44336[UHC]|r |cfff0f000Dueling has finished. Please wait for your health to return above your previous lowest health stat.|r")
   end
 
   TrackLowestHealth(event)

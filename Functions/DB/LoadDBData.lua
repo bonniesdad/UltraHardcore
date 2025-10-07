@@ -24,7 +24,7 @@ function LoadDBData()
       showIncomingDamageEffect = true,
       hideActionBars = true,
       hideGroupHealth = true,
-      petsDiePermanently = false,
+      petsDiePermanently = true,
       disableNameplateHealth = true,
       hideUIErrors = true,
     }
