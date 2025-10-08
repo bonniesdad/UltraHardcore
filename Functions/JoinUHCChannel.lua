@@ -4,12 +4,7 @@ function JoinUHCChannel()
   C_Timer.After(0.5, function()
     local channelID = select(1, GetChannelName(channelName))
     if channelID == 0 then
-      local success = JoinChannelByName(channelName)
-      if success then
-        C_Timer.After(0.5, function()
-          ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
-        end)
-      end
+      JoinChannelByName(channelName)
     end
   end)
 end
