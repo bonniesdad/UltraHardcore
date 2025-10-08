@@ -4,7 +4,7 @@ local slots = {}
 local slotSpellData = {}
 
 local MAX_SLOTS = 8
-local SLOT_SIZE = 36
+local SLOT_SIZE = 38
 local PADDING = 3
 local GAP = 3
 local EMPTY_TEXTURE = "Interface\\PaperDoll\\UI-Backpack-EmptySlot"
@@ -373,4 +373,5 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
+
 
