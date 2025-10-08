@@ -277,6 +277,11 @@ local function applyPreset(presetIndex)
     tempSettings[key] = value
   end
 
+  -- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
+  if tempSettings.hidePlayerFrame then
+    SetCVar("statusText", "0")
+  end
+
   -- Update checkboxes
   updateCheckboxes()
 
@@ -362,6 +367,13 @@ local function createCheckboxes()
 
     checkbox:SetScript('OnClick', function(self)
       tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
+      
+      -- Apply Interface Status Text rule immediately when hidePlayerFrame is toggled
+      if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
+        if self:GetChecked() then
+          SetCVar("statusText", "0")
+        end
+      end
     end)
 
     yOffset = yOffset - 30
@@ -376,6 +388,11 @@ saveButton:SetScript('OnClick', function()
   -- Copy temporary settings to GLOBAL_SETTINGS
   for key, value in pairs(tempSettings) do
     GLOBAL_SETTINGS[key] = value
+  end
+  
+  -- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
+  if GLOBAL_SETTINGS.hidePlayerFrame then
+    SetCVar("statusText", "0")
   end
   
   UltraHardcoreDB.GLOBAL_SETTINGS = GLOBAL_SETTINGS
