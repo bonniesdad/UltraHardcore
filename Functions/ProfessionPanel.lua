@@ -11,23 +11,23 @@ local EMPTY_TEXTURE = "Interface\\PaperDoll\\UI-Backpack-EmptySlot"
 
 -- Apprentice, Journeyman, Expert, Artisan
 local allowedSpells = {
-  { 3273, 3274, 7924, 10846 },  -- First Aid
-  { 7620, 7731, 7732, 18248 },  -- Fishing
-  { 2550, 3102, 3413, 18260 },  -- Cooking
-  818,                          -- Campfire
-  { 2259, 3101, 3464, 11611 },  -- Alchemy
-  2366,                         -- Herb Gathering
-  2580,                         -- Find Minerals
-  { 4036, 4037, 4038, 12656 },  -- Engineering
-  { 2018, 3100, 3538, 9785 },   -- Blacksmithing
-  2656,                         -- Smelting
-  { 2108, 3104, 3811, 10662 },  -- Leatherworking
-  8613,                         -- Skinning
-  { 7411, 7412, 7413, 13920 },  -- Enchanting
-  13262,                        -- Disenchanting
-  { 3908, 3909, 3910, 12180 },  -- Tailoring
-  { 6991, 883, 982 },  -- Hunter Spells? Feed, Call, Revive?
-  { 0000 },  -- Mounts?
+  { 3273, 3274, 7924, 10846 },   -- First Aid
+  { 7620, 7731, 7732, 18248 },   -- Fishing
+  { 2550, 3102, 3413, 18260 },   -- Cooking
+  818,                           -- Campfire
+  { 2259, 3101, 3464, 11611 },   -- Alchemy
+  2366,                          -- Herb Gathering
+  2580,                          -- Find Minerals
+  { 4036, 4037, 4038, 12656 },   -- Engineering
+  { 2018, 3100, 3538, 9785 },    -- Blacksmithing
+  2656,                          -- Smelting
+  { 2108, 3104, 3811, 10662 },   -- Leatherworking
+  8613,                          -- Skinning
+  { 7411, 7412, 7413, 13920 },   -- Enchanting
+  13262,                         -- Disenchanting
+  { 3908, 3909, 3910, 12180 },   -- Tailoring
+  { 6991, 883, 982 },            -- Hunter Spells? Feed, Call, Revive?
+  { 0000 },                      -- Mounts?
 }
 
 local function IsAllowedSpell(spellId)
@@ -376,5 +376,6 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
+
 
 
