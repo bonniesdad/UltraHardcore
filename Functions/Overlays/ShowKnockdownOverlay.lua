@@ -6,9 +6,9 @@
 -- Debuffs that should trigger a flash
 UltraHardcore = UltraHardcore or {}
 UltraHardcore.KnockdownDebuffs = UltraHardcore.KnockdownDebuffs or {
-  ["Knockdown"]      = true,
-  ["Knockdown Stun"] = true,
-  ["Charge Stun"]  = true,
+  { 13360, 15753, 5951 },  -- Knockdown
+  7922,                    -- Stun (charge)
+  7139,                    -- Fel Stomp
 }
 
 local FLASH_DURATION   = 4.0   -- seconds to fade out
@@ -73,6 +73,22 @@ local function StartKnockdownFlash(duration, maxAlpha)
   end)
 end
 
+local function IsKnockdownSpell(spellId)
+  if not spellId then return false end
+  for _, v in ipairs(UltraHardcore.KnockdownDebuffs) do
+    if type(v) == "table" then
+      for _, id in ipairs(v) do
+        if id == spellId then
+          return true
+        end
+      end
+    elseif v == spellId then
+      return true
+    end
+  end
+  return false
+end
+
 -- Helper (so you can macro it or call from other files)
 function UltraHardcore.TriggerKnockdownFlash(duration, maxAlpha)
   StartKnockdownFlash(duration, maxAlpha)
@@ -81,16 +97,15 @@ end
 local auraWatcher = CreateFrame("Frame")
 auraWatcher:RegisterEvent("UNIT_AURA")
 auraWatcher:SetScript("OnEvent", function(_, _, unit)
-  if unit ~= "player" or not UltraHardcore.KnockdownDebuffs then return end
+  if unit ~= "player" then return end
 
-  local i = 1
-  while true do
-    local name = UnitDebuff("player", i)
-    if not name then break end
-    if UltraHardcore.KnockdownDebuffs[name] then
+  for i = 1, 40 do
+    local _, _, _, _, _, _, _, _, _, spellId = UnitDebuff("player", i)
+    if not spellId then break end
+    if IsKnockdownSpell(spellId) then
       StartKnockdownFlash(FLASH_DURATION, FLASH_MAX_ALPHA)
       break
     end
-    i = i + 1
   end
 end)
+
