@@ -331,8 +331,8 @@ local function CreateProfessionPanel()
   panel:SetScript("OnDragStop", StopDraggingFrame)
   panel:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-    edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-    tile = true, tileSize = 16, edgeSize = 12,
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+    tile = true, tileSize = 16, edgeSize = 16,
     insets = { left = 3, right = 3, top = 3, bottom = 3 }
   })
   panel:SetFrameStrata("MEDIUM")
@@ -373,3 +373,4 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
+
