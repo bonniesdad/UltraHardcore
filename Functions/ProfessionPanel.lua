@@ -86,12 +86,16 @@ end
 local function ClearSlot(i)
   local slot = slots[i]
   if not slot then return end
+  
+  if not InCombatLockdown() then
+    slot:SetAttribute("type", nil)
+    slot:SetAttribute("spell", nil)
+  end
+
   slot.spellId = nil
   slot.spellName = nil
   slot:SetNormalTexture(EMPTY_TEXTURE)
   slot:SetPushedTexture(EMPTY_TEXTURE)
-  slot:RegisterForDrag("LeftButton")
-  slot:SetScript("OnEnter", function(self) GameTooltip:Hide() end)
 end
 
 local function UpdateSlot(i, spellId, spellName, spellIcon)
@@ -101,11 +105,22 @@ local function UpdateSlot(i, spellId, spellName, spellIcon)
   slot.spellId = spellId
   slot.spellName = spellName
 
+  -- Icon
   local tex = spellIcon or EMPTY_TEXTURE
   slot:SetNormalTexture(tex)
   slot:SetPushedTexture(tex)
-  slot:RegisterForDrag("LeftButton")
 
+  if not InCombatLockdown() then
+    if spellId and spellName then
+      slot:SetAttribute("type", "spell")
+      slot:SetAttribute("spell", spellName)
+    else
+      slot:SetAttribute("type", nil)
+      slot:SetAttribute("spell", nil)
+    end
+  end
+
+  -- Tooltip
   slot:SetScript("OnEnter", function(self)
     if self.spellId then
       GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -216,6 +231,11 @@ end
 
 
 local function TrackSpell(slotIndex)
+  if InCombatLockdown() then
+    print(addonName .. ": Can't change bar in combat.")
+    ClearCursor()
+    return
+  end
   local infoType, spellBookId, _, spellId = GetCursorInfo()
   if infoType ~= "spell" or not spellId then return end
 
@@ -250,6 +270,8 @@ local function StopDraggingFrame(self)
 end
 
 local function StartDraggingSpell(self)
+  if InCombatLockdown() then return end
+  if not self.spellId then return end
   if IsMouseButtonDown("LeftButton") and self.spellId then
     PickupSpell(self.spellId)
     ClearSlot(self:GetID())
@@ -260,46 +282,25 @@ local function StartDraggingSpell(self)
 end
 
 local function OnSlotMouseDown(self, button)
-  if button == "LeftButton" then
-    if not self.spellId then
-      local parent = self:GetParent()
-      if parent and parent.StartMoving then
-        parent:StartMoving()
-      end
+  if button == "LeftButton" and not self.spellId then
+    local parent = self:GetParent()
+    if parent and parent.StartMoving then
+      parent:StartMoving()
     end
-  elseif button == "RightButton" then
-    local i = self:GetID()
-    ClearSlot(i)
-    slotSpellData[i] = nil
-    GameTooltip:Hide()
-    RefreshLayout(false)
-    SaveData()
   end
 end
 
 local function OnSlotMouseUp(self, button)
-  if button == "LeftButton" then
-    if not self.spellId then
-      local parent = self:GetParent()
-      StopDraggingFrame(parent)
-    end
+  if button == "LeftButton" and not self.spellId then
+    local parent = self:GetParent()
+    StopDraggingFrame(parent)
+    TrackSpell(self:GetID())
   end
 end
 
 local function OnSlotReceiveDrag(self)
   if not self:IsShown() then return end
   TrackSpell(self:GetID())
-end
-
-local function OnSlotClick(self, button)
-  if button == "LeftButton" then
-    if not self:IsShown() then return end
-    if self.spellId and slotSpellData[self:GetID()] then
-      CastSpellByName(slotSpellData[self:GetID()].spellName)
-    else
-      TrackSpell(self:GetID())
-    end
-  end
 end
 
 local function CreateProfessionPanel()
@@ -332,14 +333,14 @@ local function CreateProfessionPanel()
   panel:SetBackdrop({
     bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
     edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-    tile = true, tileSize = 16, edgeSize = 16,
+    tile = true, tileSize = 16, edgeSize = 12,
     insets = { left = 3, right = 3, top = 3, bottom = 3 }
   })
   panel:SetFrameStrata("MEDIUM")
   panel:Show()
 
   for i = 1, MAX_SLOTS do
-    local slot = CreateFrame("Button", addonName .. "_Slot" .. i, panel)
+    local slot = CreateFrame("Button", addonName .. "_Slot" .. i, panel, "SecureActionButtonTemplate")
     slots[i] = slot
     slot:SetID(i)
     slot:SetSize(SLOT_SIZE, SLOT_SIZE)
@@ -348,12 +349,12 @@ local function CreateProfessionPanel()
     slot:SetHighlightTexture("Interface\\Buttons\\ButtonHilight-Square")
     slot:SetFrameStrata("MEDIUM")
 
-    slot:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    slot:RegisterForClicks("AnyUp")
     slot:RegisterForDrag("LeftButton")
+
     slot:SetScript("OnMouseDown", OnSlotMouseDown)
     slot:SetScript("OnMouseUp", OnSlotMouseUp)
     slot:SetScript("OnReceiveDrag", OnSlotReceiveDrag)
-    slot:SetScript("OnClick", OnSlotClick)
     slot:SetScript("OnDragStart", StartDraggingSpell)
     slot:SetScript("OnLeave", function() GameTooltip:Hide() end)
   end
@@ -373,5 +374,3 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
-
-
