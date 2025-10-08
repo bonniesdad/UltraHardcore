@@ -11,37 +11,39 @@ local EMPTY_TEXTURE = "Interface\\PaperDoll\\UI-Backpack-EmptySlot"
 
 -- Apprentice, Journeyman, Expert, Artisan
 local ALLOWED_SPELLS = {
-  -- First Aid
-  [3273] = true, [3274] = true, [7924] = true, [10846] = true,
-  -- Fishing
-  [7620] = true, [7731] = true, [7732] = true, [18248] = true,
-  -- Cooking
-  [2550] = true, [3102] = true, [3413] = true, [18260] = true,
-  -- Campfire
-  [818]  = true,
-  -- Alchemy
-  [2259] = true, [3101] = true, [3464] = true, [11611] = true,
-  -- Herb Gathering
-  [2366] = true,
-  -- Find Minerals
-  [2580] = true,
-  -- Engineering
-  [4036] = true, [4037] = true, [4038] = true, [12656] = true,
-  -- Blacksmithing
-  [2018] = true, [3100] = true, [3538] = true, [9785]  = true,
-  -- Smelting
-  [2656] = true,
-  -- Leatherworking
-  [2108] = true, [3104] = true, [3811] = true, [10662] = true,
-  -- Skinning
-  [8613] = true,
-  -- Enchanting
-  [7411] = true, [7412] = true, [7413] = true, [13920] = true,
-  -- Disenchanting
-  [13262] = true,
-  -- Tailoring
-  [3908] = true, [3909] = true, [3910] = true, [12180] = true,
+  { 3273, 3274, 7924, 10846 },  -- First Aid
+  { 7620, 7731, 7732, 18248 },  -- Fishing
+  { 2550, 3102, 3413, 18260 },  -- Cooking
+  818,                          -- Campfire
+  { 2259, 3101, 3464, 11611 },  -- Alchemy
+  2366,                         -- Herb Gathering
+  2580,                         -- Find Minerals
+  { 4036, 4037, 4038, 12656 },  -- Engineering
+  { 2018, 3100, 3538, 9785 },   -- Blacksmithing
+  2656,                         -- Smelting
+  { 2108, 3104, 3811, 10662 },  -- Leatherworking
+  8613,                         -- Skinning
+  { 7411, 7412, 7413, 13920 },  -- Enchanting
+  13262,                        -- Disenchanting
+  { 3908, 3909, 3910, 12180 },  -- Tailoring
+  { 6991, 883, 982 },  -- Hunter Spells? Feed, Call, Revive?
+  { 0000 },  -- Mounts?
 }
+
+local function IsAllowedSpell(spellId)
+  for _, entry in ipairs(allowedSpells) do
+    if type(entry) == "table" then
+      for _, id in ipairs(entry) do
+        if id == spellId then
+          return true
+        end
+      end
+    elseif entry == spellId then
+      return true
+    end
+  end
+  return false
+end
 
 local function IsTracked(i)
   local slot = slots[i]
@@ -212,7 +214,7 @@ local function LoadData()
     local j = 1
     for i = 1, MAX_SLOTS do
       local data = db.slots[i]
-      if data and data.spellId and ALLOWED_SPELLS[data.spellId] then
+      if data and IsAllowedSpell(data.spellId) then
         local spellName, _, spellIcon = GetSpellInfo(data.spellId)
         spellName = spellName or data.spellName
         if spellName then
@@ -239,7 +241,7 @@ local function TrackSpell(slotIndex)
   local infoType, spellBookId, _, spellId = GetCursorInfo()
   if infoType ~= "spell" or not spellId then return end
 
-  if not ALLOWED_SPELLS[spellId] then
+  if not IsAllowedSpell(spellId) then
     print(addonName .. ": Only profession spells are allowed (e.g., Smelting, Alchemy).")
     return
   end
@@ -374,3 +376,4 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
+
