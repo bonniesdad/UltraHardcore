@@ -10,11 +10,9 @@ UltraHardcore.lua
 ## Functions
 Functions/SetPlayerFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
-Functions/SetCustomBuffFrame.lua
 Functions/SetTargetFrameDisplay.lua
 Functions/SetTargetTooltipDisplay.lua
 Functions/SetUIErrorsDisplay.lua
-Functions/SetQuestDisplay.lua
 Functions/TunnelVision.lua
 Functions/OnCombatLogEvent.lua
 Functions/WelcomeMessage.lua

@@ -19,8 +19,6 @@ local settingToXPVariable = {
   showDazedEffect = 'xpGainedWithoutOptionShowDazedEffect',
   hideGroupHealth = 'xpGainedWithoutOptionHideGroupHealth',
   hideMinimap = 'xpGainedWithoutOptionHideMinimap',
-  hideQuestFrame = 'xpGainedWithoutOptionHideQuestFrame',
-  hideBuffFrame = 'xpGainedWithoutOptionHideBuffFrame',
   hideBreathIndicator = 'xpGainedWithoutOptionHideBreathIndicator',
   
   -- Experimental Preset Settings
