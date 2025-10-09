@@ -5,6 +5,9 @@ local CharacterStats = {
     lowestHealth = 100,
     lowestHealthThisLevel = 100,
     lowestHealthThisSession = 100,
+    lowestPetHealth = 100,
+    lowestPetHealthThisLevel = 100,
+    lowestPetHealthThisSession = 100,
     elitesSlain = 0,
     enemiesSlain = 0,
     lastSessionXP = 0, -- XP at the end of last session
@@ -12,6 +15,7 @@ local CharacterStats = {
     xpGainedWithoutOptionHidePlayerFrame = 0,
     xpGainedWithoutOptionShowOnScreenStatistics = 0,
     xpGainedWithoutOptionShowTunnelVision = 0,
+    xpGainedWithoutOptionAnnounceLevelUpToGuild = 0,
     xpGainedWithoutOptionTunnelVisionMaxStrata = 0,
     xpGainedWithoutOptionHideTargetFrame = 0,
     xpGainedWithoutOptionHideTargetTooltip = 0,
@@ -53,6 +57,24 @@ end
 function CharacterStats:ResetLowestHealthThisSession()
   local stats = self:GetCurrentCharacterStats()
   stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetLowestPetHealth()
+  local stats = self:GetCurrentCharacterStats()
+  stats.lowestPetHealth = self.defaults.lowestPetHealth
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetLowestPetHealthThisLevel()
+  local stats = self:GetCurrentCharacterStats()
+  stats.lowestPetHealthThisLevel = self.defaults.lowestPetHealthThisLevel
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetLowestPetHealthThisSession()
+  local stats = self:GetCurrentCharacterStats()
+  stats.lowestPetHealthThisSession = self.defaults.lowestPetHealthThisSession
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
@@ -114,6 +136,15 @@ function CharacterStats:GetCurrentCharacterStats()
   if stats.lowestHealthThisSession == nil then
     stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
   end
+  if stats.lowestPetHealth == nil then
+    stats.lowestPetHealth = self.defaults.lowestPetHealth
+  end
+  if stats.lowestPetHealthThisLevel == nil then
+    stats.lowestPetHealthThisLevel = self.defaults.lowestPetHealthThisLevel
+  end
+  if stats.lowestPetHealthThisSession == nil then
+    stats.lowestPetHealthThisSession = self.defaults.lowestPetHealthThisSession
+  end
   
   return stats
 end
@@ -170,7 +201,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -303,7 +334,7 @@ function CharacterStats:ShowChatChannelDialog()
   
   -- Create stats preview content
   local statsPreview = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
-  statsPreview:SetSize(340, 80)
+  statsPreview:SetSize(340, 100)
   statsPreview:SetPoint('TOP', contentFrame, 'TOP', 0, -38)
   statsPreview:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -329,18 +360,22 @@ function CharacterStats:ShowChatChannelDialog()
   lowestHealthText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -28)
   lowestHealthText:SetText("Lowest Health: " .. string.format("%.1f", stats.lowestHealth) .. "%")
   
+  local lowestPetHealthText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  lowestPetHealthText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
+  lowestPetHealthText:SetText("Lowest Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "%")
+  
   local elitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
+  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
   elitesText:SetText("Elites Slain: " .. stats.elitesSlain)
   
   local enemiesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
+  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
   enemiesText:SetText("Enemies Slain: " .. stats.enemiesSlain)
   
   -- Create channel selection section
   local channelHeader = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
   channelHeader:SetSize(360, 28)
-  channelHeader:SetPoint('TOP', contentFrame, 'TOP', 0, -140)
+  channelHeader:SetPoint('TOP', contentFrame, 'TOP', 0, -160)
   channelHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -368,7 +403,7 @@ function CharacterStats:ShowChatChannelDialog()
     end
     
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
     
     dialog:Hide()
@@ -377,7 +412,7 @@ function CharacterStats:ShowChatChannelDialog()
   -- Create button container
   local buttonContainer = CreateFrame('Frame', nil, contentFrame)
   buttonContainer:SetSize(340, 80)
-  buttonContainer:SetPoint('TOP', contentFrame, 'TOP', 0, -168)
+  buttonContainer:SetPoint('TOP', contentFrame, 'TOP', 0, -188)
   
   -- Say button
   local sayButton = CreateFrame('Button', nil, buttonContainer, 'UIPanelButtonTemplate')
@@ -458,6 +493,11 @@ _G.CharacterStats = CharacterStats
 SLASH_RESETLOWESTHEALTH1 = "/resetlowesthealth"
 SlashCmdList["RESETLOWESTHEALTH"] = function()
   CharacterStats:ResetLowestHealth()
+end
+
+SLASH_RESETLOWESTPETHEALTH1 = "/resetlowestpethealth"
+SlashCmdList["RESETLOWESTPETHEALTH"] = function()
+  CharacterStats:ResetLowestPetHealth()
 end
 
 SLASH_RESETELITESSLAIN1 = "/resetelitesslain"

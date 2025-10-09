@@ -10,6 +10,7 @@ local settingToXPVariable = {
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
   showTunnelVision = 'xpGainedWithoutOptionShowTunnelVision',
+  announceLevelUpToGuild = 'xpGainedWithoutOptionAnnounceLevelUpToGuild',
   
   -- Recommended Preset Settings
   tunnelVisionMaxStrata = 'xpGainedWithoutOptionTunnelVisionMaxStrata',
