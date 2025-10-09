@@ -109,4 +109,31 @@ function OnCombatLogEvent(self, event)
     local currentBandages = CharacterStats:GetStat('bandagesUsed') or 0
     CharacterStats:UpdateStat('bandagesUsed', currentBandages + 1)
   end
+
+  -- Health potion tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Common healing potion spell IDs in WoW Classic (these are the spell effects triggered by potion items)
+    local healingPotionSpellIDs = {
+      [439] = true, -- Minor Healing Potion 
+      [440] = true, -- LesserHealing Potion 
+      [2370] = true, -- Rejuvenation Potion 
+      [440] = true, -- Healing Potion 
+      [441] = true, -- Healing Potion 
+      [2024] = true, -- Healing Potion 
+      [4042] = true, -- Healing Potion 
+      [4042] = true, -- Healing Potion 
+      [11387] = true, -- Wildvine Potion 
+      [21394] = true, -- Healing Draught 
+      [17534] = true, -- Healing Potion 
+      [21393] = true, -- Healing Draught 
+      [17534] = true, -- Healing Potion 
+      [22729] = true -- Rejuvenation Potion 
+    }
+    
+    if healingPotionSpellIDs[spellID] then
+      local currentHealthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
+      local newCount = currentHealthPotions + 1
+      CharacterStats:UpdateStat('healthPotionsUsed', newCount)
+    end
+  end
 end
