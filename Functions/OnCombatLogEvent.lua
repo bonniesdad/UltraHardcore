@@ -136,4 +136,20 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat('healthPotionsUsed', newCount)
     end
   end
+
+  -- Target dummy tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Target dummy spell IDs in WoW Classic
+    local targetDummySpellIDs = {
+      [4071] = true, -- Target Dummy
+      [4072] = true, -- Advanced Target Dummy
+      [19805] = true -- Masterwork Target Dummy
+    }
+    
+    if targetDummySpellIDs[spellID] then
+      local currentTargetDummies = CharacterStats:GetStat('targetDummiesUsed') or 0
+      local newCount = currentTargetDummies + 1
+      CharacterStats:UpdateStat('targetDummiesUsed', newCount)
+    end
+  end
 end
