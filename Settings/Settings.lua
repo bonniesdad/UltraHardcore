@@ -515,7 +515,7 @@ local survivalTexts = {}
 
 -- Create survival statistics entries
 local survivalStats = {
-  {key = 'healthPotionsUsed', label = 'Health Potions Used (Beta):'},
+  {key = 'healthPotionsUsed', label = 'Health Potions Used:'},
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
   {key = 'grenadesUsed', label = 'Grenades Used (Beta):'}
