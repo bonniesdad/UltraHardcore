@@ -152,4 +152,28 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat('targetDummiesUsed', newCount)
     end
   end
+
+  -- Grenade tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Grenade spell IDs in WoW Classic
+    local grenadeSpellIDs = {
+      [4064] = true, -- Rough Copper Bomb
+      [4065] = true, -- Large Copper Bomb
+      [4066] = true, -- Small Bronze Bomb
+      [4067] = true, -- Big Bronze Bomb
+      [4069] = true, -- Big Iron Bomb
+      [12421] = true, -- Mithril Frag Bomb
+      [12543] = true, -- Hi-Explosive Bomb
+      [19784] = true, -- Dark Iron Bomb
+      [4068] = true, -- Iron Grenade
+      [19769] = true, -- Thorium Grenade
+      [12562] = true -- The Big One
+    }
+    
+    if grenadeSpellIDs[spellID] then
+      local currentGrenades = CharacterStats:GetStat('grenadesUsed') or 0
+      local newCount = currentGrenades + 1
+      CharacterStats:UpdateStat('grenadesUsed', newCount)
+    end
+  end
 end
