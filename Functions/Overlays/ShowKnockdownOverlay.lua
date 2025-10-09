@@ -1,6 +1,5 @@
 -- ShowKnockdownOverlay.lua
 -- White "flash-bang" on knockdown that fades out over ~4 second.
--- Mirrors the structure of your breath overlay functions.
 -- Can be tested with /run if UltraHardcore and UltraHardcore.TriggerKnockdownFlash then UltraHardcore.TriggerKnockdownFlash(4, 1) end
 
 -- Debuffs that should trigger a flash
@@ -108,4 +107,5 @@ auraWatcher:SetScript("OnEvent", function(_, _, unit)
     end
   end
 end)
+
 
