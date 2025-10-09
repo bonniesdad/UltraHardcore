@@ -173,14 +173,6 @@ function DisablePetCombatText()
   COMBATFEEDBACK_HOLDTIME = 0
   COMBATFEEDBACK_FADEOUTTIME = 0
   
-  -- Also disable combat text CVar for pets specifically
-  if SetCVar then
-    -- Disable floating combat text for pets
-    SetCVar("floatingCombatTextCombatDamage", "0")
-    SetCVar("floatingCombatTextCombatHealing", "0")
-    SetCVar("floatingCombatTextCombatDamageAllAutos", "0")
-    SetCVar("floatingCombatTextCombatHealingAllAutos", "0")
-  end
 end
 
 function RepositionPetHappinessTexture()
