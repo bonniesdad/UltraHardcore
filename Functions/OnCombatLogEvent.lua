@@ -103,4 +103,10 @@ function OnCombatLogEvent(self, event)
       ShowDazedOverlay(false) -- Daze ended, disable blur
     end
   end
+
+  -- Bandage tracking using "Recently Bandaged" debuff
+  if subEvent == 'SPELL_AURA_APPLIED' and destGUID == UnitGUID('player') and spellID == 11196 then
+    local currentBandages = CharacterStats:GetStat('bandagesUsed') or 0
+    CharacterStats:UpdateStat('bandagesUsed', currentBandages + 1)
+  end
 end

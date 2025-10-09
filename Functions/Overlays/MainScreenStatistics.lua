@@ -51,16 +51,6 @@ enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
 enemiesValue:SetText('0')
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local xpLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-xpLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
-xpLabel:SetText('XP Without Addon:')
-xpLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local xpValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-xpValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
-xpValue:SetText('0')
-xpValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showOnScreenStatistics then
@@ -91,10 +81,6 @@ local function UpdateStatistics()
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   enemiesValue:SetText(tostring(enemies))
-  
-  -- Update XP gained without addon
-  local xp = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
-  xpValue:SetText(tostring(xp))
 end
 
 -- Register events to update statistics when they change
