@@ -1,75 +1,84 @@
 local settingsCheckboxOptions = { {
   -- Lite Preset Settings
-  name = 'Use UHC Player Frame',
+  name = 'UHC Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
+  tooltip = 'Minimalistic player frame to hide own health',
 }, {
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
+  tooltip = 'Show important UHC statistics on the screen at all times',
 }, {
   name = 'Tunnel Vision',
   dbSettingsValueName = 'showTunnelVision',
+  tooltip = 'The screen gets darker as you get closer to death',
 },
 -- Recommended Preset Settings
  {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
+  tooltip = 'Tunnel Vision covers all UI elements',
 }, {
   name = 'Hide Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
+  tooltip = 'Target frame is not visible, so you can\'t see the target\'s health or level',
 }, {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
+  tooltip = 'Target tooltips are not visible, so you can\'t see the target\'s health or level',
 }, {
   name = 'Disable Nameplates',
   dbSettingsValueName = 'disableNameplateHealth',
+  tooltip = 'Turns off nameplates, hiding healthbars above units',
 }, {
   name = 'Show Dazed effect',
   dbSettingsValueName = 'showDazedEffect',
+  tooltip = 'A blue blur effect appears around your character when dazed',
 }, {
-  name = 'Use UHC Party Frames',
+  name = 'UHC Party Frames',
   dbSettingsValueName = 'hideGroupHealth',
+  tooltip = 'Party healthbars are hidden and replaced with a custom health indicator',
 }, {
   name = 'Hide Minimap',
   dbSettingsValueName = 'hideMinimap',
+  tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
 }, {
-  name = 'Hide Quest UI',
-  dbSettingsValueName = 'hideQuestFrame',
-}, {
-  name = 'Use UHC Buff Frame',
-  dbSettingsValueName = 'hideBuffFrame',
-}, {
-  name = 'Use UHC Breath Indicator',
+  name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
+  tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
 }, {
-  name = 'Use UHC Incoming Crit Effect',
+  name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
+  tooltip = 'A red screen rotation effect appears when you take a critical hit',
 }, {
   name = 'Hide Action Bars when not resting',
   dbSettingsValueName = 'hideActionBars',
+  tooltip = 'Hide action bars when not resting or near a campfire',
 }, {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
+  tooltip = 'Pets can\'t be resurrected when they are killed',
 }, {
-  name = 'Use UHC Full Health Indicator',
+  name = 'UHC Full Health Indicator',
   dbSettingsValueName = 'showFullHealthIndicator',
+  tooltip = 'The edges of the screen glow when you are at full health',
 }, {
-  name = 'Use UHC Incoming Damage Effect',
+  name = 'UHC Incoming Damage Effect',
   dbSettingsValueName = 'showIncomingDamageEffect',
+  tooltip = 'Various screen effects on incoming damage',
 }, {
-  name = 'Use UHC Incoming Healing Effect',
+  name = 'UHC Incoming Healing Effect',
   dbSettingsValueName = 'showHealingIndicator',
+  tooltip = 'Gold glow on the edges of the screen when you are healed',
 } }
 
 local presets = { {
   -- Preset 1: Lite
   hidePlayerFrame = true,
   hideMinimap = false,
-  hideBuffFrame = false,
   hideTargetFrame = false,
   hideTargetTooltip = false,
   showTunnelVision = true,
   tunnelVisionMaxStrata = false,
-  hideQuestFrame = false,
   showDazedEffect = false,
   showCritScreenMoveEffect = false,
   hideActionBars = false,
@@ -85,12 +94,10 @@ local presets = { {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
   hideMinimap = true,
-  hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
-  hideQuestFrame = true,
   showDazedEffect = true,
   hideGroupHealth = true,
   showCritScreenMoveEffect = false,
@@ -106,7 +113,6 @@ local presets = { {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
   hideMinimap = true,
-  hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
   showTunnelVision = true,
@@ -115,7 +121,6 @@ local presets = { {
   disableNameplateHealth = true,
   showIncomingDamageEffect = true,
   showHealingIndicator = true,
-  hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
   hideActionBars = true,
@@ -602,8 +607,6 @@ local settingDisplayNames = {
   showDazedEffect = 'Show Dazed Effect',
   hideGroupHealth = 'Use UHC Party Frames',
   hideMinimap = 'Hide Minimap',
-  hideQuestFrame = 'Hide Quest UI',
-  hideBuffFrame = 'Use UHC Buff Frame',
   hideBreathIndicator = 'Use UHC Breath Indicator',
   showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
   hideActionBars = 'Hide Action Bars',
@@ -633,8 +636,6 @@ local presetSections = {
       "showDazedEffect",
       "hideGroupHealth",
       "hideMinimap",
-      "hideQuestFrame",
-      "hideBuffFrame",
       "hideBreathIndicator"
     }
   },
@@ -829,8 +830,6 @@ local function createCheckboxes()
         "showDazedEffect",
         "hideGroupHealth",
         "hideMinimap",
-        "hideQuestFrame",
-        "hideBuffFrame",
         "hideBreathIndicator"
       }
     },
@@ -871,6 +870,7 @@ local function createCheckboxes()
         local checkbox = CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
         checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset) -- Indented for settings
         checkbox.Text:SetText(checkboxItem.name)
+        checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0) -- Add 5 pixel gap between checkbox and text
         checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
         checkboxes[checkboxItem.dbSettingsValueName] = checkbox
@@ -884,6 +884,17 @@ local function createCheckboxes()
               SetCVar("statusText", "0")
             end
           end
+        end)
+
+        -- Add tooltip functionality
+        checkbox:SetScript('OnEnter', function(self)
+          GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+          GameTooltip:SetText(checkboxItem.tooltip)
+          GameTooltip:Show()
+        end)
+        
+        checkbox:SetScript('OnLeave', function(self)
+          GameTooltip:Hide()
         end)
 
         yOffset = yOffset - 30 -- Reduced spacing between checkboxes
@@ -1052,8 +1063,6 @@ local function UpdateXPBreakdown()
         "showDazedEffect",
         "hideGroupHealth",
         "hideMinimap",
-        "hideQuestFrame",
-        "hideBuffFrame",
         "hideBreathIndicator"
       }
     },

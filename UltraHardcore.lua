@@ -6,13 +6,11 @@ WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {
   hidePlayerFrame = true,
   hideMinimap = true,
-  hideBuffFrame = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
   showFullHealthIndicator = true,
-  hideQuestFrame = true,
   showDazedEffect = true,
   showCritScreenMoveEffect = true,
   showIncomingDamageEffect = true,
@@ -48,7 +46,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     ShowWelcomeMessage()
     SetPlayerFrameDisplay(GLOBAL_SETTINGS.hidePlayerFrame or false)
     SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
-    SetCustomBuffFrame(GLOBAL_SETTINGS.hideBuffFrame or false)
     SetTargetFrameDisplay(GLOBAL_SETTINGS.hideTargetFrame or false)
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
@@ -68,8 +65,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)
-  elseif event == 'QUEST_WATCH_UPDATE' or event == 'QUEST_LOG_UPDATE' then
-    SetQuestDisplay(GLOBAL_SETTINGS.hideQuestFrame or false)
   elseif event == 'PLAYER_UPDATE_RESTING' then
     OnPlayerUpdateRestingEvent(self, event, GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_LEVEL_UP' then

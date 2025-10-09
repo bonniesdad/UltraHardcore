@@ -284,11 +284,9 @@ The addon's behavior is controlled through a comprehensive global settings objec
 GLOBAL_SETTINGS = {
     hidePlayerFrame = true,        -- Remove health bar visibility
     hideMinimap = true,           -- Hide minimap for navigation challenge
-    hideBuffFrame = true,         -- Remove buff/debuff indicators
     hideTargetFrame = true,       -- Hide target information
     hideTargetTooltip = true,     -- Remove target tooltips
     showTunnelVision = true,      -- Enable death indicator screen effect
-    hideQuestFrame = true,        -- Hide quest tracking information
     showDazedEffect = true,       -- Enable dazed blur overlay
     showCritScreenMoveEffect = true, -- Enable critical hit screen rotation
     hideActionBars = false,       -- Control action bar visibility (rested areas only)
