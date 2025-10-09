@@ -11,6 +11,10 @@ local settingsCheckboxOptions = { {
   name = 'Tunnel Vision',
   dbSettingsValueName = 'showTunnelVision',
   tooltip = 'The screen gets darker as you get closer to death',
+}, {
+  name = 'Announce Level Up to Guild',
+  dbSettingsValueName = 'announceLevelUpToGuild',
+  tooltip = 'Announces level ups to guild chat every 10th level',
 },
 -- Recommended Preset Settings
  {
@@ -300,7 +304,7 @@ statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 10)
 
 -- Create scroll child frame
 local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-statsScrollChild:SetSize(500, 680) -- Increased height to accommodate larger XP content frame
+statsScrollChild:SetSize(500, 720) -- Increased height to accommodate expanded lowest health section and larger XP content frame
 statsScrollFrame:SetScrollChild(statsScrollChild)
 
 -- Create modern WoW-style lowest health section (no accordion functionality)
@@ -332,7 +336,7 @@ lowestHealthLabel:SetText('Lowest Health')
 
 -- Create content frame for Lowest Health breakdown
 local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-lowestHealthContent:SetSize(450, 90) -- Increased height for 3 rows
+lowestHealthContent:SetSize(450, 150) -- Increased height for 6 rows (3 player + 3 pet)
 lowestHealthContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -33) -- Indented more than header
 lowestHealthContent:Show() -- Show by default
 
@@ -378,10 +382,38 @@ local lowestHealthThisSessionText = lowestHealthContent:CreateFontString(nil, 'O
 lowestHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -58)
 lowestHealthThisSessionText:SetText('100.0%')
 
+-- Add pet health rows to the same content frame
+-- Create the pet health total text display
+local lowestPetHealthTotalLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthTotalLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -83)
+lowestPetHealthTotalLabel:SetText('Pet Total (Beta):')
+
+lowestPetHealthText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -83)
+lowestPetHealthText:SetText(string.format("%.1f", 100) .. '%')
+
+-- Create the pet health This Level text display
+local lowestPetHealthThisLevelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthThisLevelLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -108)
+lowestPetHealthThisLevelLabel:SetText('Pet This Level (Beta):')
+
+local lowestPetHealthThisLevelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthThisLevelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -108)
+lowestPetHealthThisLevelText:SetText('100.0%')
+
+-- Create the pet health This Session text display
+local lowestPetHealthThisSessionLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthThisSessionLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -133)
+lowestPetHealthThisSessionLabel:SetText('Pet This Session (Beta):')
+
+local lowestPetHealthThisSessionText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lowestPetHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -133)
+lowestPetHealthThisSessionText:SetText('100.0%')
+
 -- Create modern WoW-style enemies slain section (no accordion functionality)
 local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainHeader:SetSize(470, 28)
-enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -115)
+enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -195)
 
 -- Modern WoW row styling with rounded corners and greyish background
 enemiesSlainHeader:SetBackdrop({
@@ -408,7 +440,7 @@ enemiesSlainLabel:SetText('Enemies Slain')
 -- Create content frame for Enemies Slain breakdown
 local enemiesSlainTotalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainTotalContent:SetSize(450, 30)
-enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -143) -- Indented more than header
+enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -223) -- Indented more than header
 enemiesSlainTotalContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -439,7 +471,7 @@ enemiesSlainText:SetText('0')
 -- Create collapsible content frame for elites slain
 local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainContent:SetSize(450, 30)
-enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -171) -- Indented more than header
+enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -253) -- Indented more than header
 enemiesSlainContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -469,7 +501,7 @@ elitesSlainText:SetText('0')
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalHeader:SetSize(470, 28)
-survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -203)
+survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -293)
 
 -- Modern WoW row styling with rounded corners and greyish background
 survivalHeader:SetBackdrop({
@@ -496,7 +528,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 120) -- Height for 4 items
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -231) -- Indented more than header
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -321) -- Indented more than header
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -545,7 +577,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, 28)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -343) -- Moved down to make room for Survival section
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -433) -- Moved down to make room for Survival section
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -572,7 +604,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 480) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -371) -- Moved down to make room for Survival section
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -461) -- Moved down to make room for Survival section
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -600,6 +632,7 @@ local settingDisplayNames = {
   hidePlayerFrame = 'Hide Player Frame',
   showOnScreenStatistics = 'On Screen Statistics',
   showTunnelVision = 'Tunnel Vision',
+  announceLevelUpToGuild = 'Announce Level Up to Guild',
   tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
   hideTargetFrame = 'Hide Target Frame',
   hideTargetTooltip = 'Hide Target Tooltips',
@@ -623,7 +656,8 @@ local presetSections = {
     settings = {
       "hidePlayerFrame",
       "showOnScreenStatistics", 
-      "showTunnelVision"
+      "showTunnelVision",
+      "announceLevelUpToGuild"
     }
   },
   {
@@ -817,7 +851,8 @@ local function createCheckboxes()
       settings = {
         "hidePlayerFrame",
         "showOnScreenStatistics", 
-        "showTunnelVision"
+        "showTunnelVision",
+        "announceLevelUpToGuild"
       }
     },
     {
@@ -1050,7 +1085,8 @@ local function UpdateXPBreakdown()
       settings = {
         "hidePlayerFrame",
         "showOnScreenStatistics", 
-        "showTunnelVision"
+        "showTunnelVision",
+        "announceLevelUpToGuild"
       }
     },
     {
@@ -1134,6 +1170,22 @@ local function UpdateLowestHealthDisplay()
   if lowestHealthThisSessionText then
     local currentLowestHealthThisSession = CharacterStats:GetStat('lowestHealthThisSession') or 100
     lowestHealthThisSessionText:SetText(string.format("%.1f", currentLowestHealthThisSession) .. '%')
+  end
+  
+  -- Update pet health display
+  if lowestPetHealthText then
+    local currentLowestPetHealth = CharacterStats:GetStat('lowestPetHealth') or 100
+    lowestPetHealthText:SetText(string.format("%.1f", currentLowestPetHealth) .. '%')
+  end
+  
+  if lowestPetHealthThisLevelText then
+    local currentLowestPetHealthThisLevel = CharacterStats:GetStat('lowestPetHealthThisLevel') or 100
+    lowestPetHealthThisLevelText:SetText(string.format("%.1f", currentLowestPetHealthThisLevel) .. '%')
+  end
+  
+  if lowestPetHealthThisSessionText then
+    local currentLowestPetHealthThisSession = CharacterStats:GetStat('lowestPetHealthThisSession') or 100
+    lowestPetHealthThisSessionText:SetText(string.format("%.1f", currentLowestPetHealthThisSession) .. '%')
   end
   
   if elitesSlainText then

@@ -22,6 +22,7 @@ GLOBAL_SETTINGS = {
   hideBreathIndicator = false,
   disableNameplateHealth = true,
   showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -69,7 +70,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     OnPlayerUpdateRestingEvent(self, event, GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_LEVEL_UP' then
     OnPlayerLevelUpEvent(self, event, GLOBAL_SETTINGS.hideActionBars, unit)
-    AnnounceLevelUpToGuild()
+    AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
     SetAllGroupIndicators()

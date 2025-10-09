@@ -1,5 +1,9 @@
 -- Function to announce level ups to guild chat every 10th level
-local function AnnounceLevelUpToGuild()
+local function AnnounceLevelUpToGuild(announceLevelUpToGuild)
+    -- Check if the setting is enabled
+    if not announceLevelUpToGuild then
+        return
+    end
     
     -- Get current player level
     local currentLevel = UnitLevel("player") + 1

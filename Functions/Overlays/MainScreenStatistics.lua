@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 100)
+statsFrame:SetSize(200, 120)
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -31,23 +31,33 @@ lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -20)
 lowestHealthValue:SetText('100.0%')
 lowestHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+local sessionHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+sessionHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+sessionHealthLabel:SetText('Session Lowest:')
+sessionHealthLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local sessionHealthValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+sessionHealthValue:SetText('100.0%')
+sessionHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 local elitesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+elitesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
 elitesLabel:SetText('Elites Slain:')
 elitesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local elitesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+elitesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
 elitesValue:SetText('0')
 elitesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local enemiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
+enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
 enemiesLabel:SetText('Enemies Slain:')
 enemiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local enemiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
+enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
 enemiesValue:SetText('0')
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
@@ -73,6 +83,10 @@ local function UpdateStatistics()
   -- Update lowest health
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
   lowestHealthValue:SetText(string.format("%.1f", currentLowestHealth) .. '%')
+  
+  -- Update session lowest health
+  local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
+  sessionHealthValue:SetText(string.format("%.1f", currentSessionLowestHealth) .. '%')
   
   -- Update elites slain
   local elites = CharacterStats:GetStat('elitesSlain') or 0
