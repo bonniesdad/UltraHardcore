@@ -25,6 +25,7 @@ Functions/SetNameplateDisabled.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/HealingIndicator.lua
+Functions/PikabooResting.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
@@ -60,6 +61,7 @@ Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
+Functions/Overlays/ShowPikabooRestingOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
 Functions/Overlays/ShowShadowDamageOverlay.lua
