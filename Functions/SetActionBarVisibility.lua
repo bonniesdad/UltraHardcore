@@ -80,9 +80,9 @@ function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
 end
 
-function OnPlayerLevelUpEvent(self, _, playerLevel)
-  SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, playerLevel)
-  if GLOBAL_SETTINGS.hideActionBars and playerLevel == MIN_LEVEL_HIDE_ACTION_BARS then
+function OnPlayerLevelUpEvent(self, event, newLevel)
+  SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, newLevel)
+  if GLOBAL_SETTINGS.hideActionBars and newLevel == MIN_LEVEL_HIDE_ACTION_BARS then
     ShowHideActionBarsIntro()
   end
 end
@@ -93,22 +93,16 @@ local function OnPlayerUnitAuraEvent(self, unit)
   end
 end
 
--- Self-contained event registration
+-- Self-contained event registration (only for events not handled by main addon)
 local f = CreateFrame("Frame")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")  -- ensure correct state on login/reload
 f:RegisterEvent("PLAYER_UPDATE_RESTING")
-f:RegisterEvent("PLAYER_LEVEL_UP")
 f:RegisterEvent("UNIT_AURA")
 f:RegisterEvent("PLAYER_REGEN_DISABLED") -- entering combat
 f:RegisterEvent("PLAYER_REGEN_ENABLED")  -- leaving combat
 
 f:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_ENTERING_WORLD" then
-    SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
-  elseif event == "PLAYER_UPDATE_RESTING" then
+  if event == "PLAYER_UPDATE_RESTING" then
     OnPlayerUpdateRestingEvent(self, ...)
-  elseif event == "PLAYER_LEVEL_UP" then
-    OnPlayerLevelUpEvent(self, ...)
   elseif event == "UNIT_AURA" then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
