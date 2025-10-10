@@ -3,27 +3,7 @@ UltraHardcore = CreateFrame('Frame')
 
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
-GLOBAL_SETTINGS = {
-  hidePlayerFrame = true,
-  hideMinimap = true,
-  hideTargetFrame = true,
-  hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = true,
-  showFullHealthIndicator = true,
-  showDazedEffect = true,
-  showCritScreenMoveEffect = true,
-  showIncomingDamageEffect = true,
-  showHealingIndicator = false,
-  hideUIErrors = false,
-  petsDiePermanently = true,
-  hideActionBars = false,
-  hideGroupHealth = true,
-  hideBreathIndicator = false,
-  disableNameplateHealth = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-}
+GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
 UltraHardcore:RegisterEvent('UNIT_HEALTH_FREQUENT')

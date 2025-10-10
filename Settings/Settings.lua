@@ -49,7 +49,9 @@ local settingsCheckboxOptions = { {
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-}, {
+}, 
+-- Experimental Preset Settings
+{
   name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
@@ -1041,8 +1043,8 @@ saveButton:SetScript('OnClick', function()
     SetCVar("statusText", "0")
   end
   
-  UltraHardcoreDB.GLOBAL_SETTINGS = GLOBAL_SETTINGS
-  SaveDBData('GLOBAL_SETTINGS', GLOBAL_SETTINGS)
+  -- Save settings for current character
+  SaveCharacterSettings(GLOBAL_SETTINGS)
   ReloadUI()
 end)
 
