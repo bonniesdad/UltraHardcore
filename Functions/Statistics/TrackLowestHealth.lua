@@ -6,8 +6,17 @@ local pendingCombatLow = nil
 local function TrackLowestHealth(event)
   local health = UnitHealth("player")
   local maxHealth = UnitHealthMax("player")
+  
   local healthPercent = (health / maxHealth) * 100
+  
   local currentLowestHealth = CharacterStats:GetStat("lowestHealth")
+  local currentLowestHealthThisLevel = CharacterStats:GetStat("lowestHealthThisLevel")
+  local currentLowestHealthThisSession = CharacterStats:GetStat("lowestHealthThisSession")
+
+  -- Return early if any stats are nil (not initialized yet)
+  if not currentLowestHealth or not currentLowestHealthThisLevel or not currentLowestHealthThisSession then
+    return
+  end
 
   if pvpPause then
     if not isDueling and (healthPercent >= currentLowestHealth or health == 0) then
@@ -48,6 +57,12 @@ local function TrackLowestHealth(event)
       -- Outside combat: normal immediate updates, still skip Feign Death zeros
       if not feigning and healthPercent < currentLowestHealth then
         CharacterStats:UpdateStat("lowestHealth", healthPercent)
+        if healthPercent < CharacterStats:GetStat("lowestHealthThisLevel") then
+          CharacterStats:UpdateStat("lowestHealthThisLevel", healthPercent)
+        end
+        if healthPercent < CharacterStats:GetStat("lowestHealthThisSession") then
+          CharacterStats:UpdateStat("lowestHealthThisSession", healthPercent)
+        end
       end
     end
   end
@@ -60,6 +75,8 @@ frame:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED") -- SpellID 7266 is Duel. Fired w
 frame:RegisterEvent("DUEL_FINISHED") -- Fired every time a duel is over or cancelled
 frame:RegisterEvent("PLAYER_REGEN_DISABLED") -- In combat, if we want it
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")  -- Out of combat, if we want it
+frame:RegisterEvent("PLAYER_LEVEL_UP") -- Reset This Level stats when leveling up
+frame:RegisterEvent("PLAYER_LOGIN") -- Reset This Session stats when logging in
 
 frame:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
   if event == "UNIT_HEALTH" and arg1 ~= "player" then return end
@@ -84,8 +101,22 @@ frame:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
       local currentLowestHealth = CharacterStats:GetStat("lowestHealth")
       if pendingCombatLow < currentLowestHealth then
         CharacterStats:UpdateStat("lowestHealth", pendingCombatLow)
+        if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisLevel") then
+          CharacterStats:UpdateStat("lowestHealthThisLevel", pendingCombatLow)
+        end
+        if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisSession") then
+          CharacterStats:UpdateStat("lowestHealthThisSession", pendingCombatLow)
+        end
       end
     end
     pendingCombatLow = nil
+  elseif event == "PLAYER_LEVEL_UP" then
+    -- Reset This Level stats when leveling up
+    CharacterStats:ResetLowestHealthThisLevel()
+    print("|cfff44336[UHC]|r |cfff0f000Level up! This Level lowest health has been reset.|r")
+  elseif event == "PLAYER_LOGIN" then
+    -- Reset This Session stats when logging in
+    CharacterStats:ResetLowestHealthThisSession()
+    print("|cfff44336[UHC]|r |cfff0f000New session! This Session lowest health has been reset.|r")
   end
 end)
