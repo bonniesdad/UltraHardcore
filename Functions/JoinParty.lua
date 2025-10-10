@@ -6,6 +6,7 @@ frame:RegisterEvent('GROUP_ROSTER_UPDATE')
 -- Track previous party members to detect new joins
 local previousPartyMembers = {}
 local previousPartyCount = 0
+local isInitialized = false
 
 -- Function to get current party member names
 local function getCurrentPartyMembers()
@@ -74,8 +75,17 @@ frame:SetScript('OnEvent', function(self, event, ...)
     -- Update party member tracking
     previousPartyMembers = getCurrentPartyMembers()
     previousPartyCount = GetNumGroupMembers()
+    isInitialized = true
     
   elseif event == 'GROUP_ROSTER_UPDATE' then
+    -- Skip if not initialized yet (prevents false triggers on addon load)
+    if not isInitialized then
+      previousPartyMembers = getCurrentPartyMembers()
+      previousPartyCount = GetNumGroupMembers()
+      isInitialized = true
+      return
+    end
+    
     -- Only check for new members if the party count has increased
     -- This prevents sending join messages when someone levels up or leaves
     local currentPartyCount = GetNumGroupMembers()
