@@ -12,7 +12,7 @@ local function TrackLowestHealth(event)
   local currentLowestHealth = CharacterStats:GetStat("lowestHealth")
   local currentLowestHealthThisLevel = CharacterStats:GetStat("lowestHealthThisLevel")
   local currentLowestHealthThisSession = CharacterStats:GetStat("lowestHealthThisSession")
-
+  
   -- Return early if any stats are nil (not initialized yet)
   if not currentLowestHealth or not currentLowestHealthThisLevel or not currentLowestHealthThisSession then
     return
@@ -101,12 +101,12 @@ frame:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
       local currentLowestHealth = CharacterStats:GetStat("lowestHealth")
       if pendingCombatLow < currentLowestHealth then
         CharacterStats:UpdateStat("lowestHealth", pendingCombatLow)
-        if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisLevel") then
+      end
+      if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisLevel") then
           CharacterStats:UpdateStat("lowestHealthThisLevel", pendingCombatLow)
         end
-        if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisSession") then
-          CharacterStats:UpdateStat("lowestHealthThisSession", pendingCombatLow)
-        end
+      if pendingCombatLow < CharacterStats:GetStat("lowestHealthThisSession") then
+        CharacterStats:UpdateStat("lowestHealthThisSession", pendingCombatLow)
       end
     end
     pendingCombatLow = nil
