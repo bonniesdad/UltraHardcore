@@ -26,18 +26,18 @@ local function TrackLowestHealth(event)
     end
   end
 
-  -- Only record new lows during normal tracking on UNIT_HEALTH and OUTSIDE of combat
-  if event == "UNIT_HEALTH" and not UnitAffectingCombat("player") and healthPercent < currentLowestHealth then
+  -- Record new lows in real time during UNIT_HEALTH events
+  if event == "UNIT_HEALTH" and healthPercent < currentLowestHealth then
     CharacterStats:UpdateStat("lowestHealth", healthPercent)
   end
   
-  -- Track This Level lowest health (same conditions as total)
-  if event == "UNIT_HEALTH" and not UnitAffectingCombat("player") and healthPercent < currentLowestHealthThisLevel then
+  -- Track This Level lowest health in real time
+  if event == "UNIT_HEALTH" and healthPercent < currentLowestHealthThisLevel then
     CharacterStats:UpdateStat("lowestHealthThisLevel", healthPercent)
   end
   
-  -- Track This Session lowest health (same conditions as total)
-  if event == "UNIT_HEALTH" and not UnitAffectingCombat("player") and healthPercent < currentLowestHealthThisSession then
+  -- Track This Session lowest health in real time
+  if event == "UNIT_HEALTH" and healthPercent < currentLowestHealthThisSession then
     CharacterStats:UpdateStat("lowestHealthThisSession", healthPercent)
   end
 end
