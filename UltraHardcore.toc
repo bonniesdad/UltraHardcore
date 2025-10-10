@@ -30,7 +30,6 @@ Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 
 Functions/Statistics/TrackLowestHealth.lua
-Functions/Statistics/TrackLowestPetHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua

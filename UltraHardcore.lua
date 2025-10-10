@@ -60,8 +60,8 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
     -- Check for pet death/abandonment
-    if unit == "pet" and GLOBAL_SETTINGS.petsDiePermanently then
-      CheckAndAbandonPet()
+    if unit == "pet" then
+      CheckAndAbandonPet(GLOBAL_SETTINGS.petsDiePermanently)
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
