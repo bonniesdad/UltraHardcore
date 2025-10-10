@@ -73,6 +73,10 @@ local settingsCheckboxOptions = { {
   name = 'UHC Incoming Healing Effect',
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
+}, {
+  name = 'Hide UI Error Messages',
+  dbSettingsValueName = 'hideUIErrors',
+  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
 } }
 
 local presets = { {
@@ -132,6 +136,7 @@ local presets = { {
   petsDiePermanently = true,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
+  hideUIErrors = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -876,7 +881,8 @@ local function createCheckboxes()
         "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
-        "showHealingIndicator"
+        "showHealingIndicator",
+        "hideUIErrors"
       }
     }
   }

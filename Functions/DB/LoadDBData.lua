@@ -24,7 +24,7 @@ function LoadDBData()
       hideGroupHealth = true,
       petsDiePermanently = true,
       disableNameplateHealth = true,
-      hideUIErrors = true,
+      hideUIErrors = false,
     }
   end
 
