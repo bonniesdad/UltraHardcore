@@ -9,11 +9,34 @@ local mainXpBarFrame = nil
 local mainXpBarTexture = nil
 local mainXpBarText = nil
 
+-- Variable to store original statusText setting
+local originalStatusText = nil
+
 function SetPlayerFrameDisplay(value)
   if value then
     HidePlayerFrameHealthMana()
+    -- Set Interface Status Text to None when hiding player frame
+    SetStatusTextDisplay(false)
   else
     ShowPlayerFrameHealthMana()
+    -- Restore Interface Status Text when showing player frame
+    SetStatusTextDisplay(true)
+  end
+end
+
+function SetStatusTextDisplay(enable)
+  if enable then
+    -- Restore original statusText setting if we have it stored
+    if originalStatusText then
+      SetCVar("statusText", originalStatusText)
+    end
+  else
+    -- Store current statusText setting before disabling it
+    if not originalStatusText then
+      originalStatusText = GetCVar("statusText")
+    end
+    -- Set statusText to None (0) to disable status text display
+    SetCVar("statusText", "0")
   end
 end
 
@@ -150,14 +173,6 @@ function DisablePetCombatText()
   COMBATFEEDBACK_HOLDTIME = 0
   COMBATFEEDBACK_FADEOUTTIME = 0
   
-  -- Also disable combat text CVar for pets specifically
-  if SetCVar then
-    -- Disable floating combat text for pets
-    SetCVar("floatingCombatTextCombatDamage", "0")
-    SetCVar("floatingCombatTextCombatHealing", "0")
-    SetCVar("floatingCombatTextCombatDamageAllAutos", "0")
-    SetCVar("floatingCombatTextCombatHealingAllAutos", "0")
-  end
 end
 
 function RepositionPetHappinessTexture()
