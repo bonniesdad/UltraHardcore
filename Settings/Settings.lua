@@ -98,6 +98,8 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = false,
   showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -117,6 +119,8 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -136,7 +140,8 @@ local presets = { {
   petsDiePermanently = true,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
-  hideUIErrors = false,
+  announceLevelUpToGuild = true,
+  hideUIErrors = true,
 } }
 
 -- Temporary settings storage and initialization function
