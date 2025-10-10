@@ -59,10 +59,19 @@ local function postWarningMessage()
     -- Only post message if there are other members in the group
     if hasOtherMembers then
       local chatType = IsInRaid() and 'RAID' or 'PARTY'
-      SendChatMessage(
-        '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.',
-        chatType
-      )
+      local characterName = UnitName('player')
+      if(characterName == "Ultrapikaboo") then
+        -- I tested this with my name to make sure it works :D
+        SendChatMessage(
+          '[ULTRA] I am using the Ultra Hardcore addon. If you do not give me loot priority, minute thirty ad!',
+          chatType
+        )
+      else
+        SendChatMessage(
+          '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.',
+          chatType
+        )
+      end
     end
   end
 end
