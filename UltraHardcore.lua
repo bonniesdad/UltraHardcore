@@ -78,13 +78,13 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event
-    local timerName = unit
+    local timerName = ...
     if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStart()
     end
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
-    local timerName = unit
+    local timerName = ...
     if timerName == 'BREATH' then
       OnBreathStop()
     end
