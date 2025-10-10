@@ -41,7 +41,7 @@ UltraHardcore:RegisterEvent('MIRROR_TIMER_STOP')
 
 
 -- 🟢 Event handler to apply all funcitons on login
-UltraHardcore:SetScript('OnEvent', function(self, event, unit)
+UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
     ShowWelcomeMessage()
@@ -57,6 +57,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
     DisablePetCombatText()
     RepositionPetHappinessTexture()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
+    local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
     -- Check for pet death/abandonment
@@ -69,7 +70,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'PLAYER_UPDATE_RESTING' then
     OnPlayerUpdateRestingEvent(self, event, GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_LEVEL_UP' then
-    OnPlayerLevelUpEvent(self, event, GLOBAL_SETTINGS.hideActionBars, unit)
+    OnPlayerLevelUpEvent(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
