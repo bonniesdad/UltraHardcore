@@ -387,38 +387,21 @@ local lowestHealthThisSessionText = lowestHealthContent:CreateFontString(nil, 'O
 lowestHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -58)
 lowestHealthThisSessionText:SetText('100.0%')
 
--- Add pet health rows to the same content frame
--- Create the pet health total text display
-local lowestPetHealthTotalLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthTotalLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -83)
-lowestPetHealthTotalLabel:SetText('Pet Total (Beta):')
+-- Add pet death rows to the same content frame
+-- Create the pet deaths text display
+local petDeathsLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+petDeathsLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -83)
+petDeathsLabel:SetText('Pet Deaths:')
 
-lowestPetHealthText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -83)
-lowestPetHealthText:SetText(string.format("%.1f", 100) .. '%')
+petDeathsText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+petDeathsText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -83)
+petDeathsText:SetText('0')
 
--- Create the pet health This Level text display
-local lowestPetHealthThisLevelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthThisLevelLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -108)
-lowestPetHealthThisLevelLabel:SetText('Pet This Level (Beta):')
-
-local lowestPetHealthThisLevelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthThisLevelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -108)
-lowestPetHealthThisLevelText:SetText('100.0%')
-
--- Create the pet health This Session text display
-local lowestPetHealthThisSessionLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthThisSessionLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -133)
-lowestPetHealthThisSessionLabel:SetText('Pet This Session (Beta):')
-
-local lowestPetHealthThisSessionText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestPetHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -133)
-lowestPetHealthThisSessionText:SetText('100.0%')
 
 -- Create modern WoW-style enemies slain section (no accordion functionality)
 local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainHeader:SetSize(470, 28)
-enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -195)
+enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -145)
 
 -- Modern WoW row styling with rounded corners and greyish background
 enemiesSlainHeader:SetBackdrop({
@@ -445,7 +428,7 @@ enemiesSlainLabel:SetText('Enemies Slain')
 -- Create content frame for Enemies Slain breakdown
 local enemiesSlainTotalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainTotalContent:SetSize(450, 30)
-enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -223) -- Indented more than header
+enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -175) -- Indented more than header
 enemiesSlainTotalContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -476,7 +459,7 @@ enemiesSlainText:SetText('0')
 -- Create collapsible content frame for elites slain
 local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainContent:SetSize(450, 30)
-enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -253) -- Indented more than header
+enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -205) -- Indented more than header
 enemiesSlainContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -506,7 +489,7 @@ elitesSlainText:SetText('0')
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalHeader:SetSize(470, 28)
-survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -293)
+survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -245)
 
 -- Modern WoW row styling with rounded corners and greyish background
 survivalHeader:SetBackdrop({
@@ -533,7 +516,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 120) -- Height for 4 items
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -321) -- Indented more than header
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -273) -- Indented more than header
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -582,7 +565,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, 28)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -433) -- Moved down to make room for Survival section
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -385) -- Moved down to make room for Survival section
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -609,7 +592,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 480) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -461) -- Moved down to make room for Survival section
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -413) -- Moved down to make room for Survival section
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1178,21 +1161,12 @@ local function UpdateLowestHealthDisplay()
     lowestHealthThisSessionText:SetText(string.format("%.1f", currentLowestHealthThisSession) .. '%')
   end
   
-  -- Update pet health display
-  if lowestPetHealthText then
-    local currentLowestPetHealth = CharacterStats:GetStat('lowestPetHealth') or 100
-    lowestPetHealthText:SetText(string.format("%.1f", currentLowestPetHealth) .. '%')
+  -- Update pet death display
+  if petDeathsText then
+    local currentPetDeaths = CharacterStats:GetStat('petDeaths') or 0
+    petDeathsText:SetText(currentPetDeaths)
   end
   
-  if lowestPetHealthThisLevelText then
-    local currentLowestPetHealthThisLevel = CharacterStats:GetStat('lowestPetHealthThisLevel') or 100
-    lowestPetHealthThisLevelText:SetText(string.format("%.1f", currentLowestPetHealthThisLevel) .. '%')
-  end
-  
-  if lowestPetHealthThisSessionText then
-    local currentLowestPetHealthThisSession = CharacterStats:GetStat('lowestPetHealthThisSession') or 100
-    lowestPetHealthThisSessionText:SetText(string.format("%.1f", currentLowestPetHealthThisSession) .. '%')
-  end
   
   if elitesSlainText then
     local elites = CharacterStats:GetStat('elitesSlain') or 0

@@ -5,9 +5,7 @@ local CharacterStats = {
     lowestHealth = 100,
     lowestHealthThisLevel = 100,
     lowestHealthThisSession = 100,
-    lowestPetHealth = 100,
-    lowestPetHealthThisLevel = 100,
-    lowestPetHealthThisSession = 100,
+    petDeaths = 0,
     elitesSlain = 0,
     enemiesSlain = 0,
     lastSessionXP = 0, -- XP at the end of last session
@@ -60,23 +58,13 @@ function CharacterStats:ResetLowestHealthThisSession()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
-function CharacterStats:ResetLowestPetHealth()
+
+function CharacterStats:ResetPetDeaths()
   local stats = self:GetCurrentCharacterStats()
-  stats.lowestPetHealth = self.defaults.lowestPetHealth
+  stats.petDeaths = self.defaults.petDeaths
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
-function CharacterStats:ResetLowestPetHealthThisLevel()
-  local stats = self:GetCurrentCharacterStats()
-  stats.lowestPetHealthThisLevel = self.defaults.lowestPetHealthThisLevel
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
-end
-
-function CharacterStats:ResetLowestPetHealthThisSession()
-  local stats = self:GetCurrentCharacterStats()
-  stats.lowestPetHealthThisSession = self.defaults.lowestPetHealthThisSession
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
-end
 
 function CharacterStats:ResetElitesSlain()
   local stats = self:GetCurrentCharacterStats()
@@ -136,14 +124,8 @@ function CharacterStats:GetCurrentCharacterStats()
   if stats.lowestHealthThisSession == nil then
     stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
   end
-  if stats.lowestPetHealth == nil then
-    stats.lowestPetHealth = self.defaults.lowestPetHealth
-  end
-  if stats.lowestPetHealthThisLevel == nil then
-    stats.lowestPetHealthThisLevel = self.defaults.lowestPetHealthThisLevel
-  end
-  if stats.lowestPetHealthThisSession == nil then
-    stats.lowestPetHealthThisSession = self.defaults.lowestPetHealthThisSession
+  if stats.petDeaths == nil then
+    stats.petDeaths = self.defaults.petDeaths
   end
   
   return stats
@@ -201,7 +183,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -360,9 +342,9 @@ function CharacterStats:ShowChatChannelDialog()
   lowestHealthText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -28)
   lowestHealthText:SetText("Lowest Health: " .. string.format("%.1f", stats.lowestHealth) .. "%")
   
-  local lowestPetHealthText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  lowestPetHealthText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
-  lowestPetHealthText:SetText("Lowest Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "%")
+  local petDeathsText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  petDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
+  petDeathsText:SetText("Pet Deaths: " .. stats.petDeaths)
   
   local elitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
@@ -403,7 +385,7 @@ function CharacterStats:ShowChatChannelDialog()
     end
     
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Health: " .. string.format("%.1f", stats.lowestPetHealth) .. "% - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
     
     dialog:Hide()
@@ -495,10 +477,11 @@ SlashCmdList["RESETLOWESTHEALTH"] = function()
   CharacterStats:ResetLowestHealth()
 end
 
-SLASH_RESETLOWESTPETHEALTH1 = "/resetlowestpethealth"
-SlashCmdList["RESETLOWESTPETHEALTH"] = function()
-  CharacterStats:ResetLowestPetHealth()
+SLASH_RESETPETDEATHS1 = "/resetpetdeaths"
+SlashCmdList["RESETPETDEATHS"] = function()
+  CharacterStats:ResetPetDeaths()
 end
+
 
 SLASH_RESETELITESSLAIN1 = "/resetelitesslain"
 SlashCmdList["RESETELITESSLAIN"] = function()
