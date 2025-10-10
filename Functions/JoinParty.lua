@@ -5,6 +5,7 @@ frame:RegisterEvent('GROUP_ROSTER_UPDATE')
 
 -- Track previous party members to detect new joins
 local previousPartyMembers = {}
+local previousPartyCount = 0
 
 -- Function to get current party member names
 local function getCurrentPartyMembers()
@@ -72,30 +73,43 @@ frame:SetScript('OnEvent', function(self, event, ...)
     
     -- Update party member tracking
     previousPartyMembers = getCurrentPartyMembers()
+    previousPartyCount = GetNumGroupMembers()
     
   elseif event == 'GROUP_ROSTER_UPDATE' then
-    -- Check if someone new joined the party
-    local currentMembers = getCurrentPartyMembers()
-    local playerName = UnitName('player')
+    -- Only check for new members if the party count has increased
+    -- This prevents sending join messages when someone levels up or leaves
+    local currentPartyCount = GetNumGroupMembers()
     
-    -- Check if we have new members (excluding ourselves)
-    for _, member in ipairs(currentMembers) do
-      local isNewMember = true
-      for _, prevMember in ipairs(previousPartyMembers) do
-        if member == prevMember then
-          isNewMember = false
-          break
+    if currentPartyCount > previousPartyCount then
+      -- Party count increased, someone actually joined
+      local currentMembers = getCurrentPartyMembers()
+      local playerName = UnitName('player')
+      
+      -- Check if we have new members (excluding ourselves)
+      for _, member in ipairs(currentMembers) do
+        local isNewMember = true
+        for _, prevMember in ipairs(previousPartyMembers) do
+          if member == prevMember then
+            isNewMember = false
+            break
+          end
+        end
+        
+        -- If it's a new member and not ourselves, post warning message
+        if isNewMember and member ~= playerName then
+          postWarningMessage()
+          break -- Only post once per roster update
         end
       end
       
-      -- If it's a new member and not ourselves, post warning message
-      if isNewMember and member ~= playerName then
-        postWarningMessage()
-        break -- Only post once per roster update
-      end
+      -- Update party member tracking only when someone joins
+      previousPartyMembers = currentMembers
+    elseif currentPartyCount < previousPartyCount then
+      -- Party count decreased, someone left - update tracking but don't send message
+      previousPartyMembers = getCurrentPartyMembers()
     end
     
-    -- Update party member tracking
-    previousPartyMembers = currentMembers
+    -- Always update the party count for next comparison
+    previousPartyCount = currentPartyCount
   end
 end)
