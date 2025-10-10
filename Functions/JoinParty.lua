@@ -33,10 +33,20 @@ frame:SetScript('OnEvent', function(self, event, ...)
       end,
       OnCancel = function()
         local chatType = IsInRaid() and 'RAID' or 'PARTY'
-        SendChatMessage(
-          '!! BEWARE !! I am using the Ultra Hardcore addon. The chances of my demise are much higher. You have been warned.',
-          chatType
-        )
+        local characterName = UnitName("player")
+
+        if(characterName == "Ultrapikaboo") then
+          -- I tested this with my name to make sure it works :D
+          SendChatMessage(
+            '!! BEWARE !! I am using the Ultra Hardcore addon. If you do not give me loot priority, minute thirty ad!',
+            chatType
+          )
+        else
+          SendChatMessage(
+            '!! BEWARE !! I am using the Ultra Hardcore addon. The chances of my demise are much higher. You have been warned.',
+            chatType
+          )
+        end
       end,
       timeout = 0,
       whileDead = true,
