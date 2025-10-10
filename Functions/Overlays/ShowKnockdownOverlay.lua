@@ -108,4 +108,25 @@ auraWatcher:SetScript("OnEvent", function(_, _, unit)
   end
 end)
 
+-- [Easter Egg]
+-- Also trigger the flash when hit by a Snowball (out of combat only to not grief)
+do
+  local SNOWBALL_SPELL_ID = 21343
+  local snowballWatcher = CreateFrame("Frame")
+
+  snowballWatcher:RegisterEvent("UNIT_AURA")
+  snowballWatcher:SetScript("OnEvent", function(self, event, unit)
+    if unit ~= "player" then return end
+    if UnitAffectingCombat("player") then return end
+
+    for i = 1, 40 do
+      local name, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", i)
+      if not name then break end
+      if spellId == SNOWBALL_SPELL_ID or name == "Snowball" then
+        StartKnockdownFlash(FLASH_DURATION, FLASH_MAX_ALPHA)
+        break
+      end
+    end
+  end)
+end
 
