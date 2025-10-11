@@ -13,10 +13,8 @@ function LoadDBData()
     UltraHardcoreDB.GLOBAL_SETTINGS = {
       hidePlayerFrame = true,
       hideMinimap = true,
-      hideBuffFrame = true,
       hideTargetFrame = true,
       hideTargetTooltip = true,
-      hideQuestFrame = true,
       showTunnelVision = true,
       showFullHealthIndicator = true,
       showDazedEffect = true,
@@ -24,9 +22,9 @@ function LoadDBData()
       showIncomingDamageEffect = true,
       hideActionBars = true,
       hideGroupHealth = true,
-      petsDiePermanently = false,
+      petsDiePermanently = true,
       disableNameplateHealth = true,
-      hideUIErrors = true,
+      hideUIErrors = false,
     }
   end
 

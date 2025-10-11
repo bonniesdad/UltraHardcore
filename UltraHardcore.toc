@@ -1,6 +1,6 @@
 ## Interface: 11507
 ## Title: UltraHardcore
-## Version: 1.1.3
+## Version: 1.2.0
 ## Author: Bonnie
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -10,11 +10,9 @@ UltraHardcore.lua
 ## Functions
 Functions/SetPlayerFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
-Functions/SetCustomBuffFrame.lua
 Functions/SetTargetFrameDisplay.lua
 Functions/SetTargetTooltipDisplay.lua
 Functions/SetUIErrorsDisplay.lua
-Functions/SetQuestDisplay.lua
 Functions/TunnelVision.lua
 Functions/OnCombatLogEvent.lua
 Functions/WelcomeMessage.lua
@@ -23,14 +21,16 @@ Functions/SetActionBarVisibility.lua
 Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
 Functions/SetPartyHealthIndicator.lua
-Functions/SetNameplateHealthDisplay.lua
-Functions/PartyLeaveButton.lua
+Functions/SetNameplateDisabled.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
+Functions/HealingIndicator.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
+Functions/AnnounceLevelUpToGuild.lua
 
 Functions/Statistics/TrackLowestHealth.lua
+Functions/Statistics/TrackXPPerSetting.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua
@@ -59,6 +59,7 @@ Functions/Overlays/CustomResourceBar.lua
 Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
+Functions/Overlays/ShowHealingOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
 Functions/Overlays/ShowShadowDamageOverlay.lua
@@ -72,6 +73,7 @@ Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
+Settings/XFoundMode.lua
 
 ## Constants
 Constants/WolfLikeNPCs.lua
