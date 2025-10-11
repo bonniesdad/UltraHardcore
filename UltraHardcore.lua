@@ -23,6 +23,7 @@ GLOBAL_SETTINGS = {
   disableNameplateHealth = true,
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
+  setFirstPersonCamera = false,
 }
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
@@ -53,6 +54,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     SetAllGroupIndicators()
     DisablePetCombatText()
     RepositionPetHappinessTexture()

@@ -77,6 +77,10 @@ local settingsCheckboxOptions = { {
   name = 'Hide UI Error Messages',
   dbSettingsValueName = 'hideUIErrors',
   tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
+}, {
+  name = 'First Person Camera',
+  dbSettingsValueName = 'setFirstPersonCamera',
+  tooltip = 'Play in first person mode, allows to look around for briew records of time',
 } }
 
 local presets = { {
@@ -137,6 +141,7 @@ local presets = { {
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
   hideUIErrors = false,
+  setFirstPersonCamera = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -865,7 +870,8 @@ local function createCheckboxes()
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
-        "hideUIErrors"
+        "hideUIErrors",
+        "setFirstPersonCamera"
       }
     }
   }
