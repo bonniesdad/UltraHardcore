@@ -58,7 +58,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Hide Action Bars when not resting (Level 6+)',
   dbSettingsValueName = 'hideActionBars',
-  tooltip = 'Hide action bars when not resting or near a campfire',
+  tooltip = 'Hide action bars when not resting or near a campfire.\nKicks in at level 6 to give the player time to get to an inn or capital.',
 }, {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
