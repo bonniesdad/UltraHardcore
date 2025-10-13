@@ -1,94 +1,55 @@
-local isTransitioning = false
-local currentActiveFrame = nil
+-- Initialize the tunnel vision frames table if it doesn't exist
+if not UltraHardcore.tunnelVisionFrames then
+  UltraHardcore.tunnelVisionFrames = {}
+end
 
-lastCalledBlurIntensity = 0
 -- 🟢 Function to apply blur with increasing intensity based on health percentage
+-- Now supports stacking multiple overlays
 function ShowTunnelVision(blurIntensity)
-  if (blurIntensity == lastCalledBlurIntensity) then return end
-
-  lastCalledBlurIntensity = blurIntensity
-
-  -- Initialize frames if they don't exist
-  if not UltraHardcore.tunnelVisionFrame then
-    local tunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
+  -- Create a unique frame name based on blur intensity
+  local frameName = 'UltraHardcoreTunnelVision_' .. blurIntensity
+  
+  -- Check if frame already exists and is visible
+  if UltraHardcore.tunnelVisionFrames[frameName] and UltraHardcore.tunnelVisionFrames[frameName]:IsShown() then
+    return -- Frame already exists and is visible
+  end
+  
+  -- Create the frame if it doesn't exist
+  if not UltraHardcore.tunnelVisionFrames[frameName] then
+    local tunnelVisionFrame = CreateFrame('Frame', frameName, UIParent)
     tunnelVisionFrame:SetAllPoints(UIParent)
     
     -- Set frame strata and level based on tunnelVisionMaxStrata setting
     if GLOBAL_SETTINGS.tunnelVisionMaxStrata then
       tunnelVisionFrame:SetFrameStrata('FULLSCREEN_DIALOG')
-      tunnelVisionFrame:SetFrameLevel(1000)
+      tunnelVisionFrame:SetFrameLevel(1000 + blurIntensity) -- Stack frames with different levels
     else
       tunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
-      tunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
+      tunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1 + blurIntensity) -- Stack frames with different levels
     end
     
     tunnelVisionFrame.texture = tunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
     tunnelVisionFrame.texture:SetAllPoints()
     tunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
-    UltraHardcore.tunnelVisionFrame = tunnelVisionFrame
-  end
-
-  if not UltraHardcore.backupTunnelVisionFrame then
-    local backupTunnelVisionFrame = CreateFrame('Frame', nil, UIParent)
-    backupTunnelVisionFrame:SetAllPoints(UIParent)
     
-    -- Set frame strata and level based on tunnelVisionMaxStrata setting
-    if GLOBAL_SETTINGS.tunnelVisionMaxStrata then
-      backupTunnelVisionFrame:SetFrameStrata('FULLSCREEN_DIALOG')
-      backupTunnelVisionFrame:SetFrameLevel(1000)
-    else
-      backupTunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
-      backupTunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1)
-    end
-    
-    backupTunnelVisionFrame.texture = backupTunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
-    backupTunnelVisionFrame.texture:SetAllPoints()
-    backupTunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
-    UltraHardcore.backupTunnelVisionFrame = backupTunnelVisionFrame
+    -- Store the frame reference
+    UltraHardcore.tunnelVisionFrames[frameName] = tunnelVisionFrame
   end
-
-  -- Determine which frame is currently active
-  local activeFrame = nil
-  local inactiveFrame = nil
   
-  if UltraHardcore.tunnelVisionFrame:IsShown() and UltraHardcore.tunnelVisionFrame:GetAlpha() > 0 then
-    activeFrame = UltraHardcore.tunnelVisionFrame
-    inactiveFrame = UltraHardcore.backupTunnelVisionFrame
-  elseif UltraHardcore.backupTunnelVisionFrame:IsShown() and UltraHardcore.backupTunnelVisionFrame:GetAlpha() > 0 then
-    activeFrame = UltraHardcore.backupTunnelVisionFrame
-    inactiveFrame = UltraHardcore.tunnelVisionFrame
-  else
-    -- No frame is currently active, use tunnelVisionFrame as default
-    activeFrame = UltraHardcore.tunnelVisionFrame
-    inactiveFrame = UltraHardcore.backupTunnelVisionFrame
-  end
-
-  -- Set the texture on the inactive frame first
+  local frame = UltraHardcore.tunnelVisionFrames[frameName]
+  
+  -- Set the texture
   local texturePath =
     'Interface\\AddOns\\UltraHardcore\\textures\\tinted_foggy_' .. string.format(
       '%02d',
       blurIntensity
     ) .. '.png'
   
-  inactiveFrame.texture:SetTexture(texturePath)
-  inactiveFrame:SetAlpha(0)
-  inactiveFrame:Show()
+  frame.texture:SetTexture(texturePath)
+  frame:SetAlpha(0)
+  frame:Show()
 
-  -- Smooth transition: fade out active frame while fading in inactive frame
-  local fadeDuration = 0.8 -- Slightly faster transition for smoother feel
-  
-  -- Stop any existing transitions
-  UIFrameFadeOut(activeFrame, 0, activeFrame:GetAlpha(), activeFrame:GetAlpha())
-  UIFrameFadeOut(inactiveFrame, 0, inactiveFrame:GetAlpha(), inactiveFrame:GetAlpha())
-  
-  -- Start the cross-fade transition
-  UIFrameFadeOut(activeFrame, fadeDuration, activeFrame:GetAlpha(), 0)
-  UIFrameFadeIn(inactiveFrame, fadeDuration, 0, 1)
-  
-  -- Hide the old frame after transition completes
-  C_Timer.After(fadeDuration + 0.1, function()
-    if activeFrame:GetAlpha() == 0 then
-      activeFrame:Hide()
-    end
-  end)
+  -- Smooth fade in
+  local fadeDuration = 0.5 -- Fade in duration for new overlays
+  UIFrameFadeIn(frame, fadeDuration, 0, 1)
 end

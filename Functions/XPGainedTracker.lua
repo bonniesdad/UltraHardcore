@@ -48,40 +48,9 @@ local function EndSession()
   end
 end
 
--- Function to get XP gained with addon (current session)
-local function GetXPWithAddon()
-  if sessionStartXP then
-    local currentXP = UnitXP("player")
-    return currentXP - sessionStartXP
-  end
-  return 0
-end
-
--- Function to display current XP tracking
-local function DisplayXP()
-  local xpWithout = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
-  local xpWith = GetXPWithAddon()
-  local currentXP = UnitXP("player")
-  
-  print("UHC - XP gained with addon (this session): " .. xpWith)
-  print("UHC - Total XP gained without addon: " .. xpWithout)
-  print("UHC - Current character XP: " .. currentXP)
-  
-  local totalXPGained = xpWithout + xpWith
-  print("UHC - Total XP gained across all sessions: " .. totalXPGained)
-end
-
 -- Export functions globally
 _G.InitializeSessionTracking = InitializeSessionTracking
 _G.EndSession = EndSession
-_G.GetXPWithAddon = GetXPWithAddon
-_G.DisplayXP = DisplayXP
-
--- Register slash command to display XP tracking (read-only)
-SLASH_XP1 = "/xp"
-SlashCmdList["XP"] = function()
-  DisplayXP()
-end
 
 -- Register events for automatic session tracking
 local sessionFrame = CreateFrame("Frame")

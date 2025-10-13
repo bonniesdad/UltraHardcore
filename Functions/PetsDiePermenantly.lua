@@ -1,28 +1,33 @@
--- Function to prevent hunters from reviving their pets
-local function PreventPetRevival()
-    -- Hook into the revive pet spell
-    hooksecurefunc("CastSpellByName", function(spellName)
-        if spellName == "Revive Pet" then
-            -- Check if the player is a hunter
-            local _, playerClass = UnitClass("player")
-            if playerClass == "HUNTER" then
-                -- Cancel the spell cast
-                SpellStopCasting()
-                -- Notify the player
-                DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UltraHardcore]|r Your pet has died permanently and cannot be revived.", 1, 0, 0)
-            end
-        end
-    end)
-end
-
--- Register the function to run when the addon loads
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("ADDON_LOADED")
-frame:SetScript("OnEvent", function(self, event, addonName)
-    if (event == "PLAYER_ENTERING_WORLD" or (event == "ADDON_LOADED" and addonName == "UltraHardcore")) then
-        if GLOBAL_SETTINGS.petsDiePermanently then
-            PreventPetRevival()
-        end
+-- Function to abandon pet when it dies
+function CheckAndAbandonPet()
+    
+    -- Check if player has a pet
+    if not UnitExists("pet") then
+        return
     end
-end)
+
+    -- Check if pet is dead
+    local isDead = UnitIsDead("pet")
+    if not isDead then
+        return
+    end
+
+    -- Increment pet death count for hunter and lock
+    local currentPetDeaths = CharacterStats:GetStat('petDeaths') or 0
+    CharacterStats:UpdateStat('petDeaths', currentPetDeaths + 1)
+    
+    -- Check if the player is a hunter
+    local _, playerClass = UnitClass("player")
+    if playerClass ~= "HUNTER" then
+        return
+    end
+
+    if not GLOBAL_SETTINGS.petsDiePermanently then
+        return
+    end
+    
+
+    -- Pet is dead, abandon it immediately
+    PetAbandon()
+    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Your pet has died and been abandoned. Pet deaths: " .. (currentPetDeaths + 1), 1, 0, 0)
+end

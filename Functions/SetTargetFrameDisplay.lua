@@ -3,8 +3,11 @@ function SetTargetFrameDisplay(hide)
 
   -- Function to forcibly hide both Target Frame and Target of Target Frame
   local function HideTargetFrames()
-    TargetFrame:Hide()
-    TargetFrameToT:Hide()
+    -- Only try to hide frames if not in combat to avoid protected function errors
+    if not UnitAffectingCombat("player") then
+      TargetFrame:Hide()
+      TargetFrameToT:Hide()
+    end
   end
 
   -- Completely block Blizzard's attempts to show the frame
@@ -13,18 +16,26 @@ function SetTargetFrameDisplay(hide)
 
   -- Override Show() function so the frames can never appear
   TargetFrame:SetScript('OnShow', function(self)
-    self:Hide()
+    if not UnitAffectingCombat("player") then
+      self:Hide()
+    end
   end)
   TargetFrameToT:SetScript('OnShow', function(self)
-    self:Hide()
+    if not UnitAffectingCombat("player") then
+      self:Hide()
+    end
   end)
 
   -- Hook into Blizzard's force-show logic
   hooksecurefunc(TargetFrame, 'Show', function(self)
-    self:Hide()
+    if not UnitAffectingCombat("player") then
+      self:Hide()
+    end
   end)
   hooksecurefunc(TargetFrameToT, 'Show', function(self)
-    self:Hide()
+    if not UnitAffectingCombat("player") then
+      self:Hide()
+    end
   end)
 
   -- Create an event listener to actively hide frames when certain conditions occur
@@ -37,6 +48,17 @@ function SetTargetFrameDisplay(hide)
   frameHider:RegisterEvent('UNIT_COMBAT') -- Any combat-related action
   frameHider:SetScript('OnEvent', HideTargetFrames)
 
-  -- Hard override: Force-hide every frame
-  frameHider:SetScript('OnUpdate', HideTargetFrames)
+  -- Initial hide when not in combat - defer until safe
+  local function SafeInitialHide()
+    if not UnitAffectingCombat("player") then
+      HideTargetFrames()
+    end
+  end
+  
+  -- Try to hide immediately, but if in combat, defer until combat ends
+  if UnitAffectingCombat("player") then
+    -- Will be handled by PLAYER_REGEN_ENABLED event that's already registered
+  else
+    SafeInitialHide()
+  end
 end

@@ -4,7 +4,7 @@
 
 [![WoW Classic Era](https://img.shields.io/badge/WoW-Classic%20Era-orange)](https://worldofwarcraft.com/en-us/wowclassic)
 [![Interface](https://img.shields.io/badge/Interface-11507-blue)](https://github.com/bonniesdad/UltraHardcore)
-[![Version](https://img.shields.io/badge/Version-1.1.3-green)](https://github.com/bonniesdad/UltraHardcore/releases)
+[![Version](https://img.shields.io/badge/Version-1.2.0-green)](https://github.com/bonniesdad/UltraHardcore/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 Ultra Hardcore is a comprehensive World of Warcraft Classic addon designed to push the boundaries of the already challenging hardcore mode. By systematically removing critical UI elements and introducing punishing visual effects, this addon creates an authentic old-school gaming experience where every decision matters and death lurks around every corner.
@@ -284,11 +284,9 @@ The addon's behavior is controlled through a comprehensive global settings objec
 GLOBAL_SETTINGS = {
     hidePlayerFrame = true,        -- Remove health bar visibility
     hideMinimap = true,           -- Hide minimap for navigation challenge
-    hideBuffFrame = true,         -- Remove buff/debuff indicators
     hideTargetFrame = true,       -- Hide target information
     hideTargetTooltip = true,     -- Remove target tooltips
     showTunnelVision = true,      -- Enable death indicator screen effect
-    hideQuestFrame = true,        -- Hide quest tracking information
     showDazedEffect = true,       -- Enable dazed blur overlay
     showCritScreenMoveEffect = true, -- Enable critical hit screen rotation
     hideActionBars = false,       -- Control action bar visibility (rested areas only)

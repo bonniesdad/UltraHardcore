@@ -37,7 +37,7 @@ frame:SetScript('OnEvent', function(self, event)
 
           if not isGuildMember then
             ReturnInboxItem(i) -- Deletes mail from non-guild members
-            SendChatMessage('[Ultra Hardcore] —  Mail from non-guild members is blocked.', 'EMOTE')
+            SendChatMessage('[UHC] —  Mail from non-guild members is blocked.', 'EMOTE')
           end
         end
       end
@@ -45,7 +45,7 @@ frame:SetScript('OnEvent', function(self, event)
     if event == 'TRADE_SHOW' then
       local targetName = UnitName('NPC') -- Gets the trade target
       if targetName and not IsInGuild() then
-        SendChatMessage('[Ultra Hardcore] — Trade cancelled: You are not in my guild.', 'EMOTE')
+        SendChatMessage('[UHC] — Trade cancelled: You are not in my guild.', 'EMOTE')
         CancelTrade()
         return
       end
@@ -58,10 +58,10 @@ frame:SetScript('OnEvent', function(self, event)
         end
       end
 
-      SendChatMessage('[Ultra Hardcore] — Trade cancelled: You are not in my guild.', 'EMOTE')
+      SendChatMessage('[UHC] — Trade cancelled: You are not in my guild.', 'EMOTE')
       CancelTrade()
     elseif event == 'AUCTION_HOUSE_SHOW' then
-      SendChatMessage('[Ultra Hardcore] — I cannot use the Auction House.', 'EMOTE')
+      SendChatMessage('[UHC] — I cannot use the Auction House.', 'EMOTE')
       CloseAuctionHouse()
     end
   end

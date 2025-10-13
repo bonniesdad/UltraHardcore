@@ -80,9 +80,9 @@ function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
 end
 
-function OnPlayerLevelUpEvent(self, _, playerLevel)
-  SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, playerLevel)
-  if GLOBAL_SETTINGS.hideActionBars and playerLevel == MIN_LEVEL_HIDE_ACTION_BARS then
+function OnPlayerLevelUpEvent(self, event, newLevel)
+  SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars, newLevel)
+  if GLOBAL_SETTINGS.hideActionBars and newLevel == MIN_LEVEL_HIDE_ACTION_BARS then
     ShowHideActionBarsIntro()
   end
 end
@@ -123,4 +123,3 @@ f:SetScript("OnEvent", function(self, event, ...)
   end
 end)
 
---Also as for flight path action bars. You will want to add two new events
