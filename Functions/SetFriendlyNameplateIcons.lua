@@ -2,7 +2,7 @@
 -- Overrides friendly nameplates with health-based icons instead of health bars
 
 -- Cache for nameplate icon frames
-FRIENDLY_NAMEPLATE_ICONS = {}
+local FRIENDLY_NAMEPLATE_ICONS = {}
 
 function SetFriendlyNameplateIcons(enabled)
 	if not enabled then
@@ -37,8 +37,8 @@ function SetFriendlyNameplateIcons(enabled)
 					FRIENDLY_NAMEPLATE_ICONS[unit] = nil
 				end
 			elseif (event == "UNIT_HEALTH_FREQUENT" or event == "UNIT_HEALTH") and UnitIsFriend("player", unit) then
-				-- Update icon for friendly unit
-				UpdateFriendlyNameplateIcon(unit)
+				-- -- Update icon for friendly unit
+				-- UpdateFriendlyNameplateIcon(unit)
 			end
 		end)
 	end
