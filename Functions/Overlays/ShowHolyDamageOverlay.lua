@@ -29,7 +29,7 @@ function ShowHolyDamageOverlay()
     damageOverlayFrame:Show()
     UIFrameFadeIn(damageOverlayFrame, 0.3, 0, 1)
     
-    C_Timer.After(0.7, function()
+    C_Timer.After(1.5, function()
         if damageOverlayFrame and damageOverlayFrame:IsShown() then
             UIFrameFadeOut(damageOverlayFrame, 0.3, 1, 0)
         end
