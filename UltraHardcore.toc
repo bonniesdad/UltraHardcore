@@ -29,6 +29,7 @@ Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
+Functions/HidePlayerMapIndicators.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 
