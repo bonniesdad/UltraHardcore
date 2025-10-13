@@ -1,156 +1,183 @@
-local settingsCheckboxOptions = { {
-  -- Lite Preset Settings
-  name = 'UHC Player Frame',
-  dbSettingsValueName = 'hidePlayerFrame',
-  tooltip = 'Minimalistic player frame to hide own health',
-}, {
-  name = 'On Screen Statistics',
-  dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important UHC statistics on the screen at all times',
-}, {
-  name = 'Tunnel Vision',
-  dbSettingsValueName = 'showTunnelVision',
-  tooltip = 'The screen gets darker as you get closer to death',
-}, {
-  name = 'Announce Level Up to Guild',
-  dbSettingsValueName = 'announceLevelUpToGuild',
-  tooltip = 'Announces level ups to guild chat every 10th level',
-},
--- Recommended Preset Settings
- {
-  name = 'Tunnel Vision Covers Everything',
-  dbSettingsValueName = 'tunnelVisionMaxStrata',
-  tooltip = 'Tunnel Vision covers all UI elements',
-}, {
-  name = 'Hide Target Frame',
-  dbSettingsValueName = 'hideTargetFrame',
-  tooltip = 'Target frame is not visible, so you can\'t see the target\'s health or level',
-}, {
-  name = 'Hide Target Tooltips',
-  dbSettingsValueName = 'hideTargetTooltip',
-  tooltip = 'Target tooltips are not visible, so you can\'t see the target\'s health or level',
-}, {
-  name = 'Disable Nameplates',
-  dbSettingsValueName = 'disableNameplateHealth',
-  tooltip = 'Turns off nameplates, hiding healthbars above units',
-}, {
-  name = 'Show Dazed effect',
-  dbSettingsValueName = 'showDazedEffect',
-  tooltip = 'A blue blur effect appears around your character when dazed',
-}, {
-  name = 'UHC Party Frames',
-  dbSettingsValueName = 'hideGroupHealth',
-  tooltip = 'Party healthbars are hidden and replaced with a custom health indicator',
-}, {
-  name = 'Hide Minimap',
-  dbSettingsValueName = 'hideMinimap',
-  tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
-}, {
-  name = 'UHC Breath Indicator',
-  dbSettingsValueName = 'hideBreathIndicator',
-  tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-},
+local settingsCheckboxOptions = {
+	{
+		-- Lite Preset Settings
+		name = "UHC Player Frame",
+		dbSettingsValueName = "hidePlayerFrame",
+		tooltip = "Minimalistic player frame to hide own health",
+	},
+	{
+		name = "On Screen Statistics",
+		dbSettingsValueName = "showOnScreenStatistics",
+		tooltip = "Show important UHC statistics on the screen at all times",
+	},
+	{
+		name = "Tunnel Vision",
+		dbSettingsValueName = "showTunnelVision",
+		tooltip = "The screen gets darker as you get closer to death",
+	},
+	{
+		name = "Announce Level Up to Guild",
+		dbSettingsValueName = "announceLevelUpToGuild",
+		tooltip = "Announces level ups to guild chat every 10th level",
+	},
+	-- Recommended Preset Settings
+	{
+		name = "Tunnel Vision Covers Everything",
+		dbSettingsValueName = "tunnelVisionMaxStrata",
+		tooltip = "Tunnel Vision covers all UI elements",
+	},
+	{
+		name = "Hide Target Frame",
+		dbSettingsValueName = "hideTargetFrame",
+		tooltip = "Target frame is not visible, so you can't see the target's health or level",
+	},
+	{
+		name = "Hide Target Tooltips",
+		dbSettingsValueName = "hideTargetTooltip",
+		tooltip = "Target tooltips are not visible, so you can't see the target's health or level",
+	},
+	{
+		name = "Disable Nameplates",
+		dbSettingsValueName = "disableNameplateHealth",
+		tooltip = "Turns off nameplates, hiding healthbars above units",
+	},
+	{
+		name = "Show Friendly Nameplate Health Icons",
+		dbSettingsValueName = "showFriendlyNameplateIcons",
+		tooltip = "Shows a health indicator for friendly players on their nameplate",
+	},
+	{
+		name = "Show Dazed effect",
+		dbSettingsValueName = "showDazedEffect",
+		tooltip = "A blue blur effect appears around your character when dazed",
+	},
+	{
+		name = "UHC Party Frames",
+		dbSettingsValueName = "hideGroupHealth",
+		tooltip = "Party healthbars are hidden and replaced with a custom health indicator",
+	},
+	{
+		name = "Hide Minimap",
+		dbSettingsValueName = "hideMinimap",
+		tooltip = "Makes gathering resources a lot more challenging by hiding the minimap",
+	},
+	{
+		name = "UHC Breath Indicator",
+		dbSettingsValueName = "hideBreathIndicator",
+		tooltip = "Replace the breath bar with a increasingly red screen overlay when underwater",
+	},
+	-- Experimental Preset Settings
+	{
+		name = "UHC Incoming Crit Effect",
+		dbSettingsValueName = "showCritScreenMoveEffect",
+		tooltip = "A red screen rotation effect appears when you take a critical hit",
+	},
+	{
+		name = "Hide Action Bars when not resting",
+		dbSettingsValueName = "hideActionBars",
+		tooltip = "Hide action bars when not resting or near a campfire",
+	},
+	{
+		name = "Pets Die Permanently",
+		dbSettingsValueName = "petsDiePermanently",
+		tooltip = "Pets can't be resurrected when they are killed",
+	},
+	{
+		name = "UHC Full Health Indicator",
+		dbSettingsValueName = "showFullHealthIndicator",
+		tooltip = "The edges of the screen glow when you are at full health",
+	},
+	{
+		name = "UHC Incoming Damage Effect",
+		dbSettingsValueName = "showIncomingDamageEffect",
+		tooltip = "Various screen effects on incoming damage",
+	},
+	{
+		name = "UHC Incoming Healing Effect",
+		dbSettingsValueName = "showHealingIndicator",
+		tooltip = "Gold glow on the edges of the screen when you are healed",
+	},
+	{
+		name = "Hide UI Error Messages",
+		dbSettingsValueName = "hideUIErrors",
+		tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
+	},
+	{
+		name = "First Person Camera",
+		dbSettingsValueName = "setFirstPersonCamera",
+		tooltip = "Play in first person mode, allows to look around for brief records of time",
+	},
+}
 
--- Experimental Preset Settings
-{
-  name = 'UHC Incoming Crit Effect',
-  dbSettingsValueName = 'showCritScreenMoveEffect',
-  tooltip = 'A red screen rotation effect appears when you take a critical hit',
-}, {
-  name = 'Hide Action Bars when not resting',
-  dbSettingsValueName = 'hideActionBars',
-  tooltip = 'Hide action bars when not resting or near a campfire',
-}, {
-  name = 'Pets Die Permanently',
-  dbSettingsValueName = 'petsDiePermanently',
-  tooltip = 'Pets can\'t be resurrected when they are killed',
-}, {
-  name = 'UHC Full Health Indicator',
-  dbSettingsValueName = 'showFullHealthIndicator',
-  tooltip = 'The edges of the screen glow when you are at full health',
-}, {
-  name = 'UHC Incoming Damage Effect',
-  dbSettingsValueName = 'showIncomingDamageEffect',
-  tooltip = 'Various screen effects on incoming damage',
-}, {
-  name = 'UHC Incoming Healing Effect',
-  dbSettingsValueName = 'showHealingIndicator',
-  tooltip = 'Gold glow on the edges of the screen when you are healed',
-}, {
-  name = 'Hide UI Error Messages',
-  dbSettingsValueName = 'hideUIErrors',
-  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
-}, {
-  name = 'First Person Camera',
-  dbSettingsValueName = 'setFirstPersonCamera',
-  tooltip = 'Play in first person mode, allows to look around for briew records of time',
-} }
-
-local presets = { {
-  -- Preset 1: Lite
-  hidePlayerFrame = true,
-  hideMinimap = false,
-  hideTargetFrame = false,
-  hideTargetTooltip = false,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = false,
-  showDazedEffect = false,
-  showCritScreenMoveEffect = false,
-  hideActionBars = false,
-  hideGroupHealth = false,
-  petsDiePermanently = false,
-  showFullHealthIndicator = false,
-  disableNameplateHealth = false,
-  showIncomingDamageEffect = false,
-  showHealingIndicator = false,
-  hideBreathIndicator = false,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-}, {
-  -- Preset 2: Recommended
-  hidePlayerFrame = true,
-  hideMinimap = true,
-  hideTargetFrame = true,
-  hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = true,
-  showDazedEffect = true,
-  hideGroupHealth = true,
-  showCritScreenMoveEffect = false,
-  hideActionBars = false,
-  petsDiePermanently = false,
-  showFullHealthIndicator = false,
-  disableNameplateHealth = true,
-  showIncomingDamageEffect = false,
-  showHealingIndicator = false,
-  hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-}, {
-  -- Preset 3: Ultra
-  hidePlayerFrame = true,
-  hideMinimap = true,
-  hideTargetFrame = true,
-  hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = true,
-  showFullHealthIndicator = true,
-  disableNameplateHealth = true,
-  showIncomingDamageEffect = true,
-  showHealingIndicator = true,
-  showDazedEffect = true,
-  showCritScreenMoveEffect = true,
-  hideActionBars = true,
-  hideGroupHealth = true,
-  petsDiePermanently = true,
-  hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = true,
-  setFirstPersonCamera = false,
-} }
+local presets = {
+	{
+		-- Preset 1: Lite
+		hidePlayerFrame = true,
+		hideMinimap = false,
+		hideTargetFrame = false,
+		hideTargetTooltip = false,
+		showTunnelVision = true,
+		tunnelVisionMaxStrata = false,
+		showDazedEffect = false,
+		showCritScreenMoveEffect = false,
+		hideActionBars = false,
+		hideGroupHealth = false,
+		petsDiePermanently = false,
+		showFullHealthIndicator = false,
+		disableNameplateHealth = false,
+		showIncomingDamageEffect = false,
+		showHealingIndicator = false,
+		hideBreathIndicator = false,
+		showOnScreenStatistics = true,
+		announceLevelUpToGuild = true,
+		hideUIErrors = false,
+	},
+	{
+		-- Preset 2: Recommended
+		hidePlayerFrame = true,
+		hideMinimap = true,
+		hideTargetFrame = true,
+		hideTargetTooltip = true,
+		showTunnelVision = true,
+		tunnelVisionMaxStrata = true,
+		showDazedEffect = true,
+		hideGroupHealth = true,
+		showCritScreenMoveEffect = false,
+		hideActionBars = false,
+		petsDiePermanently = false,
+		showFullHealthIndicator = false,
+		disableNameplateHealth = true,
+		showIncomingDamageEffect = false,
+		showHealingIndicator = false,
+		hideBreathIndicator = true,
+		showOnScreenStatistics = true,
+		announceLevelUpToGuild = true,
+		hideUIErrors = false,
+	},
+	{
+		-- Preset 3: Ultra
+		hidePlayerFrame = true,
+		hideMinimap = true,
+		hideTargetFrame = true,
+		hideTargetTooltip = true,
+		showTunnelVision = true,
+		tunnelVisionMaxStrata = true,
+		showFullHealthIndicator = true,
+		disableNameplateHealth = true,
+		showIncomingDamageEffect = true,
+		showHealingIndicator = true,
+		showDazedEffect = true,
+		showCritScreenMoveEffect = true,
+		hideActionBars = true,
+		hideGroupHealth = true,
+		petsDiePermanently = true,
+		hideBreathIndicator = true,
+		showOnScreenStatistics = true,
+		announceLevelUpToGuild = true,
+		hideUIErrors = true,
+		setFirstPersonCamera = false,
+	},
+}
 
 -- Temporary settings storage and initialization function
 local tempSettings = {}
@@ -646,7 +673,6 @@ local settingDisplayNames = {
 	showFullHealthIndicator = "Use UHC Full Health Indicator",
 	showIncomingDamageEffect = "Use UHC Incoming Damage Effect",
 	showHealingIndicator = "Use UHC Incoming Healing Effect",
-	showFriendlyNameplateIcons = "Show Health Indicator on non-party friendlies",
 }
 
 -- Define preset sections with their settings
@@ -841,73 +867,7 @@ local totalHeight = (3 * 25) + (#settingsCheckboxOptions * 30) + (3 * 10) + 40 -
 scrollChild:SetSize(420, totalHeight)
 
 local function createCheckboxes()
-  local yOffset = -10
-  
-  -- Define preset sections with their settings (same as statistics section)
-  local presetSections = {
-    {
-      title = "Lite:",
-      settings = {
-        "hidePlayerFrame",
-        "showOnScreenStatistics", 
-        "showTunnelVision",
-        "announceLevelUpToGuild"
-      }
-    },
-    {
-      title = "Recommended:",
-      settings = {
-        "tunnelVisionMaxStrata",
-        "hideTargetFrame",
-        "hideTargetTooltip",
-        "disableNameplateHealth",
-        "showDazedEffect",
-        "hideGroupHealth",
-        "hideMinimap",
-        "hideBreathIndicator"
-      }
-    },
-    {
-      title = "Experimental:",
-      settings = {
-        "showCritScreenMoveEffect",
-        "hideActionBars",
-        "petsDiePermanently",
-        "showFullHealthIndicator",
-        "showIncomingDamageEffect",
-        "showHealingIndicator",
-        "hideUIErrors",
-        "setFirstPersonCamera"
-      }
-    }
-  }
-  
-  -- Create sections with headers and checkboxes
-  for sectionIndex, section in ipairs(presetSections) do
-    -- Create section header
-    local sectionHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    sectionHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, yOffset)
-    sectionHeader:SetText(section.title)
-    sectionHeader:SetTextColor(1, 1, 0.5) -- Light yellow color for headers
-    yOffset = yOffset - 25
-    
-    -- Create checkboxes for this section
-    for _, settingName in ipairs(section.settings) do
-      -- Find the checkbox item by dbSettingsValueName
-      local checkboxItem = nil
-      for _, item in ipairs(settingsCheckboxOptions) do
-        if item.dbSettingsValueName == settingName then
-          checkboxItem = item
-          break
-        end
-      end
-      
-      if checkboxItem then
-        local checkbox = CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
-        checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset) -- Indented for settings
-        checkbox.Text:SetText(checkboxItem.name)
-        checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0) -- Add 5 pixel gap between checkbox and text
-        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
+	local yOffset = -10
 
 	-- Define preset sections with their settings (same as statistics section)
 	local presetSections = {
@@ -927,11 +887,11 @@ local function createCheckboxes()
 				"hideTargetFrame",
 				"hideTargetTooltip",
 				"disableNameplateHealth",
+				"showFriendlyNameplateIcons",
 				"showDazedEffect",
 				"hideGroupHealth",
 				"hideMinimap",
 				"hideBreathIndicator",
-				"showFriendlyNameplateIcons",
 			},
 		},
 		{
@@ -944,6 +904,7 @@ local function createCheckboxes()
 				"showIncomingDamageEffect",
 				"showHealingIndicator",
 				"hideUIErrors",
+				"setFirstPersonCamera",
 			},
 		},
 	}
@@ -1107,22 +1068,22 @@ achievementsTitle:SetFontObject("GameFontNormalLarge")
 -- Save button for Settings tab only
 local saveButton = CreateFrame("Button", nil, tabContents[2], "UIPanelButtonTemplate")
 saveButton:SetSize(120, 30)
-saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
-saveButton:SetText('Save')
-saveButton:SetScript('OnClick', function()
-  -- Copy temporary settings to GLOBAL_SETTINGS
-  for key, value in pairs(tempSettings) do
-    GLOBAL_SETTINGS[key] = value
-  end
-  
-  -- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
-  if GLOBAL_SETTINGS.hidePlayerFrame then
-    SetCVar("statusText", "0")
-  end
-  
-  -- Save settings for current character
-  SaveCharacterSettings(GLOBAL_SETTINGS)
-  ReloadUI()
+saveButton:SetPoint("BOTTOM", tabContents[2], "BOTTOM", 0, -40)
+saveButton:SetText("Save")
+saveButton:SetScript("OnClick", function()
+	-- Copy temporary settings to GLOBAL_SETTINGS
+	for key, value in pairs(tempSettings) do
+		GLOBAL_SETTINGS[key] = value
+	end
+
+	-- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
+	if GLOBAL_SETTINGS.hidePlayerFrame then
+		SetCVar("statusText", "0")
+	end
+
+	-- Save settings for current character
+	SaveCharacterSettings(GLOBAL_SETTINGS)
+	ReloadUI()
 end)
 
 -- Share button for Statistics tab
