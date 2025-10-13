@@ -49,7 +49,9 @@ local settingsCheckboxOptions = { {
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-}, {
+}, 
+-- Experimental Preset Settings
+{
   name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
@@ -102,6 +104,8 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = false,
   showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -121,6 +125,8 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -140,7 +146,8 @@ local presets = { {
   petsDiePermanently = true,
   hideBreathIndicator = true,
   showOnScreenStatistics = true,
-  hideUIErrors = false,
+  announceLevelUpToGuild = true,
+  hideUIErrors = true,
   setFirstPersonCamera = false,
 } }
 
@@ -1042,8 +1049,8 @@ saveButton:SetScript('OnClick', function()
     SetCVar("statusText", "0")
   end
   
-  UltraHardcoreDB.GLOBAL_SETTINGS = GLOBAL_SETTINGS
-  SaveDBData('GLOBAL_SETTINGS', GLOBAL_SETTINGS)
+  -- Save settings for current character
+  SaveCharacterSettings(GLOBAL_SETTINGS)
   ReloadUI()
 end)
 
