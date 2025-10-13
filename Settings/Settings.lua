@@ -49,7 +49,8 @@ local settingsCheckboxOptions = { {
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-}, 
+},
+
 -- Experimental Preset Settings
 {
   name = 'UHC Incoming Crit Effect',
