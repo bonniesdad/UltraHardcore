@@ -56,7 +56,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
 }, {
-  name = 'Hide Action Bars when not resting',
+  name = 'Hide Action Bars when not resting (Level 6+)',
   dbSettingsValueName = 'hideActionBars',
   tooltip = 'Hide action bars when not resting or near a campfire',
 }, {
