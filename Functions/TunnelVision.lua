@@ -12,6 +12,12 @@ function TunnelVision(self, event, unit, showTunnelVision)
       return
     end
     
+    if healthPercent == 0 or healthPercent == nil then
+      RemoveTunnelVision()
+      previousHealthPercent = healthPercent
+      return
+    end
+    
     -- Determine which overlays should be active based on current health
     local shouldShow19 = healthPercent <= 20
     local shouldShow14 = healthPercent <= 40
