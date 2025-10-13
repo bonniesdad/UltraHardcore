@@ -38,7 +38,7 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 
   if hideActionBars and playerLevel >= MIN_LEVEL_HIDE_ACTION_BARS then
     local inCombat = UnitAffectingCombat("player") == true
-    if (IsResting() or HasCozyFire()) and not inCombat then
+    if (IsResting() or HasCozyFire() or UnitOnTaxi("player")) and not inCombat then
       ShowActionBars()
     else
       HideActionBars()
@@ -93,19 +93,33 @@ local function OnPlayerUnitAuraEvent(self, unit)
   end
 end
 
--- Self-contained event registration (only for events not handled by main addon)
+-- Self-contained event registration
 local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")  -- ensure correct state on login/reload
 f:RegisterEvent("PLAYER_UPDATE_RESTING")
+f:RegisterEvent("PLAYER_LEVEL_UP")
 f:RegisterEvent("UNIT_AURA")
 f:RegisterEvent("PLAYER_REGEN_DISABLED") -- entering combat
 f:RegisterEvent("PLAYER_REGEN_ENABLED")  -- leaving combat
+f:RegisterEvent("PLAYER_CONTROL_LOST")
+f:RegisterEvent("PLAYER_CONTROL_GAINED")
 
 f:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_UPDATE_RESTING" then
+  if event == "PLAYER_ENTERING_WORLD" then
+    SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == "PLAYER_UPDATE_RESTING" then
     OnPlayerUpdateRestingEvent(self, ...)
+  elseif event == "PLAYER_LEVEL_UP" then
+    OnPlayerLevelUpEvent(self, ...)
   elseif event == "UNIT_AURA" then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == "PLAYER_CONTROL_LOST" or event == "PLAYER_CONTROL_GAINED" then
+    -- I have to add a small delay otherwise the UnitOnTaxi() has not registered
+    C_Timer.After(0.1, function()
+      SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+    end)
   end
 end)
+
