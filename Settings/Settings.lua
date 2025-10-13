@@ -79,6 +79,10 @@ local settingsCheckboxOptions = { {
   name = 'Hide UI Error Messages',
   dbSettingsValueName = 'hideUIErrors',
   tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
+}, {
+  name = 'First Person Camera',
+  dbSettingsValueName = 'setFirstPersonCamera',
+  tooltip = 'Play in first person mode, allows to look around for briew records of time',
 } }
 
 local presets = { {
@@ -144,6 +148,7 @@ local presets = { {
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
   hideUIErrors = true,
+  setFirstPersonCamera = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -835,7 +840,73 @@ local totalHeight = (3 * 25) + (#settingsCheckboxOptions * 30) + (3 * 10) + 40 -
 scrollChild:SetSize(420, totalHeight)
 
 local function createCheckboxes()
-	local yOffset = -10
+  local yOffset = -10
+  
+  -- Define preset sections with their settings (same as statistics section)
+  local presetSections = {
+    {
+      title = "Lite:",
+      settings = {
+        "hidePlayerFrame",
+        "showOnScreenStatistics", 
+        "showTunnelVision",
+        "announceLevelUpToGuild"
+      }
+    },
+    {
+      title = "Recommended:",
+      settings = {
+        "tunnelVisionMaxStrata",
+        "hideTargetFrame",
+        "hideTargetTooltip",
+        "disableNameplateHealth",
+        "showDazedEffect",
+        "hideGroupHealth",
+        "hideMinimap",
+        "hideBreathIndicator"
+      }
+    },
+    {
+      title = "Experimental:",
+      settings = {
+        "showCritScreenMoveEffect",
+        "hideActionBars",
+        "petsDiePermanently",
+        "showFullHealthIndicator",
+        "showIncomingDamageEffect",
+        "showHealingIndicator",
+        "hideUIErrors",
+        "setFirstPersonCamera"
+      }
+    }
+  }
+  
+  -- Create sections with headers and checkboxes
+  for sectionIndex, section in ipairs(presetSections) do
+    -- Create section header
+    local sectionHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+    sectionHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, yOffset)
+    sectionHeader:SetText(section.title)
+    sectionHeader:SetTextColor(1, 1, 0.5) -- Light yellow color for headers
+    yOffset = yOffset - 25
+    
+    -- Create checkboxes for this section
+    for _, settingName in ipairs(section.settings) do
+      -- Find the checkbox item by dbSettingsValueName
+      local checkboxItem = nil
+      for _, item in ipairs(settingsCheckboxOptions) do
+        if item.dbSettingsValueName == settingName then
+          checkboxItem = item
+          break
+        end
+      end
+      
+      if checkboxItem then
+        local checkbox = CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
+        checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset) -- Indented for settings
+        checkbox.Text:SetText(checkboxItem.name)
+        checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0) -- Add 5 pixel gap between checkbox and text
+        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
 	-- Define preset sections with their settings (same as statistics section)
 	local presetSections = {

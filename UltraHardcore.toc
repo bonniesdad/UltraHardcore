@@ -29,6 +29,7 @@ Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 FUnctions/SetFriendlyNameplateIcons.lua
+Functions/FirstPersonCamera.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua

@@ -41,6 +41,7 @@ function LoadDBData()
     showIncomingDamageEffect = false,
     showHealingIndicator = false,
     hideUIErrors = false,
+    setFirstPersonCamera = false,
   }
   
   -- Initialize settings for current character if they don't exist

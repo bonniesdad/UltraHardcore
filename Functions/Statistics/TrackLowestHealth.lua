@@ -4,6 +4,19 @@ local isDueling = false
 
 local combatLowest = nil
 
+local function IsFeigningDeath()
+  for i = 1, 40 do
+  local name, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", i)
+    if not name then
+      break
+    end
+    if spellId == 5384 or name == "Feign Death" then
+      return true
+    end
+  end
+  return false
+end
+
 local function leftCombat()
 	if combatLowest == nil then
 		return
@@ -114,6 +127,12 @@ frame:SetScript("OnEvent", function(self, event, arg1, arg2, arg3)
 		print("|cfff44336[UHC]|r |cfff0f000New session! This Session lowest health has been reset.|r")
 	elseif event == "PLAYER_REGEN_ENABLED" then
 		leftCombat()
+		return
+	end
+
+	local feigning  = IsFeigningDeath()
+
+	if feigning then
 		return
 	end
 
