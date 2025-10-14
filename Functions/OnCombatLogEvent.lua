@@ -185,4 +185,46 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat('grenadesUsed', newCount)
     end
   end
+
+  -- Party member death tracking
+  if subEvent == 'UNIT_DIED' then
+    -- Check if the dead unit is a party member (not the player)
+    local playerGUID = UnitGUID('player')
+    if destGUID ~= playerGUID and IsInGroup() then
+      -- Check if the dead unit is a party member
+      local isPartyMember = false
+      local deadPlayerName = nil
+      
+      if IsInRaid() then
+        for i = 1, GetNumGroupMembers() do
+          local name, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
+          if guid == destGUID then
+            isPartyMember = true
+            deadPlayerName = name
+            break
+          end
+        end
+      else
+        -- Regular party (not raid)
+        for i = 1, GetNumGroupMembers() do
+          local unitID = 'party' .. i
+          if UnitGUID(unitID) == destGUID then
+            isPartyMember = true
+            deadPlayerName = UnitName(unitID)
+            break
+          end
+        end
+      end
+      
+      -- If it's a party member, increment the death count
+      if isPartyMember and deadPlayerName then
+        local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+        local newCount = currentPartyDeaths + 1
+        CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+        
+        -- Optional: Print a message to chat
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+      end
+    end
+  end
 end
