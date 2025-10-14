@@ -38,6 +38,8 @@ UltraHardcore:SetScript("OnEvent", function(self, event, ...)
 		SetAllGroupIndicators()
 		DisablePetCombatText()
 		RepositionPetHappinessTexture()
+	elseif event == "ZONE_CHANGED_NEW_AREA" then
+		SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
 	elseif event == "UNIT_HEALTH_FREQUENT" then
 		local unit = ...
 		TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
