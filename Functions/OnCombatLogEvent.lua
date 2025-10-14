@@ -221,6 +221,9 @@ function OnCombatLogEvent(self, event)
         local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
         local newCount = currentPartyDeaths + 1
         CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+
+        -- Play sound file on party death
+        PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\HowDidWeDie.ogg", "SFX")
         
         -- Optional: Print a message to chat
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
