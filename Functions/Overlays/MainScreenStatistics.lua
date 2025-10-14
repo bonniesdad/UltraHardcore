@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 160)
+statsFrame:SetSize(200, 120)
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -41,45 +41,28 @@ sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
 sessionHealthValue:SetText('100.0%')
 sessionHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local elitesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
-elitesLabel:SetText('Elites Slain:')
-elitesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local elitesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
-elitesValue:SetText('0')
-elitesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local enemiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
+enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
 enemiesLabel:SetText('Enemies Slain:')
 enemiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local enemiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
+enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
 enemiesValue:SetText('0')
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local dungeonBossesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -80)
-dungeonBossesLabel:SetText('Dungeon Bosses:')
-dungeonBossesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local dungeonBossesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -80)
-dungeonBossesValue:SetText('0')
-dungeonBossesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonsCompletedLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -95)
+dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
 dungeonsCompletedLabel:SetText('Dungeons Completed:')
 dungeonsCompletedLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonsCompletedValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -95)
+dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
 dungeonsCompletedValue:SetText('0')
 dungeonsCompletedValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()
@@ -108,21 +91,14 @@ local function UpdateStatistics()
   local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
   sessionHealthValue:SetText(string.format("%.1f", currentSessionLowestHealth) .. '%')
   
-  -- Update elites slain
-  local elites = CharacterStats:GetStat('elitesSlain') or 0
-  elitesValue:SetText(tostring(elites))
-  
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   enemiesValue:SetText(tostring(enemies))
   
-  -- Update dungeon bosses killed
-  local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-  dungeonBossesValue:SetText(tostring(dungeonBosses))
-  
   -- Update dungeons completed
   local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
   dungeonsCompletedValue:SetText(tostring(dungeonsCompleted))
+  
 end
 
 -- Register events to update statistics when they change
