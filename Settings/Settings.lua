@@ -587,7 +587,7 @@ survivalLabel:SetText('Survival')
 
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-survivalContent:SetSize(450, 120) -- Height for 4 items
+survivalContent:SetSize(450, 145) -- Height for 5 items (increased from 4)
 survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -333) -- Indented more than header
 survivalContent:Show() -- Always show
 
@@ -615,7 +615,8 @@ local survivalStats = {
   {key = 'healthPotionsUsed', label = 'Health Potions Used:'},
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
-  {key = 'grenadesUsed', label = 'Grenades Used (Beta):'}
+  {key = 'grenadesUsed', label = 'Grenades Used (Beta):'},
+  {key = 'partyMemberDeaths', label = 'Roach Index:'}
 }
 
 local yOffset = -8
@@ -637,7 +638,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, 28)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -445) -- Moved down to make room for Survival section
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -470) -- Moved down to make room for expanded Survival section
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -664,7 +665,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 480) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -473) -- Moved down to make room for Survival section
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -498) -- Moved down to make room for expanded Survival section
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
