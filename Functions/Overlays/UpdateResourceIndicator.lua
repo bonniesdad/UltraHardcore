@@ -58,6 +58,13 @@ SlashCmdList.TOGGLEBONNIE = function()
   end
 end
 
+--[[ Debug slash command to play sound
+SLASH_ULTRAPIKA1 = '/ultrapika'
+SlashCmdList.ULTRAPIKA = function()
+  PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\HowDidWeDie.ogg", "SFX")
+end
+]]
+
 -- Event Handler
 resourceIndicator:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceIndicator:RegisterEvent('UNIT_POWER_FREQUENT')
