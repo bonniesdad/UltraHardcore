@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 100)
+statsFrame:SetSize(200, 120)
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -31,15 +31,16 @@ lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -20)
 lowestHealthValue:SetText('100.0%')
 lowestHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local elitesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
-elitesLabel:SetText('Elites Slain:')
-elitesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+local sessionHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+sessionHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+sessionHealthLabel:SetText('Session Lowest:')
+sessionHealthLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local elitesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
-elitesValue:SetText('0')
-elitesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+local sessionHealthValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+sessionHealthValue:SetText('100.0%')
+sessionHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 
 local enemiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
@@ -51,15 +52,17 @@ enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
 enemiesValue:SetText('0')
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local xpLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-xpLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
-xpLabel:SetText('XP Without Addon:')
-xpLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local xpValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-xpValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
-xpValue:SetText('0')
-xpValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+local dungeonsCompletedLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
+dungeonsCompletedLabel:SetText('Dungeons Completed:')
+dungeonsCompletedLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local dungeonsCompletedValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
+dungeonsCompletedValue:SetText('0')
+dungeonsCompletedValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()
@@ -84,17 +87,18 @@ local function UpdateStatistics()
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
   lowestHealthValue:SetText(string.format("%.1f", currentLowestHealth) .. '%')
   
-  -- Update elites slain
-  local elites = CharacterStats:GetStat('elitesSlain') or 0
-  elitesValue:SetText(tostring(elites))
+  -- Update session lowest health
+  local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
+  sessionHealthValue:SetText(string.format("%.1f", currentSessionLowestHealth) .. '%')
   
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   enemiesValue:SetText(tostring(enemies))
   
-  -- Update XP gained without addon
-  local xp = CharacterStats:GetStat('xpGainedWithoutAddon') or 0
-  xpValue:SetText(tostring(xp))
+  -- Update dungeons completed
+  local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+  dungeonsCompletedValue:SetText(tostring(dungeonsCompleted))
+  
 end
 
 -- Register events to update statistics when they change

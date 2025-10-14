@@ -89,6 +89,18 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
     end
 
+    -- Check if this was a dungeon boss kill
+    if IsDungeonBoss(destGUID) then
+      local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
+      CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
+    end
+
+    -- Check if this was a dungeon completion (final boss kill)
+    if IsDungeonFinalBoss(destGUID) then
+      local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+      CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
+    end
+
     local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
     CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
   end
@@ -101,6 +113,118 @@ function OnCombatLogEvent(self, event)
       'player'
     ) and spellID == 1604 then
       ShowDazedOverlay(false) -- Daze ended, disable blur
+    end
+  end
+
+  -- Bandage tracking using "Recently Bandaged" debuff
+  if subEvent == 'SPELL_AURA_APPLIED' and destGUID == UnitGUID('player') and spellID == 11196 then
+    local currentBandages = CharacterStats:GetStat('bandagesUsed') or 0
+    CharacterStats:UpdateStat('bandagesUsed', currentBandages + 1)
+  end
+
+  -- Health potion tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Common healing potion spell IDs in WoW Classic (these are the spell effects triggered by potion items)
+    local healingPotionSpellIDs = {
+      [439] = true, -- Minor Healing Potion 
+      [440] = true, -- Lesser Healing Potion 
+      [2370] = true, -- Rejuvenation Potion 
+      [441] = true, -- Healing Potion 
+      [2024] = true, -- Healing Potion 
+      [4042] = true, -- Healing Potion 
+      [11387] = true, -- Wildvine Potion 
+      [21394] = true, -- Healing Draught 
+      [17534] = true, -- Healing Potion 
+      [21393] = true, -- Healing Draught 
+      [22729] = true -- Rejuvenation Potion 
+    }
+    
+    if healingPotionSpellIDs[spellID] then
+      local currentHealthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
+      local newCount = currentHealthPotions + 1
+      CharacterStats:UpdateStat('healthPotionsUsed', newCount)
+    end
+  end
+
+  -- Target dummy tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Target dummy spell IDs in WoW Classic
+    local targetDummySpellIDs = {
+      [4071] = true, -- Target Dummy
+      [4072] = true, -- Advanced Target Dummy
+      [19805] = true -- Masterwork Target Dummy
+    }
+    
+    if targetDummySpellIDs[spellID] then
+      local currentTargetDummies = CharacterStats:GetStat('targetDummiesUsed') or 0
+      local newCount = currentTargetDummies + 1
+      CharacterStats:UpdateStat('targetDummiesUsed', newCount)
+    end
+  end
+
+  -- Grenade tracking
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    -- Grenade spell IDs in WoW Classic
+    local grenadeSpellIDs = {
+      [4064] = true, -- Rough Copper Bomb
+      [4065] = true, -- Large Copper Bomb
+      [4066] = true, -- Small Bronze Bomb
+      [4067] = true, -- Big Bronze Bomb
+      [4069] = true, -- Big Iron Bomb
+      [12421] = true, -- Mithril Frag Bomb
+      [12543] = true, -- Hi-Explosive Bomb
+      [19784] = true, -- Dark Iron Bomb
+      [4068] = true, -- Iron Grenade
+      [19769] = true, -- Thorium Grenade
+      [12562] = true -- The Big One
+    }
+    
+    if grenadeSpellIDs[spellID] then
+      local currentGrenades = CharacterStats:GetStat('grenadesUsed') or 0
+      local newCount = currentGrenades + 1
+      CharacterStats:UpdateStat('grenadesUsed', newCount)
+    end
+  end
+
+  -- Party member death tracking
+  if subEvent == 'UNIT_DIED' then
+    -- Check if the dead unit is a party member (not the player)
+    local playerGUID = UnitGUID('player')
+    if destGUID ~= playerGUID and IsInGroup() then
+      -- Check if the dead unit is a party member
+      local isPartyMember = false
+      local deadPlayerName = nil
+      
+      if IsInRaid() then
+        for i = 1, GetNumGroupMembers() do
+          local name, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
+          if guid == destGUID then
+            isPartyMember = true
+            deadPlayerName = name
+            break
+          end
+        end
+      else
+        -- Regular party (not raid)
+        for i = 1, GetNumGroupMembers() do
+          local unitID = 'party' .. i
+          if UnitGUID(unitID) == destGUID then
+            isPartyMember = true
+            deadPlayerName = UnitName(unitID)
+            break
+          end
+        end
+      end
+      
+      -- If it's a party member, increment the death count
+      if isPartyMember and deadPlayerName then
+        local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+        local newCount = currentPartyDeaths + 1
+        CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+        
+        -- Optional: Print a message to chat
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+      end
     end
   end
 end
