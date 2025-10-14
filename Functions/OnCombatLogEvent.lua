@@ -225,6 +225,9 @@ function OnCombatLogEvent(self, event)
         -- Optional: Print a message to chat
         DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
       end
+    elseif destGUID == playerGUID then
+      -- Player death sound
+      PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PlayerDeath.ogg", "SFX")
     end
   end
 end
