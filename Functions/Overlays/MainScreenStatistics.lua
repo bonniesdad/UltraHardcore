@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 120)
+statsFrame:SetSize(200, 160)
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -61,6 +61,26 @@ enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
 enemiesValue:SetText('0')
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+local dungeonBossesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -80)
+dungeonBossesLabel:SetText('Dungeon Bosses:')
+dungeonBossesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local dungeonBossesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -80)
+dungeonBossesValue:SetText('0')
+dungeonBossesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local dungeonsCompletedLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -95)
+dungeonsCompletedLabel:SetText('Dungeons Completed:')
+dungeonsCompletedLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local dungeonsCompletedValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -95)
+dungeonsCompletedValue:SetText('0')
+dungeonsCompletedValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showOnScreenStatistics then
@@ -95,6 +115,14 @@ local function UpdateStatistics()
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   enemiesValue:SetText(tostring(enemies))
+  
+  -- Update dungeon bosses killed
+  local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
+  dungeonBossesValue:SetText(tostring(dungeonBosses))
+  
+  -- Update dungeons completed
+  local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+  dungeonsCompletedValue:SetText(tostring(dungeonsCompleted))
 end
 
 -- Register events to update statistics when they change
