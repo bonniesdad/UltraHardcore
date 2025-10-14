@@ -321,7 +321,7 @@ statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 10)
 
 -- Create scroll child frame
 local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-statsScrollChild:SetSize(500, 720) -- Increased height to accommodate expanded lowest health section and larger XP content frame
+statsScrollChild:SetSize(500, 780) -- Increased height to accommodate expanded lowest health section, dungeon bosses, dungeons completed, and larger XP content frame
 statsScrollFrame:SetScrollChild(statsScrollChild)
 
 -- Create modern WoW-style lowest health section (no accordion functionality)
@@ -498,10 +498,70 @@ local elitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'Ga
 elitesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -12, -8)
 elitesSlainText:SetText('0')
 
+-- Create collapsible content frame for dungeon bosses slain
+local dungeonBossesContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+dungeonBossesContent:SetSize(450, 30)
+dungeonBossesContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -235) -- Positioned below elites slain
+dungeonBossesContent:Show() -- Show by default
+
+-- Modern content frame styling
+dungeonBossesContent:SetBackdrop({
+  bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+  edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+  tile = true,
+  tileSize = 16,
+  edgeSize = 8,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
+
+-- Create the dungeon bosses slain text display (indented)
+local dungeonBossesLabel = dungeonBossesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesLabel:SetPoint('TOPLEFT', dungeonBossesContent, 'TOPLEFT', 12, -8)
+dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
+
+local dungeonBossesText = dungeonBossesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesText:SetPoint('TOPRIGHT', dungeonBossesContent, 'TOPRIGHT', -12, -8)
+dungeonBossesText:SetText('0')
+
+-- Create collapsible content frame for dungeons completed
+local dungeonsCompletedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+dungeonsCompletedContent:SetSize(450, 30)
+dungeonsCompletedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -265) -- Positioned below dungeon bosses
+dungeonsCompletedContent:Show() -- Show by default
+
+-- Modern content frame styling
+dungeonsCompletedContent:SetBackdrop({
+  bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+  edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+  tile = true,
+  tileSize = 16,
+  edgeSize = 8,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
+
+-- Create the dungeons completed text display (indented)
+local dungeonsCompletedLabel = dungeonsCompletedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedLabel:SetPoint('TOPLEFT', dungeonsCompletedContent, 'TOPLEFT', 12, -8)
+dungeonsCompletedLabel:SetText('Dungeons Completed:')
+
+local dungeonsCompletedText = dungeonsCompletedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedText:SetPoint('TOPRIGHT', dungeonsCompletedContent, 'TOPRIGHT', -12, -8)
+dungeonsCompletedText:SetText('0')
+
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalHeader:SetSize(470, 28)
-survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -245)
+survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -305)
 
 -- Modern WoW row styling with rounded corners and greyish background
 survivalHeader:SetBackdrop({
@@ -528,7 +588,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 120) -- Height for 4 items
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -273) -- Indented more than header
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -333) -- Indented more than header
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -577,7 +637,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, 28)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -385) -- Moved down to make room for Survival section
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -445) -- Moved down to make room for Survival section
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -604,7 +664,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 480) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -413) -- Moved down to make room for Survival section
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -473) -- Moved down to make room for Survival section
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1189,6 +1249,16 @@ local function UpdateLowestHealthDisplay()
   if enemiesSlainText then
     local enemies = CharacterStats:GetStat('enemiesSlain') or 0
     enemiesSlainText:SetText(enemies)
+  end
+  
+  if dungeonBossesText then
+    local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
+    dungeonBossesText:SetText(dungeonBosses)
+  end
+  
+  if dungeonsCompletedText then
+    local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+    dungeonsCompletedText:SetText(dungeonsCompleted)
   end
   
   -- Update XP breakdown (always visible now)

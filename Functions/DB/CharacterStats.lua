@@ -35,6 +35,9 @@ local CharacterStats = {
     bandagesUsed = 0,
     targetDummiesUsed = 0,
     grenadesUsed = 0,
+    -- Combat statistics
+    dungeonBossesKilled = 0,
+    dungeonsCompleted = 0,
     -- Add more stats here as needed
   }
 }

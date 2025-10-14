@@ -89,6 +89,18 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
     end
 
+    -- Check if this was a dungeon boss kill
+    if IsDungeonBoss(destGUID) then
+      local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
+      CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
+    end
+
+    -- Check if this was a dungeon completion (final boss kill)
+    if IsDungeonFinalBoss(destGUID) then
+      local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+      CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
+    end
+
     local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
     CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
   end
@@ -115,18 +127,15 @@ function OnCombatLogEvent(self, event)
     -- Common healing potion spell IDs in WoW Classic (these are the spell effects triggered by potion items)
     local healingPotionSpellIDs = {
       [439] = true, -- Minor Healing Potion 
-      [440] = true, -- LesserHealing Potion 
+      [440] = true, -- Lesser Healing Potion 
       [2370] = true, -- Rejuvenation Potion 
-      [440] = true, -- Healing Potion 
       [441] = true, -- Healing Potion 
       [2024] = true, -- Healing Potion 
-      [4042] = true, -- Healing Potion 
       [4042] = true, -- Healing Potion 
       [11387] = true, -- Wildvine Potion 
       [21394] = true, -- Healing Draught 
       [17534] = true, -- Healing Potion 
       [21393] = true, -- Healing Draught 
-      [17534] = true, -- Healing Potion 
       [22729] = true -- Rejuvenation Potion 
     }
     
