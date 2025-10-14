@@ -73,10 +73,10 @@ Functions/Overlays/ShowArcaneDamageOverlay.lua
 Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
 Functions/Overlays/ShowFireDamageOverlay.lua
 Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
-
+ 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
-## Constants
+# ## Constants
 Constants/WolfLikeNPCs.lua

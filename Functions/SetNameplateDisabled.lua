@@ -4,7 +4,7 @@
 -- Global frame to prevent nameplates
 local nameplatePreventionFrame = nil
 local originalSetCVar = SetCVar
-local originalGetCVar = GetCVar
+-- local originalGetCVar = GetCVar
 
 -- Complete list of all nameplate CVars
 local nameplateCVars = {
@@ -33,7 +33,7 @@ local function targetValue(cvar)
 		return 0
 	end
 
-	if cvar == "nameplateShowAll" or cvar == "nameplateShowFriends" then
+	if cvar == "nameplateShowAll" or cvar == "nameplateShowFriends" or cvar == "nameplateShowFriendlyNPCs" then
 		return 1
 	end
 
@@ -51,7 +51,6 @@ function SetNameplateDisabled(disabled)
 		end
 		-- Restore original functions
 		SetCVar = originalSetCVar
-		GetCVar = originalGetCVar
 		return
 	end
 

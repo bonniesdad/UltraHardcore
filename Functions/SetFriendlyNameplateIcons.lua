@@ -1,9 +1,9 @@
--- Friendly Nameplate Health Icon Override
--- Overrides friendly nameplates with health-based icons instead of health bars
-
--- Cache for nameplate icon frames
+-- -- Friendly Nameplate Health Icon Override
+-- -- Overrides friendly nameplates with health-based icons instead of health bars
+--
+-- -- Cache for nameplate icon frames
 local FRIENDLY_NAMEPLATE_ICONS = {}
-
+--
 function SetFriendlyNameplateIcons(enabled)
 	if not enabled then
 		-- Hide all existing icons
@@ -43,7 +43,7 @@ function SetFriendlyNameplateIcons(enabled)
 		end)
 	end
 end
-
+--
 function CreateFriendlyNameplateIcon(unit)
 	local nameplateFrame = C_NamePlate.GetNamePlateForUnit(unit)
 	if not nameplateFrame then
@@ -64,15 +64,15 @@ function CreateFriendlyNameplateIcon(unit)
 	if not iconFrame then
 		iconFrame = nameplateFrame:CreateTexture(nil, "OVERLAY")
 		iconFrame:SetSize(24, 24)
-		iconFrame:SetPoint("CENTER", nameplateFrame.healthBar or nameplateFrame, "CENTER", 0, -10)
+		iconFrame:SetPoint("CENTER", nameplateFrame.UnitFrame.healthBar, "CENTER", 0, -10)
 		FRIENDLY_NAMEPLATE_ICONS[unit] = iconFrame
 	end
 
 	-- Update the icon
-	UpdateFriendlyNameplateIcon(unit)
+	-- UpdateFriendlyNameplateIcon(unit)
 	iconFrame:Show()
 end
-
+--
 function UpdateFriendlyNameplateIcon(unit)
 	local iconFrame = FRIENDLY_NAMEPLATE_ICONS[unit]
 	if not iconFrame then
