@@ -90,13 +90,15 @@ function OnCombatLogEvent(self, event)
     end
 
     -- Check if this was a dungeon boss kill
-    if IsDungeonBoss(destGUID) then
+    local isDungeonBoss, isRaidBoss = IsDungeonBoss(destGUID)
+    if isDungeonBoss then
       local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
       CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
     end
 
     -- Check if this was a dungeon completion (final boss kill)
-    if IsDungeonFinalBoss(destGUID) then
+    local isDungeonFinalBoss, isRaidFinalBoss = IsDungeonFinalBoss(destGUID)
+    if isDungeonFinalBoss then
       local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
       CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
     end
