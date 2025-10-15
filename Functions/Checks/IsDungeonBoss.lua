@@ -1,5 +1,7 @@
 function IsDungeonBoss(unitGUID)
 
+  if not unitGUID then return false, false end
+
   -- Early return if player isn't in a dungeon or raid instance
   local inInstance, instanceType = IsInInstance()
   if not inInstance or (instanceType ~= "party" and instanceType ~= "raid") then
@@ -408,6 +410,9 @@ function IsDungeonFinalBoss(unitGUID)
     [4421] = true,  -- Charlga Razorflank (final boss)
     
     -- Scarlet Monastery (Level 26-45)
+    [4543] = true,  -- Bloodmage Thalnos (GY final)
+    [6487] = true, -- Arcanist Doan (SM Library final)
+    [3975] = true, -- Herod (SM Armory final)
     [3977] = true,  -- High Inquisitor Whitemane (final boss of Cathedral)
     
     -- Razorfen Downs (Level 35-40)
@@ -435,13 +440,16 @@ function IsDungeonFinalBoss(unitGUID)
     [10363] = true, -- General Drakkisath (final boss)
     
     -- Dire Maul (Level 55-60)
-    [11501] = true, -- King Gordok (final boss of North wing)
+    [14324] = true, -- Cho'Rush the Observerk (final boss of North wing)
+    [11492] = true, -- Alzzin the Wildshaper (final boss of East wing)
+    [11486] = true, -- Prince Tortheldrin (final boss of West wing)
     
     -- Scholomance (Level 58-60)
     [1853] = true,  -- Darkmaster Gandling (final boss)
     
     -- Stratholme (Level 58-60)
-    [10440] = true, -- Lord Aurius Rivendare (final boss)
+    [10440] = true, -- Lord Aurius Rivendare (Stratholme Dead final boss)
+    [10813] = true, -- Balnazzar (Stratholme Live final boss)
   }
 
   -- Final bosses for each raid
