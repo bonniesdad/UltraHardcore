@@ -90,7 +90,8 @@ function OnCombatLogEvent(self, event)
     end
 
     -- Check if this was a dungeon boss kill
-    if IsDungeonBoss(destGUID) then
+    local isDungeonBoss, isRaidBoss = IsDungeonBoss(destGUID)
+    if isDungeonBoss or isRaidBoss then
       local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
       CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
     end
