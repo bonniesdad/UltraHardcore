@@ -185,8 +185,8 @@ function IsDungeonBoss(unitGUID)
     [9502] = true,  -- Phalanx
     [9017] = true,  -- Lord Incendius
     [9056] = true,  -- Fineous Darkvire
-    [9041] = true,  -- Warder Stilgiss
-    [9042] = true,  -- Verek
+    [9041] = true,  -- Warder Stilgiss (Verek is the dog)
+    [9042] = true,  -- Verek (Dog to Warder Stilgiss)
     [9156] = true,  -- Ambassador Flamelash
     [9938] = true,  -- Magmus
     [8929] = true,  -- Princess Moira Bronzebeard
@@ -197,12 +197,13 @@ function IsDungeonBoss(unitGUID)
     [9439] = true,  -- Dark Keeper Uggel
     [9437] = true,  -- Dark Keeper Vorfalk
     [9441] = true,  -- Dark Keeper Zimrel
-    [9034] = true,  -- Hate'rel
-    [9035] = true,  -- Anger'rel
-    [9036] = true,  -- Vile'rel
-    [9037] = true,  -- Gloom'rel
-    [9038] = true,  -- Seeth'rel
-    [9040] = true,  -- Dope'rel
+    [9039] = true,  -- Doom'rel (Chest of the Seven)
+    [9034] = true,  -- Hate'rel (Chest of the Seven)
+    [9035] = true,  -- Anger'rel (Chest of the Seven)
+    [9036] = true,  -- Vile'rel (Chest of the Seven)
+    [9037] = true,  -- Gloom'rel (Chest of the Seven)
+    [9038] = true,  -- Seeth'rel (Chest of the Seven)
+    [9040] = true,  -- Dope'rel (Chest of the Seven)
     
     -- Blackrock Spire (Zone ID: 1583)
     [9196] = true,  -- Highlord Omokk
