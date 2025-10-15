@@ -27,6 +27,7 @@ Functions/FullHealthReachedIndicator.lua
 Functions/HealingIndicator.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
+Functions/ProfessionPanel.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
 
