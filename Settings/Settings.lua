@@ -616,7 +616,7 @@ local survivalStats = {
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
   {key = 'grenadesUsed', label = 'Grenades Used (Beta):'},
-  {key = 'partyMemberDeaths', label = 'Roach Index:'}
+  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'}
 }
 
 local yOffset = -8

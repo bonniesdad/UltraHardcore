@@ -358,7 +358,7 @@ function CharacterStats:ShowChatChannelDialog()
   
   local partyDeathsText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   partyDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
-  partyDeathsText:SetText("Roach index: " .. stats.partyMemberDeaths)
+  partyDeathsText:SetText("Party Deaths Witnessed: " .. stats.partyMemberDeaths)
   
   local elitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
@@ -399,7 +399,7 @@ function CharacterStats:ShowChatChannelDialog()
     end
     
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Roach index: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Party Deaths Witnessed: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
     
     dialog:Hide()
