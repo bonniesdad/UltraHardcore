@@ -8,6 +8,10 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE = {
   'ManaBar',
   'Texture',
   'Background',
+  'PetFrameBackground',
+  'PetFrameTexture',
+  'PetFrameHealthBar',
+  'PetFrameManaBar',
 }
 
 function SetPartyFramesInfo(hideGroupHealth)
@@ -27,20 +31,26 @@ function SetPartyFrameInfo(n)
     -- Move Name subframe down a few pixels to be centered with the portrait
     local nameFrame = _G['PartyMemberFrame' .. n .. "Name"]
     
-    if nameFrame then
+    if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
+      nameFrame:ClearAllPoints()
       nameFrame:SetPoint("BOTTOMLEFT", 55, 25)
     end
   end
   
   -- Move the entire party frame to the right by 100px and stack vertically
   local partyFrame = _G['PartyMemberFrame' .. n]
-  if partyFrame then
+  if partyFrame and partyFrame.SetPoint and partyFrame.ClearAllPoints then
+    -- Clear any existing anchor points to prevent anchor family connection errors
+    partyFrame:ClearAllPoints()
+    
     -- Position each party frame vertically below the previous one
     local verticalOffset = -120 - ((n - 1) * 60) -- 60px spacing between frames
     partyFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 80, verticalOffset)
     
     -- Set party frame to highest tooltip level (above 1000)
-    partyFrame:SetFrameLevel(1500)
+    if partyFrame.SetFrameLevel then
+      partyFrame:SetFrameLevel(1500)
+    end
   end
   
   -- Reposition target highlights to match the moved party frame
