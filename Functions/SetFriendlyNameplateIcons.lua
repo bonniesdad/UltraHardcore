@@ -38,7 +38,7 @@ function SetFriendlyNameplateIcons(enabled)
 				end
 			elseif (event == "UNIT_HEALTH_FREQUENT" or event == "UNIT_HEALTH") and UnitIsFriend("player", unit) then
 				-- -- Update icon for friendly unit
-				-- UpdateFriendlyNameplateIcon(unit)
+				UpdateFriendlyNameplateIcon(unit)
 			end
 		end)
 	end
@@ -69,7 +69,7 @@ function CreateFriendlyNameplateIcon(unit)
 	end
 
 	-- Update the icon
-	-- UpdateFriendlyNameplateIcon(unit)
+	UpdateFriendlyNameplateIcon(unit)
 	iconFrame:Show()
 end
 --

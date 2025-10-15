@@ -33,7 +33,7 @@ local function targetValue(cvar)
 		return 0
 	end
 
-	if cvar == "nameplateShowAll" or cvar == "nameplateShowFriends" or cvar == "nameplateShowFriendlyNPCs" then
+	if cvar == "nameplateShowAll" or cvar == "nameplateShowFriends" then
 		return 1
 	end
 
