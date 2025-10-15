@@ -2,8 +2,6 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
   if not hideTargetTooltip then return end
 
   hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent)
-    tooltip:SetOwner(parent, 'ANCHOR_NONE')
-    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200)
   end)
 
   if not GameTooltip._MyAddon_UnitHooked then

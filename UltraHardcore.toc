@@ -1,6 +1,6 @@
 ## Interface: 11507
 ## Title: UltraHardcore
-## Version: 1.2.0
+## Version: 1.2.1
 ## Author: Bonnie
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -51,6 +51,7 @@ Functions/DB/SaveDBData.lua
 Functions/DB/CharacterStats.lua
 
 Functions/Checks/IsEnemyElite.lua
+Functions/Checks/IsDungeonBoss.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua

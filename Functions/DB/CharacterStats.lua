@@ -35,6 +35,10 @@ local CharacterStats = {
     bandagesUsed = 0,
     targetDummiesUsed = 0,
     grenadesUsed = 0,
+    partyMemberDeaths = 0,
+    -- Combat statistics
+    dungeonBossesKilled = 0,
+    dungeonsCompleted = 0,
     -- Add more stats here as needed
   }
 }
@@ -100,6 +104,12 @@ end
 function CharacterStats:ResetGrenadesUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.grenadesUsed = self.defaults.grenadesUsed
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetPartyMemberDeaths()
+  local stats = self:GetCurrentCharacterStats()
+  stats.partyMemberDeaths = self.defaults.partyMemberDeaths
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
@@ -346,12 +356,16 @@ function CharacterStats:ShowChatChannelDialog()
   petDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
   petDeathsText:SetText("Pet Deaths: " .. stats.petDeaths)
   
+  local partyDeathsText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  partyDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
+  partyDeathsText:SetText("Party Deaths Witnessed: " .. stats.partyMemberDeaths)
+  
   local elitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
+  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
   elitesText:SetText("Elites Slain: " .. stats.elitesSlain)
   
   local enemiesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
+  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -108)
   enemiesText:SetText("Enemies Slain: " .. stats.enemiesSlain)
   
   -- Create channel selection section
@@ -385,7 +399,7 @@ function CharacterStats:ShowChatChannelDialog()
     end
     
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Party Deaths Witnessed: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
     
     dialog:Hide()
@@ -512,6 +526,11 @@ end
 SLASH_RESETGRENADES1 = "/resetgrenades"
 SlashCmdList["RESETGRENADES"] = function()
   CharacterStats:ResetGrenadesUsed()
+end
+
+SLASH_RESETPARTYMEMBERDEATHS1 = "/resetpartymemberdeaths"
+SlashCmdList["RESETPARTYMEMBERDEATHS"] = function()
+  CharacterStats:ResetPartyMemberDeaths()
 end
 
 SLASH_RESETXP1 = "/resetxp"
