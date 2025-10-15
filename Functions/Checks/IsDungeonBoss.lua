@@ -1,9 +1,16 @@
 function IsDungeonBoss(unitGUID)
+
+  -- Early return if player isn't in a dungeon or raid instance
+  local inInstance, instanceType = IsInInstance()
+  if not inInstance or (instanceType ~= "party" and instanceType ~= "raid") then
+      return false, false
+  end
+  
   -- Extract NPC ID from GUID (5th numeric segment; allow trailing hex)
   local npcID = tonumber(unitGUID:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-[%x]+$"))
               or tonumber(unitGUID:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)$"))
   if not npcID then
-    return false
+    return false, false
   end
   
   -- Comprehensive list of WoW Classic dungeon boss NPC IDs
@@ -137,6 +144,17 @@ function IsDungeonBoss(unitGUID)
     [7797] = true,  -- Ruuzlu
     [10082] = true, -- Zerillis (Rare)
     [10080] = true, -- Sandarr Dunereaver (Rare)
+
+    -- Maraudon (Zone ID: 2100)
+    [13282] = true, -- Noxxion
+    [12258] = true, -- Razorlash
+    [12236] = true, -- Lord Vyletongue
+    [12237] = true, -- Meshlok the Harvester (rare)
+    [12225] = true, -- Celebras the Cursed
+    [12203] = true, -- Landslide
+    [13601] = true, -- Tinkerer Gizlock
+    [13596] = true, -- Rotgrip
+    [12201] = true, -- Princess Theradras
     
     -- The Temple of Atal'Hakkar (Zone ID: 1477)
     [5713] = true,  -- Atal'ai Defenders
@@ -259,10 +277,10 @@ function IsDungeonBoss(unitGUID)
     [10502] = true, -- Lady Illucia Barov
     [1853] = true,  -- Darkmaster Gandling
     [14695] = true, -- Lord Blackwood (scourge)
-}
+  }
 
--- Raid boss NPC IDs
-local RaidBossIDs = {
+  -- Raid boss NPC IDs
+  local RaidBossIDs = {
     -- Molten Core (2717)
     [12118] = true, -- Lucifron
     [11982] = true, -- Magmadar
@@ -342,18 +360,25 @@ local RaidBossIDs = {
     [15928] = true, -- Thaddius
     [15989] = true, -- Sapphiron
     [15990] = true, -- Kel'Thuzad
-}
-  
+  }
+    
   local isDungeon = dungeonBossIDs[npcID] or false
-  local isRaid    = RaidBossIDs[npcID] or false
+  local isRaid = RaidBossIDs[npcID] or false
   return isDungeon, isRaid
 end
 
 function IsDungeonFinalBoss(unitGUID)
+
+  -- Early return if player isn't in a dungeon or raid instance
+  local inInstance, instanceType = IsInInstance()
+  if not inInstance or (instanceType ~= "party" and instanceType ~= "raid") then
+      return false, false
+  end
+  
   local npcID = tonumber(unitGUID:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)%-[%x]+$"))
               or tonumber(unitGUID:match("^Creature%-%d+%-%d+%-%d+%-%d+%-(%d+)$"))
   if not npcID then
-    return false
+    return false, false
   end
   
   -- List of final bosses for each dungeon (the last boss that needs to be killed to complete the dungeon)
@@ -374,7 +399,7 @@ function IsDungeonFinalBoss(unitGUID)
     [4829] = true,  -- Aku'mai (final boss)
     
     -- The Stockade (Level 22-30)
-    [1715] = true,  -- Bazil Thredd (final boss)
+    [1716] = true,  -- Bazil Thredd (final boss)
     
     -- Gnomeregan (Level 24-34)
     [7800] = true,  -- Mekgineer Thermaplugg (final boss)
@@ -392,7 +417,7 @@ function IsDungeonFinalBoss(unitGUID)
     [2748] = true,  -- Archaedas (final boss)
     
     -- Zul'Farrak (Level 42-46)
-    [7273] = true,  -- Chief Ukorz Sandscalp (final boss)
+    [7267] = true,  -- Chief Ukorz Sandscalp (final boss)
     
     -- Maraudon (Level 45-52)
     [12201] = true, -- Princess Theradras (final boss)
@@ -401,7 +426,7 @@ function IsDungeonFinalBoss(unitGUID)
     [5709] = true,  -- Shade of Eranikus (final boss)
     
     -- Blackrock Depths (Level 52-60)
-    [9017] = true,  -- Emperor Dagran Thaurissan (final boss)
+    [9019] = true,  -- Emperor Dagran Thaurissan (final boss)
     
     -- Lower Blackrock Spire (Level 55-60)
     [9568] = true,  -- Overlord Wyrmthalak (final boss)
@@ -418,6 +443,19 @@ function IsDungeonFinalBoss(unitGUID)
     -- Stratholme (Level 58-60)
     [10440] = true, -- Lord Aurius Rivendare (final boss)
   }
+
+  -- Final bosses for each raid
+  local raidFinalBossIDs = {
+    [11502] = true, -- Ragnaros (Molten Core)
+    [10184] = true, -- Onyxia (Onyxia's Lair)
+    [11583] = true, -- Nefarian (Blackwing Lair)
+    [14834] = true, -- Hakkar (Zul'Gurub)
+    [15339] = true, -- Ossirian the Unscarred (AQ20)
+    [15727] = true, -- C'Thun (AQ40)
+    [15990] = true, -- Kel'Thuzad (Naxxramas)
+  }
   
-  return dungeonFinalBossIDs[npcID] or false
+  local isDungeonFinal = dungeonFinalBossIDs[npcID] or false
+  local isRaidFinal = raidFinalBossIDs[npcID] or false
+  return isDungeonFinal, isRaidFinal
 end
