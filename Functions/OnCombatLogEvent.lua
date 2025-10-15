@@ -118,8 +118,22 @@ function OnCombatLogEvent(self, event)
       CharacterStats:UpdateStat("elitesSlain", currentElites + 1)
     end
 
-    local currentEnemies = CharacterStats:GetStat("enemiesSlain") or 0
-    CharacterStats:UpdateStat("enemiesSlain", currentEnemies + 1)
+    -- Check if this was a dungeon boss kill
+    local isDungeonBoss, isRaidBoss = IsDungeonBoss(destGUID)
+    if isDungeonBoss then
+      local currentDungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
+      CharacterStats:UpdateStat('dungeonBossesKilled', currentDungeonBosses + 1)
+    end
+
+    -- Check if this was a dungeon completion (final boss kill)
+    local isDungeonFinalBoss, isRaidFinalBoss = IsDungeonFinalBoss(destGUID)
+    if isDungeonFinalBoss then
+      local currentDungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+      CharacterStats:UpdateStat('dungeonsCompleted', currentDungeonsCompleted + 1)
+    end
+
+    local currentEnemies = CharacterStats:GetStat('enemiesSlain') or 0
+    CharacterStats:UpdateStat('enemiesSlain', currentEnemies + 1)
   end
 
 
@@ -145,18 +159,15 @@ function OnCombatLogEvent(self, event)
     -- Common healing potion spell IDs in WoW Classic (these are the spell effects triggered by potion items)
     local healingPotionSpellIDs = {
       [439] = true, -- Minor Healing Potion 
-      [440] = true, -- LesserHealing Potion 
+      [440] = true, -- Lesser Healing Potion 
       [2370] = true, -- Rejuvenation Potion 
-      [440] = true, -- Healing Potion 
       [441] = true, -- Healing Potion 
       [2024] = true, -- Healing Potion 
-      [4042] = true, -- Healing Potion 
       [4042] = true, -- Healing Potion 
       [11387] = true, -- Wildvine Potion 
       [21394] = true, -- Healing Draught 
       [17534] = true, -- Healing Potion 
       [21393] = true, -- Healing Draught 
-      [17534] = true, -- Healing Potion 
       [22729] = true -- Rejuvenation Potion 
     }
     
@@ -204,6 +215,48 @@ function OnCombatLogEvent(self, event)
       local currentGrenades = CharacterStats:GetStat('grenadesUsed') or 0
       local newCount = currentGrenades + 1
       CharacterStats:UpdateStat('grenadesUsed', newCount)
+    end
+  end
+
+  -- Party member death tracking
+  if subEvent == 'UNIT_DIED' then
+    -- Check if the dead unit is a party member (not the player)
+    local playerGUID = UnitGUID('player')
+    if destGUID ~= playerGUID and IsInGroup() then
+      -- Check if the dead unit is a party member
+      local isPartyMember = false
+      local deadPlayerName = nil
+      
+      if IsInRaid() then
+        for i = 1, GetNumGroupMembers() do
+          local name, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
+          if guid == destGUID then
+            isPartyMember = true
+            deadPlayerName = name
+            break
+          end
+        end
+      else
+        -- Regular party (not raid)
+        for i = 1, GetNumGroupMembers() do
+          local unitID = 'party' .. i
+          if UnitGUID(unitID) == destGUID then
+            isPartyMember = true
+            deadPlayerName = UnitName(unitID)
+            break
+          end
+        end
+      end
+      
+      -- If it's a party member, increment the death count
+      if isPartyMember and deadPlayerName then
+        local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+        local newCount = currentPartyDeaths + 1
+        CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+        
+        -- Optional: Print a message to chat
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+      end
     end
   end
 end
