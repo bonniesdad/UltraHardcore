@@ -1,9 +1,7 @@
 function SetTargetTooltipDisplay(hideTargetTooltip)
   if not hideTargetTooltip then return end
 
-  hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent)
-    tooltip:SetOwner(parent, 'ANCHOR_NONE') -- Remove default behavior
-    tooltip:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -10, 200) -- Move up 50px
+  hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip)
     tooltip:SetScript('OnTooltipSetUnit', function(self)
       local unit = select(2, self:GetUnit())
       if not unit then return end
@@ -18,7 +16,7 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
           local text = line:GetText()
           if text and not UnitIsPlayer(unit) then
             if text:match(LEVEL) then
-              line:SetText('') -- Hide line containing '??'
+              line:SetText('')
             end
           end
         end
