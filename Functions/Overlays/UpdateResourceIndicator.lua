@@ -58,12 +58,12 @@ SlashCmdList.TOGGLEBONNIE = function()
   end
 end
 
---[[ Debug slash command to play sound
-SLASH_ULTRAPIKA1 = '/ultrapika'
-SlashCmdList.ULTRAPIKA = function()
-  PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\HowDidWeDie.ogg", "SFX")
+SLASH_TESTPARTYDEATHAUDIO1 = '/testpartydeathaudio'
+SlashCmdList.TESTPARTYDEATHAUDIO = function()
+  local randomNumber = random(1,4)
+  -- Play sound file on party death
+  PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
 end
-]]
 
 -- Event Handler
 resourceIndicator:RegisterEvent('PLAYER_ENTERING_WORLD')
