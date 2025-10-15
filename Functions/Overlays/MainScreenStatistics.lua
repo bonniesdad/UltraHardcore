@@ -160,13 +160,13 @@ partyDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 local statsElements = {
   {label = levelLabel, value = levelValue, setting = 'showMainStatisticsPanelLevel'},
   {label = lowestHealthLabel, value = lowestHealthValue, setting = 'showMainStatisticsPanelLowestHealth'},
-  {label = sessionHealthLabel, value = sessionHealthValue, setting = 'showMainStatisticsPanelSessionHealth'},
   {label = thisLevelLabel, value = thisLevelValue, setting = 'showMainStatisticsPanelThisLevel'},
-  {label = enemiesLabel, value = enemiesValue, setting = 'showMainStatisticsPanelEnemiesSlain'},
-  {label = dungeonsCompletedLabel, value = dungeonsCompletedValue, setting = 'showMainStatisticsPanelDungeonsCompleted'},
+  {label = sessionHealthLabel, value = sessionHealthValue, setting = 'showMainStatisticsPanelSessionHealth'},
   {label = petDeathsLabel, value = petDeathsValue, setting = 'showMainStatisticsPanelPetDeaths'},
+  {label = enemiesLabel, value = enemiesValue, setting = 'showMainStatisticsPanelEnemiesSlain'},
   {label = elitesSlainLabel, value = elitesSlainValue, setting = 'showMainStatisticsPanelElitesSlain'},
   {label = dungeonBossesLabel, value = dungeonBossesValue, setting = 'showMainStatisticsPanelDungeonBosses'},
+  {label = dungeonsCompletedLabel, value = dungeonsCompletedValue, setting = 'showMainStatisticsPanelDungeonsCompleted'},
   {label = healthPotionsLabel, value = healthPotionsValue, setting = 'showMainStatisticsPanelHealthPotionsUsed'},
   {label = bandagesLabel, value = bandagesValue, setting = 'showMainStatisticsPanelBandagesUsed'},
   {label = targetDummiesLabel, value = targetDummiesValue, setting = 'showMainStatisticsPanelTargetDummiesUsed'},
@@ -180,7 +180,24 @@ local function UpdateRowVisibility()
   local visibleRows = 0
   
   for _, element in ipairs(statsElements) do
-    local isVisible = GLOBAL_SETTINGS and GLOBAL_SETTINGS[element.setting] ~= false
+    local isVisible = false
+    
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS[element.setting] ~= nil then
+      -- Use the actual setting value
+      isVisible = GLOBAL_SETTINGS[element.setting]
+    else
+      -- Apply default behavior based on the setting
+      if element.setting == 'showMainStatisticsPanelLevel' or 
+         element.setting == 'showMainStatisticsPanelLowestHealth' or
+         element.setting == 'showMainStatisticsPanelEnemiesSlain' or
+         element.setting == 'showMainStatisticsPanelDungeonsCompleted' then
+        -- These default to true (show unless explicitly false)
+        isVisible = true
+      else
+        -- These default to false (hide unless explicitly true)
+        isVisible = false
+      end
+    end
     
     if isVisible then
       element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, yOffset)
