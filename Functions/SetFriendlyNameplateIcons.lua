@@ -64,7 +64,7 @@ function CreateFriendlyNameplateIcon(unit)
 	if not iconFrame then
 		iconFrame = nameplateFrame:CreateTexture(nil, "OVERLAY")
 		iconFrame:SetSize(24, 24)
-		iconFrame:SetPoint("CENTER", nameplateFrame.UnitFrame.healthBar, "CENTER", 0, -10)
+		iconFrame:SetPoint("CENTER", nameplateFrame, "CENTER", 0, -10)
 		FRIENDLY_NAMEPLATE_ICONS[unit] = iconFrame
 	end
 
