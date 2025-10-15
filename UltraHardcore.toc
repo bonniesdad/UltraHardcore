@@ -72,6 +72,7 @@ Functions/Overlays/ShowArcaneDamageOverlay.lua
 Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
 Functions/Overlays/ShowFireDamageOverlay.lua
 Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
+Functions/Overlays/ShowKnockdownOverlay.lua
 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
