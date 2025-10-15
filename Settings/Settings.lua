@@ -372,48 +372,122 @@ lowestHealthContent:SetBackdrop({
   },
 })
 
+-- Create the level text display
+local levelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+levelLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -8)
+levelLabel:SetText('Level:')
+
+local levelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+levelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -8)
+levelText:SetText('1')
+
+-- Create radio button for showing level in main screen statistics
+local showStatsLevelRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
+showStatsLevelRadio:SetPoint('LEFT', levelLabel, 'LEFT', -20, 0)
+showStatsLevelRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelLevel or true)
+showStatsLevelRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelLevel = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 -- Create the total text display (indented)
 local lowestHealthTotalLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthTotalLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -8)
+lowestHealthTotalLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -33)
 lowestHealthTotalLabel:SetText('Total:')
 
 lowestHealthText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -8)
+lowestHealthText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -33)
 lowestHealthText:SetText(string.format("%.1f", lowestHealthScore or 100) .. '%')
+
+-- Create radio button for showing lowest health in main screen statistics
+local showStatsLowestHealthRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
+showStatsLowestHealthRadio:SetPoint('LEFT', lowestHealthTotalLabel, 'LEFT', -20, 0)
+showStatsLowestHealthRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelLowestHealth or true)
+showStatsLowestHealthRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelLowestHealth = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
 
 -- Create the This Level text display
 local lowestHealthThisLevelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthThisLevelLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -33)
+lowestHealthThisLevelLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -58)
 lowestHealthThisLevelLabel:SetText('This Level (Beta):')
 
 local lowestHealthThisLevelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthThisLevelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -33)
+lowestHealthThisLevelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -58)
 lowestHealthThisLevelText:SetText('100.0%')
+
+-- Create radio button for showing this level health in main screen statistics
+local showStatsThisLevelRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
+showStatsThisLevelRadio:SetPoint('LEFT', lowestHealthThisLevelLabel, 'LEFT', -20, 0)
+showStatsThisLevelRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelThisLevel or true)
+showStatsThisLevelRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelThisLevel = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
 
 -- Create the This Session text display
 local lowestHealthThisSessionLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthThisSessionLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -58)
+lowestHealthThisSessionLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -83)
 lowestHealthThisSessionLabel:SetText('This Session (Beta):')
 
 local lowestHealthThisSessionText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -58)
+lowestHealthThisSessionText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -83)
 lowestHealthThisSessionText:SetText('100.0%')
+
+-- Create radio button for showing session health in main screen statistics
+local showStatsSessionHealthRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
+showStatsSessionHealthRadio:SetPoint('LEFT', lowestHealthThisSessionLabel, 'LEFT', -20, 0)
+showStatsSessionHealthRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelSessionHealth or true)
+showStatsSessionHealthRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelSessionHealth = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
 
 -- Add pet death rows to the same content frame
 -- Create the pet deaths text display
 local petDeathsLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-petDeathsLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -83)
+petDeathsLabel:SetPoint('TOPLEFT', lowestHealthContent, 'TOPLEFT', 12, -108)
 petDeathsLabel:SetText('Pet Deaths:')
 
 petDeathsText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-petDeathsText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -83)
+petDeathsText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -12, -108)
 petDeathsText:SetText('0')
+
+-- Create radio button for showing pet deaths in main screen statistics
+local showStatsPetDeathsRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
+showStatsPetDeathsRadio:SetPoint('LEFT', petDeathsLabel, 'LEFT', -20, 0)
+showStatsPetDeathsRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelPetDeaths or true)
+showStatsPetDeathsRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelPetDeaths = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
 
 
 -- Create modern WoW-style enemies slain section (no accordion functionality)
 local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainHeader:SetSize(470, 28)
-enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -145)
+enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -160)
 
 -- Modern WoW row styling with rounded corners and greyish background
 enemiesSlainHeader:SetBackdrop({
@@ -440,7 +514,7 @@ enemiesSlainLabel:SetText('Enemies Slain')
 -- Create content frame for Enemies Slain breakdown
 local enemiesSlainTotalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainTotalContent:SetSize(450, 30)
-enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -175) -- Indented more than header
+enemiesSlainTotalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -190) -- Indented more than header
 enemiesSlainTotalContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -467,11 +541,24 @@ local enemiesSlainText = enemiesSlainTotalContent:CreateFontString(nil, 'OVERLAY
 enemiesSlainText:SetPoint('TOPRIGHT', enemiesSlainTotalContent, 'TOPRIGHT', -12, -8)
 enemiesSlainText:SetText('0')
 
+-- Create radio button for showing enemies slain in main screen statistics
+local showStatsEnemiesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainTotalContent, 'UIRadioButtonTemplate')
+showStatsEnemiesSlainRadio:SetPoint('LEFT', enemiesSlainTotalLabel, 'LEFT', -20, 0)
+showStatsEnemiesSlainRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelEnemiesSlain or true)
+showStatsEnemiesSlainRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelEnemiesSlain = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 
 -- Create collapsible content frame for elites slain
 local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 enemiesSlainContent:SetSize(450, 30)
-enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -205) -- Indented more than header
+enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -220) -- Indented more than header
 enemiesSlainContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -498,10 +585,23 @@ local elitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'Ga
 elitesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -12, -8)
 elitesSlainText:SetText('0')
 
+-- Create radio button for showing elites slain in main screen statistics
+local showStatsElitesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+showStatsElitesSlainRadio:SetPoint('LEFT', elitesSlainLabel, 'LEFT', -20, 0)
+showStatsElitesSlainRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelElitesSlain or true)
+showStatsElitesSlainRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelElitesSlain = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 -- Create collapsible content frame for dungeon bosses slain
 local dungeonBossesContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 dungeonBossesContent:SetSize(450, 30)
-dungeonBossesContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -235) -- Positioned below elites slain
+dungeonBossesContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -250) -- Positioned below elites slain
 dungeonBossesContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -528,10 +628,23 @@ local dungeonBossesText = dungeonBossesContent:CreateFontString(nil, 'OVERLAY', 
 dungeonBossesText:SetPoint('TOPRIGHT', dungeonBossesContent, 'TOPRIGHT', -12, -8)
 dungeonBossesText:SetText('0')
 
+-- Create radio button for showing dungeon bosses slain in main screen statistics
+local showStatsDungeonBossesRadio = CreateFrame('CheckButton', nil, dungeonBossesContent, 'UIRadioButtonTemplate')
+showStatsDungeonBossesRadio:SetPoint('LEFT', dungeonBossesLabel, 'LEFT', -20, 0)
+showStatsDungeonBossesRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelDungeonBosses or true)
+showStatsDungeonBossesRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelDungeonBosses = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 -- Create collapsible content frame for dungeons completed
 local dungeonsCompletedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 dungeonsCompletedContent:SetSize(450, 30)
-dungeonsCompletedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -265) -- Positioned below dungeon bosses
+dungeonsCompletedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -280) -- Positioned below dungeon bosses
 dungeonsCompletedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -557,6 +670,19 @@ dungeonsCompletedLabel:SetText('Dungeons Completed:')
 local dungeonsCompletedText = dungeonsCompletedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonsCompletedText:SetPoint('TOPRIGHT', dungeonsCompletedContent, 'TOPRIGHT', -12, -8)
 dungeonsCompletedText:SetText('0')
+
+-- Create radio button for showing dungeons completed in main screen statistics
+local showStatsDungeonsCompletedRadio = CreateFrame('CheckButton', nil, dungeonsCompletedContent, 'UIRadioButtonTemplate')
+showStatsDungeonsCompletedRadio:SetPoint('LEFT', dungeonsCompletedLabel, 'LEFT', -20, 0)
+showStatsDungeonsCompletedRadio:SetChecked(GLOBAL_SETTINGS.showMainStatisticsPanelDungeonsCompleted or true)
+showStatsDungeonsCompletedRadio:SetScript('OnClick', function(self)
+  GLOBAL_SETTINGS.showMainStatisticsPanelDungeonsCompleted = self:GetChecked()
+  SaveCharacterSettings(GLOBAL_SETTINGS)
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
 
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -588,7 +714,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 145) -- Height for 5 items (increased from 4)
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -333) -- Indented more than header
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -348) -- Indented more than header
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -629,6 +755,20 @@ for _, stat in ipairs(survivalStats) do
   text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -12, yOffset)
   text:SetText('0')
   
+  -- Create radio button for this survival statistic
+  local radio = CreateFrame('CheckButton', nil, survivalContent, 'UIRadioButtonTemplate')
+  radio:SetPoint('LEFT', label, 'LEFT', -20, 0)
+  local settingName = 'showMainStatisticsPanel' .. string.gsub(stat.key, '^%l', string.upper)
+  radio:SetChecked(GLOBAL_SETTINGS[settingName] or true)
+  radio:SetScript('OnClick', function(self)
+    GLOBAL_SETTINGS[settingName] = self:GetChecked()
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+    -- Trigger immediate update of main screen statistics
+    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    end
+  end)
+  
   survivalLabels[stat.key] = label
   survivalTexts[stat.key] = text
   
@@ -665,7 +805,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 480) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -498) -- Moved down to make room for expanded Survival section
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 20, -513) -- Moved down to make room for expanded Survival section
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -849,6 +989,7 @@ local presetIcons =
 local buttonSize = 100 -- Increased size for better visibility
 local spacing = 10 -- Spacing between the buttons
 local totalWidth = 360 -- Total width of the frame for preset buttons
+local textYOffset = -5 -- Distance between button and text
 for i = 1, 3 do
   local button = CreateFrame('Button', nil, presetButtonsFrame, 'BackdropTemplate')
   button:SetSize(buttonSize, buttonSize)
@@ -1218,6 +1359,12 @@ end
 local function UpdateLowestHealthDisplay()
   if not UltraHardcoreDB then
     LoadDBData()
+  end
+  
+  -- Update level display
+  if levelText then
+    local playerLevel = UnitLevel('player') or 1
+    levelText:SetText(tostring(playerLevel))
   end
   
   if lowestHealthText then
