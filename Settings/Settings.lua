@@ -233,6 +233,15 @@ end
 
 local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
 settingsFrame:SetSize(560, 640)
+settingsFrame:SetMovable(true)
+settingsFrame:EnableMouse(true)
+settingsFrame:RegisterForDrag('LeftButton')
+settingsFrame:SetScript('OnDragStart', function(self)
+    self:StartMoving()
+end)
+settingsFrame:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+end)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30) -- Moved up by 30 pixels from center
 settingsFrame:Hide()
 settingsFrame:SetFrameStrata('DIALOG') -- Higher layer priority to appear above pet action bar
