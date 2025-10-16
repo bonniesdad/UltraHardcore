@@ -70,10 +70,17 @@ local function postWarningMessage()
       end
 
       local chatType = IsInRaid() and 'RAID' or 'PARTY'
-      SendChatMessage(
-        '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.' .. messageSuffix,
-        chatType
-      )
+      if(playerName == "Ultrapikaboo") then
+        SendChatMessage(
+          '[ULTRA] I am using the Ultra Hardcore addon. If you do not give me loot priority, minute thirty ad!',
+          chatType
+        )
+      else
+        SendChatMessage(
+          '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.',
+          chatType
+        )
+      end
     end
   end
 end
