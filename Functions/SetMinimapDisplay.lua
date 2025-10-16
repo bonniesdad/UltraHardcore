@@ -1,12 +1,13 @@
-function SetMinimapDisplay(hideMinimap)
+function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
   if hideMinimap then
-    HideMinimap()
+    HideMinimap(showClockEvenWhenMapHidden)
   else
     ShowMinimap()
   end
 end
 
-function HideMinimap()
+function HideMinimap(showClockEvenWhenMapHidden)
+
   Minimap:Hide()
   -- Hide the zone text
   MinimapZoneText:Hide()
@@ -15,9 +16,13 @@ function HideMinimap()
   -- Hide the close/minimap tracking button (the button that shows tracking options)
   MiniMapTracking:Hide()
   -- Hide the day/night indicator (moon/sun icon)
-  GameTimeFrame:Hide()
   -- Hide the minimap cluster (including the "Toggle minimap" button)
-  MinimapCluster:Hide()
+  if showClockEvenWhenMapHidden then
+    MinimapBorderTop:Hide()
+    MinimapToggleButton:Hide()
+  else
+    MinimapCluster:Hide()
+  end
 end
 
 function ShowMinimap()
