@@ -142,7 +142,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Show Clock Even When Map is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
-  tooltip = 'If Hide Minimap and this option are enabled, keep the clock on display',
+  tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
 } }
 
 local presets = { {
