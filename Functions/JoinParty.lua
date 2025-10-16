@@ -58,10 +58,15 @@ local function postWarningMessage()
     
     -- Only post message if there are other members in the group
     if hasOtherMembers then
-      local partyDeathsWitnessed = CharacterStats:GetStat('partyMemberDeaths') or 0
+      local messageSuffix = ''
+      if GLOBAL_SETTINGS.announcePartyDeathsOnGroupJoin then
+        local partyDeathsWitnessed = CharacterStats:GetStat('partyMemberDeaths') or 0
+        messageSuffix = ' ' .. partyDeathsWitnessed .. ' ' .. (partyDeathsWitnessed == 1 and 'person has' or 'people have') .. ' died in my party so far.'
+      end
+
       local chatType = IsInRaid() and 'RAID' or 'PARTY'
       SendChatMessage(
-        '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me. ' .. partyDeathsWitnessed .. ' ' .. (partyDeathsWitnessed == 1 and 'person has' or 'people have') .. ' died in my party so far.',
+        '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me. ' .. messageSuffix,
         chatType
       )
     end

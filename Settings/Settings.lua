@@ -143,6 +143,10 @@ local settingsCheckboxOptions = { {
   name = 'Show Clock Even When Map is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
+}, {
+  name = 'Announce Party Deaths on Group Join',
+  dbSettingsValueName = 'announcePartyDeathsOnGroupJoin',
+  tooltip = 'Automatically announce party death statistics when joining a group',
 } }
 
 local presets = { {
@@ -167,6 +171,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
+  announcePartyDeathsOnGroupJoin = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -189,6 +194,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
+  announcePartyDeathsOnGroupJoin = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -212,6 +218,7 @@ local presets = { {
   hideUIErrors = true,
   setFirstPersonCamera = false,
   showClockEvenWhenMapHidden = false,
+  announcePartyDeathsOnGroupJoin = true,
 } }
 
 -- Temporary settings storage and initialization function
@@ -875,6 +882,7 @@ local settingDisplayNames = {
   showIncomingDamageEffect = 'Use UHC Incoming Damage Effect',
   showHealingIndicator = 'Use UHC Incoming Healing Effect',
   showClockEvenWhenMapHidden = 'Show Clock Even When Map is Hidden',
+  announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
 }
 
 -- Define preset sections with their settings
@@ -910,7 +918,8 @@ local presetSections = {
       "showFullHealthIndicator",
       "showIncomingDamageEffect",
       "showHealingIndicator",
-      "showClockEvenWhenMapHidden"
+      "showClockEvenWhenMapHidden",
+      "announcePartyDeathsOnGroupJoin"
     }
   }
 }
@@ -1122,7 +1131,8 @@ local function createCheckboxes()
         "showHealingIndicator",
         "hideUIErrors",
         "setFirstPersonCamera",
-        "showClockEvenWhenMapHidden"
+        "showClockEvenWhenMapHidden",
+        "announcePartyDeathsOnGroupJoin"
       }
     }
   }
@@ -1357,7 +1367,8 @@ local function UpdateXPBreakdown()
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
-        "showClockEvenWhenMapHidden"
+        "showClockEvenWhenMapHidden",
+        "announcePartyDeathsOnGroupJoin"
       }
     }
   }
