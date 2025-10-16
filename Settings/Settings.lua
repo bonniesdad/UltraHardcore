@@ -147,6 +147,10 @@ local settingsCheckboxOptions = { {
   name = 'Announce Party Deaths on Group Join',
   dbSettingsValueName = 'announcePartyDeathsOnGroupJoin',
   tooltip = 'Automatically announce party death statistics when joining a group',
+}, {
+  name = 'Announce Dungeons Completed on Group Join',
+  dbSettingsValueName = 'announceDungeonsCompletedOnGroupJoin',
+  tooltip = 'Automatically announce dungeons completed statistics when joining a group',
 } }
 
 local presets = { {
@@ -172,6 +176,7 @@ local presets = { {
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
+  announceDungeonsCompletedOnGroupJoin = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -195,6 +200,7 @@ local presets = { {
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
+  announceDungeonsCompletedOnGroupJoin = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -219,6 +225,7 @@ local presets = { {
   setFirstPersonCamera = false,
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = true,
+  announceDungeonsCompletedOnGroupJoin = true
 } }
 
 -- Temporary settings storage and initialization function
@@ -883,6 +890,7 @@ local settingDisplayNames = {
   showHealingIndicator = 'Use UHC Incoming Healing Effect',
   showClockEvenWhenMapHidden = 'Show Clock Even When Map is Hidden',
   announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
+  announceDungeonsCompletedOnGroupJoin = 'Announce Dungeons Completed on Group Join',
 }
 
 -- Define preset sections with their settings
@@ -919,7 +927,8 @@ local presetSections = {
       "showIncomingDamageEffect",
       "showHealingIndicator",
       "showClockEvenWhenMapHidden",
-      "announcePartyDeathsOnGroupJoin"
+      "announcePartyDeathsOnGroupJoin",
+      "announceDungeonsCompletedOnGroupJoin"
     }
   }
 }
@@ -1132,7 +1141,8 @@ local function createCheckboxes()
         "hideUIErrors",
         "setFirstPersonCamera",
         "showClockEvenWhenMapHidden",
-        "announcePartyDeathsOnGroupJoin"
+        "announcePartyDeathsOnGroupJoin",
+        "announceDungeonsCompletedOnGroupJoin"
       }
     }
   }
@@ -1368,7 +1378,8 @@ local function UpdateXPBreakdown()
         "showIncomingDamageEffect",
         "showHealingIndicator",
         "showClockEvenWhenMapHidden",
-        "announcePartyDeathsOnGroupJoin"
+        "announcePartyDeathsOnGroupJoin",
+        "announceDungeonsCompletedOnGroupJoin"
       }
     }
   }
