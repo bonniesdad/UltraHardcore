@@ -42,6 +42,22 @@ function LoadDBData()
     showHealingIndicator = false,
     hideUIErrors = false,
     setFirstPersonCamera = false,
+    -- Statistics Row Visibility Settings
+    showMainStatisticsPanelLevel = true,
+    showMainStatisticsPanelLowestHealth = true,
+    showMainStatisticsPanelSessionHealth = false,
+    showMainStatisticsPanelThisLevel = false,
+    showMainStatisticsPanelEnemiesSlain = true,
+    showMainStatisticsPanelDungeonsCompleted = true,
+    showMainStatisticsPanelPetDeaths = false,
+    showMainStatisticsPanelElitesSlain = false,
+    showMainStatisticsPanelDungeonBosses = false,
+    -- Survival Statistics Row Visibility Settings
+    showMainStatisticsPanelHealthPotionsUsed = false,
+    showMainStatisticsPanelBandagesUsed = false,
+    showMainStatisticsPanelTargetDummiesUsed = false,
+    showMainStatisticsPanelGrenadesUsed = false,
+    showMainStatisticsPanelPartyMemberDeaths = false,
   }
   
   -- Initialize settings for current character if they don't exist
