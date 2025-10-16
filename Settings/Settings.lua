@@ -139,6 +139,10 @@ local settingsCheckboxOptions = { {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
+}, {
+  name = 'Show Clock Even When Map is Hidden',
+  dbSettingsValueName = 'showClockEvenWhenMapHidden',
+  tooltip = 'When Hide Minimap and this option is enabled, keep the clock on display',
 } }
 
 local presets = { {
@@ -162,6 +166,7 @@ local presets = { {
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
   hideUIErrors = false,
+  showClockEvenWhenMapHidden = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -183,6 +188,7 @@ local presets = { {
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
   hideUIErrors = false,
+  showClockEvenWhenMapHidden = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -205,6 +211,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = true,
   setFirstPersonCamera = false,
+  showClockEvenWhenMapHidden = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -858,6 +865,7 @@ local settingDisplayNames = {
   showFullHealthIndicator = 'Use UHC Full Health Indicator',
   showIncomingDamageEffect = 'Use UHC Incoming Damage Effect',
   showHealingIndicator = 'Use UHC Incoming Healing Effect',
+  showClockEvenWhenMapHidden = 'Show Clock Even When Map is Hidden',
 }
 
 -- Define preset sections with their settings
@@ -892,7 +900,8 @@ local presetSections = {
       "petsDiePermanently",
       "showFullHealthIndicator",
       "showIncomingDamageEffect",
-      "showHealingIndicator"
+      "showHealingIndicator",
+      "showClockEvenWhenMapHidden"
     }
   }
 }
@@ -1103,7 +1112,8 @@ local function createCheckboxes()
         "showIncomingDamageEffect",
         "showHealingIndicator",
         "hideUIErrors",
-        "setFirstPersonCamera"
+        "setFirstPersonCamera",
+        "showClockEvenWhenMapHidden"
       }
     }
   }
@@ -1337,7 +1347,8 @@ local function UpdateXPBreakdown()
         "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
-        "showHealingIndicator"
+        "showHealingIndicator",
+        "showClockEvenWhenMapHidden"
       }
     }
   }
