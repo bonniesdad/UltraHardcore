@@ -3,27 +3,7 @@ UltraHardcore = CreateFrame('Frame')
 
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
-GLOBAL_SETTINGS = {
-  hidePlayerFrame = true,
-  hideMinimap = true,
-  hideTargetFrame = true,
-  hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = true,
-  showFullHealthIndicator = true,
-  showDazedEffect = true,
-  showCritScreenMoveEffect = true,
-  showIncomingDamageEffect = true,
-  showHealingIndicator = false,
-  hideUIErrors = false,
-  petsDiePermanently = true,
-  hideActionBars = false,
-  hideGroupHealth = true,
-  hideBreathIndicator = false,
-  disableNameplateHealth = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-}
+GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
 
 UltraHardcore:RegisterEvent('UNIT_AURA')
 UltraHardcore:RegisterEvent('UNIT_HEALTH_FREQUENT')
@@ -53,6 +33,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     SetAllGroupIndicators()
     DisablePetCombatText()
     RepositionPetHappinessTexture()
@@ -78,13 +59,13 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event
-    local timerName = unit
+    local timerName = ...
     if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStart()
     end
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
-    local timerName = unit
+    local timerName = ...
     if timerName == 'BREATH' then
       OnBreathStop()
     end
