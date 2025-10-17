@@ -20,7 +20,7 @@ local function LoadResourceBarPosition()
     if not UltraHardcoreDB then
         UltraHardcoreDB = {}
     end
-    
+
     local pos = UltraHardcoreDB.resourceBarPosition
     -- Clear existing points first to avoid anchor conflicts
     resourceBar:ClearAllPoints()
@@ -32,7 +32,7 @@ local function SaveResourceBarPosition()
     if not UltraHardcoreDB then
         UltraHardcoreDB = {}
     end
-    
+
     local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
     -- Always save UIParent as the relativeTo frame to avoid reference issues
     UltraHardcoreDB.resourceBarPosition = {
@@ -42,7 +42,7 @@ local function SaveResourceBarPosition()
         xOfs = xOfs,
         yOfs = yOfs
     }
-    
+
     SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
 end
 
@@ -168,7 +168,7 @@ local function UpdateResourcePoints()
     local powerType = GetCurrentResourceType()
     local value = UnitPower('player', Enum.PowerType[powerType])
     local maxValue = UnitPowerMax('player', Enum.PowerType[powerType])
-    
+
     resourceBar:SetMinMaxValues(0, maxValue)
     resourceBar:SetValue(value)
     resourceBar:SetStatusBarColor(unpack(POWER_COLORS[powerType]))
@@ -180,16 +180,16 @@ local function UpdatePetResourcePoints()
         petResourceBar:Hide()
         return
     end
-    
+
     -- Get pet's power type (usually mana for most pets)
     local petPowerType = UnitPowerType('pet')
     local petValue = UnitPower('pet', petPowerType)
     local petMaxValue = UnitPowerMax('pet', petPowerType)
-    
+
     if petMaxValue > 0 then
         petResourceBar:SetMinMaxValues(0, petMaxValue)
         petResourceBar:SetValue(petValue)
-        
+
         -- Use purple color for pet resource bar
         petResourceBar:SetStatusBarColor(0.5, 0, 1) -- Purple color
         petResourceBar:Show()
@@ -210,6 +210,7 @@ resourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
 resourceBar:RegisterEvent('PET_ATTACK_STOP')
+resourceBar:RegisterEvent('UNIT_AURA')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
@@ -249,7 +250,11 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
         -- Update pet resource when pet starts/stops attacking
         UpdatePetResourcePoints()
+    elseif unit == 'player' and event == 'UNIT_AURA' then
+        --print("UltraHardcore::resourceBar: Event triggered - " .. event .. (unit and (", Unit: " .. unit) or ""))
+        CenterPlayerBuffBar()
     end
+
 end)
 
 -- Hide the default combo points (Blizzard UI)
@@ -264,7 +269,7 @@ local function RepositionPlayerBuffBar()
     if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
         return
     end
-    
+
     -- Wait for buff frame to be created
     C_Timer.After(0.5, function()
         if BuffFrame and BuffFrame:IsVisible() then
@@ -272,6 +277,45 @@ local function RepositionPlayerBuffBar()
             BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
         end
     end)
+end
+
+-- Function to center buff bar above the resource bar when # of auras change
+function CenterPlayerBuffBar()
+    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
+        return
+    end
+
+    if BuffFrame then
+        local continuationToken;
+        local buffCount = 0;
+        local pixelsToMove = 13.5;
+        local xOffset = pixelsToMove * -1;
+        local yOffset = 5;
+        for i=1, 40 do
+            local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
+
+            if aura and aura.isHarmful ~= true then
+                --print("UltraHardcore: Found buff " .. aura.name);
+                buffCount = buffCount + 1;
+            end
+        end
+
+        if buffCount == 0 then
+            return;
+        end
+
+        if buffCount > 1 then 
+            xOffset = (buffCount - 1) * pixelsToMove;
+        end
+
+        if buffCount > 10 then 
+            yOffset = 50; 
+        end
+
+        print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
+        BuffFrame:ClearAllPoints()
+        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
+    end
 end
 
 -- Function to restore buff bar to original position
@@ -295,7 +339,7 @@ local function HookBuffFrame()
                 RestoreBuffBarPosition()
             end
         end
-        
+
         local originalHide = BuffFrame.Hide
         BuffFrame.Hide = function(self)
             originalHide(self)
