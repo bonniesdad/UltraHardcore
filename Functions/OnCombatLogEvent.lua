@@ -121,6 +121,16 @@ function OnCombatLogEvent(self, event)
       local currentElites = CharacterStats:GetStat('elitesSlain') or 0
       CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
     end
+    
+    if IsEnemyRareElite(destGUID) then
+      local currentRareElites = CharacterStats:GetStat('rareElitesSlain') or 0
+      CharacterStats:UpdateStat('rareElitesSlain', currentRareElites + 1)
+    end
+    
+    if IsEnemyWorldBoss(destGUID) then
+      local currentWorldBosses = CharacterStats:GetStat('worldBossesSlain') or 0
+      CharacterStats:UpdateStat('worldBossesSlain', currentWorldBosses + 1)
+    end
 
     -- Check if this was a dungeon boss kill
     local isDungeonBoss, isRaidBoss = IsDungeonBoss(destGUID)

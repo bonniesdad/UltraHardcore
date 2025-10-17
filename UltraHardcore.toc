@@ -51,6 +51,8 @@ Functions/DB/SaveDBData.lua
 Functions/DB/CharacterStats.lua
 
 Functions/Checks/IsEnemyElite.lua
+Functions/Checks/IsEnemyRareElite.lua
+Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
 
 Functions/Overlays/ShowTunnelVision.lua
