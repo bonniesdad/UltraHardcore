@@ -218,14 +218,44 @@ function OnCombatLogEvent(self, event)
         end
       end
       
-      -- If it's a party member, increment the death count
+      -- If it's a party member, check if they're feigning death before incrementing death count
       if isPartyMember and deadPlayerName then
-        local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
-        local newCount = currentPartyDeaths + 1
-        CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+        -- Check if the dead party member is feigning death
+        local isFeigningDeath = false
         
-        -- Optional: Print a message to chat
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+        if IsInRaid() then
+          -- For raids, we need to find the unit ID to check feign death status
+          for i = 1, GetNumGroupMembers() do
+            local name, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
+            if guid == destGUID then
+              local unitID = 'raid' .. i
+              isFeigningDeath = UnitIsFeignDeath(unitID)
+              break
+            end
+          end
+        else
+          -- For regular parties, find the unit ID
+          for i = 1, GetNumGroupMembers() do
+            local unitID = 'party' .. i
+            if UnitGUID(unitID) == destGUID then
+              isFeigningDeath = UnitIsFeignDeath(unitID)
+              break
+            end
+          end
+        end
+        
+        -- Only increment death count if they're not feigning death
+        if not isFeigningDeath then
+          local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+          local newCount = currentPartyDeaths + 1
+          CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+          
+          -- Optional: Print a message to chat
+          DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+        else
+          -- Optional: Print a message indicating feign death was detected
+          DEFAULT_CHAT_FRAME:AddMessage("|cFFFF8000[UHC]|r Party member " .. deadPlayerName .. " is feigning death - death count not incremented.", 1, 0.5, 0)
+        end
       end
     end
   end
