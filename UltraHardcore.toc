@@ -43,6 +43,7 @@ Functions/Utils/Resource/GetPowerTypeColor.lua
 Functions/Utils/Resource/PowerColors.lua
 Functions/Utils/Resource/UpdateResourceBar.lua
 Functions/Utils/Resource/GetCurrentResourceType.lua
+Functions/Utils/PartyDeathAudio.lua
 
 Functions/Utils/RotateScreenEffect.lua
 
