@@ -1,4 +1,35 @@
 -- 🟢 Character Stats Management
+
+-- Helper function to format numbers with comma separators
+local function formatNumberWithCommas(number)
+  if type(number) ~= "number" then
+    number = tonumber(number) or 0
+  end
+  
+  -- Handle negative numbers
+  local isNegative = number < 0
+  if isNegative then
+    number = -number
+  end
+  
+  -- Convert to string and add commas
+  local formatted = tostring(math.floor(number))
+  local k
+  while true do
+    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    if k == 0 then
+      break
+    end
+  end
+  
+  -- Add back negative sign if needed
+  if isNegative then
+    formatted = "-" .. formatted
+  end
+  
+  return formatted
+end
+
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -193,7 +224,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. formatNumberWithCommas(stats.petDeaths) .. " - Elites: " .. formatNumberWithCommas(stats.elitesSlain) .. " - Enemies: " .. formatNumberWithCommas(stats.enemiesSlain)
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat

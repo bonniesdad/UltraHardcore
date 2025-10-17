@@ -1,6 +1,36 @@
 -- Global variables for radio button management
 local radioButtons = {}
 
+-- Helper function to format numbers with comma separators
+local function formatNumberWithCommas(number)
+  if type(number) ~= "number" then
+    number = tonumber(number) or 0
+  end
+  
+  -- Handle negative numbers
+  local isNegative = number < 0
+  if isNegative then
+    number = -number
+  end
+  
+  -- Convert to string and add commas
+  local formatted = tostring(math.floor(number))
+  local k
+  while true do
+    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    if k == 0 then
+      break
+    end
+  end
+  
+  -- Add back negative sign if needed
+  if isNegative then
+    formatted = "-" .. formatted
+  end
+  
+  return formatted
+end
+
 -- Layout constants for consistent spacing
 local LAYOUT = {
   SECTION_HEADER_HEIGHT = 28,
@@ -480,7 +510,7 @@ levelLabel:SetText('Level:')
 
 local levelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 levelText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-levelText:SetText('1')
+levelText:SetText(formatNumberWithCommas(1))
 
 -- Create radio button for showing level in main screen statistics
 local showStatsLevelRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
@@ -573,7 +603,7 @@ petDeathsLabel:SetText('Pet Deaths:')
 
 petDeathsText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 petDeathsText:SetPoint('TOPRIGHT', lowestHealthContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
-petDeathsText:SetText('0')
+petDeathsText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing pet deaths in main screen statistics
 local showStatsPetDeathsRadio = CreateFrame('CheckButton', nil, lowestHealthContent, 'UIRadioButtonTemplate')
@@ -645,7 +675,7 @@ enemiesSlainTotalLabel:SetText('Total:')
 
 local enemiesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 enemiesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-enemiesSlainText:SetText('0')
+enemiesSlainText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing enemies slain in main screen statistics
 local showStatsEnemiesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
@@ -668,7 +698,7 @@ elitesSlainLabel:SetText('Elites Slain:')
 
 local elitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 elitesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT)
-elitesSlainText:SetText('0')
+elitesSlainText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing elites slain in main screen statistics
 local showStatsElitesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
@@ -691,7 +721,7 @@ dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
 
 local dungeonBossesText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonBossesText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2)
-dungeonBossesText:SetText('0')
+dungeonBossesText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing dungeon bosses slain in main screen statistics
 local showStatsDungeonBossesRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
@@ -714,7 +744,7 @@ dungeonsCompletedLabel:SetText('Dungeons Completed:')
 
 local dungeonsCompletedText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonsCompletedText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3)
-dungeonsCompletedText:SetText('0')
+dungeonsCompletedText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing dungeons completed in main screen statistics
 local showStatsDungeonsCompletedRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
@@ -799,7 +829,7 @@ for _, stat in ipairs(survivalStats) do
   
   local text = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-  text:SetText('0')
+  text:SetText(formatNumberWithCommas(0))
   
   -- Create radio button for this survival statistic
   local radio = CreateFrame('CheckButton', nil, survivalContent, 'UIRadioButtonTemplate')
@@ -963,7 +993,7 @@ for sectionIndex, section in ipairs(presetSections) do
       
       local text = xpGainedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
       text:SetPoint('TOPRIGHT', xpGainedContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-      text:SetText('0')
+      text:SetText(formatNumberWithCommas(0))
       
       xpBreakdownLabels[settingName] = label
       xpBreakdownTexts[settingName] = text
@@ -1428,7 +1458,7 @@ local function UpdateXPBreakdown()
         -- Position both label and text (indented for settings)
         labelElement:SetPoint('TOPLEFT', xpGainedContent, 'TOPLEFT', LAYOUT.ROW_INDENT + 12, yOffset)
         textElement:SetPoint('TOPRIGHT', xpGainedContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-        textElement:SetText(tostring(xpGained))
+        textElement:SetText(formatNumberWithCommas(xpGained))
         yOffset = yOffset - LAYOUT.ROW_HEIGHT
       end
     end
@@ -1447,7 +1477,7 @@ local function UpdateLowestHealthDisplay()
   -- Update level display
   if levelText then
     local playerLevel = UnitLevel('player') or 1
-    levelText:SetText(tostring(playerLevel))
+    levelText:SetText(formatNumberWithCommas(playerLevel))
   end
   
   if lowestHealthText then
@@ -1468,28 +1498,28 @@ local function UpdateLowestHealthDisplay()
   -- Update pet death display
   if petDeathsText then
     local currentPetDeaths = CharacterStats:GetStat('petDeaths') or 0
-    petDeathsText:SetText(currentPetDeaths)
+    petDeathsText:SetText(formatNumberWithCommas(currentPetDeaths))
   end
   
   
   if elitesSlainText then
     local elites = CharacterStats:GetStat('elitesSlain') or 0
-    elitesSlainText:SetText(elites)
+    elitesSlainText:SetText(formatNumberWithCommas(elites))
   end
   
   if enemiesSlainText then
     local enemies = CharacterStats:GetStat('enemiesSlain') or 0
-    enemiesSlainText:SetText(enemies)
+    enemiesSlainText:SetText(formatNumberWithCommas(enemies))
   end
   
   if dungeonBossesText then
     local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-    dungeonBossesText:SetText(dungeonBosses)
+    dungeonBossesText:SetText(formatNumberWithCommas(dungeonBosses))
   end
   
   if dungeonsCompletedText then
     local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
-    dungeonsCompletedText:SetText(dungeonsCompleted)
+    dungeonsCompletedText:SetText(formatNumberWithCommas(dungeonsCompleted))
   end
   
   -- Update XP breakdown (always visible now)
@@ -1500,7 +1530,7 @@ local function UpdateLowestHealthDisplay()
     for _, stat in ipairs(survivalStats) do
       local value = CharacterStats:GetStat(stat.key) or 0
       if survivalTexts[stat.key] then
-        survivalTexts[stat.key]:SetText(tostring(value))
+        survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
       end
     end
   end
