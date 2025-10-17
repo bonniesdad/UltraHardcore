@@ -13,9 +13,11 @@ SlashCmdList.TESTPARTYDEATHAUDIO = function()
   local randomNumber = random(1,4)
   local willPlay = nil
   local soundHandle = nil
-  -- Play sound file on party death
-  willPlay, soundHandle = PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
-  if willPlay then
-    currentSoundHandle = soundHandle
+  if currentSoundHandle == nil then
+    -- Play sound file on party death
+    willPlay, soundHandle = PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
+    if willPlay then
+        currentSoundHandle = soundHandle
+    end
   end
 end
