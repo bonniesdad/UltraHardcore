@@ -1,6 +1,36 @@
 -- Main Screen Statistics Display
 -- Shows the same statistics that appear in the settings panel, but on the main screen at all times
 
+-- Helper function to format numbers with comma separators
+local function formatNumberWithCommas(number)
+  if type(number) ~= "number" then
+    number = tonumber(number) or 0
+  end
+  
+  -- Handle negative numbers
+  local isNegative = number < 0
+  if isNegative then
+    number = -number
+  end
+  
+  -- Convert to string and add commas
+  local formatted = tostring(math.floor(number))
+  local k
+  while true do
+    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    if k == 0 then
+      break
+    end
+  end
+  
+  -- Add back negative sign if needed
+  if isNegative then
+    formatted = "-" .. formatted
+  end
+  
+  return formatted
+end
+
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
 statsFrame:SetSize(200, 300) -- Increased height to accommodate all statistics
@@ -18,7 +48,7 @@ levelLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local levelValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 levelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -5)
-levelValue:SetText('1')
+levelValue:SetText(formatNumberWithCommas(1))
 levelValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lowestHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -60,7 +90,7 @@ enemiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local enemiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
-enemiesValue:SetText('0')
+enemiesValue:SetText(formatNumberWithCommas(0))
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 
@@ -71,7 +101,7 @@ dungeonsCompletedLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonsCompletedValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -80)
-dungeonsCompletedValue:SetText('0')
+dungeonsCompletedValue:SetText(formatNumberWithCommas(0))
 dungeonsCompletedValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Additional statistics rows
@@ -82,7 +112,7 @@ petDeathsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local petDeathsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 petDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -95)
-petDeathsValue:SetText('0')
+petDeathsValue:SetText(formatNumberWithCommas(0))
 petDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local elitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -92,7 +122,7 @@ elitesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local elitesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 elitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -110)
-elitesSlainValue:SetText('0')
+elitesSlainValue:SetText(formatNumberWithCommas(0))
 elitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonBossesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -102,7 +132,7 @@ dungeonBossesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonBossesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -125)
-dungeonBossesValue:SetText('0')
+dungeonBossesValue:SetText(formatNumberWithCommas(0))
 dungeonBossesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Survival statistics rows
@@ -113,7 +143,7 @@ healthPotionsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local healthPotionsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -140)
-healthPotionsValue:SetText('0')
+healthPotionsValue:SetText(formatNumberWithCommas(0))
 healthPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local bandagesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -123,7 +153,7 @@ bandagesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local bandagesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 bandagesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -155)
-bandagesValue:SetText('0')
+bandagesValue:SetText(formatNumberWithCommas(0))
 bandagesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local targetDummiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -133,7 +163,7 @@ targetDummiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local targetDummiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 targetDummiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
-targetDummiesValue:SetText('0')
+targetDummiesValue:SetText(formatNumberWithCommas(0))
 targetDummiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local grenadesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -143,7 +173,7 @@ grenadesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local grenadesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 grenadesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -185)
-grenadesValue:SetText('0')
+grenadesValue:SetText(formatNumberWithCommas(0))
 grenadesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local partyDeathsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -153,7 +183,7 @@ partyDeathsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local partyDeathsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -200)
-partyDeathsValue:SetText('0')
+partyDeathsValue:SetText(formatNumberWithCommas(0))
 partyDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Store all statistics elements for easy management
@@ -240,7 +270,7 @@ local function UpdateStatistics()
   
   -- Update character level
   local playerLevel = UnitLevel('player') or 1
-  levelValue:SetText(tostring(playerLevel))
+  levelValue:SetText(formatNumberWithCommas(playerLevel))
   
   -- Update lowest health
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
@@ -256,39 +286,39 @@ local function UpdateStatistics()
   
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
-  enemiesValue:SetText(tostring(enemies))
+  enemiesValue:SetText(formatNumberWithCommas(enemies))
   
   -- Update dungeons completed
   local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
-  dungeonsCompletedValue:SetText(tostring(dungeonsCompleted))
+  dungeonsCompletedValue:SetText(formatNumberWithCommas(dungeonsCompleted))
   
   -- Update pet deaths
   local petDeaths = CharacterStats:GetStat('petDeaths') or 0
-  petDeathsValue:SetText(tostring(petDeaths))
+  petDeathsValue:SetText(formatNumberWithCommas(petDeaths))
   
   -- Update elites slain
   local elitesSlain = CharacterStats:GetStat('elitesSlain') or 0
-  elitesSlainValue:SetText(tostring(elitesSlain))
+  elitesSlainValue:SetText(formatNumberWithCommas(elitesSlain))
   
   -- Update dungeon bosses slain
   local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-  dungeonBossesValue:SetText(tostring(dungeonBosses))
+  dungeonBossesValue:SetText(formatNumberWithCommas(dungeonBosses))
   
   -- Update survival statistics
   local healthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
-  healthPotionsValue:SetText(tostring(healthPotions))
+  healthPotionsValue:SetText(formatNumberWithCommas(healthPotions))
   
   local bandages = CharacterStats:GetStat('bandagesUsed') or 0
-  bandagesValue:SetText(tostring(bandages))
+  bandagesValue:SetText(formatNumberWithCommas(bandages))
   
   local targetDummies = CharacterStats:GetStat('targetDummiesUsed') or 0
-  targetDummiesValue:SetText(tostring(targetDummies))
+  targetDummiesValue:SetText(formatNumberWithCommas(targetDummies))
   
   local grenades = CharacterStats:GetStat('grenadesUsed') or 0
-  grenadesValue:SetText(tostring(grenades))
+  grenadesValue:SetText(formatNumberWithCommas(grenades))
   
   local partyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
-  partyDeathsValue:SetText(tostring(partyDeaths))
+  partyDeathsValue:SetText(formatNumberWithCommas(partyDeaths))
   
   -- Update row visibility after updating values
   UpdateRowVisibility()
