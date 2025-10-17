@@ -33,7 +33,7 @@ end
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 300) -- Increased height to accommodate all statistics
+statsFrame:SetSize(200, 315) -- Increased height to accommodate all statistics including highest crit
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -186,6 +186,17 @@ partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -200)
 partyDeathsValue:SetText(formatNumberWithCommas(0))
 partyDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Highest crit value row
+local highestCritLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -215)
+highestCritLabel:SetText('Highest Crit:')
+highestCritLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local highestCritValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -215)
+highestCritValue:SetText(formatNumberWithCommas(0))
+highestCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Store all statistics elements for easy management
 local statsElements = {
   {label = levelLabel, value = levelValue, setting = 'showMainStatisticsPanelLevel'},
@@ -201,7 +212,8 @@ local statsElements = {
   {label = bandagesLabel, value = bandagesValue, setting = 'showMainStatisticsPanelBandagesUsed'},
   {label = targetDummiesLabel, value = targetDummiesValue, setting = 'showMainStatisticsPanelTargetDummiesUsed'},
   {label = grenadesLabel, value = grenadesValue, setting = 'showMainStatisticsPanelGrenadesUsed'},
-  {label = partyDeathsLabel, value = partyDeathsValue, setting = 'showMainStatisticsPanelPartyMemberDeaths'}
+  {label = partyDeathsLabel, value = partyDeathsValue, setting = 'showMainStatisticsPanelPartyMemberDeaths'},
+  {label = highestCritLabel, value = highestCritValue, setting = 'showMainStatisticsPanelHighestCritValue'}
 }
 
 -- Function to update row visibility and positioning
@@ -220,7 +232,8 @@ local function UpdateRowVisibility()
       if element.setting == 'showMainStatisticsPanelLevel' or 
          element.setting == 'showMainStatisticsPanelLowestHealth' or
          element.setting == 'showMainStatisticsPanelEnemiesSlain' or
-         element.setting == 'showMainStatisticsPanelDungeonsCompleted' then
+         element.setting == 'showMainStatisticsPanelDungeonsCompleted' or
+         element.setting == 'showMainStatisticsPanelHighestCritValue' then
         -- These default to true (show unless explicitly false)
         isVisible = true
       else
@@ -319,6 +332,10 @@ local function UpdateStatistics()
   
   local partyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
   partyDeathsValue:SetText(formatNumberWithCommas(partyDeaths))
+  
+  -- Update highest crit value
+  local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
+  highestCritValue:SetText(formatNumberWithCommas(highestCrit))
   
   -- Update row visibility after updating values
   UpdateRowVisibility()

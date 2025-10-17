@@ -15,7 +15,17 @@ function OnCombatLogEvent(self, event)
   local _, subEvent, _, sourceGUID, _, _, _, destGUID, enemyName, _, _, spellID, a, b, c, d, e, f =
     CombatLogGetCurrentEventInfo()
 
-  amount, _, _, _, _, _, critical = select(12, CombatLogGetCurrentEventInfo())
+  -- Extract amount based on damage type
+  local amount
+  if subEvent == 'SWING_DAMAGE' then
+    amount = select(12, CombatLogGetCurrentEventInfo())
+  elseif subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+    amount = select(15, CombatLogGetCurrentEventInfo())
+  else
+    amount = select(12, CombatLogGetCurrentEventInfo()) -- fallback
+  end
+  
+  local critical = select(18, CombatLogGetCurrentEventInfo())
 
   -- Incoming spell damage
   if GLOBAL_SETTINGS.showIncomingDamageEffect then
@@ -78,6 +88,29 @@ function OnCombatLogEvent(self, event)
     if subEvent == 'SWING_DAMAGE' or subEvent == 'SPELL_DAMAGE' then
       if destGUID == UnitGUID('player') and critical then
         RotateScreenEffect()
+      end
+    end
+  end
+
+  if subEvent == 'SWING_DAMAGE' or subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+    local critical
+    
+    if subEvent == 'SWING_DAMAGE' then
+      -- For swing damage, critical is at position 18
+      critical = select(18, CombatLogGetCurrentEventInfo())
+    elseif subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+      -- For spell damage and ranged damage, critical is at position 21
+      critical = select(21, CombatLogGetCurrentEventInfo())
+    end
+    
+    if critical then
+      -- Only trigger crit effects when PLAYER crits an enemy
+      if sourceGUID == UnitGUID('player') then
+        local currentHighestCrit = CharacterStats:GetStat('highestCritValue') or 0
+        if amount > currentHighestCrit then
+          print('|cFFFF0000[UHC]|r Highest crit value updated to: ' .. amount .. '|r')
+          CharacterStats:UpdateStat('highestCritValue', amount)
+        end
       end
     end
   end

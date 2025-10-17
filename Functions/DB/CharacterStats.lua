@@ -70,6 +70,7 @@ local CharacterStats = {
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
+    highestCritValue = 0,
     -- Add more stats here as needed
   }
 }
@@ -144,6 +145,12 @@ function CharacterStats:ResetPartyMemberDeaths()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetHighestCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
@@ -167,6 +174,9 @@ function CharacterStats:GetCurrentCharacterStats()
   end
   if stats.petDeaths == nil then
     stats.petDeaths = self.defaults.petDeaths
+  end
+  if stats.highestCritValue == nil then
+    stats.highestCritValue = self.defaults.highestCritValue
   end
   
   return stats
@@ -562,6 +572,11 @@ end
 SLASH_RESETPARTYMEMBERDEATHS1 = "/resetpartymemberdeaths"
 SlashCmdList["RESETPARTYMEMBERDEATHS"] = function()
   CharacterStats:ResetPartyMemberDeaths()
+end
+
+SLASH_RESETHIGHESTCRIT1 = "/resethighestcrit"
+SlashCmdList["RESETHIGHESTCRIT"] = function()
+  CharacterStats:ResetHighestCritValue()
 end
 
 SLASH_RESETXP1 = "/resetxp"
