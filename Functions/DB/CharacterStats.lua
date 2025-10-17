@@ -38,6 +38,7 @@ local CharacterStats = {
     lowestHealthThisSession = 100,
     petDeaths = 0,
     elitesSlain = 0,
+    soloElitesSlain = 0, -- NEW DATABASE STAT
     enemiesSlain = 0,
     lastSessionXP = 0, -- XP at the end of last session
     -- XP tracking for each UHC setting
