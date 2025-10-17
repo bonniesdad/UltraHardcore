@@ -151,6 +151,10 @@ local settingsCheckboxOptions = { {
   name = 'Announce Dungeons Completed on Group Join',
   dbSettingsValueName = 'announceDungeonsCompletedOnGroupJoin',
   tooltip = 'Automatically announce dungeons completed statistics when joining a group',
+}, {
+  name = 'Buff Bar on Resource Bar',
+  dbSettingsValueName = 'buffBarOnResourceBar',
+  tooltip = 'Position player buff bar on top of the custom resource bar',
 } }
 
 local presets = { {
@@ -177,6 +181,7 @@ local presets = { {
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
   announceDungeonsCompletedOnGroupJoin = false,
+  buffBarOnResourceBar = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -201,6 +206,7 @@ local presets = { {
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
   announceDungeonsCompletedOnGroupJoin = false,
+  buffBarOnResourceBar = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -225,7 +231,8 @@ local presets = { {
   setFirstPersonCamera = false,
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = true,
-  announceDungeonsCompletedOnGroupJoin = true
+  announceDungeonsCompletedOnGroupJoin = true,
+  buffBarOnResourceBar = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -891,6 +898,7 @@ local settingDisplayNames = {
   showClockEvenWhenMapHidden = 'Show Clock Even When Map is Hidden',
   announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
   announceDungeonsCompletedOnGroupJoin = 'Announce Dungeons Completed on Group Join',
+  buffBarOnResourceBar = 'Buff Bar on Resource Bar',
 }
 
 -- Define preset sections with their settings
@@ -928,7 +936,8 @@ local presetSections = {
       "showHealingIndicator",
       "showClockEvenWhenMapHidden",
       "announcePartyDeathsOnGroupJoin",
-      "announceDungeonsCompletedOnGroupJoin"
+      "announceDungeonsCompletedOnGroupJoin",
+      "buffBarOnResourceBar"
     }
   }
 }
@@ -1142,7 +1151,8 @@ local function createCheckboxes()
         "setFirstPersonCamera",
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
-        "announceDungeonsCompletedOnGroupJoin"
+        "announceDungeonsCompletedOnGroupJoin",
+        "buffBarOnResourceBar"
       }
     }
   }
@@ -1183,6 +1193,13 @@ local function createCheckboxes()
           if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
             if self:GetChecked() then
               SetCVar("statusText", "0")
+            end
+          end
+          
+          -- Handle buff bar positioning when setting is toggled
+          if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
+            if _G.UltraHardcoreHandleBuffBarSettingChange then
+              _G.UltraHardcoreHandleBuffBarSettingChange()
             end
           end
         end)
@@ -1379,7 +1396,8 @@ local function UpdateXPBreakdown()
         "showHealingIndicator",
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
-        "announceDungeonsCompletedOnGroupJoin"
+        "announceDungeonsCompletedOnGroupJoin",
+        "buffBarOnResourceBar"
       }
     }
   }

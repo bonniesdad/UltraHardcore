@@ -271,7 +271,7 @@ local function UpdateStatistics()
   elitesSlainValue:SetText(tostring(elitesSlain))
   
   -- Update dungeon bosses slain
-  local dungeonBosses = CharacterStats:GetStat('dungeonBosses') or 0
+  local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
   dungeonBossesValue:SetText(tostring(dungeonBosses))
   
   -- Update survival statistics
