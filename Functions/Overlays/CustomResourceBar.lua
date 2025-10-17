@@ -1,4 +1,4 @@
-local resourceBar = CreateFrame('StatusBar', nil, UIParent)
+local resourceBar = CreateFrame('StatusBar', 'UltraHardcoreResourceBar', UIParent)
 if not resourceBar then
     print("UltraHardcore: Failed to create resource bar")
     return
@@ -59,7 +59,7 @@ resourceBar:SetScript('OnDragStop', function(self)
 end)
 
 -- Create a frame for the combo points
-local comboFrame = CreateFrame('Frame', nil, UIParent)
+local comboFrame = CreateFrame('Frame', 'UltraHardcoreComboFrame', UIParent)
 if not comboFrame then
     print("UltraHardcore: Failed to create combo frame")
     return
@@ -129,7 +129,7 @@ border:SetPoint('CENTER', resourceBar, 'CENTER', 0, 0)
 border:SetSize(300, 64)
 
 -- Create pet resource bar
-local petResourceBar = CreateFrame('StatusBar', nil, UIParent)
+local petResourceBar = CreateFrame('StatusBar', 'UltraHardcorePetResourceBar', UIParent)
 if not petResourceBar then
     print("UltraHardcore: Failed to create pet resource bar")
     return
