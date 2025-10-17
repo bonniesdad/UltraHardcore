@@ -15,7 +15,17 @@ function OnCombatLogEvent(self, event)
   local _, subEvent, _, sourceGUID, _, _, _, destGUID, enemyName, _, _, spellID, a, b, c, d, e, f =
     CombatLogGetCurrentEventInfo()
 
-  amount, _, _, _, _, _, critical = select(12, CombatLogGetCurrentEventInfo())
+  -- Extract amount based on damage type
+  local amount
+  if subEvent == 'SWING_DAMAGE' then
+    amount = select(12, CombatLogGetCurrentEventInfo())
+  elseif subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+    amount = select(15, CombatLogGetCurrentEventInfo())
+  else
+    amount = select(12, CombatLogGetCurrentEventInfo()) -- fallback
+  end
+  
+  local critical = select(18, CombatLogGetCurrentEventInfo())
 
   -- Incoming spell damage
   if GLOBAL_SETTINGS.showIncomingDamageEffect then
@@ -82,11 +92,44 @@ function OnCombatLogEvent(self, event)
     end
   end
 
+  if subEvent == 'SWING_DAMAGE' or subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+    local critical
+    
+    if subEvent == 'SWING_DAMAGE' then
+      -- For swing damage, critical is at position 18
+      critical = select(18, CombatLogGetCurrentEventInfo())
+    elseif subEvent == 'SPELL_DAMAGE' or subEvent == 'RANGE_DAMAGE' then
+      -- For spell damage and ranged damage, critical is at position 21
+      critical = select(21, CombatLogGetCurrentEventInfo())
+    end
+    
+    if critical then
+      -- Only trigger crit effects when PLAYER crits an enemy
+      if sourceGUID == UnitGUID('player') then
+        local currentHighestCrit = CharacterStats:GetStat('highestCritValue') or 0
+        if amount > currentHighestCrit then
+          print('|cFFFF0000[UHC]|r Highest crit value updated to: ' .. amount .. '|r')
+          CharacterStats:UpdateStat('highestCritValue', amount)
+        end
+      end
+    end
+  end
+
   -- Party kill
   if subEvent == 'PARTY_KILL' then
     if IsEnemyElite(destGUID) then
       local currentElites = CharacterStats:GetStat('elitesSlain') or 0
       CharacterStats:UpdateStat('elitesSlain', currentElites + 1)
+    end
+    
+    if IsEnemyRareElite(destGUID) then
+      local currentRareElites = CharacterStats:GetStat('rareElitesSlain') or 0
+      CharacterStats:UpdateStat('rareElitesSlain', currentRareElites + 1)
+    end
+    
+    if IsEnemyWorldBoss(destGUID) then
+      local currentWorldBosses = CharacterStats:GetStat('worldBossesSlain') or 0
+      CharacterStats:UpdateStat('worldBossesSlain', currentWorldBosses + 1)
     end
 
     -- Check if this was a dungeon boss kill
@@ -218,14 +261,44 @@ function OnCombatLogEvent(self, event)
         end
       end
       
-      -- If it's a party member, increment the death count
+      -- If it's a party member, check if they're feigning death before incrementing death count
       if isPartyMember and deadPlayerName then
-        local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
-        local newCount = currentPartyDeaths + 1
-        CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+        -- Check if the dead party member is feigning death
+        local isFeigningDeath = false
         
-        -- Optional: Print a message to chat
-        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+        if IsInRaid() then
+          -- For raids, we need to find the unit ID to check feign death status
+          for i = 1, GetNumGroupMembers() do
+            local name, _, _, _, _, _, _, _, _, _, _, guid = GetRaidRosterInfo(i)
+            if guid == destGUID then
+              local unitID = 'raid' .. i
+              isFeigningDeath = UnitIsFeignDeath(unitID)
+              break
+            end
+          end
+        else
+          -- For regular parties, find the unit ID
+          for i = 1, GetNumGroupMembers() do
+            local unitID = 'party' .. i
+            if UnitGUID(unitID) == destGUID then
+              isFeigningDeath = UnitIsFeignDeath(unitID)
+              break
+            end
+          end
+        end
+        
+        -- Only increment death count if they're not feigning death
+        if not isFeigningDeath then
+          local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+          local newCount = currentPartyDeaths + 1
+          CharacterStats:UpdateStat('partyMemberDeaths', newCount)
+          
+          -- Optional: Print a message to chat
+          DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
+        else
+          -- Optional: Print a message indicating feign death was detected
+          DEFAULT_CHAT_FRAME:AddMessage("|cFFFF8000[UHC]|r Party member " .. deadPlayerName .. " is feigning death - death count not incremented.", 1, 0.5, 0)
+        end
       end
     end
   end
