@@ -9,8 +9,6 @@ icon:SetAlpha(1) -- Fully visible
 resourceIndicator.icon = icon
 icon:SetPoint('CENTER', resourceIndicator, 'CENTER', 0, 0)
 
-local currentSoundHandle = nil
-
 -- Function to smoothly fade into a new texture
 local function SmoothTextureUpdate(newTexture)
   if icon.currentTexture ~= newTexture then
@@ -60,25 +58,6 @@ SlashCmdList.TOGGLEBONNIE = function()
   end
 end
 
-SLASH_STOPSOUND1 = '/stopsound'
-SlashCmdList.STOPSOUND = function()
-  if currentSoundHandle then
-    StopSound(currentSoundHandle)
-    currentSoundHandle = nil
-  end
-end
-
-SLASH_TESTPARTYDEATHAUDIO1 = '/testpartydeathaudio'
-SlashCmdList.TESTPARTYDEATHAUDIO = function()
-  local randomNumber = random(1,4)
-  local willPlay = nil
-  local soundHandle = nil
-  -- Play sound file on party death
-  willPlay, soundHandle = PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
-  if willPlay then
-    currentSoundHandle = soundHandle
-  end
-end
 
 -- Event Handler
 resourceIndicator:RegisterEvent('PLAYER_ENTERING_WORLD')
