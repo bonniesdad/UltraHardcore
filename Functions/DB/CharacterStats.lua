@@ -1,4 +1,35 @@
 -- 🟢 Character Stats Management
+
+-- Helper function to format numbers with comma separators
+local function formatNumberWithCommas(number)
+  if type(number) ~= "number" then
+    number = tonumber(number) or 0
+  end
+  
+  -- Handle negative numbers
+  local isNegative = number < 0
+  if isNegative then
+    number = -number
+  end
+  
+  -- Convert to string and add commas
+  local formatted = tostring(math.floor(number))
+  local k
+  while true do
+    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    if k == 0 then
+      break
+    end
+  end
+  
+  -- Add back negative sign if needed
+  if isNegative then
+    formatted = "-" .. formatted
+  end
+  
+  return formatted
+end
+
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -39,6 +70,7 @@ local CharacterStats = {
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
+    highestCritValue = 0,
     -- Add more stats here as needed
   }
 }
@@ -113,6 +145,12 @@ function CharacterStats:ResetPartyMemberDeaths()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetHighestCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
@@ -136,6 +174,9 @@ function CharacterStats:GetCurrentCharacterStats()
   end
   if stats.petDeaths == nil then
     stats.petDeaths = self.defaults.petDeaths
+  end
+  if stats.highestCritValue == nil then
+    stats.highestCritValue = self.defaults.highestCritValue
   end
   
   return stats
@@ -193,7 +234,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. formatNumberWithCommas(stats.petDeaths) .. " - Elites: " .. formatNumberWithCommas(stats.elitesSlain) .. " - Enemies: " .. formatNumberWithCommas(stats.enemiesSlain)
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -531,6 +572,11 @@ end
 SLASH_RESETPARTYMEMBERDEATHS1 = "/resetpartymemberdeaths"
 SlashCmdList["RESETPARTYMEMBERDEATHS"] = function()
   CharacterStats:ResetPartyMemberDeaths()
+end
+
+SLASH_RESETHIGHESTCRIT1 = "/resethighestcrit"
+SlashCmdList["RESETHIGHESTCRIT"] = function()
+  CharacterStats:ResetHighestCritValue()
 end
 
 SLASH_RESETXP1 = "/resetxp"

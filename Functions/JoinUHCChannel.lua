@@ -7,7 +7,25 @@ function JoinUHCChannel()
       local success = JoinChannelByName(channelName)
       if success then
         C_Timer.After(0.5, function()
-          ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+          -- Check if channel is already configured in any chat frame
+          local channelAlreadyConfigured = false
+          for i = 1, NUM_CHAT_WINDOWS do
+            local chatFrame = _G["ChatFrame" .. i]
+            if chatFrame and chatFrame.channelList then
+              for _, channel in pairs(chatFrame.channelList) do
+                if channel == channelName then
+                  channelAlreadyConfigured = true
+                  break
+                end
+              end
+            end
+            if channelAlreadyConfigured then break end
+          end
+          
+          -- Only add to default frame if not already configured elsewhere
+          if not channelAlreadyConfigured then
+            ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+          end
         end)
       end
     end
