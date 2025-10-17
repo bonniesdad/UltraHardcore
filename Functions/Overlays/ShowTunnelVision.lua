@@ -8,7 +8,7 @@ local seasonalThemes = {
   {
     name = "Halloween",
     startMonth = 10,
-    startDay = 20,
+    startDay = 17,
     endMonth = 11,
     endDay = 1,
     texturePrefix = "halloween_foggy_",
