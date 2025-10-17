@@ -650,7 +650,7 @@ enemiesSlainLabel:SetText('Enemies Slain')
 
 -- Create content frame for Enemies Slain breakdown
 local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-enemiesSlainContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding (added highest crit)
+enemiesSlainContent:SetSize(450, 7 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 7 rows + padding (added rare elites and world bosses)
 enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -212)
 enemiesSlainContent:Show() -- Show by default
 
@@ -715,13 +715,59 @@ showStatsElitesSlainRadio:SetScript('OnClick', function(self)
   end
 end)
 
+-- Create the rare elites slain text display (indented)
+local rareElitesSlainLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+rareElitesSlainLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2)
+rareElitesSlainLabel:SetText('Rare Elites Slain:')
+
+local rareElitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+rareElitesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2)
+rareElitesSlainText:SetText(formatNumberWithCommas(0))
+
+-- Create radio button for showing rare elites slain in main screen statistics
+local showStatsRareElitesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+showStatsRareElitesSlainRadio:SetPoint('LEFT', rareElitesSlainLabel, 'LEFT', -20, 0)
+showStatsRareElitesSlainRadio:SetChecked(false) -- Initialize as unchecked, will be updated by updateRadioButtons()
+radioButtons.showMainStatisticsPanelRareElitesSlain = showStatsRareElitesSlainRadio
+showStatsRareElitesSlainRadio:SetScript('OnClick', function(self)
+  tempSettings.showMainStatisticsPanelRareElitesSlain = self:GetChecked()
+  GLOBAL_SETTINGS.showMainStatisticsPanelRareElitesSlain = self:GetChecked()
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
+-- Create the world bosses slain text display (indented)
+local worldBossesSlainLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+worldBossesSlainLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3)
+worldBossesSlainLabel:SetText('World Bosses Slain:')
+
+local worldBossesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+worldBossesSlainText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3)
+worldBossesSlainText:SetText(formatNumberWithCommas(0))
+
+-- Create radio button for showing world bosses slain in main screen statistics
+local showStatsWorldBossesSlainRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+showStatsWorldBossesSlainRadio:SetPoint('LEFT', worldBossesSlainLabel, 'LEFT', -20, 0)
+showStatsWorldBossesSlainRadio:SetChecked(false) -- Initialize as unchecked, will be updated by updateRadioButtons()
+radioButtons.showMainStatisticsPanelWorldBossesSlain = showStatsWorldBossesSlainRadio
+showStatsWorldBossesSlainRadio:SetScript('OnClick', function(self)
+  tempSettings.showMainStatisticsPanelWorldBossesSlain = self:GetChecked()
+  GLOBAL_SETTINGS.showMainStatisticsPanelWorldBossesSlain = self:GetChecked()
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 -- Create the dungeon bosses slain text display (indented)
 local dungeonBossesLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2)
+dungeonBossesLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
 dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
 
 local dungeonBossesText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2)
+dungeonBossesText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
 dungeonBossesText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing dungeon bosses slain in main screen statistics
@@ -740,11 +786,11 @@ end)
 
 -- Create the dungeons completed text display (indented)
 local dungeonsCompletedLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3)
+dungeonsCompletedLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5)
 dungeonsCompletedLabel:SetText('Dungeons Completed:')
 
 local dungeonsCompletedText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3)
+dungeonsCompletedText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5)
 dungeonsCompletedText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing dungeons completed in main screen statistics
@@ -763,11 +809,11 @@ end)
 
 -- Create the highest crit value text display (indented)
 local highestCritLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
+highestCritLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6)
 highestCritLabel:SetText('Highest Crit Value:')
 
 local highestCritText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
+highestCritText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6)
 highestCritText:SetText(formatNumberWithCommas(0))
 
 -- Create radio button for showing highest crit value in main screen statistics
@@ -787,7 +833,7 @@ end)
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -349) -- Moved down by 25px for new row
+survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -399) -- Moved down by 50px for new rows
 
 -- Modern WoW row styling with rounded corners and greyish background
 survivalHeader:SetBackdrop({
@@ -814,7 +860,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Height for 5 items
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -382) -- Moved down by 25px for new row
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -432) -- Moved down by 50px for new rows
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -879,7 +925,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -519) -- Moved down by 25px for new row
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -573) -- Moved up to reduce gap
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -906,7 +952,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -552) -- Moved down by 25px for new row
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -606) -- Moved up to reduce gap
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1529,6 +1575,16 @@ local function UpdateLowestHealthDisplay()
   if elitesSlainText then
     local elites = CharacterStats:GetStat('elitesSlain') or 0
     elitesSlainText:SetText(formatNumberWithCommas(elites))
+  end
+  
+  if rareElitesSlainText then
+    local rareElites = CharacterStats:GetStat('rareElitesSlain') or 0
+    rareElitesSlainText:SetText(formatNumberWithCommas(rareElites))
+  end
+  
+  if worldBossesSlainText then
+    local worldBosses = CharacterStats:GetStat('worldBossesSlain') or 0
+    worldBossesSlainText:SetText(formatNumberWithCommas(worldBosses))
   end
   
   if enemiesSlainText then
