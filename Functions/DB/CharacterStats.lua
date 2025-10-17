@@ -1,4 +1,35 @@
 -- 🟢 Character Stats Management
+
+-- Helper function to format numbers with comma separators
+local function formatNumberWithCommas(number)
+  if type(number) ~= "number" then
+    number = tonumber(number) or 0
+  end
+  
+  -- Handle negative numbers
+  local isNegative = number < 0
+  if isNegative then
+    number = -number
+  end
+  
+  -- Convert to string and add commas
+  local formatted = tostring(math.floor(number))
+  local k
+  while true do
+    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
+    if k == 0 then
+      break
+    end
+  end
+  
+  -- Add back negative sign if needed
+  if isNegative then
+    formatted = "-" .. formatted
+  end
+  
+  return formatted
+end
+
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -39,6 +70,9 @@ local CharacterStats = {
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
+    highestCritValue = 0,
+    rareElitesSlain = 0,
+    worldBossesSlain = 0,
     -- Add more stats here as needed
   }
 }
@@ -113,6 +147,24 @@ function CharacterStats:ResetPartyMemberDeaths()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetHighestCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetRareElitesSlain()
+  local stats = self:GetCurrentCharacterStats()
+  stats.rareElitesSlain = self.defaults.rareElitesSlain
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetWorldBossesSlain()
+  local stats = self:GetCurrentCharacterStats()
+  stats.worldBossesSlain = self.defaults.worldBossesSlain
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
@@ -136,6 +188,15 @@ function CharacterStats:GetCurrentCharacterStats()
   end
   if stats.petDeaths == nil then
     stats.petDeaths = self.defaults.petDeaths
+  end
+  if stats.highestCritValue == nil then
+    stats.highestCritValue = self.defaults.highestCritValue
+  end
+  if stats.rareElitesSlain == nil then
+    stats.rareElitesSlain = self.defaults.rareElitesSlain
+  end
+  if stats.worldBossesSlain == nil then
+    stats.worldBossesSlain = self.defaults.worldBossesSlain
   end
   
   return stats
@@ -193,7 +254,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   
   -- if channel == 'GUILD' then
     -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. formatNumberWithCommas(stats.petDeaths) .. " - Elites: " .. formatNumberWithCommas(stats.elitesSlain) .. " - Enemies: " .. formatNumberWithCommas(stats.enemiesSlain)
     sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -216,7 +277,7 @@ function CharacterStats:ShowChatChannelDialog()
   
   -- Create dialog frame positioned above the main settings panel
   local dialog = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
-  dialog:SetSize(400, 280)
+  dialog:SetSize(400, 320)
   dialog:SetPoint('CENTER', UIParent, 'CENTER', 0, 100) -- Positioned above main settings
   dialog:SetFrameStrata('DIALOG')
   dialog:SetFrameLevel(25) -- Higher than main settings panel
@@ -297,7 +358,7 @@ function CharacterStats:ShowChatChannelDialog()
   
   -- Create content area with proper styling
   local contentFrame = CreateFrame('Frame', nil, dialog)
-  contentFrame:SetSize(380, 210)
+  contentFrame:SetSize(380, 250)
   contentFrame:SetPoint('TOP', dialog, 'TOP', 0, -50)
   
   -- Create stats preview section
@@ -326,7 +387,7 @@ function CharacterStats:ShowChatChannelDialog()
   
   -- Create stats preview content
   local statsPreview = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
-  statsPreview:SetSize(340, 100)
+  statsPreview:SetSize(340, 140)
   statsPreview:SetPoint('TOP', contentFrame, 'TOP', 0, -38)
   statsPreview:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -364,14 +425,22 @@ function CharacterStats:ShowChatChannelDialog()
   elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
   elitesText:SetText("Elites Slain: " .. stats.elitesSlain)
   
+  local rareElitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  rareElitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -108)
+  rareElitesText:SetText("Rare Elites Slain: " .. stats.rareElitesSlain)
+  
+  local worldBossesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  worldBossesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -128)
+  worldBossesText:SetText("World Bosses Slain: " .. stats.worldBossesSlain)
+  
   local enemiesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -108)
+  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -148)
   enemiesText:SetText("Enemies Slain: " .. stats.enemiesSlain)
   
   -- Create channel selection section
   local channelHeader = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
   channelHeader:SetSize(360, 28)
-  channelHeader:SetPoint('TOP', contentFrame, 'TOP', 0, -160)
+  channelHeader:SetPoint('TOP', contentFrame, 'TOP', 0, -200)
   channelHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -399,7 +468,7 @@ function CharacterStats:ShowChatChannelDialog()
     end
     
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Party Deaths Witnessed: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Party Deaths Witnessed: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Rare Elites: " .. stats.rareElitesSlain .. " - World Bosses: " .. stats.worldBossesSlain .. " - Enemies: " .. stats.enemiesSlain
     sendMessage(condensedMessage)
     
     dialog:Hide()
@@ -408,7 +477,7 @@ function CharacterStats:ShowChatChannelDialog()
   -- Create button container
   local buttonContainer = CreateFrame('Frame', nil, contentFrame)
   buttonContainer:SetSize(340, 80)
-  buttonContainer:SetPoint('TOP', contentFrame, 'TOP', 0, -188)
+  buttonContainer:SetPoint('TOP', contentFrame, 'TOP', 0, -228)
   
   -- Say button
   local sayButton = CreateFrame('Button', nil, buttonContainer, 'UIPanelButtonTemplate')
@@ -531,6 +600,21 @@ end
 SLASH_RESETPARTYMEMBERDEATHS1 = "/resetpartymemberdeaths"
 SlashCmdList["RESETPARTYMEMBERDEATHS"] = function()
   CharacterStats:ResetPartyMemberDeaths()
+end
+
+SLASH_RESETHIGHESTCRIT1 = "/resethighestcrit"
+SlashCmdList["RESETHIGHESTCRIT"] = function()
+  CharacterStats:ResetHighestCritValue()
+end
+
+SLASH_RESETRAREELITES1 = "/resetrareelites"
+SlashCmdList["RESETRAREELITES"] = function()
+  CharacterStats:ResetRareElitesSlain()
+end
+
+SLASH_RESETWORLDBOSSES1 = "/resetworldbosses"
+SlashCmdList["RESETWORLDBOSSES"] = function()
+  CharacterStats:ResetWorldBossesSlain()
 end
 
 SLASH_RESETXP1 = "/resetxp"
