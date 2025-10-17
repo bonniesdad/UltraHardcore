@@ -75,7 +75,8 @@ local function shouldRadioBeChecked(settingName, settings)
     if settingName == 'showMainStatisticsPanelLevel' or 
        settingName == 'showMainStatisticsPanelLowestHealth' or
        settingName == 'showMainStatisticsPanelEnemiesSlain' or
-       settingName == 'showMainStatisticsPanelDungeonsCompleted' then
+       settingName == 'showMainStatisticsPanelDungeonsCompleted' or
+       settingName == 'showMainStatisticsPanelHighestCritValue' then
       return true
     else
       -- These default to false (hide unless explicitly true)
@@ -649,7 +650,7 @@ enemiesSlainLabel:SetText('Enemies Slain')
 
 -- Create content frame for Enemies Slain breakdown
 local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-enemiesSlainContent:SetSize(450, 4 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 4 rows + padding
+enemiesSlainContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding (added highest crit)
 enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -212)
 enemiesSlainContent:Show() -- Show by default
 
@@ -760,10 +761,33 @@ showStatsDungeonsCompletedRadio:SetScript('OnClick', function(self)
   end
 end)
 
+-- Create the highest crit value text display (indented)
+local highestCritLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestCritLabel:SetPoint('TOPLEFT', enemiesSlainContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
+highestCritLabel:SetText('Highest Crit Value:')
+
+local highestCritText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestCritText:SetPoint('TOPRIGHT', enemiesSlainContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4)
+highestCritText:SetText(formatNumberWithCommas(0))
+
+-- Create radio button for showing highest crit value in main screen statistics
+local showStatsHighestCritRadio = CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+showStatsHighestCritRadio:SetPoint('LEFT', highestCritLabel, 'LEFT', -20, 0)
+showStatsHighestCritRadio:SetChecked(false) -- Initialize as unchecked, will be updated by updateRadioButtons()
+radioButtons.showMainStatisticsPanelHighestCritValue = showStatsHighestCritRadio
+showStatsHighestCritRadio:SetScript('OnClick', function(self)
+  tempSettings.showMainStatisticsPanelHighestCritValue = self:GetChecked()
+  GLOBAL_SETTINGS.showMainStatisticsPanelHighestCritValue = self:GetChecked()
+  -- Trigger immediate update of main screen statistics
+  if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+    UltraHardcoreStatsFrame.UpdateRowVisibility()
+  end
+end)
+
 -- Create modern WoW-style Survival section (no accordion functionality)
 local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -324)
+survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -349) -- Moved down by 25px for new row
 
 -- Modern WoW row styling with rounded corners and greyish background
 survivalHeader:SetBackdrop({
@@ -790,7 +814,7 @@ survivalLabel:SetText('Survival')
 -- Create content frame for Survival breakdown (always visible)
 local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Height for 5 items
-survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -357)
+survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -382) -- Moved down by 25px for new row
 survivalContent:Show() -- Always show
 
 -- Modern content frame styling
@@ -855,7 +879,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -494)
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -519) -- Moved down by 25px for new row
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -882,7 +906,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -527)
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -552) -- Moved down by 25px for new row
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1520,6 +1544,12 @@ local function UpdateLowestHealthDisplay()
   if dungeonsCompletedText then
     local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
     dungeonsCompletedText:SetText(formatNumberWithCommas(dungeonsCompleted))
+  end
+  
+  -- Update highest crit value
+  if highestCritText then
+    local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
+    highestCritText:SetText(formatNumberWithCommas(highestCrit))
   end
   
   -- Update XP breakdown (always visible now)
