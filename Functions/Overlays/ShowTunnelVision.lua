@@ -3,6 +3,46 @@ if not UltraHardcore.tunnelVisionFrames then
   UltraHardcore.tunnelVisionFrames = {}
 end
 
+-- Table defining seasonal themes with date ranges and texture prefixes
+local seasonalThemes = {
+  {
+    name = "Halloween",
+    startMonth = 10,
+    startDay = 17,
+    endMonth = 11,
+    endDay = 1,
+    texturePrefix = "halloween_foggy_",
+  },
+  -- Add more themes here, e.g.:
+  -- {
+  --   name = "Winter",
+  --   startMonth = 12,
+  --   startDay = 20,
+  --   endMonth = 1,
+  --   endDay = 5,
+  --   texturePrefix = "winter_foggy_",
+  -- },
+}
+
+local function GetActiveSeasonalTheme()
+  local currentDate = date("*t") -- Get current date as a table
+  local month = currentDate.month
+  local day = currentDate.day
+
+  for _, theme in ipairs(seasonalThemes) do
+    local isActive = (
+      (month == theme.startMonth and day >= theme.startDay) or
+      (month == theme.endMonth and day <= theme.endDay) or
+      (theme.startMonth > theme.endMonth and month > theme.startMonth) or
+      (theme.startMonth > theme.endMonth and month < theme.endMonth)
+    )
+    if isActive then
+      return theme.texturePrefix
+    end
+  end
+  return nil -- No seasonal theme active
+end
+
 -- 🟢 Function to apply blur with increasing intensity based on health percentage
 -- Now supports stacking multiple overlays
 function ShowTunnelVision(blurIntensity)
@@ -38,12 +78,9 @@ function ShowTunnelVision(blurIntensity)
   
   local frame = UltraHardcore.tunnelVisionFrames[frameName]
   
-  -- Set the texture
-  local texturePath =
-    'Interface\\AddOns\\UltraHardcore\\textures\\tinted_foggy_' .. string.format(
-      '%02d',
-      blurIntensity
-    ) .. '.png'
+  -- Determine the texture based on active seasonal theme
+  local texturePrefix = GetActiveSeasonalTheme() or "tinted_foggy_" -- Fallback to default texture
+  local texturePath = 'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format('%02d', blurIntensity) .. '.png'
   
   frame.texture:SetTexture(texturePath)
   frame:SetAlpha(0)
