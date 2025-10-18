@@ -291,7 +291,7 @@ function CenterPlayerBuffBar()
     if BuffFrame then
         local continuationToken;
         local buffCount = 0;
-        local pixelsToMove = 12;
+        local pixelsToMove = 13.25;
         local xOffset = 0;
         local yOffset = 5;
         local buffRows = 1;
