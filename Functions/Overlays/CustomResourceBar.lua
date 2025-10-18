@@ -291,15 +291,15 @@ function CenterPlayerBuffBar()
     if BuffFrame then
         local continuationToken;
         local buffCount = 0;
-        local pixelsToMove = 13.5;
-        local xOffset = pixelsToMove * -1;
+        local pixelsToMove = 12;
+        local xOffset = 0;
         local yOffset = 5;
         local buffRows = 1;
 
         -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2 
         -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
         -- when iterating to count buffs, so I'm doing the same.
-        for i=1, 40 do
+        for i=0, 40 do
             local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
 
             if aura and aura.isHarmful ~= true then
