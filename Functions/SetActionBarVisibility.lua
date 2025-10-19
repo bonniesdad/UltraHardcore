@@ -14,6 +14,9 @@ ACTIOBAR_FRAMES_TO_HIDE = {
   MultiBarBottomRight,
   MultiBarLeft,
   MultiBarRight,
+--consoleport frames
+  ConsolePortBarCluster,
+  ConsolePortToolbar,
 }
 
 --[[
