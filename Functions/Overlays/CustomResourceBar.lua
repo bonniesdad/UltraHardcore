@@ -290,7 +290,7 @@ function RedrawBuffs(parentFrame, icons, harmful, yOffset)
         local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
         if aura and aura.isHarmful == harmful then
             buffCount = buffCount + 1;
-            -- print("Buff:", aura.name, "Icon:", aura.icon, "Duration:", aura.duration, "Expiration:", aura.expirationTime, "SpellID:", aura.spellId, "isHelpful:", aura.isHelpful, "isHarmful:", aura.isHarmful);
+            -- print("[" .. frameName .. "] Buff:", aura.name, "Icon:", aura.icon, "Duration:", aura.duration, "Expiration:", aura.expirationTime, "SpellID:", aura.spellId, "isHelpful:", aura.isHelpful, "isHarmful:", aura.isHarmful);
 
             local iconFrame = icons[buffIndex];
             if not iconFrame then
