@@ -76,7 +76,8 @@ local function shouldRadioBeChecked(settingName, settings)
        settingName == 'showMainStatisticsPanelLowestHealth' or
        settingName == 'showMainStatisticsPanelEnemiesSlain' or
        settingName == 'showMainStatisticsPanelDungeonsCompleted' or
-       settingName == 'showMainStatisticsPanelHighestCritValue' then
+       settingName == 'showMainStatisticsPanelHighestCritValue' or
+       settingName == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
       return true
     else
       -- These default to false (hide unless explicitly true)
@@ -873,7 +874,8 @@ local survivalStats = {
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
   {key = 'grenadesUsed', label = 'Grenades Used (Beta):'},
-  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'}
+  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'},
+  {key = 'maxTunnelVisionOverlayShown', label = 'Close Escapes:'},
 }
 
 local yOffset = -LAYOUT.CONTENT_PADDING
@@ -910,7 +912,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -573) -- Moved up to reduce gap
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -937,7 +939,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -606) -- Moved up to reduce gap
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
