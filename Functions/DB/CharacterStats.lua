@@ -67,6 +67,7 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
+    maxTunnelVisionOverlayShown = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
