@@ -33,7 +33,7 @@ end
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 345) -- Increased height to accommodate all statistics including rare elites and world bosses
+statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -217,6 +217,17 @@ highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 highestCritValue:SetText(formatNumberWithCommas(0))
 highestCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Tunnel vision overlay count row
+local tunnelVisionLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
+tunnelVisionLabel:SetText('Close Escapes:')
+tunnelVisionLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local tunnelVisionValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
+tunnelVisionValue:SetText(formatNumberWithCommas(0))
+tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Store all statistics elements for easy management
 local statsElements = {
   {label = levelLabel, value = levelValue, setting = 'showMainStatisticsPanelLevel'},
@@ -235,7 +246,8 @@ local statsElements = {
   {label = targetDummiesLabel, value = targetDummiesValue, setting = 'showMainStatisticsPanelTargetDummiesUsed'},
   {label = grenadesLabel, value = grenadesValue, setting = 'showMainStatisticsPanelGrenadesUsed'},
   {label = partyDeathsLabel, value = partyDeathsValue, setting = 'showMainStatisticsPanelPartyMemberDeaths'},
-  {label = highestCritLabel, value = highestCritValue, setting = 'showMainStatisticsPanelHighestCritValue'}
+  {label = highestCritLabel, value = highestCritValue, setting = 'showMainStatisticsPanelHighestCritValue'},
+  {label = tunnelVisionLabel, value = tunnelVisionValue, setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown'}
 }
 
 -- Function to update row visibility and positioning
@@ -255,7 +267,8 @@ local function UpdateRowVisibility()
          element.setting == 'showMainStatisticsPanelLowestHealth' or
          element.setting == 'showMainStatisticsPanelEnemiesSlain' or
          element.setting == 'showMainStatisticsPanelDungeonsCompleted' or
-         element.setting == 'showMainStatisticsPanelHighestCritValue' then
+         element.setting == 'showMainStatisticsPanelHighestCritValue' or
+         element.setting == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
         -- These default to true (show unless explicitly false)
         isVisible = true
       else
@@ -366,6 +379,10 @@ local function UpdateStatistics()
   -- Update highest crit value
   local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
   highestCritValue:SetText(formatNumberWithCommas(highestCrit))
+  
+  -- Update tunnel vision overlay count
+  local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
+  tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
   
   -- Update row visibility after updating values
   UpdateRowVisibility()

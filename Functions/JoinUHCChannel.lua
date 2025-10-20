@@ -7,12 +7,13 @@ function JoinUHCChannel()
       local success = JoinChannelByName(channelName)
       if success then
         C_Timer.After(0.5, function()
-          -- Check if channel is already configured in any chat frame
+          -- Check if UHC channel is already configured in any chat frame
           local channelAlreadyConfigured = false
           for i = 1, NUM_CHAT_WINDOWS do
             local chatFrame = _G["ChatFrame" .. i]
             if chatFrame and chatFrame.channelList then
               for _, channel in pairs(chatFrame.channelList) do
+                -- Only check for UHC channels specifically
                 if channel == channelName then
                   channelAlreadyConfigured = true
                   break
