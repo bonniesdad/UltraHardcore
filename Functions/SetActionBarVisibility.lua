@@ -95,15 +95,12 @@ end
 
 -- Self-contained event registration (only for events not handled by main addon)
 local f = CreateFrame("Frame")
-f:RegisterEvent("PLAYER_UPDATE_RESTING")
 f:RegisterEvent("UNIT_AURA")
 f:RegisterEvent("PLAYER_REGEN_DISABLED") -- entering combat
 f:RegisterEvent("PLAYER_REGEN_ENABLED")  -- leaving combat
 
 f:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_UPDATE_RESTING" then
-    OnPlayerUpdateRestingEvent(self, ...)
-  elseif event == "UNIT_AURA" then
+  if event == "UNIT_AURA" then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
