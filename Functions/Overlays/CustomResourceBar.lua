@@ -9,10 +9,9 @@ resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
 local CustomBuffFrame = CreateFrame("Frame", "UHCCustomBuffFrame", UIParent);
-CustomBuffFrame:SetSize(200, 50);
-
+CustomBuffFrame:SetSize(200, 40);
 local CustomDebuffFrame = CreateFrame("Frame", "UHCCustomDebuffFrame", UIParent);
-CustomDebuffFrame:SetSize(200, 50); -- Set initial size
+CustomDebuffFrame:SetSize(200, 40); -- Set initial size
 
 -- Cache power type colors and max values
 local POWER_COLORS = {
@@ -261,12 +260,16 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
 end)
 
 CustomBuffFrame.BuffIcons = {};
-CustomBuffFrame.YOffset = 0;
+CustomBuffFrame.YOffset = 5;
+CustomBuffFrame.MaxPerRow = 10;
+
 CustomDebuffFrame.DebuffIcons = {};
 CustomDebuffFrame.YOffset = -15;
+CustomDebuffFrame.MaxPerRow = 10;
 
 function RedrawBuffs(parentFrame, icons, harmful, yOffset)
     local frameName = harmful and "DebuffFrame" or "BuffFrame"
+    local iconSize = 30;
     if harmful == nil then
         harmful = false
     end
@@ -294,7 +297,7 @@ function RedrawBuffs(parentFrame, icons, harmful, yOffset)
                 local spellName, spellRank, spellIcon, spellCastTime, spellMinRange, spellMaxRange = GetSpellInfo(aura.spellId)
 
                 iconFrame = CreateFrame("Frame", frameName .. buffIndex, parentFrame);
-                iconFrame:SetSize(30, 30);
+                iconFrame:SetSize(iconSize, iconSize);
                 iconFrame:SetPoint("CENTER")
 
                 local icon = iconFrame:CreateTexture(nil, "ARTWORK");
@@ -309,13 +312,34 @@ function RedrawBuffs(parentFrame, icons, harmful, yOffset)
 
     if buffCount == 0 then
         parentFrame:SetWidth(0);
+        parentFrame:SetHeight(0);
         parentFrame:Hide();
     else
-        parentFrame:SetWidth(buffCount * 35);
+        parentFrame:SetWidth(buffCount * (iconSize + 5));
+        parentFrame:SetHeight(iconSize + 10);
+
+        local xOffsetCur = 0;
+        local yOffsetCur = yOffset;
+
         for i = 0, buffIndex do
             if icons[i] then
-                icons[i]:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", i * 35, yOffset); -- Arrange icons horizontally
+
+                -- When i == MaxPerRow, we're actually going to print the 11th icon.  
+                -- At this point we decrease the y offset (i.e. move a row down) and set frame size to max width
+                if i > 0 and i % parentFrame.MaxPerRow == 0 then
+                    parentFrame:SetHeight(parentFrame:GetHeight() + (iconSize + 10));
+                    parentFrame:SetWidth(parentFrame.MaxPerRow * (iconSize + 5));
+
+                    xOffsetCur = 0;
+                    yOffsetCur = yOffsetCur - (iconSize + 10); 
+                end
+
+                -- print("[" ..frameName .. "] Showing buff icon ", i, ": xOffset: ", xOffsetCur, " / yOffset: ", yOffsetCur);
+                icons[i]:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", xOffsetCur, yOffsetCur); 
                 icons[i]:Show();
+
+                xOffsetCur = xOffsetCur + (iconSize + 5);
+
             end
         end
         parentFrame:Show();
