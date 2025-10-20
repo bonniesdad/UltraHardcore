@@ -261,7 +261,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
 end)
 
 CustomBuffFrame.BuffIcons = {};
-CustomBuffFrame.YOffset = 5;
+CustomBuffFrame.YOffset = 0;
 CustomDebuffFrame.DebuffIcons = {};
 CustomDebuffFrame.YOffset = -15;
 
@@ -270,9 +270,6 @@ function RedrawBuffs(parentFrame, icons, harmful, yOffset)
     if harmful == nil then
         harmful = false
     end
-
-    print("Redrawing buffs. harmful =", harmful)
-    print("Parent Frame:", parentFrame:GetName())
 
     -- Clear existing icons
     for i = 0, #icons do
