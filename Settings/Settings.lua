@@ -76,7 +76,8 @@ local function shouldRadioBeChecked(settingName, settings)
        settingName == 'showMainStatisticsPanelLowestHealth' or
        settingName == 'showMainStatisticsPanelEnemiesSlain' or
        settingName == 'showMainStatisticsPanelDungeonsCompleted' or
-       settingName == 'showMainStatisticsPanelHighestCritValue' then
+       settingName == 'showMainStatisticsPanelHighestCritValue' or
+       settingName == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
       return true
     else
       -- These default to false (hide unless explicitly true)
@@ -91,17 +92,9 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hidePlayerFrame',
   tooltip = 'Minimalistic player frame to hide own health',
 }, {
-  name = 'On Screen Statistics',
-  dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important UHC statistics on the screen at all times',
-}, {
   name = 'Tunnel Vision',
   dbSettingsValueName = 'showTunnelVision',
   tooltip = 'The screen gets darker as you get closer to death',
-}, {
-  name = 'Announce Level Up to Guild',
-  dbSettingsValueName = 'announceLevelUpToGuild',
-  tooltip = 'Announces level ups to guild chat every 10th level',
 },
 -- Recommended Preset Settings
  {
@@ -137,19 +130,21 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
 }, 
+-- Ultra Preset Settings
+{
+  name = 'Pets Die Permanently',
+  dbSettingsValueName = 'petsDiePermanently',
+  tooltip = 'Pets can\'t be resurrected when they are killed',
+}, {
+  name = 'Hide Action Bars when not resting',
+  dbSettingsValueName = 'hideActionBars',
+  tooltip = 'Hide action bars when not resting or near a campfire',
+},
 -- Experimental Preset Settings
 {
   name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
-}, {
-  name = 'Hide Action Bars when not resting',
-  dbSettingsValueName = 'hideActionBars',
-  tooltip = 'Hide action bars when not resting or near a campfire',
-}, {
-  name = 'Pets Die Permanently',
-  dbSettingsValueName = 'petsDiePermanently',
-  tooltip = 'Pets can\'t be resurrected when they are killed',
 }, {
   name = 'UHC Full Health Indicator',
   dbSettingsValueName = 'showFullHealthIndicator',
@@ -163,13 +158,23 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
-  name = 'Hide UI Error Messages',
-  dbSettingsValueName = 'hideUIErrors',
-  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
-}, {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
+},
+-- Misc Settings (no preset button)
+{
+  name = 'On Screen Statistics',
+  dbSettingsValueName = 'showOnScreenStatistics',
+  tooltip = 'Show important UHC statistics on the screen at all times',
+}, {
+  name = 'Announce Level Up to Guild',
+  dbSettingsValueName = 'announceLevelUpToGuild',
+  tooltip = 'Announces level ups to guild chat every 10th level',
+}, {
+  name = 'Hide UI Error Messages',
+  dbSettingsValueName = 'hideUIErrors',
+  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
 }, {
   name = 'Show Clock Even When Map is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
@@ -206,13 +211,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   hideBreathIndicator = false,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = false,
-  announceDungeonsCompletedOnGroupJoin = false,
-  buffBarOnResourceBar = false,
+  setFirstPersonCamera = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -231,13 +230,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = false,
-  announceDungeonsCompletedOnGroupJoin = false,
-  buffBarOnResourceBar = false,
+  setFirstPersonCamera = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -246,24 +239,17 @@ local presets = { {
   hideTargetTooltip = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
-  showFullHealthIndicator = true,
-  disableNameplateHealth = true,
-  showIncomingDamageEffect = true,
-  showHealingIndicator = true,
   showDazedEffect = true,
-  showCritScreenMoveEffect = true,
-  hideActionBars = true,
   hideGroupHealth = true,
-  petsDiePermanently = true,
   hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = true,
+  petsDiePermanently = true,
+  showCritScreenMoveEffect = false,
+  hideActionBars = true,
+  showFullHealthIndicator = false,
+  disableNameplateHealth = true,
+  showIncomingDamageEffect = false,
+  showHealingIndicator = false,
   setFirstPersonCamera = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = true,
-  announceDungeonsCompletedOnGroupJoin = true,
-  buffBarOnResourceBar = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -888,7 +874,8 @@ local survivalStats = {
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
   {key = 'grenadesUsed', label = 'Grenades Used (Beta):'},
-  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'}
+  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'},
+  {key = 'maxTunnelVisionOverlayShown', label = 'Close Escapes:'},
 }
 
 local yOffset = -LAYOUT.CONTENT_PADDING
@@ -925,7 +912,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -573) -- Moved up to reduce gap
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -952,7 +939,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -606) -- Moved up to reduce gap
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1007,9 +994,7 @@ local presetSections = {
     title = "Lite:",
     settings = {
       "hidePlayerFrame",
-      "showOnScreenStatistics", 
-      "showTunnelVision",
-      "announceLevelUpToGuild"
+      "showTunnelVision"
     }
   },
   {
@@ -1026,18 +1011,20 @@ local presetSections = {
     }
   },
   {
+    title = "Ultra:",
+    settings = {
+      "petsDiePermanently",
+      "hideActionBars"
+    }
+  },
+  {
     title = "Experimental:",
     settings = {
       "showCritScreenMoveEffect",
-      "hideActionBars",
-      "petsDiePermanently",
       "showFullHealthIndicator",
       "showIncomingDamageEffect",
       "showHealingIndicator",
-      "showClockEvenWhenMapHidden",
-      "announcePartyDeathsOnGroupJoin",
-      "announceDungeonsCompletedOnGroupJoin",
-      "buffBarOnResourceBar"
+      "setFirstPersonCamera"
     }
   }
 }
@@ -1189,7 +1176,7 @@ for i = 1, 3 do
   elseif i == 2 then
     presetText:SetText('Recommended')
   elseif i == 3 then
-    presetText:SetText('Experimental')
+    presetText:SetText('Ultra')
   end
 
   button:SetScript('OnClick', function()
@@ -1207,8 +1194,8 @@ scrollFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
 -- ScrollChild contains all checkboxes
 local scrollChild = CreateFrame('Frame')
 scrollFrame:SetScrollChild(scrollChild)
--- Calculate height: 3 section headers + all checkboxes + spacing
-local totalHeight = (3 * 25) + (#settingsCheckboxOptions * 30) + (3 * 10) + 40 -- Headers + checkboxes + section spacing + padding
+-- Calculate height: 5 section headers + all checkboxes + spacing
+local totalHeight = (5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 40 -- Headers + checkboxes + section spacing + padding
 scrollChild:SetSize(420, totalHeight)
 
 local function createCheckboxes()
@@ -1220,9 +1207,7 @@ local function createCheckboxes()
       title = "Lite:",
       settings = {
         "hidePlayerFrame",
-        "showOnScreenStatistics", 
-        "showTunnelVision",
-        "announceLevelUpToGuild"
+        "showTunnelVision"
       }
     },
     {
@@ -1239,16 +1224,28 @@ local function createCheckboxes()
       }
     },
     {
+      title = "Ultra:",
+      settings = {
+        "petsDiePermanently",
+        "hideActionBars"
+      }
+    },
+    {
       title = "Experimental:",
       settings = {
         "showCritScreenMoveEffect",
-        "hideActionBars",
-        "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
+        "setFirstPersonCamera"
+      }
+    },
+    {
+      title = "Misc:",
+      settings = {
+        "showOnScreenStatistics",
+        "announceLevelUpToGuild",
         "hideUIErrors",
-        "setFirstPersonCamera",
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
         "announceDungeonsCompletedOnGroupJoin",
@@ -1467,9 +1464,7 @@ local function UpdateXPBreakdown()
       title = "Lite Preset Settings:",
       settings = {
         "hidePlayerFrame",
-        "showOnScreenStatistics", 
-        "showTunnelVision",
-        "announceLevelUpToGuild"
+        "showTunnelVision"
       }
     },
     {
@@ -1486,18 +1481,20 @@ local function UpdateXPBreakdown()
       }
     },
     {
+      title = "Ultra Preset Settings:",
+      settings = {
+        "petsDiePermanently",
+        "hideActionBars"
+      }
+    },
+    {
       title = "Experimental Preset Settings:",
       settings = {
         "showCritScreenMoveEffect",
-        "hideActionBars",
-        "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
-        "showClockEvenWhenMapHidden",
-        "announcePartyDeathsOnGroupJoin",
-        "announceDungeonsCompletedOnGroupJoin",
-        "buffBarOnResourceBar"
+        "setFirstPersonCamera"
       }
     }
   }
