@@ -8,6 +8,12 @@ resourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
 resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
+local CustomBuffFrame = CreateFrame("Frame", "UHCCustomBuffFrame", UIParent);
+CustomBuffFrame:SetSize(200, 50);
+
+local CustomDebuffFrame = CreateFrame("Frame", "UHCCustomDebuffFrame", UIParent);
+CustomDebuffFrame:SetSize(200, 50); -- Set initial size
+
 -- Cache power type colors and max values
 local POWER_COLORS = {
     ENERGY = {1, 1, 0},
@@ -210,7 +216,7 @@ resourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
 resourceBar:RegisterEvent('PET_ATTACK_STOP')
-resourceBar:RegisterEvent('UNIT_AURA')
+CustomBuffFrame:RegisterEvent('UNIT_AURA')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
@@ -250,11 +256,83 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
         -- Update pet resource when pet starts/stops attacking
         UpdatePetResourcePoints()
-    elseif unit == 'player' and event == 'UNIT_AURA' then
-        --print("UltraHardcore::resourceBar: Event triggered - " .. event .. (unit and (", Unit: " .. unit) or ""))
-        CenterPlayerBuffBar()
     end
 
+end)
+
+CustomBuffFrame.BuffIcons = {};
+CustomBuffFrame.YOffset = 5;
+CustomDebuffFrame.DebuffIcons = {};
+CustomDebuffFrame.YOffset = -15;
+
+function RedrawBuffs(parentFrame, icons, harmful, yOffset)
+    local frameName = harmful and "DebuffFrame" or "BuffFrame"
+    if harmful == nil then
+        harmful = false
+    end
+
+    print("Redrawing buffs. harmful =", harmful)
+    print("Parent Frame:", parentFrame:GetName())
+
+    -- Clear existing icons
+    for i = 0, #icons do
+        if icons[i] ~= nil then
+            icons[i]:Hide();
+            icons[i] = nil;
+        end
+    end
+
+    -- We're tracking the buffCount separate from the icon buffIndex.  
+    local buffCount = 0;
+    local buffIndex = 0;
+
+    for i = 0, 40 do
+        local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
+        if aura and aura.isHarmful == harmful then
+            buffCount = buffCount + 1;
+            -- print("Buff:", aura.name, "Icon:", aura.icon, "Duration:", aura.duration, "Expiration:", aura.expirationTime, "SpellID:", aura.spellId, "isHelpful:", aura.isHelpful, "isHarmful:", aura.isHarmful);
+
+            local iconFrame = icons[buffIndex];
+            if not iconFrame then
+                local spellName, spellRank, spellIcon, spellCastTime, spellMinRange, spellMaxRange = GetSpellInfo(aura.spellId)
+
+                iconFrame = CreateFrame("Frame", frameName .. buffIndex, parentFrame);
+                iconFrame:SetSize(30, 30);
+                iconFrame:SetPoint("CENTER")
+
+                local icon = iconFrame:CreateTexture(nil, "ARTWORK");
+                icon:SetAllPoints(true);
+                icon:SetTexture(GetSpellTexture(aura.spellId));
+
+                icons[buffIndex] = iconFrame;
+                buffIndex = buffIndex + 1;
+            end
+        end
+    end
+
+    if buffCount == 0 then
+        parentFrame:SetWidth(0);
+        parentFrame:Hide();
+    else
+        parentFrame:SetWidth(buffCount * 35);
+        for i = 0, buffIndex do
+            if icons[i] then
+                icons[i]:SetPoint("TOPLEFT", parentFrame, "TOPLEFT", i * 35, yOffset); -- Arrange icons horizontally
+                icons[i]:Show();
+            end
+        end
+        parentFrame:Show();
+    end
+end
+
+CustomBuffFrame:SetScript('OnEvent', function(self, event, unit)
+    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
+        return
+    end
+    if unit == 'player' and event == 'UNIT_AURA' then
+        RedrawBuffs(self, self.BuffIcons, false, self.YOffset)
+        RedrawBuffs(CustomDebuffFrame, CustomDebuffFrame.DebuffIcons, true, CustomDebuffFrame.YOffset)
+    end
 end)
 
 -- Hide the default combo points (Blizzard UI)
@@ -272,70 +350,22 @@ local function RepositionPlayerBuffBar()
 
     -- Wait for buff frame to be created
     C_Timer.After(0.5, function()
-        if BuffFrame and BuffFrame:IsVisible() then
-            BuffFrame:ClearAllPoints()
-            BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
-        end
+        CustomBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, CustomBuffFrame.YOffset);
+        RedrawBuffs(CustomBuffFrame, CustomBuffFrame.BuffIcons, false, CustomBuffFrame.YOffset);
+        CustomDebuffFrame:SetPoint('TOP', resourceBar, 'BOTTOM', 0, CustomDebuffFrame.YOffset);
+        RedrawBuffs(CustomDebuffFrame, CustomDebuffFrame.DebuffIcons, true, CustomDebuffFrame.YOffset);
+
+        --if BuffFrame and BuffFrame:IsVisible() then
+            -- BuffFrame:ClearAllPoints()
+            -- BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 100)
+        -- end
     end)
-end
-
--- Function to center buff bar above the resource bar when # of auras change
-function CenterPlayerBuffBar()
-    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
-        return
-    end
-
-    -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.  
-    -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
-
-    if BuffFrame then
-        local continuationToken;
-        local buffCount = 0;
-        local pixelsToMove = 13.25;
-        local xOffset = 0;
-        local yOffset = 5;
-        local buffRows = 1;
-
-        -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2 
-        -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
-        -- when iterating to count buffs, so I'm doing the same.
-        for i=0, 40 do
-            local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
-
-            if aura and aura.isHarmful ~= true then
-                -- Uncomment this line if you want to see which buffs show up in which cloths
-                -- print("UltraHardcore: Found buff " .. aura.name .. " in slot " .. i);
-                buffCount = buffCount + 1;
-                if buffCount > 10 and buffCount % 10 == 0 then
-                    -- Once we count our 20th or 30th buff, add a row
-                    -- Unfortunately this is going to move the debuffs up as well
-                    buffRows = buffRows + 1;
-                end
-            end
-        end
-
-        if buffCount == 0 then
-            return;
-        end
-
-        if buffCount > 1 then 
-            xOffset = (buffCount - 1) * pixelsToMove;
-        end
-
-        if buffRows > 1 then 
-            -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
-            yOffset = (buffRows - 1) * 45; 
-        end
-
-        -- Comment this line out if you want to see how the buff bar is being moved
-        -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
-        BuffFrame:ClearAllPoints()
-        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
-    end
 end
 
 -- Function to restore buff bar to original position
 local function RestoreBuffBarPosition()
+    CustomBuffFrame:Hide();
+    CustomDebuffFrame:Hide();
     if BuffFrame then
         BuffFrame:ClearAllPoints()
         -- Restore to default position (top right of screen)
