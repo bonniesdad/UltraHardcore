@@ -25,6 +25,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
     ShowWelcomeMessage()
+    ShowVersionUpdateDialog()
     SetPlayerFrameDisplay(GLOBAL_SETTINGS.hidePlayerFrame or false)
     SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false)
     SetTargetFrameDisplay(GLOBAL_SETTINGS.hideTargetFrame or false)
@@ -43,13 +44,13 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
     -- Check for pet death/abandonment
     if unit == "pet" then
-      CheckAndAbandonPet(GLOBAL_SETTINGS.petsDiePermanently)
+      CheckAndAbandonPet()
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)
   elseif event == 'PLAYER_UPDATE_RESTING' then
-    OnPlayerUpdateRestingEvent(self, event, GLOBAL_SETTINGS.hideActionBars)
+    OnPlayerUpdateRestingEvent(self)
   elseif event == 'PLAYER_LEVEL_UP' then
     OnPlayerLevelUpEvent(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
