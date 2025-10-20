@@ -203,6 +203,61 @@ local function HideComboPointsForNonUsers()
     comboFrame:SetShown(CanGainComboPoints())
 end
 
+
+-- Function to center buff bar above the resource bar when # of auras change
+local function CenterPlayerBuffBar()
+    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
+        return
+    end
+
+    -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.  
+    -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
+
+    if BuffFrame then
+        local buffCount = 0;
+        local pixelsToMove = 13.25;
+        local xOffset = 0;
+        local yOffset = 5;
+        local buffRows = 1;
+
+        -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2 
+        -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
+        -- when iterating to count buffs, so I'm doing the same.
+        for i=0, 40 do
+            local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
+
+            if aura and aura.isHarmful ~= true then
+                -- Uncomment this line if you want to see which buffs show up in which cloths
+                -- print("UltraHardcore: Found buff " .. aura.name .. " in slot " .. i);
+                buffCount = buffCount + 1;
+                if buffCount > 10 and buffCount % 10 == 0 then
+                    -- Once we count our 20th or 30th buff, add a row
+                    -- Unfortunately this is going to move the debuffs up as well
+                    buffRows = buffRows + 1;
+                end
+            end
+        end
+
+        if buffCount == 0 then
+            return;
+        end
+
+        if buffCount > 1 then 
+            xOffset = (buffCount - 1) * pixelsToMove;
+        end
+
+        if buffRows > 1 then 
+            -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
+            yOffset = (buffRows - 1) * 45; 
+        end
+
+        -- Comment this line out if you want to see how the buff bar is being moved
+        -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
+        BuffFrame:ClearAllPoints()
+        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
+    end
+end
+
 -- Event Handling
 resourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
@@ -279,60 +334,6 @@ local function RepositionPlayerBuffBar()
     end)
 end
 
--- Function to center buff bar above the resource bar when # of auras change
-function CenterPlayerBuffBar()
-    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then
-        return
-    end
-
-    -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.  
-    -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
-
-    if BuffFrame then
-        local continuationToken;
-        local buffCount = 0;
-        local pixelsToMove = 13.25;
-        local xOffset = 0;
-        local yOffset = 5;
-        local buffRows = 1;
-
-        -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2 
-        -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
-        -- when iterating to count buffs, so I'm doing the same.
-        for i=0, 40 do
-            local aura = C_UnitAuras.GetAuraDataBySlot("PLAYER", i)
-
-            if aura and aura.isHarmful ~= true then
-                -- Uncomment this line if you want to see which buffs show up in which cloths
-                -- print("UltraHardcore: Found buff " .. aura.name .. " in slot " .. i);
-                buffCount = buffCount + 1;
-                if buffCount > 10 and buffCount % 10 == 0 then
-                    -- Once we count our 20th or 30th buff, add a row
-                    -- Unfortunately this is going to move the debuffs up as well
-                    buffRows = buffRows + 1;
-                end
-            end
-        end
-
-        if buffCount == 0 then
-            return;
-        end
-
-        if buffCount > 1 then 
-            xOffset = (buffCount - 1) * pixelsToMove;
-        end
-
-        if buffRows > 1 then 
-            -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
-            yOffset = (buffRows - 1) * 45; 
-        end
-
-        -- Comment this line out if you want to see how the buff bar is being moved
-        -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
-        BuffFrame:ClearAllPoints()
-        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
-    end
-end
 
 -- Function to restore buff bar to original position
 local function RestoreBuffBarPosition()
