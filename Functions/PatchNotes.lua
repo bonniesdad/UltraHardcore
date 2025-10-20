@@ -36,6 +36,7 @@ PATCH_NOTES = {
       "  • Rare Elites Slain statistic",
       "  • World Bosses Slain statistic",
       "  • Party Deaths Witnessed statistic",
+      "• Fixed LFG search error.",
     }
   },
   -- Add new entries here for future updates
