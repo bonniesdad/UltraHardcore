@@ -335,15 +335,6 @@ local function RepositionPlayerBuffBar()
 end
 
 
--- Function to restore buff bar to original position
-local function RestoreBuffBarPosition()
-    if BuffFrame then
-        BuffFrame:ClearAllPoints()
-        -- Restore to default position (top right of screen)
-        BuffFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -205, -13)
-    end
-end
-
 -- Hook into buff frame events to maintain positioning
 local function HookBuffFrame()
     if BuffFrame then
@@ -352,9 +343,8 @@ local function HookBuffFrame()
             originalShow(self)
             if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
                 RepositionPlayerBuffBar()
-            else
-                RestoreBuffBarPosition()
             end
+            -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
         end
 
         local originalHide = BuffFrame.Hide
@@ -372,9 +362,8 @@ local function HandleBuffBarSettingChange()
     if BuffFrame and BuffFrame:IsVisible() then
         if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
             RepositionPlayerBuffBar()
-        else
-            RestoreBuffBarPosition()
         end
+        -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
     end
 end
 
