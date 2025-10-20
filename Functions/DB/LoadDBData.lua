@@ -8,6 +8,11 @@ function LoadDBData()
   elitesSlain = UltraHardcoreDB.elitesSlain or 0
   lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
   WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
+  
+  -- Initialize version tracking if it doesn't exist
+  if not UltraHardcoreDB.lastSeenVersion then
+    UltraHardcoreDB.lastSeenVersion = nil
+  end
 
   -- Get current character's GUID for per-character settings
   local characterGUID = UnitGUID('player')
