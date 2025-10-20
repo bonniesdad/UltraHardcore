@@ -67,22 +67,8 @@ local targetFrameEventFrame = nil
 
 -- Immediate buff/debuff blocking - runs on addon load
 local function BlockBuffDebuffFrames()
-  -- Hook into frame creation to immediately block buff/debuff frames
-  local originalCreateFrame = CreateFrame
-  CreateFrame = function(frameType, name, parent, template)
-    local frame = originalCreateFrame(frameType, name, parent, template)
-    
-    -- If this is a buff/debuff frame, immediately disable it
-    if name and (string.match(name, "TargetFrameBuff%d+") or string.match(name, "TargetFrameDebuff%d+")) then
-      frame.Show = function() end
-      frame:Hide()
-    end
-    
-    return frame
-  end
-  
-  -- Also hook into the global frame creation for existing frames
-  C_Timer.After(0.1, function()
+  -- Use a more targeted approach that doesn't override global CreateFrame
+  local function hideTargetBuffDebuffFrames()
     for i = 1, 8 do
       local buffFrame = _G["TargetFrameBuff" .. i]
       if buffFrame then
@@ -95,7 +81,18 @@ local function BlockBuffDebuffFrames()
         debuffFrame:Hide()
       end
     end
+  end
+  
+  -- Hide frames immediately and set up periodic checking
+  hideTargetBuffDebuffFrames()
+  
+  -- Set up a timer to periodically check and hide any new buff/debuff frames
+  local checkTimer = C_Timer.NewTicker(0.1, function()
+    hideTargetBuffDebuffFrames()
   end)
+  
+  -- Store the timer so we can stop it later if needed
+  _G.UltraHardcoreTargetFrameTimer = checkTimer
 end
 
 -- Run the blocking immediately
@@ -152,6 +149,12 @@ function SetTargetFrameDisplay(hideDetails)
       targetFrameEventFrame:UnregisterAllEvents()
       targetFrameEventFrame:SetScript("OnEvent", nil)
       targetFrameEventFrame = nil
+    end
+    
+    -- Stop the periodic timer for buff/debuff hiding
+    if _G.UltraHardcoreTargetFrameTimer then
+      _G.UltraHardcoreTargetFrameTimer:Cancel()
+      _G.UltraHardcoreTargetFrameTimer = nil
     end
   end
 end

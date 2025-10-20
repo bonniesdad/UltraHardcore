@@ -76,7 +76,8 @@ local function shouldRadioBeChecked(settingName, settings)
        settingName == 'showMainStatisticsPanelLowestHealth' or
        settingName == 'showMainStatisticsPanelEnemiesSlain' or
        settingName == 'showMainStatisticsPanelDungeonsCompleted' or
-       settingName == 'showMainStatisticsPanelHighestCritValue' then
+       settingName == 'showMainStatisticsPanelHighestCritValue' or
+       settingName == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
       return true
     else
       -- These default to false (hide unless explicitly true)
@@ -91,17 +92,9 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hidePlayerFrame',
   tooltip = 'Minimalistic player frame to hide own health',
 }, {
-  name = 'On Screen Statistics',
-  dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important UHC statistics on the screen at all times',
-}, {
   name = 'Tunnel Vision',
   dbSettingsValueName = 'showTunnelVision',
   tooltip = 'The screen gets darker as you get closer to death',
-}, {
-  name = 'Announce Level Up to Guild',
-  dbSettingsValueName = 'announceLevelUpToGuild',
-  tooltip = 'Announces level ups to guild chat every 10th level',
 },
 -- Recommended Preset Settings
  {
@@ -137,19 +130,21 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
 }, 
+-- Ultra Preset Settings
+{
+  name = 'Pets Die Permanently',
+  dbSettingsValueName = 'petsDiePermanently',
+  tooltip = 'Pets can\'t be resurrected when they are killed',
+}, {
+  name = 'Hide Action Bars when not resting',
+  dbSettingsValueName = 'hideActionBars',
+  tooltip = 'Hide action bars when not resting or near a campfire',
+},
 -- Experimental Preset Settings
 {
   name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
-}, {
-  name = 'Hide Action Bars when not resting',
-  dbSettingsValueName = 'hideActionBars',
-  tooltip = 'Hide action bars when not resting or near a campfire',
-}, {
-  name = 'Pets Die Permanently',
-  dbSettingsValueName = 'petsDiePermanently',
-  tooltip = 'Pets can\'t be resurrected when they are killed',
 }, {
   name = 'UHC Full Health Indicator',
   dbSettingsValueName = 'showFullHealthIndicator',
@@ -163,13 +158,23 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
-  name = 'Hide UI Error Messages',
-  dbSettingsValueName = 'hideUIErrors',
-  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
-}, {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
+},
+-- Misc Settings (no preset button)
+{
+  name = 'On Screen Statistics',
+  dbSettingsValueName = 'showOnScreenStatistics',
+  tooltip = 'Show important UHC statistics on the screen at all times',
+}, {
+  name = 'Announce Level Up to Guild',
+  dbSettingsValueName = 'announceLevelUpToGuild',
+  tooltip = 'Announces level ups to guild chat every 10th level',
+}, {
+  name = 'Hide UI Error Messages',
+  dbSettingsValueName = 'hideUIErrors',
+  tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
 }, {
   name = 'Show Clock Even When Map is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
@@ -206,13 +211,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   hideBreathIndicator = false,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = false,
-  announceDungeonsCompletedOnGroupJoin = false,
-  buffBarOnResourceBar = false,
+  setFirstPersonCamera = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -231,13 +230,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = false,
-  announceDungeonsCompletedOnGroupJoin = false,
-  buffBarOnResourceBar = false,
+  setFirstPersonCamera = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -246,24 +239,17 @@ local presets = { {
   hideTargetTooltip = true,
   showTunnelVision = true,
   tunnelVisionMaxStrata = true,
-  showFullHealthIndicator = true,
-  disableNameplateHealth = true,
-  showIncomingDamageEffect = true,
-  showHealingIndicator = true,
   showDazedEffect = true,
-  showCritScreenMoveEffect = true,
-  hideActionBars = true,
   hideGroupHealth = true,
-  petsDiePermanently = true,
   hideBreathIndicator = true,
-  showOnScreenStatistics = true,
-  announceLevelUpToGuild = true,
-  hideUIErrors = true,
+  petsDiePermanently = true,
+  showCritScreenMoveEffect = false,
+  hideActionBars = true,
+  showFullHealthIndicator = false,
+  disableNameplateHealth = true,
+  showIncomingDamageEffect = false,
+  showHealingIndicator = false,
   setFirstPersonCamera = false,
-  showClockEvenWhenMapHidden = false,
-  announcePartyDeathsOnGroupJoin = true,
-  announceDungeonsCompletedOnGroupJoin = true,
-  buffBarOnResourceBar = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -888,7 +874,8 @@ local survivalStats = {
   {key = 'bandagesUsed', label = 'Bandages Applied:'},
   {key = 'targetDummiesUsed', label = 'Target Dummies Used (Beta):'},
   {key = 'grenadesUsed', label = 'Grenades Used (Beta):'},
-  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'}
+  {key = 'partyMemberDeaths', label = 'Party Deaths Witnessed:'},
+  {key = 'maxTunnelVisionOverlayShown', label = 'Close Escapes:'},
 }
 
 local yOffset = -LAYOUT.CONTENT_PADDING
@@ -925,7 +912,7 @@ end
 -- Create modern WoW-style XP gained section (no accordion functionality)
 local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
 xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -573) -- Moved up to reduce gap
+xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
 
 -- Modern WoW row styling with rounded corners and greyish background
 xpGainedHeader:SetBackdrop({
@@ -951,8 +938,8 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
-xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -606) -- Moved up to reduce gap
+xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
+xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
 xpGainedContent:Show() -- Show by default
 
 -- Modern content frame styling
@@ -1007,9 +994,7 @@ local presetSections = {
     title = "Lite:",
     settings = {
       "hidePlayerFrame",
-      "showOnScreenStatistics", 
-      "showTunnelVision",
-      "announceLevelUpToGuild"
+      "showTunnelVision"
     }
   },
   {
@@ -1026,18 +1011,20 @@ local presetSections = {
     }
   },
   {
+    title = "Ultra:",
+    settings = {
+      "petsDiePermanently",
+      "hideActionBars"
+    }
+  },
+  {
     title = "Experimental:",
     settings = {
       "showCritScreenMoveEffect",
-      "hideActionBars",
-      "petsDiePermanently",
       "showFullHealthIndicator",
       "showIncomingDamageEffect",
       "showHealingIndicator",
-      "showClockEvenWhenMapHidden",
-      "announcePartyDeathsOnGroupJoin",
-      "announceDungeonsCompletedOnGroupJoin",
-      "buffBarOnResourceBar"
+      "setFirstPersonCamera"
     }
   }
 }
@@ -1189,7 +1176,7 @@ for i = 1, 3 do
   elseif i == 2 then
     presetText:SetText('Recommended')
   elseif i == 3 then
-    presetText:SetText('Experimental')
+    presetText:SetText('Ultra')
   end
 
   button:SetScript('OnClick', function()
@@ -1207,8 +1194,8 @@ scrollFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
 -- ScrollChild contains all checkboxes
 local scrollChild = CreateFrame('Frame')
 scrollFrame:SetScrollChild(scrollChild)
--- Calculate height: 3 section headers + all checkboxes + spacing
-local totalHeight = (3 * 25) + (#settingsCheckboxOptions * 30) + (3 * 10) + 40 -- Headers + checkboxes + section spacing + padding
+-- Calculate height: 5 section headers + all checkboxes + spacing
+local totalHeight = (5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 40 -- Headers + checkboxes + section spacing + padding
 scrollChild:SetSize(420, totalHeight)
 
 local function createCheckboxes()
@@ -1220,9 +1207,7 @@ local function createCheckboxes()
       title = "Lite:",
       settings = {
         "hidePlayerFrame",
-        "showOnScreenStatistics", 
-        "showTunnelVision",
-        "announceLevelUpToGuild"
+        "showTunnelVision"
       }
     },
     {
@@ -1239,16 +1224,28 @@ local function createCheckboxes()
       }
     },
     {
+      title = "Ultra:",
+      settings = {
+        "petsDiePermanently",
+        "hideActionBars"
+      }
+    },
+    {
       title = "Experimental:",
       settings = {
         "showCritScreenMoveEffect",
-        "hideActionBars",
-        "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
+        "setFirstPersonCamera"
+      }
+    },
+    {
+      title = "Misc:",
+      settings = {
+        "showOnScreenStatistics",
+        "announceLevelUpToGuild",
         "hideUIErrors",
-        "setFirstPersonCamera",
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
         "announceDungeonsCompletedOnGroupJoin",
@@ -1327,53 +1324,77 @@ end
 -- X Found Mode Tab Content is now in XFoundMode.lua
 
 -- Info Tab Content
--- Addon name and version at the top (moved up)
-local addonTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
-addonTitle:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 120)
-addonTitle:SetText('UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version'))
-addonTitle:SetJustifyH('CENTER')
-
--- Philosophy text (moved up with more spacing from title)
+-- Philosophy text (at top)
 local philosophyText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-philosophyText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -10)
-philosophyText:SetWidth(400)
-philosophyText:SetText('Welcome to UltraHardcore!\nEvery feature can be customized to create your perfect hardcore experience. Toggle options on or off to find what works best for you.')
+philosophyText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 180)
+philosophyText:SetWidth(500)
+philosophyText:SetText('UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version'))
 philosophyText:SetJustifyH('CENTER')
 philosophyText:SetNonSpaceWrap(true)
 
--- Compatibility warning (moved down with more spacing)
+-- Compatibility warning (below philosophy)
 local compatibilityText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-compatibilityText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -80)
-compatibilityText:SetWidth(400)
+compatibilityText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 120)
+compatibilityText:SetWidth(500)
 compatibilityText:SetText('Please note: UltraHardcore hasn\'t been tested with other addons. For the best experience, we recommend using UltraHardcore alone on your hardcore characters.')
 compatibilityText:SetJustifyH('CENTER')
 compatibilityText:SetNonSpaceWrap(true)
-compatibilityText:SetTextColor(0.9, 0.9, 0.9) -- Slightly dimmed for italic effect
+compatibilityText:SetTextColor(0.9, 0.9, 0.9)
 
--- Bug report text (adjusted for new spacing)
+-- Bug report text
 local bugReportText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bugReportText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -140)
-bugReportText:SetText('Found a bug or have suggestions? We\'d love to hear from you! Join our Discord community to report issues and share feedback.')
+bugReportText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 80)
+bugReportText:SetText('Found a bug or have suggestions? Join our Discord community!')
 bugReportText:SetJustifyH('CENTER')
-bugReportText:SetTextColor(0.8, 0.8, 0.8) -- Dimmed color for instructions
-bugReportText:SetWidth(400)
+bugReportText:SetTextColor(0.8, 0.8, 0.8)
+bugReportText:SetWidth(500)
 bugReportText:SetNonSpaceWrap(true)
 
--- Discord Link Text (clickable, adjusted for new spacing)
+-- Discord Link Text (clickable)
 local discordLinkText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-discordLinkText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -170)
+discordLinkText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 60)
 discordLinkText:SetText('Discord Server: https://discord.gg/zuSPDNhYEN')
 discordLinkText:SetJustifyH('CENTER')
-discordLinkText:SetTextColor(0.4, 0.8, 1) -- Light blue color to indicate it's a link
+discordLinkText:SetTextColor(0.4, 0.8, 1)
 
--- Discord instructions text (adjusted for new spacing)
+-- Discord instructions text
 local discordInstructions = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-discordInstructions:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -190)
-discordInstructions:SetText('Open your chatbox and press this link, then copy the text provided into your browser')
+discordInstructions:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 40)
+discordInstructions:SetText('Click the link above to copy it to your chatbox')
 discordInstructions:SetJustifyH('CENTER')
-discordInstructions:SetTextColor(0.8, 0.8, 0.8) -- Slightly dimmed color for instructions
-discordInstructions:SetWidth(400)
+discordInstructions:SetTextColor(0.8, 0.8, 0.8)
+discordInstructions:SetWidth(500)
 discordInstructions:SetNonSpaceWrap(true)
+
+-- Patch Notes Section (at bottom)
+local patchNotesTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+patchNotesTitle:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)
+patchNotesTitle:SetText('Patch Notes')
+patchNotesTitle:SetJustifyH('CENTER')
+patchNotesTitle:SetTextColor(1, 1, 0.5)
+
+-- Create patch notes display at bottom
+local patchNotesFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
+patchNotesFrame:SetSize(520, 280)
+patchNotesFrame:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -160)
+patchNotesFrame:SetBackdrop({
+  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+  tile = true,
+  tileSize = 32,
+  edgeSize = 16,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
+patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+
+-- Create patch notes display using reusable component
+local patchNotesScrollFrame = CreatePatchNotesDisplay(patchNotesFrame, 480, 260, 10, -10)
 
 -- Make the text clickable
 local discordLinkFrame = CreateFrame('Button', nil, tabContents[5])
@@ -1467,9 +1488,7 @@ local function UpdateXPBreakdown()
       title = "Lite Preset Settings:",
       settings = {
         "hidePlayerFrame",
-        "showOnScreenStatistics", 
-        "showTunnelVision",
-        "announceLevelUpToGuild"
+        "showTunnelVision"
       }
     },
     {
@@ -1486,18 +1505,20 @@ local function UpdateXPBreakdown()
       }
     },
     {
+      title = "Ultra Preset Settings:",
+      settings = {
+        "petsDiePermanently",
+        "hideActionBars"
+      }
+    },
+    {
       title = "Experimental Preset Settings:",
       settings = {
         "showCritScreenMoveEffect",
-        "hideActionBars",
-        "petsDiePermanently",
         "showFullHealthIndicator",
         "showIncomingDamageEffect",
         "showHealingIndicator",
-        "showClockEvenWhenMapHidden",
-        "announcePartyDeathsOnGroupJoin",
-        "announceDungeonsCompletedOnGroupJoin",
-        "buffBarOnResourceBar"
+        "setFirstPersonCamera"
       }
     }
   }
@@ -1658,6 +1679,48 @@ end
 
 SLASH_TOGGLESETTINGS1 = '/uhc'
 SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
+
+-- Function to open settings and switch to a specific tab
+function OpenSettingsToTab(tabIndex)
+  -- Initialize temporary settings when opening
+  initializeTempSettings()
+  
+  -- Reset preset button highlighting
+  if selectedPreset then
+    selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
+    selectedPreset = nil
+  end
+  
+  -- Hide all tab contents
+  for i, content in ipairs(tabContents) do
+    content:Hide()
+  end
+  
+  -- Reset all tab button appearances
+  for i, tabButton in ipairs(tabButtons) do
+    tabButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
+    tabButton:SetAlpha(0.8)
+  end
+  
+  -- Show specified tab content and highlight button
+  if tabContents[tabIndex] and tabButtons[tabIndex] then
+    tabContents[tabIndex]:Show()
+    tabButtons[tabIndex]:SetBackdropBorderColor(1, 1, 0)
+    tabButtons[tabIndex]:SetAlpha(1.0)
+    activeTab = tabIndex
+    
+    -- Initialize X Found Mode tab if it's being shown
+    if tabIndex == 4 and InitializeXFoundModeTab then
+      InitializeXFoundModeTab()
+    end
+  end
+  
+  -- Show the settings frame
+  settingsFrame:Show()
+  updateCheckboxes()
+  updateRadioButtons()
+  UpdateLowestHealthDisplay()
+end
 
 -- Initialize temporary settings and create checkboxes
 initializeTempSettings()

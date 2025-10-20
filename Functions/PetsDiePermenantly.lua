@@ -26,6 +26,10 @@ function CheckAndAbandonPet()
         return
     end
     
+    if GLOBAL_SETTINGS.isDueling then
+        DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r You are dueling, so your pet will not be abandoned.", 1, 0, 0)
+        return
+    end
 
     -- Pet is dead, abandon it immediately
     PetAbandon()
