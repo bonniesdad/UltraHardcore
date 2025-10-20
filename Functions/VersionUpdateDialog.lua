@@ -1,6 +1,8 @@
+-- Patch notes are now loaded from PatchNotes.lua
+
 function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local frame = CreateFrame('Frame', 'UltraHardcoreVersionUpdateFrame', UIParent, 'BackdropTemplate')
-  frame:SetSize(450, 300)
+  frame:SetSize(500, 600) -- Increased height to accommodate important info and button spacing
   frame:SetPoint('CENTER')
   frame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -23,21 +25,21 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
 
   -- Title
   local title = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  title:SetPoint('TOP', frame, 'TOP', 0, -25)
-  title:SetWidth(410) -- Constrain width to prevent overflowing
+  title:SetPoint('TOP', frame, 'TOP', 0, -20)
+  title:SetWidth(460) -- Constrain width to prevent overflowing
   title:SetJustifyH('CENTER')
   local font, _, flags = title:GetFont()
-  title:SetFont(font, 20, flags)
+  title:SetFont(font, 18, flags)
   title:SetTextColor(1, 1, 0)
   title:SetText('Ultra Hardcore Updated!')
 
   -- Version info
   local versionText = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  versionText:SetPoint('TOP', frame, 'TOP', 0, -55)
-  versionText:SetWidth(410)
+  versionText:SetPoint('TOP', frame, 'TOP', 0, -45)
+  versionText:SetWidth(460)
   versionText:SetJustifyH('CENTER')
   local font, _, flags = versionText:GetFont()
-  versionText:SetFont(font, 16, flags)
+  versionText:SetFont(font, 14, flags)
   versionText:SetTextColor(0.8, 0.8, 1)
   
   if previousVersion then
@@ -46,28 +48,62 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
     versionText:SetText('Welcome to version ' .. currentVersion)
   end
 
+  -- Patch Notes Section
+  local patchNotesLabel = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  patchNotesLabel:SetPoint('TOP', frame, 'TOP', 0, -70)
+  patchNotesLabel:SetWidth(460)
+  patchNotesLabel:SetJustifyH('LEFT')
+  local font, _, flags = patchNotesLabel:GetFont()
+  patchNotesLabel:SetFont(font, 16, flags)
+  patchNotesLabel:SetTextColor(1, 1, 0)
+  patchNotesLabel:SetText('Patch Notes:')
+
+  -- Create patch notes display using reusable component
+  local patchNotesScrollFrame = CreatePatchNotesDisplay(frame, 430, 320, 35, -100)
+
+  -- Divider line after patch notes
+  local divider = frame:CreateTexture(nil, 'OVERLAY')
+  divider:SetSize(450, 2)
+  divider:SetPoint('TOP', frame, 'TOP', 0, -440)
+  divider:SetColorTexture(0.6, 0.6, 0.6, 0.8)
+  divider:SetDrawLayer('OVERLAY', 1)
+
+  -- Details Section
+  local detailsLabel = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  detailsLabel:SetPoint('TOP', frame, 'TOP', 0, -460)
+  detailsLabel:SetWidth(460)
+  detailsLabel:SetJustifyH('LEFT')
+  local font, _, flags = detailsLabel:GetFont()
+  detailsLabel:SetFont(font, 14, flags)
+  detailsLabel:SetTextColor(1, 1, 0.5)
+  detailsLabel:SetText('Important Information:')
+
   -- Main message
   local message = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  message:SetPoint('TOP', frame, 'TOP', 0, -85)
-  message:SetWidth(410)
+  message:SetPoint('TOP', frame, 'TOP', 0, -480)
+  message:SetWidth(460)
   message:SetJustifyH('LEFT')
   local font, _, flags = message:GetFont()
-  message:SetFont(font, 14, flags)
+  message:SetFont(font, 12, flags)
   message:SetText(
-    "The addon has been updated - make sure you have the correct settings selected before continuing your journey.\n\n" ..
-    "You can access the settings through the main menu button or by typing '/uhc' in chat.\n\n" ..
-    "Take a moment to review your current settings and adjust them as needed for the best experience."
+    "IMPORTANT: After updating, please review your settings to ensure they're configured correctly for your playstyle.\n\n" ..
+    "Take a moment to verify your current settings before continuing your hardcore journey."
   )
 
   -- Close Button
   local closeButton = CreateFrame('Button', nil, frame, 'UIPanelButtonTemplate')
   closeButton:SetSize(200, 25)
-  closeButton:SetPoint('BOTTOM', frame, 'BOTTOM', 0, 20)
+  closeButton:SetPoint('BOTTOM', frame, 'BOTTOM', 0, 25)
   closeButton:SetText('Continue')
   closeButton:SetScript('OnClick', function()
     -- Mark this version as seen
     SaveDBData('lastSeenVersion', currentVersion)
     frame:Hide()
+    
+    -- Open UHC settings and navigate to Settings tab (index 2)
+    if OpenSettingsToTab then
+      OpenSettingsToTab(2)
+    end
   end)
 
   return frame
