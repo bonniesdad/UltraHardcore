@@ -10,6 +10,14 @@ messageText:SetTextColor(1, 1, 1, 1) -- White text
 messageText:SetJustifyH('CENTER') -- Center the text
 --
 local incomingSpellTimer
+
+-- Function to play random crit sound
+local function PlayRandomCritSound()
+  local critSoundNumber = math.random(1, 4)
+  local soundFile = "Interface\\AddOns\\UltraHardcore\\Sounds\\xar-crit" .. critSoundNumber .. ".mp3"
+  PlaySoundFile(soundFile, "Master")
+end
+
 --
 function OnCombatLogEvent(self, event)
   local _, subEvent, _, sourceGUID, _, _, _, destGUID, enemyName, _, _, spellID, a, b, c, d, e, f =
@@ -110,6 +118,9 @@ function OnCombatLogEvent(self, event)
         if amount > currentHighestCrit then
           print('|cFFFF0000[UHC]|r Highest crit value updated to: ' .. amount .. '|r')
           CharacterStats:UpdateStat('highestCritValue', amount)
+          if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
+            PlayRandomCritSound()
+          end
         end
       end
     end
@@ -292,7 +303,13 @@ function OnCombatLogEvent(self, event)
           local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
           local newCount = currentPartyDeaths + 1
           CharacterStats:UpdateStat('partyMemberDeaths', newCount)
-          
+  
+          if GLOBAL_SETTINGS.playPartyDeathSoundbite then
+            local randomNumber = random(1,4)
+            -- Play sound file on party death
+            PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
+          end
+        
           -- Optional: Print a message to chat
           DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
         else
@@ -300,6 +317,9 @@ function OnCombatLogEvent(self, event)
           DEFAULT_CHAT_FRAME:AddMessage("|cFFFF8000[UHC]|r Party member " .. deadPlayerName .. " is feigning death - death count not incremented.", 1, 0.5, 0)
         end
       end
+    elseif destGUID == playerGUID and GLOBAL_SETTINGS.playPlayerDeathSoundbite then
+      -- Player death sound
+      PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PlayerDeath.ogg", "SFX")
     end
   end
 end

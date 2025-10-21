@@ -58,6 +58,7 @@ SlashCmdList.TOGGLEBONNIE = function()
   end
 end
 
+
 -- Event Handler
 resourceIndicator:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceIndicator:RegisterEvent('UNIT_POWER_FREQUENT')

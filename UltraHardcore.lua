@@ -18,6 +18,10 @@ UltraHardcore:RegisterEvent('PLAYER_LEVEL_UP')
 UltraHardcore:RegisterEvent('GROUP_ROSTER_UPDATE')
 UltraHardcore:RegisterEvent('MIRROR_TIMER_START')
 UltraHardcore:RegisterEvent('MIRROR_TIMER_STOP')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_START')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 
 
 -- 🟢 Event handler to apply all funcitons on login
@@ -69,6 +73,18 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     local timerName = ...
     if timerName == 'BREATH' then
       OnBreathStop()
+    end
+  elseif event == 'UNIT_SPELLCAST_START' then
+    -- Check for Hearthstone casting start
+    local unit, castGUID, spellID = ...
+    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
+      HearthingOverlay()
+    end
+  elseif event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_SUCCEEDED' or event == 'UNIT_SPELLCAST_FAILED' or event == 'UNIT_SPELLCAST_INTERRUPTED' then
+    -- Check for Hearthstone casting end
+    local unit, castGUID, spellID = ...
+    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
+      CloseHearthingOverlay()
     end
   end
 end)
