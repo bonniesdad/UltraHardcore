@@ -10,6 +10,14 @@ messageText:SetTextColor(1, 1, 1, 1) -- White text
 messageText:SetJustifyH('CENTER') -- Center the text
 --
 local incomingSpellTimer
+
+-- Function to play random crit sound
+local function PlayRandomCritSound()
+  local critSoundNumber = math.random(1, 4)
+  local soundFile = "Interface\\AddOns\\UltraHardcore\\Sounds\\xar-crit" .. critSoundNumber .. ".mp3"
+  PlaySoundFile(soundFile, "Master")
+end
+
 --
 function OnCombatLogEvent(self, event)
   local _, subEvent, _, sourceGUID, _, _, _, destGUID, enemyName, _, _, spellID, a, b, c, d, e, f =
@@ -110,6 +118,9 @@ function OnCombatLogEvent(self, event)
         if amount > currentHighestCrit then
           print('|cFFFF0000[UHC]|r Highest crit value updated to: ' .. amount .. '|r')
           CharacterStats:UpdateStat('highestCritValue', amount)
+          if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
+            PlayRandomCritSound()
+          end
         end
       end
     end

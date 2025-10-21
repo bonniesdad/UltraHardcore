@@ -47,6 +47,7 @@ function LoadDBData()
     showHealingIndicator = false,
     hideUIErrors = false,
     setFirstPersonCamera = false,
+    newHighCritAppreciationSoundbite = true,
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
