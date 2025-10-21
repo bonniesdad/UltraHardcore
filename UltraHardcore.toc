@@ -32,6 +32,7 @@ Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
+Functions/HearthingOverlay.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -77,6 +78,7 @@ Functions/Overlays/ShowArcaneDamageOverlay.lua
 Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
 Functions/Overlays/ShowFireDamageOverlay.lua
 Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
+Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
 Settings/MainMenuButton.lua
