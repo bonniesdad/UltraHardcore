@@ -38,6 +38,7 @@ Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
+Functions/RoutePlanner.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -64,6 +65,7 @@ Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
 Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
+Functions/Checks/HasBuff.lua
 
 Functions/DamageOverlayHandler.lua
 Functions/CritTracker.lua

@@ -76,6 +76,7 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
+    routePlanner = false,
   }
 
   -- Initialize settings for current character if they don't exist
