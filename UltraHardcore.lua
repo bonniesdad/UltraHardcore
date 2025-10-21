@@ -40,6 +40,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
+    SetRoutePlanner(GLOBAL_SETTINGS.routePlanner or false)
     SetAllGroupIndicators()
     DisablePetCombatText()
     RepositionPetHappinessTexture()
@@ -56,6 +57,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)
   elseif event == 'PLAYER_UPDATE_RESTING' then
     OnPlayerUpdateRestingEvent(self)
+    SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
   elseif event == 'PLAYER_LEVEL_UP' then
     OnPlayerLevelUpEvent(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
@@ -106,6 +108,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       if unit == 'player' and spellID == 8690 then -- 8690 is Hearthstone spell ID
         HideHearthingOverlay()
       end
+    end
+  elseif event == 'UNIT_AURA' then
+    local unit = ...
+    if unit == "player" then
+      SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
     end
   end
 end)

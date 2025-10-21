@@ -206,6 +206,10 @@ local settingsCheckboxOptions = { {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
+}, {
+  name = 'Route Planner',
+  dbSettingsValueName = 'routePlanner',
+  tooltip = 'Get a compass. Map only usable near campfire or when resting. Plan your routes carefully',
 } }
 
 local presets = { {
@@ -227,6 +231,7 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = false,
   setFirstPersonCamera = false,
+  routePlanner = false,
 }, {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
@@ -246,6 +251,7 @@ local presets = { {
   showHealingIndicator = false,
   hideBreathIndicator = true,
   setFirstPersonCamera = false,
+  routePlanner = false,
 }, {
   -- Preset 3: Ultra
   hidePlayerFrame = true,
@@ -266,6 +272,7 @@ local presets = { {
   showHealingIndicator = false,
   setFirstPersonCamera = false,
   newHighCritAppreciationSoundbite = true,
+  routePlanner = false,
 } }
 
 -- Temporary settings storage and initialization function
@@ -350,6 +357,7 @@ local function createTabButton(text, index)
   local button = CreateFrame('Button', nil, settingsFrame, 'BackdropTemplate')
   button:SetSize(110, 35)
   button:SetPoint('TOP', settingsFrame, 'TOP', (index - 3) * 110, -45) -- Position below title bar
+
   -- Create the main tab background with proper folder tab shape
   button:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',

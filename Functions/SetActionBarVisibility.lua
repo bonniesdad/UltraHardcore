@@ -1,4 +1,4 @@
---[[ 
+--[[
   Action Bar Visibility Controller
   - Hides action bars when not resting (or below level threshold)
   - Shows them when resting or under Cozy Fire (spell ID 7353)
@@ -14,20 +14,6 @@ ACTIOBAR_FRAMES_TO_HIDE =
 --[[
   Main functions
 ]]
-
-local function HasCozyFire()
-  for i = 1, 40 do
-    local name, _, _, _, _, _, _, _, _, spellId = UnitBuff('player', i)
-    if not name then
-      break
-    end
-    if spellId == 7353 or name == 'Cozy Fire' then
-      return true
-    end
-  end
-  return false
-end
-
 function SetActionBarVisibility(hideActionBars, playerLevel)
   if playerLevel == nil then
     playerLevel = UnitLevel('player')
