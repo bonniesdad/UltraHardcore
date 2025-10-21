@@ -317,7 +317,7 @@ function OnCombatLogEvent(self, event)
           DEFAULT_CHAT_FRAME:AddMessage("|cFFFF8000[UHC]|r Party member " .. deadPlayerName .. " is feigning death - death count not incremented.", 1, 0.5, 0)
         end
       end
-    elseif destGUID == playerGUID then
+    elseif destGUID == playerGUID and GLOBAL_SETTINGS.playPlayerDeathSoundbite then
       -- Player death sound
       PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PlayerDeath.ogg", "SFX")
     end
