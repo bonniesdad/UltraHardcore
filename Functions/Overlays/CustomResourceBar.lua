@@ -249,16 +249,6 @@ local function CenterPlayerBuffBar()
             xOffset = (buffCount - 1) * pixelsToMove;
         end]]
 
-        if buffRows > 1 then 
-            -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
-            yOffset = (buffRows - 1) * 45; 
-        end
-
-        -- Comment this line out if you want to see how the buff bar is being moved
-        -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
-        BuffFrame:ClearAllPoints()
-        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, yOffset)
-
         local firstBuffButton = _G["BuffButton1"]
         if firstBuffButton then
             local width = firstBuffButton:GetWidth()
@@ -274,6 +264,16 @@ local function CenterPlayerBuffBar()
 
             BuffFrame:SetScale(1.0)
             BuffFrame:SetWidth(newWidth)
+
+            if buffRows > 1 then 
+                yOffset = ((buffRows - 1) * height) + ((buffRows - 1) * 5); 
+            end
+
+            -- Comment this line out if you want to see how the buff bar is being moved
+            -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
+            BuffFrame:ClearAllPoints()
+            BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, yOffset)
+
         end
     end
 end
