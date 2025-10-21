@@ -18,6 +18,10 @@ UltraHardcore:RegisterEvent('PLAYER_LEVEL_UP')
 UltraHardcore:RegisterEvent('GROUP_ROSTER_UPDATE')
 UltraHardcore:RegisterEvent('MIRROR_TIMER_START')
 UltraHardcore:RegisterEvent('MIRROR_TIMER_STOP')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_START')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 
 
 -- 🟢 Event handler to apply all funcitons on login
@@ -63,6 +67,16 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     local timerName = ...
     if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStart()
+    end
+  elseif unit == 'player' and event == 'UNIT_SPELLCAST_START' then
+    name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(unit)
+    if spellId == 8690 then
+      HearthingOverlay()
+    end
+  elseif unit == 'player' and event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_INTERRUPTED' or event == 'UNIT_SPELLCAST_SUCCEEDED' then
+    name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(unit)
+    if spellId == 8690 then
+      CloseHearthingOverlay()
     end
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
