@@ -199,6 +199,10 @@ local settingsCheckboxOptions = { {
   name = 'Party Death Soundbite',
   dbSettingsValueName = 'playPartyDeathSoundbite',
   tooltip = 'Play a soundbite when a party member dies',
+}, {
+  name = 'Player Death Soundbite',
+  dbSettingsValueName = 'playPlayerDeathSoundbite',
+  tooltip = 'Play a soundbite when you die',
 } }
 
 local presets = { {
@@ -997,6 +1001,7 @@ local settingDisplayNames = {
   buffBarOnResourceBar = 'Buff Bar on Resource Bar',
   newHighCritAppreciationSoundbite = 'Highest Crit Appreciation Soundbite (Xaryu)',
   playPartyDeathSoundbite = 'Party Death Soundbite',
+  playPlayerDeathSoundbite = 'Player Death Soundbite',
 }
 
 -- Define preset sections with their settings
@@ -1262,7 +1267,8 @@ local function createCheckboxes()
         "announceDungeonsCompletedOnGroupJoin",
         "buffBarOnResourceBar",
         "newHighCritAppreciationSoundbite",
-        "playPartyDeathSoundbite"
+        "playPartyDeathSoundbite",
+        "playPlayerDeathSoundbite"
       }
     }
   }
