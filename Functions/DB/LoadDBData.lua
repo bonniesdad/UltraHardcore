@@ -47,6 +47,10 @@ function LoadDBData()
     showHealingIndicator = false,
     hideUIErrors = false,
     setFirstPersonCamera = false,
+    newHighCritAppreciationSoundbite = true,
+    playPartyDeathSoundbite = true,
+    playPlayerDeathSoundbite = true,
+    spookyTunnelVision = true,
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,

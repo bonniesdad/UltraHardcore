@@ -191,6 +191,22 @@ local settingsCheckboxOptions = { {
   name = 'Buff Bar on Resource Bar',
   dbSettingsValueName = 'buffBarOnResourceBar',
   tooltip = 'Position player buff bar on top of the custom resource bar',
+}, {
+  name = 'Highest Crit Appreciation Soundbite',
+  dbSettingsValueName = 'newHighCritAppreciationSoundbite',
+  tooltip = 'Play a soundbite when you achieve a new highest crit value',
+}, {
+  name = 'Party Death Soundbite',
+  dbSettingsValueName = 'playPartyDeathSoundbite',
+  tooltip = 'Play a soundbite when a party member dies',
+}, {
+  name = 'Player Death Soundbite',
+  dbSettingsValueName = 'playPlayerDeathSoundbite',
+  tooltip = 'Play a soundbite when you die',
+}, {
+  name = 'Spooky Tunnel Vision',
+  dbSettingsValueName = 'spookyTunnelVision',
+  tooltip = 'Use Halloween-themed tunnel vision overlay for ultra spooky experience',
 } }
 
 local presets = { {
@@ -250,6 +266,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
+  newHighCritAppreciationSoundbite = true,
 } }
 
 -- Temporary settings storage and initialization function
@@ -986,6 +1003,9 @@ local settingDisplayNames = {
   announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
   announceDungeonsCompletedOnGroupJoin = 'Announce Dungeons Completed on Group Join',
   buffBarOnResourceBar = 'Buff Bar on Resource Bar',
+  newHighCritAppreciationSoundbite = 'Highest Crit Appreciation Soundbite (Xaryu)',
+  playPartyDeathSoundbite = 'Party Death Soundbite',
+  playPlayerDeathSoundbite = 'Player Death Soundbite',
 }
 
 -- Define preset sections with their settings
@@ -1136,9 +1156,9 @@ end
 -- Create preset buttons
 local presetIcons =
   {
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100_halloween.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100_halloween.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100_halloween.png',
   }
 
 local buttonSize = 100 -- Increased size for better visibility
@@ -1249,7 +1269,11 @@ local function createCheckboxes()
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
         "announceDungeonsCompletedOnGroupJoin",
-        "buffBarOnResourceBar"
+        "buffBarOnResourceBar",
+        "newHighCritAppreciationSoundbite",
+        "playPartyDeathSoundbite",
+        "playPlayerDeathSoundbite",
+        "spookyTunnelVision"
       }
     }
   }
