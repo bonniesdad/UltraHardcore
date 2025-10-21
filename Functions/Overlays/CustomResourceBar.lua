@@ -258,11 +258,23 @@ local function CenterPlayerBuffBar()
         -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
         BuffFrame:ClearAllPoints()
         BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, yOffset)
-        local newWidth = buffCount * 40
-        if buffCount < debuffCount then
-            newWidth = debuffCount * 40
+
+        local firstBuffButton = _G["BuffButton1"]
+        if firstBuffButton then
+            local width = firstBuffButton:GetWidth()
+            local height = firstBuffButton:GetHeight()
+
+            -- buffCount + width is the total width of all buff icons
+            -- (buffCount - 1) * 5 is the spacing between each icon (5 pixels each)
+            -- 10 pixels is subtracted to account for no spacing before the first icon and after the last icon
+            local newWidth = (buffCount * width) + (buffCount * 5) - 5
+            if buffCount < debuffCount then
+                newWidth = debuffCount * width
+            end
+
+            BuffFrame:SetScale(1.0)
+            BuffFrame:SetWidth(newWidth)
         end
-        BuffFrame:SetWidth(newWidth)
     end
 end
 
