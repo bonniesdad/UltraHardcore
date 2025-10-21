@@ -938,7 +938,7 @@ xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 
 -- Create collapsible content frame for XP breakdown
 local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Increased height to show all breakdown lines
+xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
 xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
 xpGainedContent:Show() -- Show by default
 
@@ -1324,53 +1324,77 @@ end
 -- X Found Mode Tab Content is now in XFoundMode.lua
 
 -- Info Tab Content
--- Addon name and version at the top (moved up)
-local addonTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
-addonTitle:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 120)
-addonTitle:SetText('UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version'))
-addonTitle:SetJustifyH('CENTER')
-
--- Philosophy text (moved up with more spacing from title)
+-- Philosophy text (at top)
 local philosophyText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-philosophyText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -10)
-philosophyText:SetWidth(400)
-philosophyText:SetText('Welcome to UltraHardcore!\nEvery feature can be customized to create your perfect hardcore experience. Toggle options on or off to find what works best for you.')
+philosophyText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 180)
+philosophyText:SetWidth(500)
+philosophyText:SetText('UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version'))
 philosophyText:SetJustifyH('CENTER')
 philosophyText:SetNonSpaceWrap(true)
 
--- Compatibility warning (moved down with more spacing)
+-- Compatibility warning (below philosophy)
 local compatibilityText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-compatibilityText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -80)
-compatibilityText:SetWidth(400)
+compatibilityText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 120)
+compatibilityText:SetWidth(500)
 compatibilityText:SetText('Please note: UltraHardcore hasn\'t been tested with other addons. For the best experience, we recommend using UltraHardcore alone on your hardcore characters.')
 compatibilityText:SetJustifyH('CENTER')
 compatibilityText:SetNonSpaceWrap(true)
-compatibilityText:SetTextColor(0.9, 0.9, 0.9) -- Slightly dimmed for italic effect
+compatibilityText:SetTextColor(0.9, 0.9, 0.9)
 
--- Bug report text (adjusted for new spacing)
+-- Bug report text
 local bugReportText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bugReportText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -140)
-bugReportText:SetText('Found a bug or have suggestions? We\'d love to hear from you! Join our Discord community to report issues and share feedback.')
+bugReportText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 80)
+bugReportText:SetText('Found a bug or have suggestions? Join our Discord community!')
 bugReportText:SetJustifyH('CENTER')
-bugReportText:SetTextColor(0.8, 0.8, 0.8) -- Dimmed color for instructions
-bugReportText:SetWidth(400)
+bugReportText:SetTextColor(0.8, 0.8, 0.8)
+bugReportText:SetWidth(500)
 bugReportText:SetNonSpaceWrap(true)
 
--- Discord Link Text (clickable, adjusted for new spacing)
+-- Discord Link Text (clickable)
 local discordLinkText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-discordLinkText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -170)
+discordLinkText:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 60)
 discordLinkText:SetText('Discord Server: https://discord.gg/zuSPDNhYEN')
 discordLinkText:SetJustifyH('CENTER')
-discordLinkText:SetTextColor(0.4, 0.8, 1) -- Light blue color to indicate it's a link
+discordLinkText:SetTextColor(0.4, 0.8, 1)
 
--- Discord instructions text (adjusted for new spacing)
+-- Discord instructions text
 local discordInstructions = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-discordInstructions:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -190)
-discordInstructions:SetText('Open your chatbox and press this link, then copy the text provided into your browser')
+discordInstructions:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 40)
+discordInstructions:SetText('Click the link above to copy it to your chatbox')
 discordInstructions:SetJustifyH('CENTER')
-discordInstructions:SetTextColor(0.8, 0.8, 0.8) -- Slightly dimmed color for instructions
-discordInstructions:SetWidth(400)
+discordInstructions:SetTextColor(0.8, 0.8, 0.8)
+discordInstructions:SetWidth(500)
 discordInstructions:SetNonSpaceWrap(true)
+
+-- Patch Notes Section (at bottom)
+local patchNotesTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+patchNotesTitle:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)
+patchNotesTitle:SetText('Patch Notes')
+patchNotesTitle:SetJustifyH('CENTER')
+patchNotesTitle:SetTextColor(1, 1, 0.5)
+
+-- Create patch notes display at bottom
+local patchNotesFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
+patchNotesFrame:SetSize(520, 280)
+patchNotesFrame:SetPoint('CENTER', tabContents[5], 'CENTER', 0, -160)
+patchNotesFrame:SetBackdrop({
+  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+  tile = true,
+  tileSize = 32,
+  edgeSize = 16,
+  insets = {
+    left = 4,
+    right = 4,
+    top = 4,
+    bottom = 4,
+  },
+})
+patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+
+-- Create patch notes display using reusable component
+local patchNotesScrollFrame = CreatePatchNotesDisplay(patchNotesFrame, 480, 260, 10, -10)
 
 -- Make the text clickable
 local discordLinkFrame = CreateFrame('Button', nil, tabContents[5])
@@ -1655,6 +1679,48 @@ end
 
 SLASH_TOGGLESETTINGS1 = '/uhc'
 SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
+
+-- Function to open settings and switch to a specific tab
+function OpenSettingsToTab(tabIndex)
+  -- Initialize temporary settings when opening
+  initializeTempSettings()
+  
+  -- Reset preset button highlighting
+  if selectedPreset then
+    selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
+    selectedPreset = nil
+  end
+  
+  -- Hide all tab contents
+  for i, content in ipairs(tabContents) do
+    content:Hide()
+  end
+  
+  -- Reset all tab button appearances
+  for i, tabButton in ipairs(tabButtons) do
+    tabButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
+    tabButton:SetAlpha(0.8)
+  end
+  
+  -- Show specified tab content and highlight button
+  if tabContents[tabIndex] and tabButtons[tabIndex] then
+    tabContents[tabIndex]:Show()
+    tabButtons[tabIndex]:SetBackdropBorderColor(1, 1, 0)
+    tabButtons[tabIndex]:SetAlpha(1.0)
+    activeTab = tabIndex
+    
+    -- Initialize X Found Mode tab if it's being shown
+    if tabIndex == 4 and InitializeXFoundModeTab then
+      InitializeXFoundModeTab()
+    end
+  end
+  
+  -- Show the settings frame
+  settingsFrame:Show()
+  updateCheckboxes()
+  updateRadioButtons()
+  UpdateLowestHealthDisplay()
+end
 
 -- Initialize temporary settings and create checkboxes
 initializeTempSettings()

@@ -1,6 +1,6 @@
 ## Interface: 11507
 ## Title: UltraHardcore
-## Version: 1.2.2
+## Version: 1.2.3
 ## Author: Bonnie
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -16,6 +16,8 @@ Functions/SetUIErrorsDisplay.lua
 Functions/TunnelVision.lua
 Functions/OnCombatLogEvent.lua
 Functions/WelcomeMessage.lua
+Functions/PatchNotes.lua
+Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua

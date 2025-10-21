@@ -408,9 +408,8 @@ local function HookBuffFrame()
             originalShow(self)
             if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
                 RepositionPlayerBuffBar()
-            else
-                RestoreBuffBarPosition()
             end
+            -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
         end
 
         local originalHide = BuffFrame.Hide
@@ -428,9 +427,8 @@ local function HandleBuffBarSettingChange()
     if BuffFrame and BuffFrame:IsVisible() then
         if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
             RepositionPlayerBuffBar()
-        else
-            RestoreBuffBarPosition()
         end
+        -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
     end
 end
 
