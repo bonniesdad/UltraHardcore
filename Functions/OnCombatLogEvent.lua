@@ -304,9 +304,11 @@ function OnCombatLogEvent(self, event)
           local newCount = currentPartyDeaths + 1
           CharacterStats:UpdateStat('partyMemberDeaths', newCount)
   
-          local randomNumber = random(1,4)
-          -- Play sound file on party death
-          PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
+          if GLOBAL_SETTINGS.playPartyDeathSoundbite then
+            local randomNumber = random(1,4)
+            -- Play sound file on party death
+            PlaySoundFile("Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath" .. randomNumber .. ".ogg", "SFX")
+          end
         
           -- Optional: Print a message to chat
           DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Party member " .. deadPlayerName .. " has died. Total party deaths: " .. newCount, 1, 0, 0)
