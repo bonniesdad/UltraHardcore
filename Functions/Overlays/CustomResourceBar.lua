@@ -10,8 +10,15 @@ resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
 local CustomBuffFrame = CreateFrame("Frame", "UHCCustomBuffFrame", UIParent);
 CustomBuffFrame:SetSize(200, 40);
+CustomBuffFrame.BuffIcons = {};
+CustomBuffFrame.YOffset = 5;
+CustomBuffFrame.MaxPerRow = 10;
+
 local CustomDebuffFrame = CreateFrame("Frame", "UHCCustomDebuffFrame", UIParent);
 CustomDebuffFrame:SetSize(200, 40); -- Set initial size
+CustomDebuffFrame.DebuffIcons = {};
+CustomDebuffFrame.YOffset = -15;
+CustomDebuffFrame.MaxPerRow = 10;
 
 -- Cache power type colors and max values
 local POWER_COLORS = {
@@ -259,14 +266,6 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
 
 end)
 
-CustomBuffFrame.BuffIcons = {};
-CustomBuffFrame.YOffset = 5;
-CustomBuffFrame.MaxPerRow = 10;
-
-CustomDebuffFrame.DebuffIcons = {};
-CustomDebuffFrame.YOffset = -15;
-CustomDebuffFrame.MaxPerRow = 10;
-
 function RedrawBuffs(parentFrame, icons, harmful, yOffset)
     local frameName = harmful and "DebuffFrame" or "BuffFrame"
     local iconSize = 30;
@@ -371,7 +370,14 @@ local function RepositionPlayerBuffBar()
 
     -- Wait for buff frame to be created
     C_Timer.After(0.5, function()
-        CustomBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, CustomBuffFrame.YOffset);
+        if comboFrame:IsVisible() then 
+            print("Combo frame visible, adjusting buff frame position")
+            CustomBuffFrame.YOffset = 0
+            CustomBuffFrame:SetPoint('BOTTOM', comboFrame, 'TOP', 0, CustomBuffFrame.YOffset);
+        else
+            CustomBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, CustomBuffFrame.YOffset);
+        end
+
         RedrawBuffs(CustomBuffFrame, CustomBuffFrame.BuffIcons, false, CustomBuffFrame.YOffset);
         CustomDebuffFrame:SetPoint('TOP', resourceBar, 'BOTTOM', 0, CustomDebuffFrame.YOffset);
         RedrawBuffs(CustomDebuffFrame, CustomDebuffFrame.DebuffIcons, true, CustomDebuffFrame.YOffset);
