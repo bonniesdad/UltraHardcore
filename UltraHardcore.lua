@@ -77,8 +77,25 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'UNIT_SPELLCAST_START' then
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
+
     if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
-      HearthingOverlay()
+      local affectingCombat = UnitAffectingCombat("player");
+      local partyInCombat = false
+
+      --print("Player combat status: " .. tostring(affectingCombat))
+      -- party1 is always the player
+      for i = 1, 5 do
+        local partyUnit = "party"..i
+        --print("Party member " .. i .. " combat status: " .. tostring(UnitAffectingCombat(partyUnit)))
+        if UnitAffectingCombat(partyUnit) then
+          partyInCombat = true
+          break
+        end
+      end
+
+      if affectingCombat or partyInCombat then
+        HearthingOverlay()
+      end
     end
   elseif event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_SUCCEEDED' or event == 'UNIT_SPELLCAST_FAILED' or event == 'UNIT_SPELLCAST_INTERRUPTED' then
     -- Check for Hearthstone casting end
