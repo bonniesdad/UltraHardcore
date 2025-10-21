@@ -68,21 +68,23 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStart()
     end
-  elseif unit == 'player' and event == 'UNIT_SPELLCAST_START' then
-    name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(unit)
-    if spellId == 8690 then
-      HearthingOverlay()
-    end
-  elseif unit == 'player' and event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_INTERRUPTED' or event == 'UNIT_SPELLCAST_SUCCEEDED' then
-    name, text, texture, startTimeMS, endTimeMS, isTradeSkill, castID, notInterruptible, spellId = UnitCastingInfo(unit)
-    if spellId == 8690 then
-      CloseHearthingOverlay()
-    end
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
     local timerName = ...
     if timerName == 'BREATH' then
       OnBreathStop()
+    end
+  elseif event == 'UNIT_SPELLCAST_START' then
+    -- Check for Hearthstone casting start
+    local unit, castGUID, spellID = ...
+    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
+      HearthingOverlay()
+    end
+  elseif event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_SUCCEEDED' or event == 'UNIT_SPELLCAST_FAILED' or event == 'UNIT_SPELLCAST_INTERRUPTED' then
+    -- Check for Hearthstone casting end
+    local unit, castGUID, spellID = ...
+    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
+      CloseHearthingOverlay()
     end
   end
 end)
