@@ -223,11 +223,11 @@ local function CenterPlayerBuffBar()
         local yOffset = 5;
         local buffRows = 1;
 
-    -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2
-    -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
-    -- when iterating to count buffs, so I'm doing the same.
-    for i = 0, 40 do
-      local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
+        -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2
+        -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
+        -- when iterating to count buffs, so I'm doing the same.
+        for i = 0, 40 do
+            local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
 
             if aura and aura.isHarmful ~= true then
                 -- Uncomment this line if you want to see which buffs show up in which cloths
@@ -243,7 +243,7 @@ local function CenterPlayerBuffBar()
             end
         end
 
-    if buffCount == 0 then return end
+        if buffCount == 0 then return end
 
         --[[if buffCount > 1 then 
             xOffset = (buffCount - 1) * pixelsToMove;
