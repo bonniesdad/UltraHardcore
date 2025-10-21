@@ -127,6 +127,10 @@ local settingsCheckboxOptions = { {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
+}, {
+  name = 'Route Planner',
+  dbSettingsValueName = 'routePlanner',
+  tooltip = 'Get a compass. Map only usable near campfire or when resting. Plan your routes carefully',
 } }
 
 local presets = { {
@@ -152,6 +156,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
+  routePlanner = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
@@ -188,6 +193,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
+  routePlanner = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
@@ -224,6 +230,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
+  routePlanner = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
