@@ -78,6 +78,10 @@ end
 
 function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  if(IsResting()) then
+    PikabooResting()
+  end
+
 end
 
 function OnPlayerLevelUpEvent(self, event, newLevel)
