@@ -371,7 +371,7 @@ local function RepositionPlayerBuffBar()
     -- Wait for buff frame to be created
     C_Timer.After(0.5, function()
         if comboFrame:IsVisible() then 
-            print("Combo frame visible, adjusting buff frame position")
+            -- print("Combo frame visible, adjusting buff frame position")
             CustomBuffFrame.YOffset = 0
             CustomBuffFrame:SetPoint('BOTTOM', comboFrame, 'TOP', 0, CustomBuffFrame.YOffset);
         else
