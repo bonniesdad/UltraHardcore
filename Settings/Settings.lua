@@ -191,6 +191,10 @@ local settingsCheckboxOptions = { {
   name = 'Buff Bar on Resource Bar',
   dbSettingsValueName = 'buffBarOnResourceBar',
   tooltip = 'Position player buff bar on top of the custom resource bar',
+}, {
+  name = 'Highest Crit Appreciation Soundbite',
+  dbSettingsValueName = 'newHighCritAppreciationSoundbite',
+  tooltip = 'Play a soundbite when you achieve a new highest crit value',
 } }
 
 local presets = { {
@@ -250,6 +254,7 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
+  newHighCritAppreciationSoundbite = true,
 } }
 
 -- Temporary settings storage and initialization function
@@ -986,6 +991,7 @@ local settingDisplayNames = {
   announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
   announceDungeonsCompletedOnGroupJoin = 'Announce Dungeons Completed on Group Join',
   buffBarOnResourceBar = 'Buff Bar on Resource Bar',
+  newHighCritAppreciationSoundbite = 'Highest Crit Appreciation Soundbite (Xaryu)',
 }
 
 -- Define preset sections with their settings
@@ -1249,7 +1255,8 @@ local function createCheckboxes()
         "showClockEvenWhenMapHidden",
         "announcePartyDeathsOnGroupJoin",
         "announceDungeonsCompletedOnGroupJoin",
-        "buffBarOnResourceBar"
+        "buffBarOnResourceBar",
+        "newHighCritAppreciationSoundbite"
       }
     }
   }
