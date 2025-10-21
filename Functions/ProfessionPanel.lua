@@ -11,6 +11,7 @@ local EMPTY_TEXTURE = "Interface\\PaperDoll\\UI-Backpack-EmptySlot"
 
 -- Apprentice, Journeyman, Expert, Artisan
 local allowedSpells = {
+  { 8690, 556 },                 -- Hearthstone, Astral Recall
   { 3273, 3274, 7924, 10846 },   -- First Aid
   { 7620, 7731, 7732, 18248 },   -- Fishing
   { 2550, 3102, 3413, 18260 },   -- Cooking
@@ -387,6 +388,7 @@ f:SetScript("OnEvent", function(self, event)
     end
   end
 end)
+
 
 
 
