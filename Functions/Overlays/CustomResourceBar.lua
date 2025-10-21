@@ -266,7 +266,7 @@ local function CenterPlayerBuffBar()
 
             -- buffCount + width is the total width of all buff icons
             -- (buffCount - 1) * 5 is the spacing between each icon (5 pixels each)
-            -- 10 pixels is subtracted to account for no spacing before the first icon and after the last icon
+            -- 5 pixels is subtracted to account for spacing in front of the first icon
             local newWidth = (buffCount * width) + (buffCount * 5) - 5
             if buffCount < debuffCount then
                 newWidth = debuffCount * width
