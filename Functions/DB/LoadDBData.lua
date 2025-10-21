@@ -48,6 +48,7 @@ function LoadDBData()
     hideUIErrors = false,
     setFirstPersonCamera = false,
     newHighCritAppreciationSoundbite = true,
+    playPartyDeathSoundbite = true,
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
