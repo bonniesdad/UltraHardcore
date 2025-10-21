@@ -215,10 +215,6 @@ end
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then return end
-
-  -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.
-  -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
-
     if BuffFrame then
         local buffCount = 0;
         local debuffCount = 0;
