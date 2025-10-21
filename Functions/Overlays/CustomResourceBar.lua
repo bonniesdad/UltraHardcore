@@ -215,6 +215,7 @@ local function CenterPlayerBuffBar()
 
     if BuffFrame then
         local buffCount = 0;
+        local debuffCount = 0;
         local pixelsToMove = 13.25;
         local xOffset = 0;
         local yOffset = 5;
@@ -235,6 +236,8 @@ local function CenterPlayerBuffBar()
                     -- Unfortunately this is going to move the debuffs up as well
                     buffRows = buffRows + 1;
                 end
+            elseif aura and aura.isHarmful == true then
+                debuffCount = debuffCount + 1;
             end
         end
 
@@ -242,9 +245,9 @@ local function CenterPlayerBuffBar()
             return;
         end
 
-        if buffCount > 1 then 
+        --[[if buffCount > 1 then 
             xOffset = (buffCount - 1) * pixelsToMove;
-        end
+        end]]
 
         if buffRows > 1 then 
             -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
@@ -254,7 +257,12 @@ local function CenterPlayerBuffBar()
         -- Comment this line out if you want to see how the buff bar is being moved
         -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
         BuffFrame:ClearAllPoints()
-        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
+        BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, yOffset)
+        local newWidth = buffCount * 40
+        if buffCount < debuffCount then
+            newWidth = debuffCount * 40
+        end
+        BuffFrame:SetWidth(newWidth)
     end
 end
 
@@ -328,8 +336,7 @@ local function RepositionPlayerBuffBar()
     -- Wait for buff frame to be created
     C_Timer.After(0.5, function()
         if BuffFrame and BuffFrame:IsVisible() then
-            BuffFrame:ClearAllPoints()
-            BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
+            CenterPlayerBuffBar()
         end
     end)
 end
