@@ -203,6 +203,10 @@ local settingsCheckboxOptions = { {
   name = 'Player Death Soundbite',
   dbSettingsValueName = 'playPlayerDeathSoundbite',
   tooltip = 'Play a soundbite when you die',
+}, {
+  name = 'Spooky Tunnel Vision',
+  dbSettingsValueName = 'spookyTunnelVision',
+  tooltip = 'Use Halloween-themed tunnel vision overlay for ultra spooky experience',
 } }
 
 local presets = { {
@@ -1152,9 +1156,9 @@ end
 -- Create preset buttons
 local presetIcons =
   {
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100_halloween.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100_halloween.png',
+    'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100_halloween.png',
   }
 
 local buttonSize = 100 -- Increased size for better visibility
@@ -1268,7 +1272,8 @@ local function createCheckboxes()
         "buffBarOnResourceBar",
         "newHighCritAppreciationSoundbite",
         "playPartyDeathSoundbite",
-        "playPlayerDeathSoundbite"
+        "playPlayerDeathSoundbite",
+        "spookyTunnelVision"
       }
     }
   }

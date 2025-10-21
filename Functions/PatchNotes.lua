@@ -39,10 +39,14 @@ PATCH_NOTES = {
       "• Fixed LFG search error.",
     }
   },
+  -- Add new entries here for future updates
   {
     version = "1.2.4",
     date = "2025-10-21",
     notes = {
+      "• Added Super Spooky Tunnel Vision",
+      "  • When enabled, the tunnel vision will be displayed in a spooky Halloween theme.",
+      "• Added Terrifying Pumpkin Themed Settings Presets",
       "• Added Highest Crit Appreciation Soundbite",
       "  • Play a soundbite when you achieve a new highest crit value",
       "• Added Party Death Soundbite",
