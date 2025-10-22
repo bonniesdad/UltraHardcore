@@ -79,6 +79,8 @@ Functions/Overlays/ShowArcaneDamageOverlay.lua
 Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
 Functions/Overlays/ShowFireDamageOverlay.lua
 Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
+Functions/Overlays/ShowNatureDamageOverlay.lua
+Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
