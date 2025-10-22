@@ -123,62 +123,112 @@ local settingsCheckboxOptions = { {
 
 local presets = { {
   -- Preset 1: Lite
+  -- Lite Preset Settings
   hidePlayerFrame = true,
+  showTunnelVision = true,
+  -- Recommended Preset Settings
   hideMinimap = false,
   hideTargetFrame = false,
   hideTargetTooltip = false,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = false,
-  showDazedEffect = false,
-  showCritScreenMoveEffect = false,
-  hideActionBars = false,
-  hideGroupHealth = false,
-  petsDiePermanently = false,
-  showFullHealthIndicator = false,
   disableNameplateHealth = false,
+  showDazedEffect = false,
+  hideGroupHealth = false,
+  hideBreathIndicator = false,
+  -- Ultra Preset Settings
+  petsDiePermanently = false,
+  hideActionBars = false,
+  tunnelVisionMaxStrata = false,
+  -- Experimental Preset Settings
+  showCritScreenMoveEffect = false,
+  showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
-  hideBreathIndicator = false,
   setFirstPersonCamera = false,
+  newHighCritAppreciationSoundbite = false,
+  -- Misc Settings
+  showOnScreenStatistics = false,
+  announceLevelUpToGuild = false,
+  hideUIErrors = false,
+  showClockEvenWhenMapHidden = false,
+  announcePartyDeathsOnGroupJoin = false,
+  announceDungeonsCompletedOnGroupJoin = false,
+  buffBarOnResourceBar = false,
+  playPartyDeathSoundbite = false,
+  playPlayerDeathSoundbite = false,
+  spookyTunnelVision = false,
+  roachHearthstoneInPartyCombat = false,
 }, {
   -- Preset 2: Recommended
+  -- Lite Preset Settings
   hidePlayerFrame = true,
+  showTunnelVision = true,
+  -- Recommended Preset Settings
   hideMinimap = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = false,
+  disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  showCritScreenMoveEffect = false,
-  hideActionBars = false,
+  hideBreathIndicator = true,
+  -- Ultra Preset Settings
   petsDiePermanently = false,
+  hideActionBars = false,
+  tunnelVisionMaxStrata = false,
+  -- Experimental Preset Settings
+  showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
-  disableNameplateHealth = true,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
-  hideBreathIndicator = true,
   setFirstPersonCamera = false,
+  newHighCritAppreciationSoundbite = false,
+  -- Misc Settings
+  showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = true,
+  showClockEvenWhenMapHidden = true,
+  announcePartyDeathsOnGroupJoin = true,
+  announceDungeonsCompletedOnGroupJoin = true,
+  buffBarOnResourceBar = false,
+  playPartyDeathSoundbite = true,
+  playPlayerDeathSoundbite = true,
+  spookyTunnelVision = false,
+  roachHearthstoneInPartyCombat = false,
 }, {
   -- Preset 3: Ultra
+  -- Lite Preset Settings
   hidePlayerFrame = true,
+  showTunnelVision = true,
+  -- Recommended Preset Settings
   hideMinimap = true,
   hideTargetFrame = true,
   hideTargetTooltip = true,
-  showTunnelVision = true,
-  tunnelVisionMaxStrata = true,
+  disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
   hideBreathIndicator = true,
+  -- Ultra Preset Settings
   petsDiePermanently = true,
-  showCritScreenMoveEffect = false,
   hideActionBars = true,
+  tunnelVisionMaxStrata = true,
+  -- Experimental Preset Settings
+  showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
-  disableNameplateHealth = true,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
   newHighCritAppreciationSoundbite = true,
+  -- Misc Settings
+  showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
+  hideUIErrors = true,
+  showClockEvenWhenMapHidden = true,
+  announcePartyDeathsOnGroupJoin = true,
+  announceDungeonsCompletedOnGroupJoin = true,
+  buffBarOnResourceBar = true,
+  playPartyDeathSoundbite = true,
+  playPlayerDeathSoundbite = true,
+  spookyTunnelVision = true,
+  roachHearthstoneInPartyCombat = true,
 } }
 
 -- Global function to update radio buttons (needed by Statistics tab)
@@ -303,50 +353,7 @@ function InitializeSettingsOptionsTab()
   function createCheckboxes()
     local yOffset = -10
 
-    local presetSections = { {
-      title = 'Lite:',
-      settings = { 'hidePlayerFrame', 'showTunnelVision' },
-    }, {
-      title = 'Recommended:',
-      settings = {
-        'hideTargetFrame',
-        'hideTargetTooltip',
-        'disableNameplateHealth',
-        'showDazedEffect',
-        'hideGroupHealth',
-        'hideMinimap',
-        'hideBreathIndicator',
-      },
-    }, {
-      title = 'Ultra:',
-      settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
-    }, {
-      title = 'Experimental:',
-      settings = {
-        'showCritScreenMoveEffect',
-        'showFullHealthIndicator',
-        'showIncomingDamageEffect',
-        'showHealingIndicator',
-        'setFirstPersonCamera',
-      },
-    }, {
-      title = 'Misc:',
-      settings = {
-        'showOnScreenStatistics',
-        'announceLevelUpToGuild',
-        'hideUIErrors',
-        'showClockEvenWhenMapHidden',
-        'announcePartyDeathsOnGroupJoin',
-        'announceDungeonsCompletedOnGroupJoin',
-        'buffBarOnResourceBar',
-        'newHighCritAppreciationSoundbite',
-        'playPartyDeathSoundbite',
-        'playPlayerDeathSoundbite',
-        'spookyTunnelVision',
-        'roachHearthstoneInPartyCombat',
-      },
-    } }
-
+    local presetSections = GetPresetSections('simple', true) -- Include Misc section
     for sectionIndex, section in ipairs(presetSections) do
       local sectionHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
       sectionHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, yOffset)

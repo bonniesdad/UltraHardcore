@@ -1,35 +1,5 @@
 -- 🟢 Character Stats Management
 
--- Helper function to format numbers with comma separators
-local function formatNumberWithCommas(number)
-  if type(number) ~= 'number' then
-    number = tonumber(number) or 0
-  end
-
-  -- Handle negative numbers
-  local isNegative = number < 0
-  if isNegative then
-    number = -number
-  end
-
-  -- Convert to string and add commas
-  local formatted = tostring(math.floor(number))
-  local k
-  while true do
-    formatted, k = string.gsub(formatted, '^(-?%d+)(%d%d%d)', '%1,%2')
-    if k == 0 then
-      break
-    end
-  end
-
-  -- Add back negative sign if needed
-  if isNegative then
-    formatted = '-' .. formatted
-  end
-
-  return formatted
-end
-
 local CharacterStats = {
   -- Default values for new characters
   defaults = {

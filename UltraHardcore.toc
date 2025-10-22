@@ -54,6 +54,7 @@ Functions/Utils/Resource/UpdateResourceBar.lua
 Functions/Utils/Resource/GetCurrentResourceType.lua
 
 Functions/Utils/RotateScreenEffect.lua
+Functions/Utils/FormatNumber.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
@@ -99,3 +100,4 @@ Settings/XFoundMode.lua
 
 ## Constants
 Constants/WolfLikeNPCs.lua
+Constants/PresetSections.lua
