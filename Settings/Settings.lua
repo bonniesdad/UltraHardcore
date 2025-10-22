@@ -1204,6 +1204,7 @@ local presetSections = { {
     'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',
+    'routePlanner',
   },
 } }
 
@@ -1403,6 +1404,7 @@ local function createCheckboxes()
       'showIncomingDamageEffect',
       'showHealingIndicator',
       'setFirstPersonCamera',
+      'routePlanner',
     },
   }, {
     title = 'Misc:',
@@ -1687,6 +1689,7 @@ local function UpdateXPBreakdown()
       'showIncomingDamageEffect',
       'showHealingIndicator',
       'setFirstPersonCamera',
+      'routePlanner',
     },
   } }
 
