@@ -16,6 +16,24 @@ local POWER_COLORS = {
 }
 
 -- Position persistence functions
+local function SaveResourceBarPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
+  -- Always save UIParent as the relativeTo frame to avoid reference issues
+  UltraHardcoreDB.resourceBarPosition = {
+    point = point,
+    relativeTo = 'UIParent',
+    relativePoint = relativePoint,
+    xOfs = xOfs,
+    yOfs = yOfs,
+  }
+
+  SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
+end
+
 local function LoadResourceBarPosition()
   if not UltraHardcoreDB then
     UltraHardcoreDB = {}
@@ -36,24 +54,6 @@ local function LoadResourceBarPosition()
     -- Always anchor to UIParent to avoid frame reference issues
     resourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
   end
-end
-
-local function SaveResourceBarPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
-  end
-
-  local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
-  -- Always save UIParent as the relativeTo frame to avoid reference issues
-  UltraHardcoreDB.resourceBarPosition = {
-    point = point,
-    relativeTo = 'UIParent',
-    relativePoint = relativePoint,
-    xOfs = xOfs,
-    yOfs = yOfs,
-  }
-
-  SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
 end
 
 -- Make the resource bar draggable with position saving
