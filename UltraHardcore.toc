@@ -84,6 +84,7 @@ Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
+Settings/StatisticsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
