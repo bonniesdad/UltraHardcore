@@ -1,30 +1,7 @@
--- Variables to store XP bar elements
-local xpBarFrame = nil
-local xpBarTexture = nil
-local xpBarText = nil
 local healthBarPosition = nil
-
--- Variables to store main XP bar replacement
-local mainXpBarFrame = nil
-local mainXpBarTexture = nil
-local mainXpBarText = nil
-
--- Variable to store original statusText setting
 local originalStatusText = nil
 
-function SetPlayerFrameDisplay(value)
-  if value then
-    HidePlayerFrameHealthMana()
-    -- Set Interface Status Text to None when hiding player frame
-    SetStatusTextDisplay(false)
-  else
-    ShowPlayerFrameHealthMana()
-    -- Restore Interface Status Text when showing player frame
-    SetStatusTextDisplay(true)
-  end
-end
-
-function SetStatusTextDisplay(enable)
+local function SetStatusTextDisplay(enable)
   if enable then
     -- Restore original statusText setting if we have it stored
     if originalStatusText then
@@ -40,7 +17,25 @@ function SetStatusTextDisplay(enable)
   end
 end
 
-function HidePlayerFrameHealthMana()
+local function HideCharacterPanelText()
+  -- Hide HP/mana text elements in character panel that overlap with our XP bars
+  local textElementsToHide =
+    {
+      'PlayerFrameHealthBarText',
+      'PlayerFrameManaBarText',
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+    }
+
+  for _, elementName in ipairs(textElementsToHide) do
+    local element = _G[elementName]
+    if element then
+      element:SetAlpha(0)
+    end
+  end
+end
+
+local function HidePlayerFrameHealthMana()
   -- Store health bar position before hiding it
   if PlayerFrameHealthBar and not healthBarPosition then
     local point, relativeTo, relativePoint, xOfs, yOfs = PlayerFrameHealthBar:GetPoint()
@@ -123,88 +118,7 @@ function HidePlayerFrameHealthMana()
   HideCharacterPanelText()
 end
 
--- Removed player XP replacement logic and guild name text
-
--- Removed player XP/guild text updates
-
--- Removed pet XP bar logic
-
-function HideCharacterPanelText()
-  -- Hide HP/mana text elements in character panel that overlap with our XP bars
-  local textElementsToHide =
-    {
-      'PlayerFrameHealthBarText',
-      'PlayerFrameManaBarText',
-      'PetFrameHealthBarText',
-      'PetFrameManaBarText',
-    }
-
-  for _, elementName in ipairs(textElementsToHide) do
-    local element = _G[elementName]
-    if element then
-      element:SetAlpha(0)
-    end
-  end
-end
-
-function DisablePetCombatText()
-  -- Disable floating combat text over pet frame
-  local petCombatTextElements =
-    {
-      'PetFrameHealthBarText',
-      'PetFrameManaBarText',
-      'PetFrameCombatText',
-      'PetFrameFloatingCombatText',
-    }
-
-  for _, elementName in ipairs(petCombatTextElements) do
-    local element = _G[elementName]
-    if element then
-      -- Set alpha to 0 to hide the text
-      element:SetAlpha(0)
-      -- Prevent the text from being shown
-      element:Hide()
-      -- Override the Show function to prevent it from appearing
-      element.Show = function() end
-    end
-  end
-
-  -- Disable combat feedback timing to prevent incoming pet damage text
-  COMBATFEEDBACK_FADEINTIME = 0
-  COMBATFEEDBACK_HOLDTIME = 0
-  COMBATFEEDBACK_FADEOUTTIME = 0
-end
-
-function RepositionPetHappinessTexture()
-  -- Move PetFrameHappinessTexture 50 pixels to the left
-  local happinessTexture = PetFrameHappinessTexture
-  if happinessTexture then
-    -- Clear any existing points to avoid conflicts
-    happinessTexture:ClearAllPoints()
-    -- Position relative to PetFrame, 50 pixels to the left of its default position
-    happinessTexture:SetPoint('CENTER', PetFrame, 'CENTER', -70, -5)
-  end
-end
-
-function ShowCharacterPanelText()
-  -- Show HP/mana text elements in character panel
-  local textElementsToShow =
-    {
-      'PlayerFrameHealthBarText',
-      'PlayerFrameManaBarText',
-      'PetFrameHealthBarText',
-      'PetFrameManaBarText',
-    }
-
-  for _, elementName in ipairs(textElementsToShow) do
-    local element = _G[elementName]
-    if element then
-      RestoreAndShowFrame(element)
-    end
-  end
-end
-
-function ShowPlayerFrameHealthMana()
+local function ShowPlayerFrameHealthMana()
   -- Show player health bar
   if PlayerFrameHealthBar then
     RestoreAndShowFrame(PlayerFrameHealthBar)
@@ -256,4 +170,73 @@ function ShowPlayerFrameHealthMana()
 
   -- Show HP/mana text in character panel
   ShowCharacterPanelText()
+end
+
+function SetPlayerFrameDisplay(value)
+  if value then
+    HidePlayerFrameHealthMana()
+    -- Set Interface Status Text to None when hiding player frame
+    SetStatusTextDisplay(false)
+  else
+    ShowPlayerFrameHealthMana()
+    -- Restore Interface Status Text when showing player frame
+    SetStatusTextDisplay(true)
+  end
+end
+
+function DisablePetCombatText()
+  -- Disable floating combat text over pet frame
+  local petCombatTextElements =
+    {
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+      'PetFrameCombatText',
+      'PetFrameFloatingCombatText',
+    }
+
+  for _, elementName in ipairs(petCombatTextElements) do
+    local element = _G[elementName]
+    if element then
+      -- Set alpha to 0 to hide the text
+      element:SetAlpha(0)
+      -- Prevent the text from being shown
+      element:Hide()
+      -- Override the Show function to prevent it from appearing
+      element.Show = function() end
+    end
+  end
+
+  -- Disable combat feedback timing to prevent incoming pet damage text
+  COMBATFEEDBACK_FADEINTIME = 0
+  COMBATFEEDBACK_HOLDTIME = 0
+  COMBATFEEDBACK_FADEOUTTIME = 0
+end
+
+function RepositionPetHappinessTexture()
+  -- Move PetFrameHappinessTexture 50 pixels to the left
+  local happinessTexture = PetFrameHappinessTexture
+  if happinessTexture then
+    -- Clear any existing points to avoid conflicts
+    happinessTexture:ClearAllPoints()
+    -- Position relative to PetFrame, 50 pixels to the left of its default position
+    happinessTexture:SetPoint('CENTER', PetFrame, 'CENTER', -70, -5)
+  end
+end
+
+local function ShowCharacterPanelText()
+  -- Show HP/mana text elements in character panel
+  local textElementsToShow =
+    {
+      'PlayerFrameHealthBarText',
+      'PlayerFrameManaBarText',
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+    }
+
+  for _, elementName in ipairs(textElementsToShow) do
+    local element = _G[elementName]
+    if element then
+      RestoreAndShowFrame(element)
+    end
+  end
 end
