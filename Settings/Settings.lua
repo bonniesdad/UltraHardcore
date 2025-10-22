@@ -85,7 +85,7 @@ local function shouldRadioBeChecked(settingName, settings)
   end
 end
 
-local settingsCheckboxOptions = { {
+settingsCheckboxOptions = { {
   -- Lite Preset Settings
   name = 'UHC Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
@@ -208,7 +208,7 @@ local settingsCheckboxOptions = { {
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 } }
 
-local presets = { {
+presets = { {
   -- Preset 1: Lite
   hidePlayerFrame = true,
   hideMinimap = false,
@@ -271,7 +271,7 @@ local presets = { {
 -- Temporary settings storage and initialization function (global so StatisticsTab.lua can access it)
 tempSettings = {}
 
-local function initializeTempSettings()
+function initializeTempSettings()
   -- Copy current GLOBAL_SETTINGS to temporary storage
   for key, value in pairs(GLOBAL_SETTINGS) do
     tempSettings[key] = value
@@ -437,242 +437,7 @@ closeButton:SetScript('OnClick', function()
   settingsFrame:Hide()
 end)
 
--- Settings Tab Content
--- Frame for selectable preset buttons
-local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
-presetButtonsFrame:SetSize(420, 150)
-presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
-
-local checkboxes = {}
-local presetButtons = {}
-local selectedPreset = nil
-
-local function updateCheckboxes()
-  for _, checkboxItem in ipairs(settingsCheckboxOptions) do
-    local checkbox = checkboxes[checkboxItem.dbSettingsValueName]
-    if checkbox then
-      checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
-    end
-  end
-end
-
-local function updateRadioButtons()
-  -- Update all radio buttons using the stored references
-  for settingName, radio in pairs(radioButtons) do
-    if radio then
-      local isChecked = tempSettings[settingName] or false
-      radio:SetChecked(isChecked)
-      -- Also update GLOBAL_SETTINGS for immediate effect
-      GLOBAL_SETTINGS[settingName] = tempSettings[settingName]
-    end
-  end
-end
-
-local function applyPreset(presetIndex)
-  if not presets[presetIndex] then return end
-
-  -- Copy preset to temporary settings
-  for key, value in pairs(presets[presetIndex]) do
-    tempSettings[key] = value
-  end
-
-  -- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
-  if tempSettings.hidePlayerFrame then
-    SetCVar('statusText', '0')
-  end
-
-  -- Update checkboxes
-  updateCheckboxes()
-  updateRadioButtons()
-
-  -- Highlight the selected preset button
-  if selectedPreset then
-    selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
-  end
-  selectedPreset = presetButtons[presetIndex]
-  selectedPreset:SetBackdropBorderColor(1, 1, 0) -- Highlight new
-end
-
--- Create preset buttons
-local presetIcons =
-  {
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100_halloween.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100_halloween.png',
-    'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100_halloween.png',
-  }
-
-local buttonSize = 100 -- Increased size for better visibility
-local spacing = 10 -- Spacing between the buttons
-local totalWidth = 360 -- Total width of the frame for preset buttons
-local textYOffset = -5 -- Distance between button and text
-for i = 1, 3 do
-  local button = CreateFrame('Button', nil, presetButtonsFrame, 'BackdropTemplate')
-  button:SetSize(buttonSize, buttonSize)
-
-  -- Position buttons evenly (left, center, right)
-  if i == 1 then
-    button:SetPoint('LEFT', presetButtonsFrame, 'LEFT', spacing, -20) -- Left
-  elseif i == 2 then
-    button:SetPoint('CENTER', presetButtonsFrame, 'CENTER', 0, -20) -- Centered
-  elseif i == 3 then
-    button:SetPoint('RIGHT', presetButtonsFrame, 'RIGHT', -spacing, -20) -- Right
-  end
-
-  button:SetBackdrop({
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    edgeSize = 10,
-  })
-  button:SetBackdropBorderColor(0.5, 0.5, 0.5)
-
-  local icon = button:CreateTexture(nil, 'ARTWORK')
-  icon:SetAllPoints()
-  icon:SetTexture(presetIcons[i])
-
-  -- Add text below each button
-  local presetText = button:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  presetText:SetPoint('TOP', button, 'BOTTOM', 0, textYOffset) -- Adjust the distance as needed
-  if i == 1 then
-    presetText:SetText('Lite')
-  elseif i == 2 then
-    presetText:SetText('Recommended')
-  elseif i == 3 then
-    presetText:SetText('Ultra')
-  end
-
-  button:SetScript('OnClick', function()
-    applyPreset(i)
-  end)
-
-  presetButtons[i] = button
-end
-
--- ScrollFrame to enable scrolling for settings tab
-local scrollFrame = CreateFrame('ScrollFrame', nil, tabContents[2], 'UIPanelScrollFrameTemplate')
-scrollFrame:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 10, -190)
-scrollFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
-
--- ScrollChild contains all checkboxes
-local scrollChild = CreateFrame('Frame')
-scrollFrame:SetScrollChild(scrollChild)
--- Calculate height: 5 section headers + all checkboxes + spacing
-local totalHeight = (5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 40 -- Headers + checkboxes + section spacing + padding
-scrollChild:SetSize(420, totalHeight)
-
-local function createCheckboxes()
-  local yOffset = -10
-
-  -- Define preset sections with their settings (same as statistics section)
-  local presetSections = { {
-    title = 'Lite:',
-    settings = { 'hidePlayerFrame', 'showTunnelVision' },
-  }, {
-    title = 'Recommended:',
-    settings = {
-      'hideTargetFrame',
-      'hideTargetTooltip',
-      'disableNameplateHealth',
-      'showDazedEffect',
-      'hideGroupHealth',
-      'hideMinimap',
-      'hideBreathIndicator',
-    },
-  }, {
-    title = 'Ultra:',
-    settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
-  }, {
-    title = 'Experimental:',
-    settings = {
-      'showCritScreenMoveEffect',
-      'showFullHealthIndicator',
-      'showIncomingDamageEffect',
-      'showHealingIndicator',
-      'setFirstPersonCamera',
-    },
-  }, {
-    title = 'Misc:',
-    settings = {
-      'showOnScreenStatistics',
-      'announceLevelUpToGuild',
-      'hideUIErrors',
-      'showClockEvenWhenMapHidden',
-      'announcePartyDeathsOnGroupJoin',
-      'announceDungeonsCompletedOnGroupJoin',
-      'buffBarOnResourceBar',
-      'newHighCritAppreciationSoundbite',
-      'playPartyDeathSoundbite',
-      'playPlayerDeathSoundbite',
-      'spookyTunnelVision',
-      'roachHearthstoneInPartyCombat',
-    },
-  } }
-
-  -- Create sections with headers and checkboxes
-  for sectionIndex, section in ipairs(presetSections) do
-    -- Create section header
-    local sectionHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    sectionHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, yOffset)
-    sectionHeader:SetText(section.title)
-    sectionHeader:SetTextColor(1, 1, 0.5) -- Light yellow color for headers
-    yOffset = yOffset - 25
-
-    -- Create checkboxes for this section
-    for _, settingName in ipairs(section.settings) do
-      -- Find the checkbox item by dbSettingsValueName
-      local checkboxItem = nil
-      for _, item in ipairs(settingsCheckboxOptions) do
-        if item.dbSettingsValueName == settingName then
-          checkboxItem = item
-          break
-        end
-      end
-
-      if checkboxItem then
-        local checkbox =
-          CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
-        checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset) -- Indented for settings
-        checkbox.Text:SetText(checkboxItem.name)
-        checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0) -- Add 5 pixel gap between checkbox and text
-        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
-
-        checkboxes[checkboxItem.dbSettingsValueName] = checkbox
-
-        checkbox:SetScript('OnClick', function(self)
-          tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
-
-          -- Apply Interface Status Text rule immediately when hidePlayerFrame is toggled
-          if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
-            if self:GetChecked() then
-              SetCVar('statusText', '0')
-            end
-          end
-
-          -- Handle buff bar positioning when setting is toggled
-          if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
-            if _G.UltraHardcoreHandleBuffBarSettingChange then
-              _G.UltraHardcoreHandleBuffBarSettingChange()
-            end
-          end
-        end)
-
-        -- Add tooltip functionality
-        checkbox:SetScript('OnEnter', function(self)
-          GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-          GameTooltip:SetText(checkboxItem.tooltip)
-          GameTooltip:Show()
-        end)
-
-        checkbox:SetScript('OnLeave', function(self)
-          GameTooltip:Hide()
-        end)
-
-        yOffset = yOffset - 30 -- Reduced spacing between checkboxes
-      end
-    end
-
-    -- Add extra space between sections
-    yOffset = yOffset - 10
-  end
-end
+-- Settings Options Tab Content is now in SettingsOptionsTab.lua
 
 -- X Found Mode Tab Content is now in XFoundMode.lua
 
@@ -798,26 +563,7 @@ achievementsTitle:SetPoint('CENTER', tabContents[3], 'CENTER', 0, 0)
 achievementsTitle:SetText('Achievements Coming In Phase 3!')
 achievementsTitle:SetFontObject('GameFontNormalLarge')
 
--- Save button for Settings tab only
-local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
-saveButton:SetSize(120, 30)
-saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
-saveButton:SetText('Save and Reload')
-saveButton:SetScript('OnClick', function()
-  -- Copy temporary settings to GLOBAL_SETTINGS
-  for key, value in pairs(tempSettings) do
-    GLOBAL_SETTINGS[key] = value
-  end
-
-  -- Apply Interface Status Text rule: always set to None when hidePlayerFrame is true
-  if GLOBAL_SETTINGS.hidePlayerFrame then
-    SetCVar('statusText', '0')
-  end
-
-  -- Save settings for current character
-  SaveCharacterSettings(GLOBAL_SETTINGS)
-  ReloadUI()
-end)
+-- Save button for Settings tab is now in SettingsOptionsTab.lua
 
 -- Share button for Statistics tab is now in StatisticsTab.lua
 
@@ -837,6 +583,35 @@ local function UpdateLowestHealthDisplay()
   end
 end
 
+-- Settings Options Tab delegation functions
+local function updateCheckboxes()
+  -- This function is now in SettingsOptionsTab.lua
+  if _G.updateCheckboxes then
+    _G.updateCheckboxes()
+  end
+end
+
+local function updateRadioButtons()
+  -- This function is now in SettingsOptionsTab.lua
+  if _G.updateRadioButtons then
+    _G.updateRadioButtons()
+  end
+end
+
+local function applyPreset(presetIndex)
+  -- This function is now in SettingsOptionsTab.lua
+  if _G.applyPreset then
+    _G.applyPreset(presetIndex)
+  end
+end
+
+local function createCheckboxes()
+  -- This function is now in SettingsOptionsTab.lua
+  if _G.createCheckboxes then
+    _G.createCheckboxes()
+  end
+end
+
 function ToggleSettings()
   if settingsFrame:IsShown() then
     settingsFrame:Hide()
@@ -845,9 +620,9 @@ function ToggleSettings()
     initializeTempSettings()
 
     -- Reset preset button highlighting
-    if selectedPreset then
-      selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
-      selectedPreset = nil
+    if _G.selectedPreset then
+      _G.selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
+      _G.selectedPreset = nil
     end
 
     -- Set Statistics tab as default (tab 1)
@@ -879,9 +654,9 @@ function OpenSettingsToTab(tabIndex)
   initializeTempSettings()
 
   -- Reset preset button highlighting
-  if selectedPreset then
-    selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
-    selectedPreset = nil
+  if _G.selectedPreset then
+    _G.selectedPreset:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset previous
+    _G.selectedPreset = nil
   end
 
   -- Hide all tab contents
@@ -915,6 +690,5 @@ function OpenSettingsToTab(tabIndex)
   UpdateLowestHealthDisplay()
 end
 
--- Initialize temporary settings and create checkboxes
+-- Initialize temporary settings
 initializeTempSettings()
-createCheckboxes()
