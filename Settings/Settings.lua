@@ -202,6 +202,10 @@ local settingsCheckboxOptions = { {
   name = 'Spooky Tunnel Vision',
   dbSettingsValueName = 'spookyTunnelVision',
   tooltip = 'Use Halloween-themed tunnel vision overlay for ultra spooky experience',
+}, {
+  name = 'Roach Hearthstone In Party Combat',
+  dbSettingsValueName = 'roachHearthstoneInPartyCombat',
+  tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 } }
 
 local presets = { {
@@ -1406,6 +1410,7 @@ local function createCheckboxes()
       'playPartyDeathSoundbite',
       'playPlayerDeathSoundbite',
       'spookyTunnelVision',
+      'roachHearthstoneInPartyCombat',
     },
   } }
 
