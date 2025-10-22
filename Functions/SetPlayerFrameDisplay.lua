@@ -118,6 +118,24 @@ local function HidePlayerFrameHealthMana()
   HideCharacterPanelText()
 end
 
+local function ShowCharacterPanelText()
+  -- Show HP/mana text elements in character panel
+  local textElementsToShow =
+    {
+      'PlayerFrameHealthBarText',
+      'PlayerFrameManaBarText',
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+    }
+
+  for _, elementName in ipairs(textElementsToShow) do
+    local element = _G[elementName]
+    if element then
+      RestoreAndShowFrame(element)
+    end
+  end
+end
+
 local function ShowPlayerFrameHealthMana()
   -- Show player health bar
   if PlayerFrameHealthBar then
@@ -220,23 +238,5 @@ function RepositionPetHappinessTexture()
     happinessTexture:ClearAllPoints()
     -- Position relative to PetFrame, 50 pixels to the left of its default position
     happinessTexture:SetPoint('CENTER', PetFrame, 'CENTER', -70, -5)
-  end
-end
-
-local function ShowCharacterPanelText()
-  -- Show HP/mana text elements in character panel
-  local textElementsToShow =
-    {
-      'PlayerFrameHealthBarText',
-      'PlayerFrameManaBarText',
-      'PetFrameHealthBarText',
-      'PetFrameManaBarText',
-    }
-
-  for _, elementName in ipairs(textElementsToShow) do
-    local element = _G[elementName]
-    if element then
-      RestoreAndShowFrame(element)
-    end
   end
 end
