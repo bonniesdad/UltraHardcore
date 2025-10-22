@@ -1,4 +1,5 @@
 local minimapHideTimer = nil
+local initialRotateMinimap = GetCVar("RotateMinimap") or false
 
 function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
   if hideMinimap then
@@ -19,7 +20,6 @@ function HideMinimap(showClockEvenWhenMapHidden)
   Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
   Minimap:SetScript("OnEvent", function(self, event, ...)
     local unit, _, spellId = ...
-    local initialRotateMinimap = GetCVar("RotateMinimap") or false
     local initialZoom = Minimap:GetZoom()
     local trackingSpellIDs = {
       [2580] = true, -- Find Minerals
