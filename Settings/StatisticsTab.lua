@@ -86,7 +86,6 @@ function InitializeStatisticsTab()
 
   -- Create the level text display
   local levelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  local rowY1 = calculatePosition(1, 1)
   levelLabel:SetPoint(
     'TOPLEFT',
     lowestHealthContent,
@@ -624,7 +623,6 @@ function InitializeStatisticsTab()
   })
 
   -- Create survival statistics display inside the content frame
-  local survivalLabels = {}
   local survivalTexts = {}
 
   -- Create survival statistics entries
@@ -673,7 +671,6 @@ function InitializeStatisticsTab()
       end
     end)
 
-    survivalLabels[stat.key] = label
     survivalTexts[stat.key] = text
 
     yOffset = yOffset - LAYOUT.ROW_HEIGHT
@@ -759,34 +756,7 @@ function InitializeStatisticsTab()
   }
 
   -- Define preset sections with their settings
-  local presetSections = { {
-    title = 'Lite:',
-    settings = { 'hidePlayerFrame', 'showTunnelVision' },
-  }, {
-    title = 'Recommended:',
-    settings = {
-      'hideTargetFrame',
-      'hideTargetTooltip',
-      'disableNameplateHealth',
-      'showDazedEffect',
-      'hideGroupHealth',
-      'hideMinimap',
-      'hideBreathIndicator',
-    },
-  }, {
-    title = 'Ultra:',
-    settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
-  }, {
-    title = 'Experimental:',
-    settings = {
-      'showCritScreenMoveEffect',
-      'showFullHealthIndicator',
-      'showIncomingDamageEffect',
-      'showHealingIndicator',
-      'setFirstPersonCamera',
-    },
-  } }
-
+  local presetSections = GetPresetSections('simple', false) -- Exclude Misc section
   -- Create XP breakdown entries with section headers
   local yOffset = -LAYOUT.CONTENT_PADDING
   for sectionIndex, section in ipairs(presetSections) do
@@ -827,34 +797,7 @@ function InitializeStatisticsTab()
   -- Function to update XP breakdown display
   local function UpdateXPBreakdown()
     -- Define preset sections with their settings (same order as TrackXPPerSetting.lua)
-    local presetSections = { {
-      title = 'Lite Preset Settings:',
-      settings = { 'hidePlayerFrame', 'showTunnelVision' },
-    }, {
-      title = 'Recommended Preset Settings:',
-      settings = {
-        'hideTargetFrame',
-        'hideTargetTooltip',
-        'disableNameplateHealth',
-        'showDazedEffect',
-        'hideGroupHealth',
-        'hideMinimap',
-        'hideBreathIndicator',
-      },
-    }, {
-      title = 'Ultra Preset Settings:',
-      settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
-    }, {
-      title = 'Experimental Preset Settings:',
-      settings = {
-        'showCritScreenMoveEffect',
-        'showFullHealthIndicator',
-        'showIncomingDamageEffect',
-        'showHealingIndicator',
-        'setFirstPersonCamera',
-      },
-    } }
-
+    local presetSections = GetPresetSections('extended', false) -- Exclude Misc section, use extended titles
     -- Update display organized by preset sections
     local yOffset = -LAYOUT.CONTENT_PADDING
     for sectionIndex, section in ipairs(presetSections) do
