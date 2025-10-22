@@ -52,33 +52,27 @@ function createCompass()
     compassMask:SetClipsChildren(true)
 
     local compassTextOffsetY = -1
-    local compassTextOffsetX = -5
+    local compassTextOffsetX = 445
     local compassText = compassMask:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     compassText:SetPoint("CENTER", compassTextOffsetX, compassTextOffsetY)
     local distance = string.rep(" ", 20)
     local directions = "N" .. distance .. "NE" .. distance .. "E" .. distance .. "SE" .. distance .. "S" .. distance .. "SW" .. distance .. "W" .. distance .. "NW" .. distance
-    compassText:SetText(directions .. directions)
+    compassText:SetText(directions .. directions .. directions)
 
     local marker = compassMask:CreateTexture(nil, "OVERLAY")
     marker:SetSize(12, 20)
     marker:SetPoint("CENTER", 0, -18)
     marker:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_1")
 
-    local totalTextWidth = compassText:GetStringWidth() / 2
-    local compassSpeed = totalTextWidth / (2 * math.pi)
+    local totalTextWidth = compassText:GetStringWidth() / 3
+    local compassSpeed = totalTextWidth / (1.834 * math.pi)
 
     compassFrame:SetScript("OnUpdate", function()
         local facing = GetPlayerFacing()
         if facing then
             local offset = facing * compassSpeed
-            -- Wrap compass text around
-            if offset > totalTextWidth / 2 then
-                offset = offset - totalTextWidth
-            elseif offset < -totalTextWidth / 2 then
-                offset = offset + totalTextWidth
-            end
             compassText:ClearAllPoints()
-            compassText:SetPoint("CENTER", compassMask, "CENTER", offset + compassTextOffsetX, compassTextOffsetY)
+            compassText:SetPoint("CENTER", compassMask, "CENTER", -offset + compassTextOffsetX, compassTextOffsetY)
         end
     end)
 end
