@@ -7,6 +7,11 @@
 
 UltraHardcore.lua
 
+## Libs
+Libs/LibStub/LibStub.lua
+Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
+Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
+
 ## Functions
 Functions/SetPlayerFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
@@ -84,8 +89,11 @@ Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
+Settings/TabManager.lua
 Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
+Settings/AchievementTab.lua
+Settings/InfoTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
