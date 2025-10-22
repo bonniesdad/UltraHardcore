@@ -3,6 +3,9 @@ PATCH_NOTES = { {
   version = '1.2.6',
   date = '2025-10-22',
   notes = {
+    '• Added Tunnel Vision Covers Everything to ULTRA preset settings',
+    '• Fix bug where buffs are uncancellable in combat.',
+    '• Fix: Allow Hidden Action Bars to show Action Bars when on a taxi.',
     '• Added Super Spooky Tunnel Vision',
     '  • When enabled, the tunnel vision will be displayed in a spooky Halloween theme.',
     '• Added Terrifying Pumpkin Themed Settings Presets',
