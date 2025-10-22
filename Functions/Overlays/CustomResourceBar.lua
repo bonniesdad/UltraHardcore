@@ -119,6 +119,7 @@ local function UpdateComboPoints()
       if not orb.isFilled then
         SmoothTextureFadeIn(orb.fill)
         orb.fill:Show()
+        orb.isFilled = true
       end
     else
       orb.fill:Hide()
@@ -212,9 +213,14 @@ local function HideComboPointsForNonUsers()
   comboFrame:SetShown(CanGainComboPoints())
 end
 
+-- Helper function to check if buff bar should be repositioned
+local function ShouldRepositionBuffBar()
+  return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar
+end
+
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then return end
+  if not ShouldRepositionBuffBar() then return end
 
   -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.
   -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
@@ -233,8 +239,6 @@ local function CenterPlayerBuffBar()
       local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
 
       if aura and aura.isHarmful ~= true then
-        -- Uncomment this line if you want to see which buffs show up in which cloths
-        -- print("UltraHardcore: Found buff " .. aura.name .. " in slot " .. i);
         buffCount = buffCount + 1
         if buffCount > 10 and buffCount % 10 == 0 then
           -- Once we count our 20th or 30th buff, add a row
@@ -255,8 +259,6 @@ local function CenterPlayerBuffBar()
       yOffset = (buffRows - 1) * 45
     end
 
-    -- Comment this line out if you want to see how the buff bar is being moved
-    -- print("UltraHardcore: Player has " .. buffCount .. " buffs. Moving buff frame over " .. xOffset .. " and up " .. (yOffset - 5) .. ".");
     BuffFrame:ClearAllPoints()
     BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
   end
@@ -270,7 +272,57 @@ resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
 resourceBar:RegisterEvent('PET_ATTACK_STOP')
 resourceBar:RegisterEvent('UNIT_AURA')
+resourceBar:RegisterEvent('ADDON_LOADED')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
+
+-- Hide the default combo points (Blizzard UI)
+if ComboFrame then
+  ComboFrame:Hide()
+  ComboFrame:UnregisterAllEvents()
+  ComboFrame:SetScript('OnUpdate', nil)
+end
+
+-- Function to reposition player buff bar
+local function RepositionPlayerBuffBar()
+  if not ShouldRepositionBuffBar() then return end
+
+  -- Wait for buff frame to be created
+  C_Timer.After(0.5, function()
+    if BuffFrame and BuffFrame:IsVisible() then
+      BuffFrame:ClearAllPoints()
+      BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
+    end
+  end)
+end
+
+-- Hook into buff frame events to maintain positioning
+local function HookBuffFrame()
+  if BuffFrame then
+    local originalShow = BuffFrame.Show
+    BuffFrame.Show = function(self)
+      originalShow(self)
+      if ShouldRepositionBuffBar() then
+        RepositionPlayerBuffBar()
+      end
+      -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
+    end
+
+    local originalHide = BuffFrame.Hide
+    BuffFrame.Hide = function(self)
+      originalHide(self)
+    end
+  end
+end
+
+-- Function to handle buff bar setting changes
+local function HandleBuffBarSettingChange()
+  if BuffFrame and BuffFrame:IsVisible() then
+    if ShouldRepositionBuffBar() then
+      RepositionPlayerBuffBar()
+    end
+    -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
+  end
+end
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame then
@@ -278,6 +330,11 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     comboFrame:Hide()
     petResourceBar:Hide()
     return
+  end
+
+  if event == 'ADDON_LOADED' and unit == 'Blizzard_BuffFrame' then
+    HookBuffFrame()
+    HandleBuffBarSettingChange()
   end
 
   if unit == 'player' or event == 'PLAYER_TARGET_CHANGED' then
@@ -288,6 +345,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     HideComboPointsForNonUsers()
     UpdateResourcePoints()
     UpdatePetResourcePoints()
+    HandleBuffBarSettingChange()
     -- Load saved position after database is available
     C_Timer.After(0.1, function()
       LoadResourceBarPosition()
@@ -310,86 +368,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     -- Update pet resource when pet starts/stops attacking
     UpdatePetResourcePoints()
   elseif unit == 'player' and event == 'UNIT_AURA' then
-    --print("UltraHardcore::resourceBar: Event triggered - " .. event .. (unit and (", Unit: " .. unit) or ""))
     CenterPlayerBuffBar()
-  end
-end)
-
--- Hide the default combo points (Blizzard UI)
-if ComboFrame then
-  ComboFrame:Hide()
-  ComboFrame:UnregisterAllEvents()
-  ComboFrame:SetScript('OnUpdate', nil)
-end
-
--- Function to reposition player buff bar
-local function RepositionPlayerBuffBar()
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or not GLOBAL_SETTINGS.buffBarOnResourceBar then return end
-
-  -- Wait for buff frame to be created
-  C_Timer.After(0.5, function()
-    if BuffFrame and BuffFrame:IsVisible() then
-      BuffFrame:ClearAllPoints()
-      BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
-    end
-  end)
-end
-
--- Hook into buff frame events to maintain positioning
-local function HookBuffFrame()
-  if BuffFrame then
-    local originalShow = BuffFrame.Show
-    BuffFrame.Show = function(self)
-      originalShow(self)
-      if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
-        RepositionPlayerBuffBar()
-      end
-      -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
-    end
-
-    local originalHide = BuffFrame.Hide
-    BuffFrame.Hide = function(self)
-      originalHide(self)
-    end
-  end
-end
-
--- Initialize buff frame positioning
-resourceBar:RegisterEvent('ADDON_LOADED')
-
--- Function to handle buff bar setting changes
-local function HandleBuffBarSettingChange()
-  if BuffFrame and BuffFrame:IsVisible() then
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar then
-      RepositionPlayerBuffBar()
-    end
-    -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
-  end
-end
-
--- Update the existing event handler to include buff bar functionality
-local originalEventHandler = resourceBar:GetScript('OnEvent')
-resourceBar:SetScript('OnEvent', function(self, event, unit)
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame then
-    resourceBar:Hide()
-    comboFrame:Hide()
-    petResourceBar:Hide()
-    return
-  end
-
-  if event == 'ADDON_LOADED' and unit == 'Blizzard_BuffFrame' then
-    HookBuffFrame()
-    HandleBuffBarSettingChange()
-  end
-
-  -- Call the original event handler
-  if originalEventHandler then
-    originalEventHandler(self, event, unit)
-  end
-
-  -- Additional buff bar positioning on key events
-  if event == 'PLAYER_ENTERING_WORLD' then
-    HandleBuffBarSettingChange()
   end
 end)
 
