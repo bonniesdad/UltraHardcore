@@ -10,6 +10,9 @@ function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
 end
 
 function HideMinimap(showClockEvenWhenMapHidden)
+  -- Use custom blip texture to hide party members and objective arrows
+  Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
+    
   -- Make the minimap invisible
   Minimap:SetAlpha(0)
 
@@ -107,4 +110,6 @@ function ShowMinimap()
   GameTimeFrame:Show()
   -- Hide the minimap cluster (including the "Toggle minimap" button)
   MinimapCluster:Show()
+  -- Reset minimap textures
+  Minimap:SetBlipTexture("Interface\\Minimap\\ObjectIconsAtlas.blp")
 end
