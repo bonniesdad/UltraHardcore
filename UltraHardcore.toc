@@ -39,9 +39,7 @@ Functions/SetBreathBarDisplay.lua
 Functions/HidePlayerMapIndicators.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
-Functions/RoutePlanner.lua
-Functions/RoutePlannerCompass.lua
-Functions/TradeRestriction.lua
+Functions/SetFriendlyNameplateIcons.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
