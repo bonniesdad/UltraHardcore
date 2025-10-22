@@ -85,6 +85,7 @@ Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
 Settings/StatisticsTab.lua
+Settings/SettingsOptionsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
