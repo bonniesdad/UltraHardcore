@@ -37,6 +37,10 @@ function HideMinimap(showClockEvenWhenMapHidden)
       [19878] = true, -- Track Demons
       [19879] = true, -- Track Dragonkin
       [19885] = true, -- Track Hidden
+      [5502] = true, -- Sense Undead
+      [5500] = true, -- Sense Demons
+      [10242] = true, -- Elemental Tracking
+      [5124] = true, -- Elemental Tracker
     }
 
     if unit == 'player' and trackingSpellIDs[spellId] then
