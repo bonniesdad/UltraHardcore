@@ -52,8 +52,8 @@ function HideMinimap(showClockEvenWhenMapHidden)
       Minimap:EnableMouse(false)
 
       Minimap:ClearAllPoints()
-      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, -6)
-      Minimap:SetScale(2.0)
+      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, -24)
+      Minimap:SetScale(8.0)
 
       -- Show the relevant minimap elements
       Minimap:Show()
