@@ -28,15 +28,15 @@ function SetStatusTextDisplay(enable)
   if enable then
     -- Restore original statusText setting if we have it stored
     if originalStatusText then
-      SetCVar("statusText", originalStatusText)
+      SetCVar('statusText', originalStatusText)
     end
   else
     -- Store current statusText setting before disabling it
     if not originalStatusText then
-      originalStatusText = GetCVar("statusText")
+      originalStatusText = GetCVar('statusText')
     end
     -- Set statusText to None (0) to disable status text display
-    SetCVar("statusText", "0")
+    SetCVar('statusText', '0')
   end
 end
 
@@ -51,78 +51,77 @@ function HidePlayerFrameHealthMana()
       xOfs = xOfs,
       yOfs = yOfs,
       width = PlayerFrameHealthBar:GetWidth(),
-      height = PlayerFrameHealthBar:GetHeight()
+      height = PlayerFrameHealthBar:GetHeight(),
     }
   end
-  
+
   -- No need to store pet frame positions since we are not creating a replacement
-  
+
   -- Hide player health and mana bars
   if PlayerFrameHealthBar then
-    ForceHideFrame(PlayerFrameHealthBar)
+    PlayerFrameHealthBar:SetAlpha(0)
   end
   if PlayerFrameManaBar then
-    ForceHideFrame(PlayerFrameManaBar)
+    PlayerFrameManaBar:SetAlpha(0)
   end
-  
+
   -- Hide player frame texture and background
   if PlayerFrameTexture then
-    ForceHideFrame(PlayerFrameTexture)
+    PlayerFrameTexture:SetAlpha(0)
   end
   if PlayerFrameBackground then
-    ForceHideFrame(PlayerFrameBackground)
+    PlayerFrameBackground:SetAlpha(0)
   end
 
   -- Hide player level text
   if PlayerLevelText then
-    ForceHideFrame(PlayerLevelText)
+    PlayerLevelText:SetAlpha(0)
   end
-  
+
   -- Hide player and pet names on the player frame
   if PlayerName then
-    ForceHideFrame(PlayerName)
+    PlayerName:SetAlpha(0)
   end
   if PetName then
-    ForceHideFrame(PetName)
+    PetName:SetAlpha(0)
   end
-  
+
   -- Hide player status texture (resting/combat overlay)
   if PlayerStatusTexture then
     ForceHideFrame(PlayerStatusTexture)
   end
-  
+
   -- Hide pet health and mana bars
   if PetFrameHealthBar then
-    ForceHideFrame(PetFrameHealthBar)
+    PetFrameHealthBar:SetAlpha(0)
   end
   if PetFrameManaBar then
-    ForceHideFrame(PetFrameManaBar)
+    PetFrameManaBar:SetAlpha(0)
   end
-  
+
   -- Hide pet frame texture and background
   if PetFrameTexture then
-    ForceHideFrame(PetFrameTexture)
+    PetFrameTexture:SetAlpha(0)
   end
   if PetFrameBackground then
-    ForceHideFrame(PetFrameBackground)
+    PetFrameBackground:SetAlpha(0)
   end
-  
+
   -- Hide pet attack mode texture
   if PetAttackModeTexture then
-    ForceHideFrame(PetAttackModeTexture)
+    PetAttackModeTexture:SetAlpha(0)
   end
-  
+
   -- Hide target frame health/mana bars
   if TargetFrameToT then
-    ForceHideFrame(TargetFrameToT)
+    TargetFrameToT:SetAlpha(0)
   end
-  
+
   -- Keep main XP bar normal (no modifications)
-  
+
   -- Hide HP/mana text in character panel that overlaps with our XP bars
   HideCharacterPanelText()
 end
-
 
 -- Removed player XP replacement logic and guild name text
 
@@ -132,30 +131,32 @@ end
 
 function HideCharacterPanelText()
   -- Hide HP/mana text elements in character panel that overlap with our XP bars
-  local textElementsToHide = {
-    "PlayerFrameHealthBarText",
-    "PlayerFrameManaBarText", 
-    "PetFrameHealthBarText",
-    "PetFrameManaBarText"
-  }
-  
+  local textElementsToHide =
+    {
+      'PlayerFrameHealthBarText',
+      'PlayerFrameManaBarText',
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+    }
+
   for _, elementName in ipairs(textElementsToHide) do
     local element = _G[elementName]
     if element then
-      ForceHideFrame(element)
+      element:SetAlpha(0)
     end
   end
 end
 
 function DisablePetCombatText()
   -- Disable floating combat text over pet frame
-  local petCombatTextElements = {
-    "PetFrameHealthBarText",
-    "PetFrameManaBarText",
-    "PetFrameCombatText",
-    "PetFrameFloatingCombatText"
-  }
-  
+  local petCombatTextElements =
+    {
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+      'PetFrameCombatText',
+      'PetFrameFloatingCombatText',
+    }
+
   for _, elementName in ipairs(petCombatTextElements) do
     local element = _G[elementName]
     if element then
@@ -167,12 +168,11 @@ function DisablePetCombatText()
       element.Show = function() end
     end
   end
-  
+
   -- Disable combat feedback timing to prevent incoming pet damage text
   COMBATFEEDBACK_FADEINTIME = 0
   COMBATFEEDBACK_HOLDTIME = 0
   COMBATFEEDBACK_FADEOUTTIME = 0
-  
 end
 
 function RepositionPetHappinessTexture()
@@ -188,13 +188,14 @@ end
 
 function ShowCharacterPanelText()
   -- Show HP/mana text elements in character panel
-  local textElementsToShow = {
-    "PlayerFrameHealthBarText",
-    "PlayerFrameManaBarText", 
-    "PetFrameHealthBarText",
-    "PetFrameManaBarText"
-  }
-  
+  local textElementsToShow =
+    {
+      'PlayerFrameHealthBarText',
+      'PlayerFrameManaBarText',
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+    }
+
   for _, elementName in ipairs(textElementsToShow) do
     local element = _G[elementName]
     if element then
@@ -208,7 +209,7 @@ function ShowPlayerFrameHealthMana()
   if PlayerFrameHealthBar then
     RestoreAndShowFrame(PlayerFrameHealthBar)
   end
-  
+
   -- Restore player frame texture and background
   if PlayerFrameTexture then
     RestoreAndShowFrame(PlayerFrameTexture)
@@ -216,14 +217,14 @@ function ShowPlayerFrameHealthMana()
   if PlayerFrameBackground then
     RestoreAndShowFrame(PlayerFrameBackground)
   end
-  
+
   -- Restore player level text
   if PlayerLevelText then
     RestoreAndShowFrame(PlayerLevelText)
   end
-  
+
   -- No XP bar replacement to manage
-  
+
   -- Show pet health bar
   if PetFrameHealthBar then
     RestoreAndShowFrame(PetFrameHealthBar)
@@ -232,7 +233,7 @@ function ShowPlayerFrameHealthMana()
   if PetFrameManaBar then
     RestoreAndShowFrame(PetFrameManaBar)
   end
-  
+
   -- Restore pet frame texture and background
   if PetFrameTexture then
     RestoreAndShowFrame(PetFrameTexture)
@@ -240,19 +241,19 @@ function ShowPlayerFrameHealthMana()
   if PetFrameBackground then
     RestoreAndShowFrame(PetFrameBackground)
   end
-  
+
   -- Restore pet attack mode texture
   if PetAttackModeTexture then
     RestoreAndShowFrame(PetAttackModeTexture)
   end
-  
+
   -- Show target frame health/mana bars
   if TargetFrameToT then
     RestoreAndShowFrame(TargetFrameToT)
   end
-  
+
   -- Keep main XP bar normal (no modifications needed)
-  
+
   -- Show HP/mana text in character panel
   ShowCharacterPanelText()
 end
