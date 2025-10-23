@@ -1,5 +1,17 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '1.2.7',
+  date = '2025-10-23',
+  notes = {
+    'NEW FEATURES:',
+    '• Added Completely Remove Target Frame to EXPERIMENTAL settings',
+    '  • When enabled, the target frame will be completely removed from the screen.',
+    '• Added Completely Remove Player Frame to EXPERIMENTAL settings',
+    '  • When enabled, the player frame will be completely removed from the screen.',
+    '',
+    'BUG FIXES:',
+  },
+}, {
   version = '1.2.6',
   date = '2025-10-22',
   notes = {
