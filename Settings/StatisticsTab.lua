@@ -1,4 +1,47 @@
 -- Statistics Tab Content - Full size scrollable frame
+
+-- Centralized tooltip map for all statistics
+local STATISTIC_TOOLTIPS = {
+  -- Lowest Health section
+  level = 'Your current character level',
+  total = "The lowest health percentage you've ever reached across all levels",
+  thisLevel = "The lowest health percentage you've reached at your current level",
+  thisSession = "The lowest health percentage you've reached in your current play session",
+  petDeaths = 'Total number of times your pet has died permanently',
+  -- Enemies Slain section
+  enemiesSlainTotal = 'Total number of enemies you have killed',
+  elitesSlain = 'Number of elite enemies you have killed',
+  rareElitesSlain = 'Number of rare elite enemies you have killed',
+  worldBossesSlain = 'Number of world bosses you have killed',
+  dungeonBossesSlain = 'Number of dungeon bosses you have killed',
+  dungeonsCompleted = 'Number of dungeons you have fully completed',
+  highestCritValue = 'The highest critical hit damage you have dealt',
+  -- Survival section
+  healthPotionsUsed = 'Number of health potions you have consumed',
+  bandagesApplied = 'Number of bandages you have used to heal',
+  targetDummiesUsed = 'Number of target dummies you have used',
+  grenadesUsed = 'Number of grenades you have thrown',
+  partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
+  closeEscapes = "Number of times you've seen the final tunnel vision phase (<20% health)",
+}
+
+-- Helper function to attach tooltip to a statistic label
+local function AddStatisticTooltip(label, tooltipKey)
+  if not label or not tooltipKey then return end
+
+  local tooltipText = STATISTIC_TOOLTIPS[tooltipKey]
+  if not tooltipText then return end
+
+  label:SetScript('OnEnter', function()
+    GameTooltip:SetOwner(label, 'ANCHOR_RIGHT')
+    GameTooltip:SetText(tooltipText, nil, nil, nil, nil, true)
+    GameTooltip:Show()
+  end)
+
+  label:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+end
 -- Initialize Statistics Tab when called
 function InitializeStatisticsTab()
   -- Check if tabContents[1] exists
@@ -94,6 +137,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING
   )
   levelLabel:SetText('Level:')
+  AddStatisticTooltip(levelLabel, 'level')
 
   local levelText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   levelText:SetPoint(
@@ -131,6 +175,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
   )
   lowestHealthTotalLabel:SetText('Total:')
+  AddStatisticTooltip(lowestHealthTotalLabel, 'total')
 
   lowestHealthText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   lowestHealthText:SetPoint(
@@ -168,6 +213,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
   lowestHealthThisLevelLabel:SetText('This Level (Beta):')
+  AddStatisticTooltip(lowestHealthThisLevelLabel, 'thisLevel')
 
   local lowestHealthThisLevelText =
     lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -206,6 +252,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
   lowestHealthThisSessionLabel:SetText('This Session (Beta):')
+  AddStatisticTooltip(lowestHealthThisSessionLabel, 'thisSession')
 
   local lowestHealthThisSessionText =
     lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -244,6 +291,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
   )
   petDeathsLabel:SetText('Pet Deaths:')
+  AddStatisticTooltip(petDeathsLabel, 'petDeaths')
 
   petDeathsText = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   petDeathsText:SetPoint(
@@ -327,6 +375,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING
   )
   enemiesSlainTotalLabel:SetText('Total:')
+  AddStatisticTooltip(enemiesSlainTotalLabel, 'enemiesSlainTotal')
 
   local enemiesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   enemiesSlainText:SetPoint(
@@ -363,6 +412,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
   )
   elitesSlainLabel:SetText('Elites Slain:')
+  AddStatisticTooltip(elitesSlainLabel, 'elitesSlain')
 
   local elitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   elitesSlainText:SetPoint(
@@ -400,6 +450,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
   rareElitesSlainLabel:SetText('Rare Elites Slain:')
+  AddStatisticTooltip(rareElitesSlainLabel, 'rareElitesSlain')
 
   local rareElitesSlainText =
     enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -438,6 +489,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
   worldBossesSlainLabel:SetText('World Bosses Slain:')
+  AddStatisticTooltip(worldBossesSlainLabel, 'worldBossesSlain')
 
   local worldBossesSlainText =
     enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -476,6 +528,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
   )
   dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
+  AddStatisticTooltip(dungeonBossesLabel, 'dungeonBossesSlain')
 
   local dungeonBossesText =
     enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -514,6 +567,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
   )
   dungeonsCompletedLabel:SetText('Dungeons Completed:')
+  AddStatisticTooltip(dungeonsCompletedLabel, 'dungeonsCompleted')
 
   local dungeonsCompletedText =
     enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -551,6 +605,7 @@ function InitializeStatisticsTab()
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
   )
   highestCritLabel:SetText('Highest Crit Value:')
+  AddStatisticTooltip(highestCritLabel, 'highestCritValue')
 
   local highestCritText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   highestCritText:SetPoint(
@@ -629,21 +684,27 @@ function InitializeStatisticsTab()
   local survivalStats = { {
     key = 'healthPotionsUsed',
     label = 'Health Potions Used:',
+    tooltipKey = 'healthPotionsUsed',
   }, {
     key = 'bandagesUsed',
     label = 'Bandages Applied:',
+    tooltipKey = 'bandagesApplied',
   }, {
     key = 'targetDummiesUsed',
     label = 'Target Dummies Used (Beta):',
+    tooltipKey = 'targetDummiesUsed',
   }, {
     key = 'grenadesUsed',
     label = 'Grenades Used (Beta):',
+    tooltipKey = 'grenadesUsed',
   }, {
     key = 'partyMemberDeaths',
     label = 'Party Deaths Witnessed:',
+    tooltipKey = 'partyDeathsWitnessed',
   }, {
     key = 'maxTunnelVisionOverlayShown',
     label = 'Close Escapes:',
+    tooltipKey = 'closeEscapes',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -651,6 +712,7 @@ function InitializeStatisticsTab()
     local label = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     label:SetPoint('TOPLEFT', survivalContent, 'TOPLEFT', LAYOUT.ROW_INDENT, yOffset)
     label:SetText(stat.label)
+    AddStatisticTooltip(label, stat.tooltipKey)
 
     local text = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
@@ -726,33 +788,28 @@ function InitializeStatisticsTab()
   local xpBreakdownTexts = {}
   local xpSectionHeaders = {}
 
-  -- Mapping of setting names to display names
+  -- Mapping of setting names to display names (ordered by preset sections)
   local settingDisplayNames = {
+    -- Lite section
     hidePlayerFrame = 'Hide Player Frame',
-    showOnScreenStatistics = 'On Screen Statistics',
     showTunnelVision = 'Tunnel Vision',
-    announceLevelUpToGuild = 'Announce Level Up to Guild',
-    tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
+    -- Recommended section
     hideTargetFrame = 'Hide Target Frame',
     hideTargetTooltip = 'Hide Target Tooltips',
     disableNameplateHealth = 'Disable Nameplates',
     showDazedEffect = 'Show Dazed Effect',
     hideGroupHealth = 'Use UHC Party Frames',
     hideMinimap = 'Hide Minimap',
+    -- Ultra section
+    petsDiePermanently = 'Pets Die Permanently',
+    hideActionBars = 'Hide Action Bars',
+    tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
+    -- Experimental section
     hideBreathIndicator = 'Use UHC Breath Indicator',
     showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
-    hideActionBars = 'Hide Action Bars',
-    petsDiePermanently = 'Pets Die Permanently',
     showFullHealthIndicator = 'Use UHC Full Health Indicator',
     showIncomingDamageEffect = 'Use UHC Incoming Damage Effect',
     showHealingIndicator = 'Use UHC Incoming Healing Effect',
-    showClockEvenWhenMapHidden = 'Show Clock Even When Map is Hidden',
-    announcePartyDeathsOnGroupJoin = 'Announce Party Deaths on Group Join',
-    announceDungeonsCompletedOnGroupJoin = 'Announce Dungeons Completed on Group Join',
-    buffBarOnResourceBar = 'Buff Bar on Resource Bar',
-    newHighCritAppreciationSoundbite = 'Highest Crit Appreciation Soundbite (Xaryu)',
-    playPartyDeathSoundbite = 'Party Death Soundbite',
-    playPlayerDeathSoundbite = 'Player Death Soundbite',
   }
 
   -- Define preset sections with their settings

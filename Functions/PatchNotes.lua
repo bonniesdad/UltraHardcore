@@ -8,8 +8,11 @@ PATCH_NOTES = { {
     '  • When enabled, the target frame will be completely removed from the screen.',
     '• Added Completely Remove Player Frame to EXPERIMENTAL settings',
     '  • When enabled, the player frame will be completely removed from the screen.',
+    '• Added Tooltips to Statistics labels',
     '',
     'BUG FIXES:',
+    '• Fix: Missing Sound files from zip upload.',
+    '• Fix: Missing Libs from zip upload.',
   },
 }, {
   version = '1.2.6',
