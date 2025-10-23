@@ -2,20 +2,29 @@
 
 ## Version 1.2.6 - 2025-10-22
 
-### Halloween Features
+### New Features
 
+- **Tunnel Vision Covers Everything** - Added to ULTRA preset settings
 - **Super Spooky Tunnel Vision**
   - When enabled, the tunnel vision will be displayed in a spooky Halloween theme.
 - **Terrifying Pumpkin Themed Settings Presets**
-
-### Audio Enhancements
-
 - **Highest Crit Appreciation Soundbite**
   - Play a soundbite when you achieve a new highest crit value
 - **Party Death Soundbite**
   - Play a soundbite when a party member dies
 - **Player Death Soundbite**
   - Play a soundbite when you die
+
+### Bug Fixes
+
+- Fix bug where buffs are uncancellable in combat.
+- Fix: Allow Hidden Action Bars to show Action Bars when on a taxi.
+- Fix nameplates issue causing guild promo break. (wtf?)
+- Fix Dueling lowest health level & session tracking issue.
+
+### Technical Improvements
+
+- Massive codebase cleanup.
 
 ## Version 1.2.5 - 2025-10-21
 
