@@ -46,11 +46,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideActionBars',
   tooltip = 'Hide action bars when not resting or near a campfire',
 }, {
-  name = 'Configure Profession Panel',
-  dbSettingsValueName = 'professionPanelConfig',
-  tooltip = 'Configure the profession panel layout and settings',
-  isButton = true,
-}, {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
@@ -376,36 +371,8 @@ function InitializeSettingsOptionsTab()
         end
 
         if checkboxItem then
-          if checkboxItem.isButton then
-            -- Create a button instead of checkbox
-            local button = CreateFrame('Button', nil, scrollChild, 'UIPanelButtonTemplate')
-            button:SetSize(200, 25)
-            button:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
-            button:SetText(checkboxItem.name)
-            
-            button:SetScript('OnClick', function(self)
-              if checkboxItem.dbSettingsValueName == 'professionPanelConfig' then
-                -- Open profession panel configuration
-                if _G.OpenProfessionPanelConfig then
-                  _G.OpenProfessionPanelConfig()
-                else
-                  print('UHC: Profession Panel configuration not available.')
-                end
-              end
-            end)
-
-            button:SetScript('OnEnter', function(self)
-              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-              GameTooltip:SetText(checkboxItem.tooltip)
-              GameTooltip:Show()
-            end)
-
-            button:SetScript('OnLeave', function(self)
-              GameTooltip:Hide()
-            end)
-
-            yOffset = yOffset - 30
-          else
+          -- Skip button items - we'll use slash commands instead
+          if not checkboxItem.isButton then
             -- Create checkbox as normal
             local checkbox =
               CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
@@ -428,6 +395,7 @@ function InitializeSettingsOptionsTab()
                   _G.UltraHardcoreHandleBuffBarSettingChange()
                 end
               end
+              
             end)
 
             checkbox:SetScript('OnEnter', function(self)

@@ -599,6 +599,17 @@ f:SetScript("OnEvent", function(self, event)
     UpdatePanelVisibility()
   elseif event == "ADDON_LOADED" then
     UpdatePanelVisibility()
+    
+    -- Register slash commands after addon is loaded
+    SLASH_PROFESSIONPANEL1 = '/professionpanel'
+    SLASH_PROFESSIONPANEL2 = '/pp'
+    SlashCmdList['PROFESSIONPANEL'] = function(msg)
+      if msg == 'config' or msg == '' then
+        OpenProfessionPanelConfig()
+      else
+        print('UHC: Usage: /professionpanel or /pp - Opens profession panel configuration')
+      end
+    end
   end
 end)
 
