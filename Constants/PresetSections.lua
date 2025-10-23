@@ -18,7 +18,6 @@ local PRESET_SECTIONS = { {
     'showDazedEffect',
     'hideGroupHealth',
     'hideMinimap',
-    'hideBreathIndicator',
   },
 }, {
   title = 'Ultra:',
@@ -26,11 +25,14 @@ local PRESET_SECTIONS = { {
 }, {
   title = 'Experimental:',
   settings = {
+    'hideBreathIndicator',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
     'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',
+    'completelyRemovePlayerFrame',
+    'completelyRemoveTargetFrame',
   },
 }, {
   title = 'Misc:',

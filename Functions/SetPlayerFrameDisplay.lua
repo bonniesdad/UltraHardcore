@@ -190,13 +190,23 @@ local function ShowPlayerFrameHealthMana()
   ShowCharacterPanelText()
 end
 
-function SetPlayerFrameDisplay(value)
+function SetPlayerFrameDisplay(value, completelyRemove)
   if value then
-    HidePlayerFrameHealthMana()
+    if completelyRemove then
+      -- Completely hide the entire player frame
+      CompletelyHidePlayerFrame()
+    else
+      HidePlayerFrameHealthMana()
+    end
     -- Set Interface Status Text to None when hiding player frame
     SetStatusTextDisplay(false)
   else
-    ShowPlayerFrameHealthMana()
+    if completelyRemove then
+      -- Completely restore the entire player frame
+      CompletelyShowPlayerFrame()
+    else
+      ShowPlayerFrameHealthMana()
+    end
     -- Restore Interface Status Text when showing player frame
     SetStatusTextDisplay(true)
   end
@@ -228,6 +238,40 @@ function DisablePetCombatText()
   COMBATFEEDBACK_FADEINTIME = 0
   COMBATFEEDBACK_HOLDTIME = 0
   COMBATFEEDBACK_FADEOUTTIME = 0
+end
+
+function CompletelyHidePlayerFrame()
+  -- Hide the entire PlayerFrame
+  if PlayerFrame then
+    ForceHideFrame(PlayerFrame)
+  end
+
+  -- Hide pet frame as well
+  if PetFrame then
+    ForceHideFrame(PetFrame)
+  end
+
+  -- Hide target of target frame
+  if TargetFrameToT then
+    ForceHideFrame(TargetFrameToT)
+  end
+end
+
+function CompletelyShowPlayerFrame()
+  -- Show the entire PlayerFrame
+  if PlayerFrame then
+    RestoreAndShowFrame(PlayerFrame)
+  end
+
+  -- Show pet frame as well
+  if PetFrame then
+    RestoreAndShowFrame(PetFrame)
+  end
+
+  -- Show target of target frame
+  if TargetFrameToT then
+    RestoreAndShowFrame(TargetFrameToT)
+  end
 end
 
 function RepositionPetHappinessTexture()
