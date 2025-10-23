@@ -46,6 +46,11 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideActionBars',
   tooltip = 'Hide action bars when not resting or near a campfire',
 }, {
+  name = 'Configure Profession Panel',
+  dbSettingsValueName = 'professionPanelConfig',
+  tooltip = 'Configure the profession panel layout and settings',
+  isButton = true,
+}, {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
@@ -371,40 +376,72 @@ function InitializeSettingsOptionsTab()
         end
 
         if checkboxItem then
-          local checkbox =
-            CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
-          checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
-          checkbox.Text:SetText(checkboxItem.name)
-          checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
-          checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
-
-          checkboxes[checkboxItem.dbSettingsValueName] = checkbox
-
-          checkbox:SetScript('OnClick', function(self)
-            tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
-
-            if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
-              SetCVar('statusText', '0')
-            end
-
-            if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
-              if _G.UltraHardcoreHandleBuffBarSettingChange then
-                _G.UltraHardcoreHandleBuffBarSettingChange()
+          if checkboxItem.isButton then
+            -- Create a button instead of checkbox
+            local button = CreateFrame('Button', nil, scrollChild, 'UIPanelButtonTemplate')
+            button:SetSize(200, 25)
+            button:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
+            button:SetText(checkboxItem.name)
+            
+            button:SetScript('OnClick', function(self)
+              if checkboxItem.dbSettingsValueName == 'professionPanelConfig' then
+                -- Open profession panel configuration
+                if _G.OpenProfessionPanelConfig then
+                  _G.OpenProfessionPanelConfig()
+                else
+                  print('UHC: Profession Panel configuration not available.')
+                end
               end
-            end
-          end)
+            end)
 
-          checkbox:SetScript('OnEnter', function(self)
-            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText(checkboxItem.tooltip)
-            GameTooltip:Show()
-          end)
+            button:SetScript('OnEnter', function(self)
+              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+              GameTooltip:SetText(checkboxItem.tooltip)
+              GameTooltip:Show()
+            end)
 
-          checkbox:SetScript('OnLeave', function(self)
-            GameTooltip:Hide()
-          end)
+            button:SetScript('OnLeave', function(self)
+              GameTooltip:Hide()
+            end)
 
-          yOffset = yOffset - 30
+            yOffset = yOffset - 30
+          else
+            -- Create checkbox as normal
+            local checkbox =
+              CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
+            checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
+            checkbox.Text:SetText(checkboxItem.name)
+            checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
+            checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
+
+            checkboxes[checkboxItem.dbSettingsValueName] = checkbox
+
+            checkbox:SetScript('OnClick', function(self)
+              tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
+
+              if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
+                SetCVar('statusText', '0')
+              end
+
+              if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
+                if _G.UltraHardcoreHandleBuffBarSettingChange then
+                  _G.UltraHardcoreHandleBuffBarSettingChange()
+                end
+              end
+            end)
+
+            checkbox:SetScript('OnEnter', function(self)
+              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+              GameTooltip:SetText(checkboxItem.tooltip)
+              GameTooltip:Show()
+            end)
+
+            checkbox:SetScript('OnLeave', function(self)
+              GameTooltip:Hide()
+            end)
+
+            yOffset = yOffset - 30
+          end
         end
       end
 

@@ -9,6 +9,14 @@ local PADDING = 3
 local GAP = 3
 local EMPTY_TEXTURE = "Interface\\PaperDoll\\UI-Backpack-EmptySlot"
 
+-- Configuration options
+local PROFESSION_PANEL_CONFIG = {
+  enabled = true,
+  slotsPerRow = 4,
+  maxSlots = MAX_SLOTS,
+  showPanel = true
+}
+
 -- Apprentice, Journeyman, Expert, Artisan
 local allowedSpells = {
   { 8690, 556 },                 -- Hearthstone, Astral Recall
@@ -76,6 +84,33 @@ local function FirstEmptyIndex()
   end
 end
 
+local function LoadConfig()
+  if not UltraHardcoreDB then UltraHardcoreDB = {} end
+  local guid = UnitGUID("player") or "unknown"
+  if not UltraHardcoreDB[guid] then UltraHardcoreDB[guid] = {} end
+  if not UltraHardcoreDB[guid].ProfessionPanel then UltraHardcoreDB[guid].ProfessionPanel = {} end
+  local db = UltraHardcoreDB[guid].ProfessionPanel
+  
+  -- Load configuration with defaults
+  PROFESSION_PANEL_CONFIG.enabled = db.enabled ~= nil and db.enabled or true
+  PROFESSION_PANEL_CONFIG.slotsPerRow = db.slotsPerRow or 4
+  PROFESSION_PANEL_CONFIG.maxSlots = db.maxSlots or MAX_SLOTS
+  PROFESSION_PANEL_CONFIG.showPanel = db.showPanel ~= nil and db.showPanel or true
+end
+
+local function SaveConfig()
+  if not UltraHardcoreDB then UltraHardcoreDB = {} end
+  local guid = UnitGUID("player") or "unknown"
+  if not UltraHardcoreDB[guid] then UltraHardcoreDB[guid] = {} end
+  if not UltraHardcoreDB[guid].ProfessionPanel then UltraHardcoreDB[guid].ProfessionPanel = {} end
+  local db = UltraHardcoreDB[guid].ProfessionPanel
+  
+  db.enabled = PROFESSION_PANEL_CONFIG.enabled
+  db.slotsPerRow = PROFESSION_PANEL_CONFIG.slotsPerRow
+  db.maxSlots = PROFESSION_PANEL_CONFIG.maxSlots
+  db.showPanel = PROFESSION_PANEL_CONFIG.showPanel
+end
+
 local function SaveData()
   if not UltraHardcoreDB then UltraHardcoreDB = {} end
   local guid = UnitGUID("player") or "unknown"
@@ -95,6 +130,8 @@ local function SaveData()
       db.slots[i] = { spellId = s.spellId, spellName = s.spellName }
     end
   end
+  
+  SaveConfig()
 end
 
 local function ClearSlot(i)
@@ -149,7 +186,7 @@ end
 local function VisibleSlotsDesired()
   local desired = TrackedCount() + 1
   if desired < 1 then desired = 1 end
-  if desired > MAX_SLOTS then desired = MAX_SLOTS end
+  if desired > PROFESSION_PANEL_CONFIG.maxSlots then desired = PROFESSION_PANEL_CONFIG.maxSlots end
   return desired
 end
 
@@ -157,23 +194,35 @@ local function Relayout()
   if not panel then return end
 
   local visible = VisibleSlotsDesired()
-
+  local slotsPerRow = PROFESSION_PANEL_CONFIG.slotsPerRow
+  local rows = math.ceil(visible / slotsPerRow)
+  
   local x = PADDING
+  local y = -PADDING
+  
   for i = 1, MAX_SLOTS do
     local slot = slots[i]
-    if i <= visible then
+    if i <= visible and i <= PROFESSION_PANEL_CONFIG.maxSlots then
       slot:ClearAllPoints()
-      slot:SetPoint("LEFT", panel, "LEFT", x, 0)
+      
+      local row = math.ceil(i / slotsPerRow) - 1
+      local col = ((i - 1) % slotsPerRow)
+      
+      local slotX = PADDING + (col * (SLOT_SIZE + GAP))
+      local slotY = -PADDING - (row * (SLOT_SIZE + GAP))
+      
+      slot:SetPoint("TOPLEFT", panel, "TOPLEFT", slotX, slotY)
       slot:Show()
-      x = x + SLOT_SIZE + GAP
     else
       slot:Hide()
     end
   end
 
-  local innerWidth = (visible * SLOT_SIZE) + ((visible - 1) * GAP)
+  local innerWidth = (math.min(visible, slotsPerRow) * SLOT_SIZE) + ((math.min(visible, slotsPerRow) - 1) * GAP)
+  local innerHeight = (rows * SLOT_SIZE) + ((rows - 1) * GAP)
+  
   panel:SetWidth(PADDING * 2 + innerWidth)
-  panel:SetHeight(SLOT_SIZE + PADDING * 2)
+  panel:SetHeight(PADDING * 2 + innerHeight)
   panel:Show()
 end
 
@@ -194,6 +243,7 @@ local function RefreshLayout(isInitialLoad)
           slotSpellData[read] = nil
         end
         write = write + 1
+        if write > PROFESSION_PANEL_CONFIG.maxSlots then break end
       end
     end
     for i = write, MAX_SLOTS do
@@ -207,6 +257,8 @@ local function RefreshLayout(isInitialLoad)
 end
 
 local function LoadData()
+  LoadConfig()
+  
   if not UltraHardcoreDB then UltraHardcoreDB = {} end
   local guid = UnitGUID("player") or "unknown"
   local db = UltraHardcoreDB[guid] and UltraHardcoreDB[guid].ProfessionPanel
@@ -376,16 +428,177 @@ local function CreateProfessionPanel()
   LoadData()
 end
 
--- Event registration
-local f = CreateFrame("Frame")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:SetScript("OnEvent", function(self, event)
-  if event == "PLAYER_ENTERING_WORLD" then
+local function UpdatePanelVisibility()
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideActionBars and PROFESSION_PANEL_CONFIG.enabled and PROFESSION_PANEL_CONFIG.showPanel then
     if not panel then
       CreateProfessionPanel()
     else
-      LoadData()
+      panel:Show()
     end
+  else
+    if panel then
+      panel:Hide()
+    end
+  end
+end
+
+-- Global function to update panel visibility (called from main addon)
+function UpdateProfessionPanelVisibility()
+  UpdatePanelVisibility()
+end
+
+-- Function to reset panel position to center
+local function ResetPanelPosition()
+  if panel then
+    panel:ClearAllPoints()
+    panel:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    SaveData()
+  end
+end
+
+-- Configuration dialog
+local configFrame = nil
+
+local function CreateConfigDialog()
+  if configFrame then
+    configFrame:Show()
+    return
+  end
+
+  configFrame = CreateFrame("Frame", "UHC_ProfessionPanelConfig", UIParent, "BackdropTemplate")
+  configFrame:SetSize(400, 300)
+  configFrame:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+  configFrame:SetMovable(true)
+  configFrame:EnableMouse(true)
+  configFrame:RegisterForDrag("LeftButton")
+  configFrame:SetScript("OnDragStart", function(self) self:StartMoving() end)
+  configFrame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+  configFrame:SetBackdrop({
+    bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+    edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+    tile = true, tileSize = 16, edgeSize = 12,
+    insets = { left = 3, right = 3, top = 3, bottom = 3 }
+  })
+  configFrame:SetFrameStrata("DIALOG")
+  configFrame:SetFrameLevel(20)
+
+  -- Title
+  local title = configFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  title:SetPoint("TOP", configFrame, "TOP", 0, -15)
+  title:SetText("Profession Panel Configuration")
+
+  -- Enable checkbox
+  local enableCheckbox = CreateFrame("CheckButton", nil, configFrame, "ChatConfigCheckButtonTemplate")
+  enableCheckbox:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -50)
+  enableCheckbox.Text:SetText("Enable Profession Panel")
+  enableCheckbox.Text:SetPoint("LEFT", enableCheckbox, "RIGHT", 5, 0)
+  enableCheckbox:SetChecked(PROFESSION_PANEL_CONFIG.enabled)
+  enableCheckbox:SetScript("OnClick", function(self)
+    PROFESSION_PANEL_CONFIG.enabled = self:GetChecked()
+    SaveConfig()
+    UpdatePanelVisibility()
+  end)
+
+  -- Show panel checkbox
+  local showCheckbox = CreateFrame("CheckButton", nil, configFrame, "ChatConfigCheckButtonTemplate")
+  showCheckbox:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -80)
+  showCheckbox.Text:SetText("Show Panel")
+  showCheckbox.Text:SetPoint("LEFT", showCheckbox, "RIGHT", 5, 0)
+  showCheckbox:SetChecked(PROFESSION_PANEL_CONFIG.showPanel)
+  showCheckbox:SetScript("OnClick", function(self)
+    PROFESSION_PANEL_CONFIG.showPanel = self:GetChecked()
+    SaveConfig()
+    UpdatePanelVisibility()
+  end)
+
+  -- Layout section
+  local layoutLabel = configFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  layoutLabel:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -120)
+  layoutLabel:SetText("Layout Configuration:")
+
+  -- Columns input
+  local columnsLabel = configFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  columnsLabel:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -140)
+  columnsLabel:SetText("Columns:")
+
+  local columnsEditBox = CreateFrame("EditBox", nil, configFrame, "InputBoxTemplate")
+  columnsEditBox:SetSize(60, 20)
+  columnsEditBox:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 100, -140)
+  columnsEditBox:SetText(tostring(PROFESSION_PANEL_CONFIG.slotsPerRow))
+  columnsEditBox:SetAutoFocus(false)
+  columnsEditBox:SetScript("OnTextChanged", function(self)
+    local value = tonumber(self:GetText())
+    if value and value >= 1 and value <= 8 then
+      PROFESSION_PANEL_CONFIG.slotsPerRow = value
+      SaveConfig()
+      if panel then
+        Relayout()
+      end
+    end
+  end)
+
+  -- Max slots slider
+  local slotsLabel = configFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  slotsLabel:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -170)
+  slotsLabel:SetText("Total Slots:")
+
+  local slotsSlider = CreateFrame("Slider", nil, configFrame, "OptionsSliderTemplate")
+  slotsSlider:SetSize(200, 20)
+  slotsSlider:SetPoint("TOPLEFT", configFrame, "TOPLEFT", 20, -190)
+  slotsSlider:SetMinMaxValues(1, MAX_SLOTS)
+  slotsSlider:SetValue(PROFESSION_PANEL_CONFIG.maxSlots)
+  slotsSlider:SetValueStep(1)
+  slotsSlider:SetScript("OnValueChanged", function(self, value)
+    PROFESSION_PANEL_CONFIG.maxSlots = math.floor(value)
+    self:GetParent().slotsValue:SetText(tostring(PROFESSION_PANEL_CONFIG.maxSlots))
+    SaveConfig()
+    if panel then
+      Relayout()
+    end
+  end)
+
+  -- Slider value display
+  local slotsValue = configFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+  slotsValue:SetPoint("LEFT", slotsSlider, "RIGHT", 10, 0)
+  slotsValue:SetText(tostring(PROFESSION_PANEL_CONFIG.maxSlots))
+  configFrame.slotsValue = slotsValue
+
+  -- Close button
+  local closeButton = CreateFrame("Button", nil, configFrame, "UIPanelButtonTemplate")
+  closeButton:SetSize(100, 25)
+  closeButton:SetPoint("BOTTOM", configFrame, "BOTTOM", 0, 15)
+  closeButton:SetText("Close")
+  closeButton:SetScript("OnClick", function()
+    configFrame:Hide()
+  end)
+
+  -- Reset button
+  local resetButton = CreateFrame("Button", nil, configFrame, "UIPanelButtonTemplate")
+  resetButton:SetSize(120, 25)
+  resetButton:SetPoint("BOTTOM", configFrame, "BOTTOM", -70, 15)
+  resetButton:SetText("Reset Position")
+  resetButton:SetScript("OnClick", function()
+    ResetPanelPosition()
+  end)
+
+  configFrame:Show()
+end
+
+-- Global function to open config dialog
+function OpenProfessionPanelConfig()
+  LoadConfig()
+  CreateConfigDialog()
+end
+
+-- Event registration
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
+f:RegisterEvent("ADDON_LOADED")
+f:SetScript("OnEvent", function(self, event)
+  if event == "PLAYER_ENTERING_WORLD" then
+    UpdatePanelVisibility()
+  elseif event == "ADDON_LOADED" then
+    UpdatePanelVisibility()
   end
 end)
 

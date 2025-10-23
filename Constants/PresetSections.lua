@@ -22,7 +22,7 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Ultra:',
-  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
+  settings = { 'petsDiePermanently', 'hideActionBars', 'professionPanelConfig', 'tunnelVisionMaxStrata' },
 }, {
   title = 'Experimental:',
   settings = {
