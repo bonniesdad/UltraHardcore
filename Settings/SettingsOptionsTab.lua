@@ -33,11 +33,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideMinimap',
   tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
 }, {
-  name = 'UHC Breath Indicator',
-  dbSettingsValueName = 'hideBreathIndicator',
-  tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-}, {
-  -- Ultra Preset Settings
+  -- Ultra Preset Settings {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
   tooltip = "Pets can't be resurrected when they are killed",
@@ -51,6 +47,10 @@ local settingsCheckboxOptions = { {
   tooltip = 'Tunnel Vision covers all UI elements',
 }, {
   -- Experimental Preset Settings
+  name = 'UHC Breath Indicator',
+  dbSettingsValueName = 'hideBreathIndicator',
+  tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
+}, {
   name = 'UHC Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
@@ -70,6 +70,14 @@ local settingsCheckboxOptions = { {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
+}, {
+  name = 'Completely Remove Player Frame',
+  dbSettingsValueName = 'completelyRemovePlayerFrame',
+  tooltip = 'Completely remove the player frame',
+}, {
+  name = 'Completely Remove Target Frame',
+  dbSettingsValueName = 'completelyRemoveTargetFrame',
+  tooltip = 'Completely remove the target frame',
 }, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
@@ -133,30 +141,30 @@ local presets = { {
   disableNameplateHealth = false,
   showDazedEffect = false,
   hideGroupHealth = false,
-  hideBreathIndicator = false,
   -- Ultra Preset Settings
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
   -- Experimental Preset Settings
+  hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  newHighCritAppreciationSoundbite = false,
   -- Misc Settings
-  showOnScreenStatistics = false,
-  announceLevelUpToGuild = false,
+  showOnScreenStatistics = true,
+  announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
-  announceDungeonsCompletedOnGroupJoin = false,
+  announceDungeonsCompletedOnGroupJoin = true,
+  newHighCritAppreciationSoundbite = true,
   buffBarOnResourceBar = false,
-  playPartyDeathSoundbite = false,
-  playPlayerDeathSoundbite = false,
-  spookyTunnelVision = false,
-  roachHearthstoneInPartyCombat = false,
+  playPartyDeathSoundbite = true,
+  playPlayerDeathSoundbite = true,
+  spookyTunnelVision = true,
+  roachHearthstoneInPartyCombat = true,
 }, {
   -- Preset 2: Recommended
   -- Lite Preset Settings
@@ -169,30 +177,30 @@ local presets = { {
   disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  hideBreathIndicator = true,
   -- Ultra Preset Settings
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
   -- Experimental Preset Settings
+  hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  newHighCritAppreciationSoundbite = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
-  hideUIErrors = true,
-  showClockEvenWhenMapHidden = true,
+  hideUIErrors = false,
+  showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = true,
   announceDungeonsCompletedOnGroupJoin = true,
+  newHighCritAppreciationSoundbite = true,
   buffBarOnResourceBar = false,
   playPartyDeathSoundbite = true,
   playPlayerDeathSoundbite = true,
-  spookyTunnelVision = false,
-  roachHearthstoneInPartyCombat = false,
+  spookyTunnelVision = true,
+  roachHearthstoneInPartyCombat = true,
 }, {
   -- Preset 3: Ultra
   -- Lite Preset Settings
@@ -205,26 +213,26 @@ local presets = { {
   disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  hideBreathIndicator = true,
   -- Ultra Preset Settings
   petsDiePermanently = true,
   hideActionBars = true,
   tunnelVisionMaxStrata = true,
   -- Experimental Preset Settings
+  hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  newHighCritAppreciationSoundbite = true,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
-  hideUIErrors = true,
-  showClockEvenWhenMapHidden = true,
+  hideUIErrors = false,
+  showClockEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = true,
   announceDungeonsCompletedOnGroupJoin = true,
-  buffBarOnResourceBar = true,
+  newHighCritAppreciationSoundbite = true,
+  buffBarOnResourceBar = false,
   playPartyDeathSoundbite = true,
   playPlayerDeathSoundbite = true,
   spookyTunnelVision = true,
@@ -280,6 +288,16 @@ function InitializeSettingsOptionsTab()
     if tempSettings.hidePlayerFrame then
       SetCVar('statusText', '0')
     end
+
+    -- Apply the new completely remove settings immediately when presets are applied
+    SetPlayerFrameDisplay(
+      tempSettings.hidePlayerFrame or false,
+      tempSettings.completelyRemovePlayerFrame or false
+    )
+    SetTargetFrameDisplay(
+      tempSettings.hideTargetFrame or false,
+      tempSettings.completelyRemoveTargetFrame or false
+    )
 
     updateCheckboxes()
     updateRadioButtons()
@@ -424,6 +442,16 @@ function InitializeSettingsOptionsTab()
     if GLOBAL_SETTINGS.hidePlayerFrame then
       SetCVar('statusText', '0')
     end
+
+    -- Apply the new completely remove settings immediately
+    SetPlayerFrameDisplay(
+      GLOBAL_SETTINGS.hidePlayerFrame or false,
+      GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
+    )
+    SetTargetFrameDisplay(
+      GLOBAL_SETTINGS.hideTargetFrame or false,
+      GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
+    )
 
     SaveCharacterSettings(GLOBAL_SETTINGS)
     ReloadUI()
