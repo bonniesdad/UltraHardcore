@@ -1,4 +1,5 @@
 -- 🟢 Character Stats Management
+
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -36,11 +37,15 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
+    maxTunnelVisionOverlayShown = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
+    highestCritValue = 0,
+    rareElitesSlain = 0,
+    worldBossesSlain = 0,
     -- Add more stats here as needed
-  }
+  },
 }
 
 -- Reset individual stats to default values for current character
@@ -62,13 +67,11 @@ function CharacterStats:ResetLowestHealthThisSession()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
-
 function CharacterStats:ResetPetDeaths()
   local stats = self:GetCurrentCharacterStats()
   stats.petDeaths = self.defaults.petDeaths
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
-
 
 function CharacterStats:ResetElitesSlain()
   local stats = self:GetCurrentCharacterStats()
@@ -113,19 +116,37 @@ function CharacterStats:ResetPartyMemberDeaths()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetHighestCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetRareElitesSlain()
+  local stats = self:GetCurrentCharacterStats()
+  stats.rareElitesSlain = self.defaults.rareElitesSlain
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetWorldBossesSlain()
+  local stats = self:GetCurrentCharacterStats()
+  stats.worldBossesSlain = self.defaults.worldBossesSlain
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
-  
+
   -- Initialize character stats if they don't exist
   if not UltraHardcoreDB.characterStats then
     UltraHardcoreDB.characterStats = {}
   end
-  
+
   if not UltraHardcoreDB.characterStats[characterGUID] then
     UltraHardcoreDB.characterStats[characterGUID] = self.defaults
   end
-  
+
   -- Initialize new stats for existing characters (backward compatibility)
   local stats = UltraHardcoreDB.characterStats[characterGUID]
   if stats.lowestHealthThisLevel == nil then
@@ -137,7 +158,19 @@ function CharacterStats:GetCurrentCharacterStats()
   if stats.petDeaths == nil then
     stats.petDeaths = self.defaults.petDeaths
   end
-  
+  if stats.highestCritValue == nil then
+    stats.highestCritValue = self.defaults.highestCritValue
+  end
+  if stats.rareElitesSlain == nil then
+    stats.rareElitesSlain = self.defaults.rareElitesSlain
+  end
+  if stats.worldBossesSlain == nil then
+    stats.worldBossesSlain = self.defaults.worldBossesSlain
+  end
+  if stats.partyMemberDeaths == nil then
+    stats.partyMemberDeaths = self.defaults.partyMemberDeaths
+  end
+
   return stats
 end
 
@@ -172,7 +205,7 @@ function CharacterStats:GetAllCharacters()
   if not UltraHardcoreDB.characterStats then
     return {}
   end
-  
+
   local characters = {}
   for characterGUID, _ in pairs(UltraHardcoreDB.characterStats) do
     table.insert(characters, characterGUID)
@@ -183,23 +216,29 @@ end
 -- Function to log stats directly to a specific channel (for slash commands)
 function CharacterStats:LogStatsToSpecificChannel(channel)
   local stats = self:GetCurrentCharacterStats()
-  local playerName = UnitName("player")
-  local playerLevel = UnitLevel("player")
-  local playerClass = UnitClass("player")
-  
+  local playerName = UnitName('player')
+  local playerLevel = UnitLevel('player')
+  local playerClass = UnitClass('player')
+
   local function sendMessage(text)
     SendChatMessage(text, channel)
   end
-  
+
   -- if channel == 'GUILD' then
-    -- Condensed single line for guild chat to avoid spam
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
-    sendMessage(condensedMessage)
+  -- Condensed single line for guild chat to avoid spam
+  local condensedMessage =
+    '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
+      '%.1f',
+      stats.lowestHealth
+    ) .. ' - Elites: ' .. formatNumberWithCommas(
+      stats.elitesSlain
+    ) .. ' - Enemies: ' .. formatNumberWithCommas(stats.enemiesSlain)
+  sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
   --   sendMessage("-------- UHC STATS --------")
   --   sendMessage(playerName .. " (" .. playerClass .. " Level " .. playerLevel .. ")")
-    
+
   --   -- Send each stat on its own line with lots of spacing and right-aligned numbers
   --   sendMessage("Lowest Health ---------------" .. string.format("%8.1f", stats.lowestHealth) .. "%")
   --   sendMessage("Elites Slain -------------------" .. string.format("%8d", stats.elitesSlain))
@@ -210,17 +249,16 @@ end
 -- Function to show chat channel selection dialog
 function CharacterStats:ShowChatChannelDialog()
   local stats = self:GetCurrentCharacterStats()
-  local playerName = UnitName("player")
-  local playerLevel = UnitLevel("player")
-  local playerClass = UnitClass("player")
-  
+  local playerName = UnitName('player')
+  local playerLevel = UnitLevel('player')
+  local playerClass = UnitClass('player')
+
   -- Create dialog frame positioned above the main settings panel
   local dialog = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
-  dialog:SetSize(400, 280)
+  dialog:SetSize(400, 310)
   dialog:SetPoint('CENTER', UIParent, 'CENTER', 0, 100) -- Positioned above main settings
   dialog:SetFrameStrata('DIALOG')
   dialog:SetFrameLevel(25) -- Higher than main settings panel
-  
   -- Create solid black background wrapper
   local blackBackground = CreateFrame('Frame', nil, dialog, 'BackdropTemplate')
   blackBackground:SetAllPoints(dialog)
@@ -241,7 +279,6 @@ function CharacterStats:ShowChatChannelDialog()
   })
   blackBackground:SetBackdropColor(0, 0, 0, 1) -- Pure black
   blackBackground:SetBackdropBorderColor(0, 0, 0, 1) -- Pure black border
-  
   dialog:SetBackdrop({
     bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -257,7 +294,6 @@ function CharacterStats:ShowChatChannelDialog()
   })
   dialog:SetBackdropColor(0, 0, 0, 1) -- Make fully opaque
   dialog:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Ensure border is also opaque
-  
   -- Create title bar matching main settings style
   local titleBar = CreateFrame('Frame', nil, dialog, 'BackdropTemplate')
   titleBar:SetSize(400, 50)
@@ -279,14 +315,13 @@ function CharacterStats:ShowChatChannelDialog()
   })
   titleBar:SetBackdropColor(0, 0, 0, 1) -- Pure black background, fully opaque
   titleBar:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
-  
   -- Create title image matching main settings
   local dialogTitleImage = titleBar:CreateTexture(nil, 'OVERLAY')
   dialogTitleImage:SetSize(300, 40)
   dialogTitleImage:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
   dialogTitleImage:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\ultra-hc-title.png')
   dialogTitleImage:SetTexCoord(0, 1, 0, 1)
-  
+
   -- Close button
   local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
   closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, 0)
@@ -294,12 +329,12 @@ function CharacterStats:ShowChatChannelDialog()
   closeButton:SetScript('OnClick', function()
     dialog:Hide()
   end)
-  
+
   -- Create content area with proper styling
   local contentFrame = CreateFrame('Frame', nil, dialog)
-  contentFrame:SetSize(380, 210)
+  contentFrame:SetSize(380, 200)
   contentFrame:SetPoint('TOP', dialog, 'TOP', 0, -50)
-  
+
   -- Create stats preview section
   local statsHeader = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
   statsHeader:SetSize(360, 28)
@@ -319,14 +354,14 @@ function CharacterStats:ShowChatChannelDialog()
   })
   statsHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
   statsHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  
+
   local statsHeaderText = statsHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   statsHeaderText:SetPoint('LEFT', statsHeader, 'LEFT', 12, 0)
   statsHeaderText:SetText('Stats Preview')
-  
+
   -- Create stats preview content
   local statsPreview = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
-  statsPreview:SetSize(340, 100)
+  statsPreview:SetSize(340, 140)
   statsPreview:SetPoint('TOP', contentFrame, 'TOP', 0, -38)
   statsPreview:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -341,33 +376,29 @@ function CharacterStats:ShowChatChannelDialog()
       bottom = 4,
     },
   })
-  
+
   -- Player info
   local playerInfoText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   playerInfoText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -8)
-  playerInfoText:SetText(playerName .. " (" .. playerClass .. " Level " .. playerLevel .. ")")
-  
+  playerInfoText:SetText(playerName .. ' (' .. playerClass .. ' Level ' .. playerLevel .. ')')
+
   -- Stats breakdown
   local lowestHealthText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   lowestHealthText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -28)
-  lowestHealthText:SetText("Lowest Health: " .. string.format("%.1f", stats.lowestHealth) .. "%")
-  
-  local petDeathsText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  petDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
-  petDeathsText:SetText("Pet Deaths: " .. stats.petDeaths)
-  
+  lowestHealthText:SetText('Lowest Health: ' .. string.format('%.1f', stats.lowestHealth) .. '%')
+
   local partyDeathsText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  partyDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
-  partyDeathsText:SetText("Party Deaths Witnessed: " .. stats.partyMemberDeaths)
-  
+  partyDeathsText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -48)
+  partyDeathsText:SetText('Party Deaths Witnessed: ' .. stats.partyMemberDeaths)
+
   local elitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
-  elitesText:SetText("Elites Slain: " .. stats.elitesSlain)
-  
+  elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
+  elitesText:SetText('Elites Slain: ' .. stats.elitesSlain)
+
   local enemiesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -108)
-  enemiesText:SetText("Enemies Slain: " .. stats.enemiesSlain)
-  
+  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
+  enemiesText:SetText('Enemies Slain: ' .. stats.enemiesSlain)
+
   -- Create channel selection section
   local channelHeader = CreateFrame('Frame', nil, contentFrame, 'BackdropTemplate')
   channelHeader:SetSize(360, 28)
@@ -387,29 +418,33 @@ function CharacterStats:ShowChatChannelDialog()
   })
   channelHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
   channelHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  
+
   local channelHeaderText = channelHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   channelHeaderText:SetPoint('LEFT', channelHeader, 'LEFT', 12, 0)
   channelHeaderText:SetText('Select Channel')
-  
+
   -- Function to send stats to specific channel
   local function sendStatsToChannel(channel)
     local function sendMessage(text)
       SendChatMessage(text, channel)
     end
-    
+
     -- Single line format for all channels
-    local condensedMessage = "[ULTRA] " .. playerName .. " (" .. playerClass .. " L" .. playerLevel .. ") - Health: " .. string.format("%.1f", stats.lowestHealth) .. "% - Pet Deaths: " .. stats.petDeaths .. " - Party Deaths Witnessed: " .. stats.partyMemberDeaths .. " - Elites: " .. stats.elitesSlain .. " - Enemies: " .. stats.enemiesSlain
+    local condensedMessage =
+      '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
+        '%.1f',
+        stats.lowestHealth
+      ) .. '%' .. ' - Party Deaths Witnessed: ' .. stats.partyMemberDeaths .. ' - Elites: ' .. stats.elitesSlain .. ' - Enemies: ' .. stats.enemiesSlain
     sendMessage(condensedMessage)
-    
+
     dialog:Hide()
   end
-  
+
   -- Create button container
   local buttonContainer = CreateFrame('Frame', nil, contentFrame)
   buttonContainer:SetSize(340, 80)
   buttonContainer:SetPoint('TOP', contentFrame, 'TOP', 0, -188)
-  
+
   -- Say button
   local sayButton = CreateFrame('Button', nil, buttonContainer, 'UIPanelButtonTemplate')
   sayButton:SetSize(100, 30)
@@ -418,7 +453,7 @@ function CharacterStats:ShowChatChannelDialog()
   sayButton:SetScript('OnClick', function()
     sendStatsToChannel('SAY')
   end)
-  
+
   -- Party button
   local partyButton = CreateFrame('Button', nil, buttonContainer, 'UIPanelButtonTemplate')
   partyButton:SetSize(100, 30)
@@ -427,7 +462,7 @@ function CharacterStats:ShowChatChannelDialog()
   partyButton:SetScript('OnClick', function()
     sendStatsToChannel('PARTY')
   end)
-  
+
   -- Guild button
   local guildButton = CreateFrame('Button', nil, buttonContainer, 'UIPanelButtonTemplate')
   guildButton:SetSize(100, 30)
@@ -436,13 +471,13 @@ function CharacterStats:ShowChatChannelDialog()
   guildButton:SetScript('OnClick', function()
     sendStatsToChannel('GUILD')
   end)
-  
+
   -- Disable guild button if not in guild
   if not IsInGuild() then
     guildButton:Disable()
     guildButton:SetText('Guild (N/A)')
   end
-  
+
   -- Add tooltips for buttons
   sayButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(sayButton, 'ANCHOR_TOP')
@@ -453,7 +488,7 @@ function CharacterStats:ShowChatChannelDialog()
   sayButton:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
-  
+
   partyButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(partyButton, 'ANCHOR_TOP')
     GameTooltip:SetText('Post stats to party chat')
@@ -463,7 +498,7 @@ function CharacterStats:ShowChatChannelDialog()
   partyButton:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
-  
+
   guildButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(guildButton, 'ANCHOR_TOP')
     GameTooltip:SetText('Post stats to guild chat')
@@ -473,7 +508,7 @@ function CharacterStats:ShowChatChannelDialog()
   guildButton:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
-  
+
   dialog:Show()
 end
 
@@ -486,83 +521,97 @@ end
 _G.CharacterStats = CharacterStats
 
 -- Register slash commands for individual stat resets
-SLASH_RESETLOWESTHEALTH1 = "/resetlowesthealth"
-SlashCmdList["RESETLOWESTHEALTH"] = function()
+SLASH_RESETLOWESTHEALTH1 = '/resetlowesthealth'
+SlashCmdList['RESETLOWESTHEALTH'] = function()
   CharacterStats:ResetLowestHealth()
 end
 
-SLASH_RESETPETDEATHS1 = "/resetpetdeaths"
-SlashCmdList["RESETPETDEATHS"] = function()
+SLASH_RESETPETDEATHS1 = '/resetpetdeaths'
+SlashCmdList['RESETPETDEATHS'] = function()
   CharacterStats:ResetPetDeaths()
 end
 
-
-SLASH_RESETELITESSLAIN1 = "/resetelitesslain"
-SlashCmdList["RESETELITESSLAIN"] = function()
+SLASH_RESETELITESSLAIN1 = '/resetelitesslain'
+SlashCmdList['RESETELITESSLAIN'] = function()
   CharacterStats:ResetElitesSlain()
 end
 
-SLASH_RESETENEMIESSLAIN1 = "/resetenemiesslain"
-SlashCmdList["RESETENEMIESSLAIN"] = function()
+SLASH_RESETENEMIESSLAIN1 = '/resetenemiesslain'
+SlashCmdList['RESETENEMIESSLAIN'] = function()
   CharacterStats:ResetEnemiesSlain()
 end
 
 -- Slash commands for survival statistics
-SLASH_RESETHEALTHPOTIONS1 = "/resethealthpotions"
-SlashCmdList["RESETHEALTHPOTIONS"] = function()
+SLASH_RESETHEALTHPOTIONS1 = '/resethealthpotions'
+SlashCmdList['RESETHEALTHPOTIONS'] = function()
   CharacterStats:ResetHealthPotionsUsed()
 end
 
-SLASH_RESETBANDAGES1 = "/resetbandages"
-SlashCmdList["RESETBANDAGES"] = function()
+SLASH_RESETBANDAGES1 = '/resetbandages'
+SlashCmdList['RESETBANDAGES'] = function()
   CharacterStats:ResetBandagesUsed()
 end
 
-SLASH_RESETTARGETDUMMIES1 = "/resettargetdummies"
-SlashCmdList["RESETTARGETDUMMIES"] = function()
+SLASH_RESETTARGETDUMMIES1 = '/resettargetdummies'
+SlashCmdList['RESETTARGETDUMMIES'] = function()
   CharacterStats:ResetTargetDummiesUsed()
 end
 
-SLASH_RESETGRENADES1 = "/resetgrenades"
-SlashCmdList["RESETGRENADES"] = function()
+SLASH_RESETGRENADES1 = '/resetgrenades'
+SlashCmdList['RESETGRENADES'] = function()
   CharacterStats:ResetGrenadesUsed()
 end
 
-SLASH_RESETPARTYMEMBERDEATHS1 = "/resetpartymemberdeaths"
-SlashCmdList["RESETPARTYMEMBERDEATHS"] = function()
+SLASH_RESETPARTYMEMBERDEATHS1 = '/resetpartymemberdeaths'
+SlashCmdList['RESETPARTYMEMBERDEATHS'] = function()
   CharacterStats:ResetPartyMemberDeaths()
 end
 
-SLASH_RESETXP1 = "/resetxp"
-SlashCmdList["RESETXP"] = function()
+SLASH_RESETHIGHESTCRIT1 = '/resethighestcrit'
+SlashCmdList['RESETHIGHESTCRIT'] = function()
+  CharacterStats:ResetHighestCritValue()
+end
+
+SLASH_RESETRAREELITES1 = '/resetrareelites'
+SlashCmdList['RESETRAREELITES'] = function()
+  CharacterStats:ResetRareElitesSlain()
+end
+
+SLASH_RESETWORLDBOSSES1 = '/resetworldbosses'
+SlashCmdList['RESETWORLDBOSSES'] = function()
+  CharacterStats:ResetWorldBossesSlain()
+end
+
+SLASH_RESETXP1 = '/resetxp'
+SlashCmdList['RESETXP'] = function()
   CharacterStats:ResetXPWithoutAddon()
 end
 
 -- Register slash command to reset stats
-SLASH_RESETSTATS1 = "/resetstats"
-SlashCmdList["RESETSTATS"] = function()
+SLASH_RESETSTATS1 = '/resetstats'
+SlashCmdList['RESETSTATS'] = function()
   CharacterStats:ResetStats()
 end
 
 -- Register slash commands to log stats to specific channels
-SLASH_LOGSTATSS1 = "/logstatss"
-SlashCmdList["LOGSTATSS"] = function()
+SLASH_LOGSTATSS1 = '/logstatss'
+SlashCmdList['LOGSTATSS'] = function()
   CharacterStats:LogStatsToSpecificChannel('SAY')
 end
 
-SLASH_LOGSTATSP1 = "/logstatsp"
-SlashCmdList["LOGSTATSP"] = function()
+SLASH_LOGSTATSP1 = '/logstatsp'
+SlashCmdList['LOGSTATSP'] = function()
   CharacterStats:LogStatsToSpecificChannel('PARTY')
 end
 
-SLASH_LOGSTATSG1 = "/logstatsg"
-SlashCmdList["LOGSTATSG"] = function()
+SLASH_LOGSTATSG1 = '/logstatsg'
+SlashCmdList['LOGSTATSG'] = function()
   CharacterStats:LogStatsToSpecificChannel('GUILD')
 end
 
 -- Keep the general command for backward compatibility
-SLASH_LOGSTATS1 = "/logstats"
-SLASH_LOGSTATS2 = "/uhcstats"
-SlashCmdList["LOGSTATS"] = function()
+SLASH_LOGSTATS1 = '/logstats'
+SLASH_LOGSTATS2 = '/uhcstats'
+SlashCmdList['LOGSTATS'] = function()
   CharacterStats:LogStatsToChat()
-end 
+end
