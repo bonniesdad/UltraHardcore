@@ -1,5 +1,5 @@
--- Nameplate disable function with prevention hook
--- Sets cvars and prevents players from re-enabling nameplates
+-- Nameplate disable function using monitoring approach
+-- Sets cvars and monitors for changes without hooking SetCVar globally
 
 local nameplateCVars =
   {
@@ -19,7 +19,8 @@ local nameplateCVars =
     'nameplateShowFriendlyTotems',
   }
 
-local originalSetCVar = SetCVar
+local nameplateMonitorFrame = nil
+local nameplateDisabled = false
 
 -- Safe SetCVar wrapper that checks for protected state
 local function SafeSetCVar(cvar, value)
@@ -27,36 +28,69 @@ local function SafeSetCVar(cvar, value)
     -- If in combat, queue the CVar change for later
     C_Timer.After(0.1, function()
       if not InCombatLockdown() then
-        originalSetCVar(cvar, value)
+        SetCVar(cvar, value)
       end
     end)
   else
-    originalSetCVar(cvar, value)
+    SetCVar(cvar, value)
+  end
+end
+
+-- Function to disable all nameplate CVars
+local function DisableAllNameplates()
+  for _, cvar in ipairs(nameplateCVars) do
+    SafeSetCVar(cvar, 0)
+  end
+end
+
+-- Function to check and reset nameplate CVars if they've been changed
+local function CheckNameplateCVars()
+  if not nameplateDisabled then return end
+
+  -- Check each nameplate CVar and reset if enabled
+  for _, cvar in ipairs(nameplateCVars) do
+    local currentValue = GetCVar(cvar)
+    if currentValue and currentValue ~= '0' then
+      SafeSetCVar(cvar, 0)
+    end
+  end
+end
+
+-- Start monitoring nameplate CVars
+local function StartNameplateMonitoring()
+  if nameplateMonitorFrame then
+    return -- Already monitoring
+  end
+
+  nameplateMonitorFrame = CreateFrame('Frame')
+  nameplateMonitorFrame:SetScript('OnUpdate', function(self, elapsed)
+    -- Check every 0.5 seconds to avoid performance issues
+    self.timer = (self.timer or 0) + elapsed
+    if self.timer >= 0.5 then
+      self.timer = 0
+      CheckNameplateCVars()
+    end
+  end)
+end
+
+-- Stop monitoring nameplate CVars
+local function StopNameplateMonitoring()
+  if nameplateMonitorFrame then
+    nameplateMonitorFrame:SetScript('OnUpdate', nil)
+    nameplateMonitorFrame = nil
   end
 end
 
 function SetNameplateDisabled(disabled)
+  nameplateDisabled = disabled
+
   if disabled then
     -- Disable all nameplate types
-    for _, cvar in ipairs(nameplateCVars) do
-      SafeSetCVar(cvar, 0)
-    end
-
-    -- Hook SetCVar to prevent nameplate enabling
-    SetCVar = function(cvar, value)
-      -- Check if this is a nameplate CVar
-      for _, nameplateCvar in ipairs(nameplateCVars) do
-        if cvar == nameplateCvar then
-          -- Always set nameplate CVars to 0 (disabled)
-          SafeSetCVar(cvar, 0)
-          return
-        end
-      end
-      -- Allow other CVars to work normally
-      SafeSetCVar(cvar, value)
-    end
+    DisableAllNameplates()
+    -- Start monitoring to prevent re-enabling
+    StartNameplateMonitoring()
   else
-    -- Restore original SetCVar function
-    SetCVar = originalSetCVar
+    -- Stop monitoring
+    StopNameplateMonitoring()
   end
 end
