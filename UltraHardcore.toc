@@ -99,5 +99,4 @@ Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
 ## Constants
-Constants/WolfLikeNPCs.lua
 Constants/PresetSections.lua

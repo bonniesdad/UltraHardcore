@@ -40,7 +40,17 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
-    SetAllGroupIndicators()
+    -- Only update group indicators when not in combat lockdown
+    if not InCombatLockdown() then
+      SetAllGroupIndicators()
+    else
+      -- Defer group indicator updates until combat ends
+      C_Timer.After(0.1, function()
+        if not InCombatLockdown() then
+          SetAllGroupIndicators()
+        end
+      end)
+    end
     DisablePetCombatText()
     RepositionPetHappinessTexture()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
@@ -61,7 +71,17 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
-    SetAllGroupIndicators()
+    -- Only update group indicators when not in combat lockdown
+    if not InCombatLockdown() then
+      SetAllGroupIndicators()
+    else
+      -- Defer group indicator updates until combat ends
+      C_Timer.After(0.1, function()
+        if not InCombatLockdown() then
+          SetAllGroupIndicators()
+        end
+      end)
+    end
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event
