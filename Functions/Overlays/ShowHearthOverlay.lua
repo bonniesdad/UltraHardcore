@@ -1,4 +1,5 @@
 local hearthingOverlayFrame = nil
+local frameIsShowing = false
 
 function ShowHearthingOverlay()
     if not hearthingOverlayFrame then
@@ -26,12 +27,18 @@ function ShowHearthingOverlay()
 
     hearthingOverlayFrame:Show()
     UIFrameFadeIn(hearthingOverlayFrame, 0.3, 0, 1)
+    frameIsShowing = true
 end
 
 function HideHearthingOverlay()
-    if hearthingOverlayFrame and hearthingOverlayFrame:IsShown() then
+    -- Only hide if the frame exists and is currently showing based on frameIsShowing
+    -- This prevents the overlay from flickering 
+    if hearthingOverlayFrame and hearthingOverlayFrame:IsVisible() and frameIsShowing then
         UIFrameFadeOut(hearthingOverlayFrame, 0.3, 1, 0, function()
+            hearthingOverlayFrame:SetAlpha(0)
             hearthingOverlayFrame:Hide()
         end)
+
+        frameIsShowing = false
     end
 end

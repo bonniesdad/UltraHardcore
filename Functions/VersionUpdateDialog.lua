@@ -1,7 +1,8 @@
 -- Patch notes are now loaded from PatchNotes.lua
 
 function CreateVersionUpdateFrame(previousVersion, currentVersion)
-  local frame = CreateFrame('Frame', 'UltraHardcoreVersionUpdateFrame', UIParent, 'BackdropTemplate')
+  local frame =
+    CreateFrame('Frame', 'UltraHardcoreVersionUpdateFrame', UIParent, 'BackdropTemplate')
   frame:SetSize(500, 600) -- Increased height to accommodate important info and button spacing
   frame:SetPoint('CENTER')
   frame:SetBackdrop({
@@ -41,7 +42,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local font, _, flags = versionText:GetFont()
   versionText:SetFont(font, 14, flags)
   versionText:SetTextColor(0.8, 0.8, 1)
-  
+
   if previousVersion then
     versionText:SetText('Updated from version ' .. previousVersion .. ' to ' .. currentVersion)
   else
@@ -86,8 +87,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local font, _, flags = message:GetFont()
   message:SetFont(font, 12, flags)
   message:SetText(
-    "IMPORTANT: After updating, please review your settings to ensure they're configured correctly for your playstyle.\n\n" ..
-    "Take a moment to verify your current settings before continuing your hardcore journey."
+    "IMPORTANT: After updating, please review your settings to ensure they're configured correctly for your playstyle.\n\n" .. 'Take a moment to verify your current settings before continuing your hardcore journey.'
   )
 
   -- Close Button
@@ -99,7 +99,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
     -- Mark this version as seen
     SaveDBData('lastSeenVersion', currentVersion)
     frame:Hide()
-    
+
     -- Open UHC settings and navigate to Settings tab (index 2)
     if OpenSettingsToTab then
       OpenSettingsToTab(2)
@@ -112,11 +112,11 @@ end
 local versionUpdateOpen = false
 function ShowVersionUpdateDialog()
   -- Get current version from TOC
-  local currentVersion = GetAddOnMetadata(addonName, "Version")
-  
+  local currentVersion = GetAddOnMetadata(addonName, 'Version')
+
   -- Get last seen version from database
   local lastSeenVersion = UltraHardcoreDB.lastSeenVersion
-  
+
   -- Only show dialog if version has changed and dialog isn't already open
   if currentVersion ~= lastSeenVersion and not versionUpdateOpen then
     versionUpdateOpen = true
@@ -124,4 +124,3 @@ function ShowVersionUpdateDialog()
     versionFrame:Show()
   end
 end
-

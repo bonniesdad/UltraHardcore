@@ -51,6 +51,7 @@ function LoadDBData()
     playPartyDeathSoundbite = true,
     playPlayerDeathSoundbite = true,
     spookyTunnelVision = true,
+    roachHearthstoneInPartyCombat = true,
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,

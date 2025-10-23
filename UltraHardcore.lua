@@ -4,7 +4,6 @@ UltraHardcore = CreateFrame('Frame')
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
-
 UltraHardcore:RegisterEvent('UNIT_AURA')
 UltraHardcore:RegisterEvent('UNIT_HEALTH_FREQUENT')
 UltraHardcore:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -23,7 +22,6 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 
-
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
@@ -31,7 +29,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
     SetPlayerFrameDisplay(GLOBAL_SETTINGS.hidePlayerFrame or false)
-    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false)
+    SetMinimapDisplay(
+      GLOBAL_SETTINGS.hideMinimap or false,
+      GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
+    )
     SetTargetFrameDisplay(GLOBAL_SETTINGS.hideTargetFrame or false)
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
@@ -39,7 +40,17 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
-    SetAllGroupIndicators()
+    -- Only update group indicators when not in combat lockdown
+    if not InCombatLockdown() then
+      SetAllGroupIndicators()
+    else
+      -- Defer group indicator updates until combat ends
+      C_Timer.After(0.1, function()
+        if not InCombatLockdown() then
+          SetAllGroupIndicators()
+        end
+      end)
+    end
     DisablePetCombatText()
     RepositionPetHappinessTexture()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
@@ -47,7 +58,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
     FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
     -- Check for pet death/abandonment
-    if unit == "pet" then
+    if unit == 'pet' then
       CheckAndAbandonPet()
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
@@ -60,7 +71,17 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)
   elseif event == 'GROUP_ROSTER_UPDATE' then
     SetPartyFramesInfo(GLOBAL_SETTINGS.hideGroupHealth or false)
-    SetAllGroupIndicators()
+    -- Only update group indicators when not in combat lockdown
+    if not InCombatLockdown() then
+      SetAllGroupIndicators()
+    else
+      -- Defer group indicator updates until combat ends
+      C_Timer.After(0.1, function()
+        if not InCombatLockdown() then
+          SetAllGroupIndicators()
+        end
+      end)
+    end
   elseif event == 'MIRROR_TIMER_START' then
     -- Start breath monitoring when underwater
     -- Mirror timer events pass timerName as the first parameter after event
@@ -77,14 +98,34 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'UNIT_SPELLCAST_START' then
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
-    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
-      HearthingOverlay()
+    if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then
+      if unit == 'player' and spellID == 8690 then -- 8690 is Hearthstone spell ID
+        local affectingCombat = UnitAffectingCombat('player')
+        local partyInCombat = false
+
+        --print("Player combat status: " .. tostring(affectingCombat))
+        -- party1 is always the player
+        for i = 1, 5 do
+          local partyUnit = 'party' .. i
+          --print("Party member " .. i .. " combat status: " .. tostring(UnitAffectingCombat(partyUnit)))
+          if UnitAffectingCombat(partyUnit) then
+            partyInCombat = true
+            break
+          end
+        end
+
+        if affectingCombat or partyInCombat then
+          ShowHearthingOverlay()
+        end
+      end
     end
   elseif event == 'UNIT_SPELLCAST_STOP' or event == 'UNIT_SPELLCAST_SUCCEEDED' or event == 'UNIT_SPELLCAST_FAILED' or event == 'UNIT_SPELLCAST_INTERRUPTED' then
-    -- Check for Hearthstone casting end
-    local unit, castGUID, spellID = ...
-    if unit == "player" and spellID == 8690 then -- 8690 is Hearthstone spell ID
-      CloseHearthingOverlay()
+    if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then
+      -- Check for Hearthstone casting end
+      local unit, castGUID, spellID = ...
+      if unit == 'player' and spellID == 8690 then -- 8690 is Hearthstone spell ID
+        HideHearthingOverlay()
+      end
     end
   end
 end)
