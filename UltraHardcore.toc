@@ -65,6 +65,13 @@ Functions/Checks/IsEnemyRareElite.lua
 Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
 
+Functions/DamageOverlayHandler.lua
+Functions/CritTracker.lua
+Functions/KillTracker.lua
+Functions/ItemTracker.lua
+Functions/PartyDeathTracker.lua
+Functions/DazedEffectHandler.lua
+
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
 Functions/Overlays/ShowBreathOverlay.lua
