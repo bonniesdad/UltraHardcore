@@ -26,7 +26,6 @@ Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
-Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
 Functions/SetPartyHealthIndicator.lua
 Functions/SetNameplateDisabled.lua
