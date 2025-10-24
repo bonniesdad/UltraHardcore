@@ -389,40 +389,45 @@ function InitializeSettingsOptionsTab()
         end
 
         if checkboxItem then
-          local checkbox =
-            CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
-          checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
-          checkbox.Text:SetText(checkboxItem.name)
-          checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
-          checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
+          -- Skip button items - we'll use slash commands instead
+          if not checkboxItem.isButton then
+            -- Create checkbox as normal
+            local checkbox =
+              CreateFrame('CheckButton', nil, scrollChild, 'ChatConfigCheckButtonTemplate')
+            checkbox:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, yOffset)
+            checkbox.Text:SetText(checkboxItem.name)
+            checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
+            checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
-          checkboxes[checkboxItem.dbSettingsValueName] = checkbox
+            checkboxes[checkboxItem.dbSettingsValueName] = checkbox
 
-          checkbox:SetScript('OnClick', function(self)
-            tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
+            checkbox:SetScript('OnClick', function(self)
+              tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
 
-            if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
-              SetCVar('statusText', '0')
-            end
-
-            if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
-              if _G.UltraHardcoreHandleBuffBarSettingChange then
-                _G.UltraHardcoreHandleBuffBarSettingChange()
+              if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
+                SetCVar('statusText', '0')
               end
-            end
-          end)
 
-          checkbox:SetScript('OnEnter', function(self)
-            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText(checkboxItem.tooltip)
-            GameTooltip:Show()
-          end)
+              if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
+                if _G.UltraHardcoreHandleBuffBarSettingChange then
+                  _G.UltraHardcoreHandleBuffBarSettingChange()
+                end
+              end
+              
+            end)
 
-          checkbox:SetScript('OnLeave', function(self)
-            GameTooltip:Hide()
-          end)
+            checkbox:SetScript('OnEnter', function(self)
+              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+              GameTooltip:SetText(checkboxItem.tooltip)
+              GameTooltip:Show()
+            end)
 
-          yOffset = yOffset - 30
+            checkbox:SetScript('OnLeave', function(self)
+              GameTooltip:Hide()
+            end)
+
+            yOffset = yOffset - 30
+          end
         end
       end
 
