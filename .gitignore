@@ -1,3 +1,5 @@
 /node_modules/
 /ToBeZipped/
 UltraHardcore.zip
+.DS_Store
+**/.DS_Store
