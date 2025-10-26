@@ -3,6 +3,14 @@
   - Adds horizontal compass to the screen
 ]]
 
+
+function createCompassText(parent, offsetX, text)
+    local compassText = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    compassText:SetFontHeight(18)
+    compassText:SetPoint("CENTER", offsetX, 0)
+    compassText:SetText(text)
+end
+
 function createCompass()
     local width = 400
     local height = 30
@@ -48,28 +56,47 @@ function createCompass()
     compassMask:SetSize(width - borderSize * 2, height - borderSize * 2)
     compassMask:SetClipsChildren(true)
 
-    local compassTextOffsetY = -1
-    local compassTextOffsetX = 445
-    local compassText = compassMask:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    compassText:SetPoint("CENTER", compassTextOffsetX, compassTextOffsetY)
-    local distance = string.rep(" ", 20)
-    local directions = "N" .. distance .. "NE" .. distance .. "E" .. distance .. "SE" .. distance .. "S" .. distance .. "SW" .. distance .. "W" .. distance .. "NW" .. distance
-    compassText:SetText(directions .. directions .. directions)
+    local compassContent = CreateFrame("Frame", nil, compassMask)
+    local compassContentWidth = width * 2.5
+    compassContent:SetSize(compassContentWidth, height)
+
+    local directionDistance = compassContentWidth / (math.pi * 2)
+
+    -- offset(2) here needed due to jump when going from 6.28 radians to 0 radians
+    createCompassText(compassContent, 2, "N")
+
+    createCompassText(compassContent, directionDistance, "NW")
+    createCompassText(compassContent, directionDistance * 2, "W")
+    createCompassText(compassContent, directionDistance * 3, "SW")
+    createCompassText(compassContent, directionDistance * 4, "S")
+    createCompassText(compassContent, directionDistance * 5, "SE")
+    createCompassText(compassContent, directionDistance * 6, "E")
+    createCompassText(compassContent, directionDistance * 7, "NE")
+    createCompassText(compassContent, directionDistance * 8, "N")
+    createCompassText(compassContent, directionDistance * 9, "NW")
+
+    createCompassText(compassContent, directionDistance * -1, "NE")
+    createCompassText(compassContent, directionDistance * -2, "E")
+    createCompassText(compassContent, directionDistance * -3, "SE")
+    createCompassText(compassContent, directionDistance * -4, "S")
+    createCompassText(compassContent, directionDistance * -5, "SW")
+    createCompassText(compassContent, directionDistance * -6, "W")
+    createCompassText(compassContent, directionDistance * -7, "NW")
+    createCompassText(compassContent, directionDistance * -8, "N")
+    createCompassText(compassContent, directionDistance * -9, "NE")
 
     local marker = compassMask:CreateTexture(nil, "OVERLAY")
     marker:SetSize(12, 20)
     marker:SetPoint("CENTER", 0, -18)
     marker:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_1")
 
-    local totalTextWidth = compassText:GetStringWidth() / 3
-    local compassSpeed = totalTextWidth / (1.834 * math.pi)
-
+    local compassSpeed = directionDistance * 1.27
     compassFrame:SetScript("OnUpdate", function()
         local facing = GetPlayerFacing()
         if facing then
             local offset = facing * compassSpeed
-            compassText:ClearAllPoints()
-            compassText:SetPoint("CENTER", compassMask, "CENTER", -offset + compassTextOffsetX, compassTextOffsetY)
+            compassContent:ClearAllPoints()
+            compassContent:SetPoint("CENTER", compassMask, "CENTER", -offset, -1)
         end
     end)
 end
