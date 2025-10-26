@@ -76,6 +76,10 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
+    showMainStatisticsPanelDuelsTotal = false,
+    showMainStatisticsPanelDuelsWon = false,
+    showMainStatisticsPanelDuelsLost = false,
+    showMainStatisticsPanelDuelsWinPercent = false,
   }
 
   -- Initialize settings for current character if they don't exist

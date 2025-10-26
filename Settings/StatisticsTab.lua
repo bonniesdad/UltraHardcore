@@ -23,6 +23,10 @@ local STATISTIC_TOOLTIPS = {
   grenadesUsed = 'Number of grenades you have thrown',
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   closeEscapes = "Number of times you've seen the final tunnel vision phase (<20% health)",
+  duelsTotal = "Total number of duels you have done",
+  duelsWon = "Number of duels you have won",
+  duelsLost = "Number of duels you have lost",
+  duelsWinPercent = "Percentage of duels you have won",
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -705,6 +709,22 @@ function InitializeStatisticsTab()
     key = 'maxTunnelVisionOverlayShown',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
+  }, {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -741,7 +761,7 @@ function InitializeStatisticsTab()
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
+  xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -690) -- Added 20px gap after Close Escapes
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -766,7 +786,7 @@ function InitializeStatisticsTab()
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
-  xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
+  xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -715) -- Adjusted to maintain proper gap from header
   xpGainedContent:Show() -- Show by default
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
@@ -978,7 +998,15 @@ function InitializeStatisticsTab()
       for _, stat in ipairs(survivalStats) do
         local value = CharacterStats:GetStat(stat.key) or 0
         if survivalTexts[stat.key] then
-          survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          if stat.key == 'duelsWinPercent' then
+            if value % 1 == 0 then
+              survivalTexts[stat.key]:SetText(string.format("%d%%", value))
+            else
+              survivalTexts[stat.key]:SetText(string.format("%.1f%%", value))
+            end
+          else
+            survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          end
         end
       end
     end
