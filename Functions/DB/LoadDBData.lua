@@ -47,6 +47,8 @@ function LoadDBData()
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
+    routePlanner = false,
+    routePlannerCompass = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     announceLevelUpToGuild = true,
@@ -76,7 +78,6 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
-    routePlanner = false,
   }
 
   -- Initialize settings for current character if they don't exist
