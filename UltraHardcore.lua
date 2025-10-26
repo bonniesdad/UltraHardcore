@@ -21,6 +21,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_START')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
+UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
@@ -133,5 +134,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         HideHearthingOverlay()
       end
     end
+  elseif event == 'CHAT_MSG_SYSTEM' then
+    DuelTracker(...)
   end
 end)
