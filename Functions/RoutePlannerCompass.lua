@@ -74,9 +74,11 @@ function createCompass()
     end)
 end
 
+local isCompassCreated = false
 function SetRoutePlannerCompass(compassEnabled)
-  if compassEnabled then
+  if compassEnabled and not isCompassCreated then
     createCompass()
-end
+    isCompassCreated = true
+  end
 end
 

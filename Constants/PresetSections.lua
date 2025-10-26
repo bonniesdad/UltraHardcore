@@ -33,6 +33,8 @@ local PRESET_SECTIONS = { {
     'setFirstPersonCamera',
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
+    'routePlanner',
+    'routePlannerCompass',
   },
 }, {
   title = 'Misc:',
