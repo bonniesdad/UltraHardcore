@@ -130,7 +130,11 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Route Planner',
   dbSettingsValueName = 'routePlanner',
-  tooltip = 'Get a compass. Map only usable near campfire or when resting. Plan your routes carefully',
+  tooltip = 'Map only usable near campfire or when resting. Plan your routes carefully',
+}, {
+  name = 'Route Planner - Compass',
+  dbSettingsValueName = 'routePlannerCompass',
+  tooltip = 'Get a compass to aid you in your journey',
 } }
 
 local presets = { {
@@ -157,6 +161,7 @@ local presets = { {
   showHealingIndicator = false,
   setFirstPersonCamera = false,
   routePlanner = false,
+  routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
@@ -194,6 +199,7 @@ local presets = { {
   showHealingIndicator = false,
   setFirstPersonCamera = false,
   routePlanner = false,
+  routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
@@ -231,6 +237,7 @@ local presets = { {
   showHealingIndicator = false,
   setFirstPersonCamera = false,
   routePlanner = false,
+  routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
