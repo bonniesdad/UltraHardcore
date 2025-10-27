@@ -55,6 +55,26 @@ function CharacterStats:ResetLowestHealth()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+-- Set lowest health to a specific value
+function CharacterStats:SetLowestHealth(value)
+  local numValue = tonumber(value)
+  if numValue and numValue >= 0 and numValue <= 100 then
+    local stats = self:GetCurrentCharacterStats()
+    if numValue < stats.lowestHealth then
+      print('UltraHardcore: You cannot set a lowest health lower than the current lowest health.')
+      return
+    end
+    local stats = self:GetCurrentCharacterStats()
+    stats.lowestHealth = numValue
+    SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+    print('UltraHardcore: Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
+  else
+    print(
+      'UltraHardcore: Invalid value. Please enter a number between 0 and 100 (e.g., /setLowestHealth 20)'
+    )
+  end
+end
+
 function CharacterStats:ResetLowestHealthThisLevel()
   local stats = self:GetCurrentCharacterStats()
   stats.lowestHealthThisLevel = self.defaults.lowestHealthThisLevel
@@ -614,4 +634,10 @@ SLASH_LOGSTATS1 = '/logstats'
 SLASH_LOGSTATS2 = '/uhcstats'
 SlashCmdList['LOGSTATS'] = function()
   CharacterStats:LogStatsToChat()
+end
+
+-- Register slash command to set lowest health
+SLASH_SETLOWESTHEALTH1 = '/setlowesthealth'
+SlashCmdList['SETLOWESTHEALTH'] = function(msg)
+  CharacterStats:SetLowestHealth(msg)
 end
