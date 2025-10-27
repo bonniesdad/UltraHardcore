@@ -221,22 +221,19 @@ end
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
   if not ShouldRepositionBuffBar() then return end
+    if BuffFrame then
+        local buffCount = 0;
+        local debuffCount = 0;
+        local pixelsToMove = 13.25;
+        local xOffset = 0;
+        local yOffset = 5;
+        local buffRows = 1;
 
-  -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.
-  -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
-
-  if BuffFrame then
-    local buffCount = 0
-    local pixelsToMove = 13.25
-    local xOffset = 0
-    local yOffset = 5
-    local buffRows = 1
-
-    -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2
-    -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
-    -- when iterating to count buffs, so I'm doing the same.
-    for i = 0, 40 do
-      local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
+        -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2
+        -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
+        -- when iterating to count buffs, so I'm doing the same.
+        for i = 0, 40 do
+            local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
 
       if aura and aura.isHarmful ~= true then
         buffCount = buffCount + 1
@@ -248,20 +245,36 @@ local function CenterPlayerBuffBar()
       end
     end
 
-    if buffCount == 0 then return end
+        if buffCount == 0 then return end
+        local firstBuffButton = _G["BuffButton1"]
 
-    if buffCount > 1 then
-      xOffset = (buffCount - 1) * pixelsToMove
+        -- We're no longer calculating a xOffset to try to move the buff bar around
+        -- Instead, we're going to figure out how wide each buff icon is and calculate a newWidth
+        -- and just resize the frame to fit exactly.
+        if firstBuffButton then
+            local width = firstBuffButton:GetWidth()
+            local height = firstBuffButton:GetHeight()
+
+            -- buffCount + width is the total width of all buff icons
+            -- (buffCount - 1) * 5 is the spacing between each icon (~5 pixels each)
+            -- 5 pixels is subtracted to account for spacing in front of the first icon
+            local newWidth = (buffCount * width) + (buffCount * 5) - 5
+            if buffCount < debuffCount then
+                newWidth = debuffCount * width
+            end
+
+            BuffFrame:SetScale(1.0)
+            BuffFrame:SetWidth(newWidth)
+
+            if buffRows > 1 then 
+                yOffset = ((buffRows - 1) * height) + ((buffRows - 1) * 5); 
+            end
+
+            BuffFrame:ClearAllPoints()
+            BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, yOffset)
+
+        end
     end
-
-    if buffRows > 1 then
-      -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
-      yOffset = (buffRows - 1) * 45
-    end
-
-    BuffFrame:ClearAllPoints()
-    BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
-  end
 end
 
 -- Event Handling
@@ -286,13 +299,12 @@ end
 local function RepositionPlayerBuffBar()
   if not ShouldRepositionBuffBar() then return end
 
-  -- Wait for buff frame to be created
-  C_Timer.After(0.5, function()
-    if BuffFrame and BuffFrame:IsVisible() then
-      BuffFrame:ClearAllPoints()
-      BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
-    end
-  end)
+    -- Wait for buff frame to be created
+    C_Timer.After(0.5, function()
+        if BuffFrame and BuffFrame:IsVisible() then
+            CenterPlayerBuffBar()
+        end
+    end)
 end
 
 -- Hook into buff frame events to maintain positioning
