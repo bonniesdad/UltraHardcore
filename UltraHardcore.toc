@@ -9,6 +9,7 @@ UltraHardcore.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua
+Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
 Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
 Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
 
@@ -37,6 +38,8 @@ Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
+Functions/RoutePlanner.lua
+Functions/RoutePlannerCompass.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -63,6 +66,7 @@ Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
 Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
+Functions/Checks/HasBuff.lua
 
 Functions/DamageOverlayHandler.lua
 Functions/CritTracker.lua

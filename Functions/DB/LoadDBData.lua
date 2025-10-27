@@ -47,6 +47,8 @@ function LoadDBData()
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
+    routePlanner = false,
+    routePlannerCompass = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     announceLevelUpToGuild = true,
