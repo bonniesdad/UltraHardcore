@@ -144,7 +144,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'UNIT_AURA' then
     local unit = ...
-    if unit == "player" then
+    if unit == 'player' then
       SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
     end
   end
