@@ -60,6 +60,11 @@ function CharacterStats:SetLowestHealth(value)
   local numValue = tonumber(value)
   if numValue and numValue >= 0 and numValue <= 100 then
     local stats = self:GetCurrentCharacterStats()
+    if numValue < stats.lowestHealth then
+      print('UltraHardcore: You cannot set a lowest health lower than the current lowest health.')
+      return
+    end
+    local stats = self:GetCurrentCharacterStats()
     stats.lowestHealth = numValue
     SaveDBData('characterStats', UltraHardcoreDB.characterStats)
     print('UltraHardcore: Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
