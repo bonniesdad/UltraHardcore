@@ -3,16 +3,17 @@
   Compact party frames are not supported yet.
 ]]
 
-PARTY_MEMBER_SUBFRAMES_TO_HIDE = {
-  'HealthBar',
-  'ManaBar',
-  'Texture',
-  'Background',
-  'PetFrameBackground',
-  'PetFrameTexture',
-  'PetFrameHealthBar',
-  'PetFrameManaBar',
-}
+PARTY_MEMBER_SUBFRAMES_TO_HIDE =
+  {
+    'HealthBar',
+    'ManaBar',
+    'Texture',
+    'Background',
+    'PetFrameBackground',
+    'PetFrameTexture',
+    'PetFrameHealthBar',
+    'PetFrameManaBar',
+  }
 
 function SetPartyFramesInfo(hideGroupHealth)
   ForcePartyFrames()
@@ -25,39 +26,50 @@ function SetPartyFramesInfo(hideGroupHealth)
 end
 
 function SetPartyFrameInfo(n)
+  -- Check if we're in combat lockdown before modifying frames
+  if InCombatLockdown() then
+    -- Defer frame modifications until combat ends
+    C_Timer.After(0.1, function()
+      if not InCombatLockdown() then
+        SetPartyFrameInfo(n)
+      end
+    end)
+    return
+  end
+
   for _, subFrame in ipairs(PARTY_MEMBER_SUBFRAMES_TO_HIDE) do
     HidePartySubFrame(n, subFrame)
 
     -- Move Name subframe down a few pixels to be centered with the portrait
-    local nameFrame = _G['PartyMemberFrame' .. n .. "Name"]
-    
+    local nameFrame = _G['PartyMemberFrame' .. n .. 'Name']
+
     if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
       nameFrame:ClearAllPoints()
-      nameFrame:SetPoint("BOTTOMLEFT", 55, 25)
+      nameFrame:SetPoint('BOTTOMLEFT', 55, 25)
     end
   end
-  
+
   -- Move the entire party frame to the right by 100px and stack vertically
   local partyFrame = _G['PartyMemberFrame' .. n]
   if partyFrame and partyFrame.SetPoint and partyFrame.ClearAllPoints then
     -- Clear any existing anchor points to prevent anchor family connection errors
     partyFrame:ClearAllPoints()
-    
+
     -- Position each party frame vertically below the previous one
     local verticalOffset = -120 - ((n - 1) * 60) -- 60px spacing between frames
-    partyFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 80, verticalOffset)
-    
+    partyFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 80, verticalOffset)
+
     -- Set party frame to highest tooltip level (above 1000)
     if partyFrame.SetFrameLevel then
       partyFrame:SetFrameLevel(1500)
     end
   end
-  
+
   -- Reposition target highlights to match the moved party frame
   if RepositionAllPartyTargetHighlights then
     RepositionAllPartyTargetHighlights()
   end
-  
+
   -- TODO move buffs/debuffs up
 end
 
@@ -69,7 +81,20 @@ function HidePartySubFrame(n, subFrame)
 end
 
 function ForcePartyFrames()
-  SetCVar('useCompactPartyFrames', 0)
+  if InCombatLockdown() then
+    -- If in combat, queue the CVar change for later
+    C_Timer.After(0.1, function()
+      if not InCombatLockdown() then
+        ForcePartyFrames()
+      end
+    end)
+  else
+    -- Only change the CVar if it's not already set to 0
+    local currentValue = GetCVar('useCompactPartyFrames')
+    if currentValue ~= '0' then
+      SetCVar('useCompactPartyFrames', 0)
+    end
+  end
 end
 
 -- Ensure that party frames are always configured
@@ -81,10 +106,23 @@ frame:RegisterEvent('PLAYER_LOGIN')
 
 frame:SetScript('OnEvent', function(self, event, cvar)
   if GLOBAL_SETTINGS.hideGroupHealth then
-    ForcePartyFrames()
-    -- Apply styling to all party frames
-    for n = 1, 5 do
-      SetPartyFrameInfo(n)
+    -- Only apply changes when not in combat lockdown
+    if not InCombatLockdown() then
+      ForcePartyFrames()
+      -- Apply styling to all party frames
+      for n = 1, 5 do
+        SetPartyFrameInfo(n)
+      end
+    else
+      -- If in combat, defer the changes
+      C_Timer.After(0.1, function()
+        if not InCombatLockdown() and GLOBAL_SETTINGS.hideGroupHealth then
+          ForcePartyFrames()
+          for n = 1, 5 do
+            SetPartyFrameInfo(n)
+          end
+        end
+      end)
     end
   end
 end)
