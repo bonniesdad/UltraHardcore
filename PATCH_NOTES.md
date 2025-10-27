@@ -4,16 +4,24 @@
 
 ### New Features
 
-- **Tunnel Vision Covers Everything** - Added to ULTRA preset settings
+- **Tunnel Vision Covers Everything**
+  - Moved to ULTRA preset settings from Recommended
 - **Super Spooky Tunnel Vision**
   - When enabled, the tunnel vision will be displayed in a spooky Halloween theme.
 - **Terrifying Pumpkin Themed Settings Presets**
+  - New pumpkin themed ultra preset icons, a big thanks to the talented Vivi!
 - **Highest Crit Appreciation Soundbite**
-  - Play a soundbite when you achieve a new highest crit value
+  - Play a soundbite when you achieve a new highest crit score
 - **Party Death Soundbite**
   - Play a soundbite when a party member dies
 - **Player Death Soundbite**
   - Play a soundbite when you die
+- **Completely Remove Target Frame** - Added to EXPERIMENTAL settings
+  - When enabled, the target frame will be completely removed from the screen.
+- **Completely Remove Player Frame** - Added to EXPERIMENTAL settings
+  - When enabled, the player frame will be completely removed from the screen.
+- **Tooltips to Statistics labels**
+  - When you hover over a statistic label, a tooltip will be displayed with the statistic description.
 
 ### Bug Fixes
 
@@ -21,6 +29,8 @@
 - Fix: Allow Hidden Action Bars to show Action Bars when on a taxi.
 - Fix nameplates issue causing guild promo break. (wtf?)
 - Fix Dueling lowest health level & session tracking issue.
+- Fix: Missing Sound files from zip upload.
+- Fix: Missing Libs from zip upload.
 
 ### Technical Improvements
 
