@@ -21,7 +21,9 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 
   if hideActionBars and playerLevel >= MIN_LEVEL_HIDE_ACTION_BARS then
     local inCombat = UnitAffectingCombat('player') == true
-    if (IsResting() or HasCozyFire() or UnitOnTaxi('player')) and not inCombat then
+    if (IsResting() or HasCozyFire() or UnitOnTaxi('player') or UnitIsDead(
+      'player'
+    )) and not inCombat then
       ShowActionBars()
     else
       HideActionBars()
