@@ -7,6 +7,11 @@
 
 UltraHardcore.lua
 
+## Libs
+Libs/LibStub/LibStub.lua
+Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
+Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
+
 ## Functions
 Functions/SetPlayerFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
@@ -21,7 +26,6 @@ Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
-Functions/XPGainedTracker.lua
 Functions/HidePartyInformation.lua
 Functions/SetPartyHealthIndicator.lua
 Functions/SetNameplateDisabled.lua
@@ -33,7 +37,6 @@ Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
-Functions/HearthingOverlay.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -50,6 +53,7 @@ Functions/Utils/Resource/UpdateResourceBar.lua
 Functions/Utils/Resource/GetCurrentResourceType.lua
 
 Functions/Utils/RotateScreenEffect.lua
+Functions/Utils/FormatNumber.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
@@ -59,6 +63,13 @@ Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
 Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
+
+Functions/DamageOverlayHandler.lua
+Functions/CritTracker.lua
+Functions/KillTracker.lua
+Functions/ItemTracker.lua
+Functions/PartyDeathTracker.lua
+Functions/DazedEffectHandler.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
@@ -80,11 +91,18 @@ Functions/Overlays/ShowArcaneDamageOverlay.lua
 Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
 Functions/Overlays/ShowFireDamageOverlay.lua
 Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
+Functions/Overlays/ShowNatureDamageOverlay.lua
+Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/Settings.lua
+Settings/TabManager.lua
+Settings/StatisticsTab.lua
+Settings/SettingsOptionsTab.lua
+Settings/AchievementTab.lua
+Settings/InfoTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 
 ## Constants
-Constants/WolfLikeNPCs.lua
+Constants/PresetSections.lua

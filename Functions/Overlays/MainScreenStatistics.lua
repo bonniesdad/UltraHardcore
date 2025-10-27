@@ -1,36 +1,6 @@
 -- Main Screen Statistics Display
 -- Shows the same statistics that appear in the settings panel, but on the main screen at all times
 
--- Helper function to format numbers with comma separators
-local function formatNumberWithCommas(number)
-  if type(number) ~= "number" then
-    number = tonumber(number) or 0
-  end
-  
-  -- Handle negative numbers
-  local isNegative = number < 0
-  if isNegative then
-    number = -number
-  end
-  
-  -- Convert to string and add commas
-  local formatted = tostring(math.floor(number))
-  local k
-  while true do
-    formatted, k = string.gsub(formatted, "^(-?%d+)(%d%d%d)", '%1,%2')
-    if k == 0 then
-      break
-    end
-  end
-  
-  -- Add back negative sign if needed
-  if isNegative then
-    formatted = "-" .. formatted
-  end
-  
-  return formatted
-end
-
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
 statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
@@ -82,7 +52,6 @@ thisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
 thisLevelValue:SetText('100.0%')
 thisLevelValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-
 local enemiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
 enemiesLabel:SetText('Enemies Slain:')
@@ -92,7 +61,6 @@ local enemiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighli
 enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
 enemiesValue:SetText(formatNumberWithCommas(0))
 enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
 
 local dungeonsCompletedLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -80)
@@ -229,46 +197,94 @@ tunnelVisionValue:SetText(formatNumberWithCommas(0))
 tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Store all statistics elements for easy management
-local statsElements = {
-  {label = levelLabel, value = levelValue, setting = 'showMainStatisticsPanelLevel'},
-  {label = lowestHealthLabel, value = lowestHealthValue, setting = 'showMainStatisticsPanelLowestHealth'},
-  {label = thisLevelLabel, value = thisLevelValue, setting = 'showMainStatisticsPanelThisLevel'},
-  {label = sessionHealthLabel, value = sessionHealthValue, setting = 'showMainStatisticsPanelSessionHealth'},
-  {label = petDeathsLabel, value = petDeathsValue, setting = 'showMainStatisticsPanelPetDeaths'},
-  {label = enemiesLabel, value = enemiesValue, setting = 'showMainStatisticsPanelEnemiesSlain'},
-  {label = elitesSlainLabel, value = elitesSlainValue, setting = 'showMainStatisticsPanelElitesSlain'},
-  {label = rareElitesSlainLabel, value = rareElitesSlainValue, setting = 'showMainStatisticsPanelRareElitesSlain'},
-  {label = worldBossesSlainLabel, value = worldBossesSlainValue, setting = 'showMainStatisticsPanelWorldBossesSlain'},
-  {label = dungeonBossesLabel, value = dungeonBossesValue, setting = 'showMainStatisticsPanelDungeonBosses'},
-  {label = dungeonsCompletedLabel, value = dungeonsCompletedValue, setting = 'showMainStatisticsPanelDungeonsCompleted'},
-  {label = healthPotionsLabel, value = healthPotionsValue, setting = 'showMainStatisticsPanelHealthPotionsUsed'},
-  {label = bandagesLabel, value = bandagesValue, setting = 'showMainStatisticsPanelBandagesUsed'},
-  {label = targetDummiesLabel, value = targetDummiesValue, setting = 'showMainStatisticsPanelTargetDummiesUsed'},
-  {label = grenadesLabel, value = grenadesValue, setting = 'showMainStatisticsPanelGrenadesUsed'},
-  {label = partyDeathsLabel, value = partyDeathsValue, setting = 'showMainStatisticsPanelPartyMemberDeaths'},
-  {label = highestCritLabel, value = highestCritValue, setting = 'showMainStatisticsPanelHighestCritValue'},
-  {label = tunnelVisionLabel, value = tunnelVisionValue, setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown'}
-}
+local statsElements = { {
+  label = levelLabel,
+  value = levelValue,
+  setting = 'showMainStatisticsPanelLevel',
+}, {
+  label = lowestHealthLabel,
+  value = lowestHealthValue,
+  setting = 'showMainStatisticsPanelLowestHealth',
+}, {
+  label = thisLevelLabel,
+  value = thisLevelValue,
+  setting = 'showMainStatisticsPanelThisLevel',
+}, {
+  label = sessionHealthLabel,
+  value = sessionHealthValue,
+  setting = 'showMainStatisticsPanelSessionHealth',
+}, {
+  label = petDeathsLabel,
+  value = petDeathsValue,
+  setting = 'showMainStatisticsPanelPetDeaths',
+}, {
+  label = enemiesLabel,
+  value = enemiesValue,
+  setting = 'showMainStatisticsPanelEnemiesSlain',
+}, {
+  label = elitesSlainLabel,
+  value = elitesSlainValue,
+  setting = 'showMainStatisticsPanelElitesSlain',
+}, {
+  label = rareElitesSlainLabel,
+  value = rareElitesSlainValue,
+  setting = 'showMainStatisticsPanelRareElitesSlain',
+}, {
+  label = worldBossesSlainLabel,
+  value = worldBossesSlainValue,
+  setting = 'showMainStatisticsPanelWorldBossesSlain',
+}, {
+  label = dungeonBossesLabel,
+  value = dungeonBossesValue,
+  setting = 'showMainStatisticsPanelDungeonBosses',
+}, {
+  label = dungeonsCompletedLabel,
+  value = dungeonsCompletedValue,
+  setting = 'showMainStatisticsPanelDungeonsCompleted',
+}, {
+  label = healthPotionsLabel,
+  value = healthPotionsValue,
+  setting = 'showMainStatisticsPanelHealthPotionsUsed',
+}, {
+  label = bandagesLabel,
+  value = bandagesValue,
+  setting = 'showMainStatisticsPanelBandagesUsed',
+}, {
+  label = targetDummiesLabel,
+  value = targetDummiesValue,
+  setting = 'showMainStatisticsPanelTargetDummiesUsed',
+}, {
+  label = grenadesLabel,
+  value = grenadesValue,
+  setting = 'showMainStatisticsPanelGrenadesUsed',
+}, {
+  label = partyDeathsLabel,
+  value = partyDeathsValue,
+  setting = 'showMainStatisticsPanelPartyMemberDeaths',
+}, {
+  label = highestCritLabel,
+  value = highestCritValue,
+  setting = 'showMainStatisticsPanelHighestCritValue',
+}, {
+  label = tunnelVisionLabel,
+  value = tunnelVisionValue,
+  setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown',
+} }
 
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
   local yOffset = -5
   local visibleRows = 0
-  
+
   for _, element in ipairs(statsElements) do
     local isVisible = false
-    
+
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS[element.setting] ~= nil then
       -- Use the actual setting value
       isVisible = GLOBAL_SETTINGS[element.setting]
     else
       -- Apply default behavior based on the setting
-      if element.setting == 'showMainStatisticsPanelLevel' or 
-         element.setting == 'showMainStatisticsPanelLowestHealth' or
-         element.setting == 'showMainStatisticsPanelEnemiesSlain' or
-         element.setting == 'showMainStatisticsPanelDungeonsCompleted' or
-         element.setting == 'showMainStatisticsPanelHighestCritValue' or
-         element.setting == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
+      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
         -- These default to true (show unless explicitly false)
         isVisible = true
       else
@@ -276,7 +292,7 @@ local function UpdateRowVisibility()
         isVisible = false
       end
     end
-    
+
     if isVisible then
       element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, yOffset)
       element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, yOffset)
@@ -289,7 +305,7 @@ local function UpdateRowVisibility()
       element.value:Hide()
     end
   end
-  
+
   -- Adjust frame height based on visible rows
   local newHeight = math.max(20, visibleRows * 15 + 10)
   statsFrame:SetSize(200, newHeight)
@@ -298,7 +314,6 @@ end
 -- Make UpdateRowVisibility globally accessible
 UltraHardcoreStatsFrame = statsFrame
 UltraHardcoreStatsFrame.UpdateRowVisibility = UpdateRowVisibility
-
 
 -- Hide the frame if the statistics setting is off
 local function CheckAddonEnabled()
@@ -315,75 +330,75 @@ local function UpdateStatistics()
   if not UltraHardcoreDB then
     LoadDBData()
   end
-  
+
   -- Update character level
   local playerLevel = UnitLevel('player') or 1
   levelValue:SetText(formatNumberWithCommas(playerLevel))
-  
+
   -- Update lowest health
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
-  lowestHealthValue:SetText(string.format("%.1f", currentLowestHealth) .. '%')
-  
+  lowestHealthValue:SetText(string.format('%.1f', currentLowestHealth) .. '%')
+
   -- Update session lowest health
   local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
-  sessionHealthValue:SetText(string.format("%.1f", currentSessionLowestHealth) .. '%')
-  
+  sessionHealthValue:SetText(string.format('%.1f', currentSessionLowestHealth) .. '%')
+
   -- Update this level lowest health
   local currentThisLevelHealth = CharacterStats:GetStat('lowestHealthThisLevel') or 100
-  thisLevelValue:SetText(string.format("%.1f", currentThisLevelHealth) .. '%')
-  
+  thisLevelValue:SetText(string.format('%.1f', currentThisLevelHealth) .. '%')
+
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
   enemiesValue:SetText(formatNumberWithCommas(enemies))
-  
+
   -- Update dungeons completed
   local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
   dungeonsCompletedValue:SetText(formatNumberWithCommas(dungeonsCompleted))
-  
+
   -- Update pet deaths
   local petDeaths = CharacterStats:GetStat('petDeaths') or 0
   petDeathsValue:SetText(formatNumberWithCommas(petDeaths))
-  
+
   -- Update elites slain
   local elitesSlain = CharacterStats:GetStat('elitesSlain') or 0
   elitesSlainValue:SetText(formatNumberWithCommas(elitesSlain))
-  
+
   -- Update rare elites slain
   local rareElitesSlain = CharacterStats:GetStat('rareElitesSlain') or 0
   rareElitesSlainValue:SetText(formatNumberWithCommas(rareElitesSlain))
-  
+
   -- Update world bosses slain
   local worldBossesSlain = CharacterStats:GetStat('worldBossesSlain') or 0
   worldBossesSlainValue:SetText(formatNumberWithCommas(worldBossesSlain))
-  
+
   -- Update dungeon bosses slain
   local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
   dungeonBossesValue:SetText(formatNumberWithCommas(dungeonBosses))
-  
+
   -- Update survival statistics
   local healthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
   healthPotionsValue:SetText(formatNumberWithCommas(healthPotions))
-  
+
   local bandages = CharacterStats:GetStat('bandagesUsed') or 0
   bandagesValue:SetText(formatNumberWithCommas(bandages))
-  
+
   local targetDummies = CharacterStats:GetStat('targetDummiesUsed') or 0
   targetDummiesValue:SetText(formatNumberWithCommas(targetDummies))
-  
+
   local grenades = CharacterStats:GetStat('grenadesUsed') or 0
   grenadesValue:SetText(formatNumberWithCommas(grenades))
-  
+
   local partyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
   partyDeathsValue:SetText(formatNumberWithCommas(partyDeaths))
-  
+
   -- Update highest crit value
   local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
   highestCritValue:SetText(formatNumberWithCommas(highestCrit))
-  
+
   -- Update tunnel vision overlay count
   local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
   tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
-  
+
   -- Update row visibility after updating values
   UpdateRowVisibility()
 end
@@ -394,7 +409,6 @@ statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
 statsFrame:RegisterEvent('ADDON_LOADED') -- Check setting when addon loads
-
 statsFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' then
     UpdateStatistics()
