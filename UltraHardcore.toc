@@ -74,6 +74,7 @@ Functions/KillTracker.lua
 Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
 Functions/DazedEffectHandler.lua
+Functions/RejectBuffsFromOthers.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua

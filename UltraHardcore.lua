@@ -69,6 +69,12 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if unit == 'pet' then
       CheckAndAbandonPet()
     end
+  elseif event == 'UNIT_AURA' then
+    local unit = ...
+    -- Handle buff rejection for buffs from others
+    if unit == 'player' and _G.RejectBuffsFromOthers then
+      _G.RejectBuffsFromOthers(event, unit)
+    end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)

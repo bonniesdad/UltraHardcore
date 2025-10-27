@@ -46,6 +46,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
 }, {
+  name = 'Reject buffs from others',
+  dbSettingsValueName = 'rejectBuffsFromOthers',
+  tooltip = 'Automatically cancel buffs that do not come from the player themselves',
+}, {
   -- Experimental Preset Settings
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
@@ -153,6 +157,7 @@ local presets = { {
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
+  rejectBuffsFromOthers = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -191,6 +196,7 @@ local presets = { {
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
+  rejectBuffsFromOthers = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -229,6 +235,7 @@ local presets = { {
   petsDiePermanently = true,
   hideActionBars = true,
   tunnelVisionMaxStrata = true,
+  rejectBuffsFromOthers = true,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
