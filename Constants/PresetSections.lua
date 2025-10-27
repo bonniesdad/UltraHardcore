@@ -21,7 +21,7 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Ultra:',
-  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata' },
+  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'rejectBuffsFromOthers' },
 }, {
   title = 'Experimental:',
   settings = {

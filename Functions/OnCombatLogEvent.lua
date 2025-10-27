@@ -34,4 +34,9 @@ function OnCombatLogEvent(self, event)
   if subEvent == 'UNIT_DIED' then
     PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   end
+  
+  -- Handle buff application tracking for rejecting buffs from others
+  if _G.TrackBuffApplication then
+    _G.TrackBuffApplication(subEvent, sourceGUID, destGUID, spellID)
+  end
 end
