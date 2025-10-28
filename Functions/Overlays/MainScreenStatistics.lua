@@ -218,6 +218,50 @@ tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
 tunnelVisionValue:SetText(formatNumberWithCommas(0))
 tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Duels Total value row
+local duelsTotalLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsTotalLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+duelsTotalLabel:SetText('Duels Total:')
+duelsTotalLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local duelsTotalValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsTotalValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsTotalValue:SetText(formatNumberWithCommas(0))
+duelsTotalValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+-- Duels Won value row
+local duelsWonLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsWonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+duelsWonLabel:SetText('Duels Won:')
+duelsWonLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local duelsWonValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsWonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsWonValue:SetText(formatNumberWithCommas(0))
+duelsWonValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+-- Duels Lost value row
+local duelsLostLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsLostLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+duelsLostLabel:SetText('Duels Lost:')
+duelsLostLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local duelsLostValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsLostValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsLostValue:SetText(formatNumberWithCommas(0))
+duelsLostValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+-- Duels Win Percentage
+local duelsWinPercentLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsWinPercentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+duelsWinPercentLabel:SetText('Duel Win Percent:')
+duelsWinPercentLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local duelsWinPercentValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsWinPercentValue:SetText('100%')
+duelsWinPercentValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Store all statistics elements for easy management
 local statsElements = { {
   label = levelLabel,
@@ -291,6 +335,22 @@ local statsElements = { {
   label = tunnelVisionLabel,
   value = tunnelVisionValue,
   setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown',
+}, {
+  label = duelsTotalLabel,
+  value = duelsTotalValue,
+  setting = 'showMainStatisticsPanelDuelsTotal',
+}, {
+  label = duelsWonLabel,
+  value = duelsWonValue,
+  setting = 'showMainStatisticsPanelDuelsWon',
+}, {
+  label = duelsLostLabel,
+  value = duelsLostValue,
+  setting = 'showMainStatisticsPanelDuelsLost',
+}, {
+  label = duelsWinPercentLabel,
+  value = duelsWinPercentValue,
+  setting = 'showMainStatisticsPanelDuelsWinPercent',
 } }
 
 -- Function to update row visibility and positioning
@@ -421,6 +481,26 @@ local function UpdateStatistics()
   -- Update tunnel vision overlay count
   local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
   tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
+
+-- Update Duels Total value
+  local duelsTotal = CharacterStats:GetStat('duelsTotal') or 0
+  duelsTotalValue:SetText(formatNumberWithCommas(duelsTotal))
+
+-- Update Duels Won value
+  local duelsWon = CharacterStats:GetStat('duelsWon') or 0
+  duelsWonValue:SetText(formatNumberWithCommas(duelsWon))
+
+  -- Update Duels Lost value
+  local duelsLost = CharacterStats:GetStat('duelsLost') or 0
+  duelsLostValue:SetText(formatNumberWithCommas(duelsLost))
+
+  -- Update Duels Win Percentage value
+  local duelsWinPercent = CharacterStats:GetStat('duelsWinPercent') or 0
+  if duelsWinPercent % 1 == 0 then
+    duelsWinPercentValue:SetText(string.format("%d%%", duelsWinPercent))
+  else
+    duelsWinPercentValue:SetText(string.format("%.1f%%", duelsWinPercent))
+  end
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
