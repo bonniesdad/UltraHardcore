@@ -6,6 +6,28 @@ local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
 statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
+-- Background behind statistics with configurable opacity
+local statsBackground = statsFrame:CreateTexture(nil, 'BACKGROUND')
+statsBackground:SetAllPoints(statsFrame)
+statsBackground:SetColorTexture(0, 0, 0, 0.3)
+
+local function ApplyStatsBackgroundOpacity()
+  local alpha = 0.3
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.statisticsBackgroundOpacity ~= nil then
+    alpha = GLOBAL_SETTINGS.statisticsBackgroundOpacity
+  end
+  -- Clamp between 0 and 1
+  if alpha < 0 then
+    alpha = 0
+  end
+  if alpha > 1 then
+    alpha = 1
+  end
+  statsBackground:SetColorTexture(0, 0, 0, alpha)
+end
+
+ApplyStatsBackgroundOpacity()
+
 -- Make the frame draggable
 MakeFrameDraggable(statsFrame)
 
@@ -322,6 +344,7 @@ local function CheckAddonEnabled()
   else
     statsFrame:Show()
     UpdateRowVisibility()
+    ApplyStatsBackgroundOpacity()
   end
 end
 
@@ -432,6 +455,7 @@ end)
 local settingsCheckTimer = C_Timer.NewTicker(1, function()
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showOnScreenStatistics then
     UpdateRowVisibility()
+    ApplyStatsBackgroundOpacity()
   end
 end)
 
@@ -441,6 +465,7 @@ UpdateStatistics()
 -- Initial check with delay to ensure GLOBAL_SETTINGS is loaded
 C_Timer.After(1, function()
   CheckAddonEnabled()
+  ApplyStatsBackgroundOpacity()
 end)
 
 -- Also check immediately
