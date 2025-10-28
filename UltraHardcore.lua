@@ -71,9 +71,13 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'UNIT_AURA' then
     local unit = ...
-    -- Handle buff rejection for buffs from others
-    if unit == 'player' and _G.RejectBuffsFromOthers then
-      _G.RejectBuffsFromOthers(event, unit)
+    if unit == 'player' then
+      if GLOBAL_SETTINGS.routePlanner then
+        SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
+      end
+      if _G.RejectBuffsFromOthers then
+        _G.RejectBuffsFromOthers(event, unit)
+      end
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
@@ -141,11 +145,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       if unit == 'player' and spellID == 8690 then -- 8690 is Hearthstone spell ID
         HideHearthingOverlay()
       end
-    end
-  elseif event == 'UNIT_AURA' then
-    local unit = ...
-    if unit == 'player' then
-      SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
     end
   end
 end)
