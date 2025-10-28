@@ -26,6 +26,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
+    HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
     SetPlayerFrameDisplay(
