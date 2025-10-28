@@ -10,11 +10,10 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
       GameTooltipStatusBar:Hide()
 
       -- Check if unit is tapped by another player and in combat, modify first line (name) color
-      if not UnitIsTappedByPlayer(unit) and UnitAffectingCombat(unit) then
-        local nameLine = _G['GameTooltipTextLeft1']
-        if nameLine then
-          nameLine:SetTextColor(0.5, 0.5, 0.5) -- Gray color
-        end
+      if UnitIsTapDenied(unit) then
+        GameTooltipTextLeft1:SetTextColor(0.5, 0.5, 0.5) -- Gray color
+      else
+        GameTooltipTextLeft1:SetTextColor(1, 1, 1) -- Reset color to white
       end
 
       -- Modify tooltip lines
