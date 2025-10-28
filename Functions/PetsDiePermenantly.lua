@@ -33,5 +33,5 @@ function CheckAndAbandonPet()
 
     -- Pet is dead, abandon it immediately
     PetAbandon()
-    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[UHC]|r Your pet has died and been abandoned. Pet deaths: " .. (currentPetDeaths + 1), 1, 0, 0)
+    DEFAULT_CHAT_FRAME:AddMessage("|cFFFF0000[ULTRA]|r Your pet has died and been abandoned. Pet deaths: " .. (currentPetDeaths + 1), 1, 0, 0)
 end

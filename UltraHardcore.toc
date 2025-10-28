@@ -41,6 +41,7 @@ Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
+Functions/TradeRestriction.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -109,6 +110,10 @@ Settings/AchievementTab.lua
 Settings/InfoTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
+Settings/XFoundMode/IntroPage.lua
+Settings/XFoundMode/StatusPage.lua
+Settings/XFoundMode/GuildConfirmPage.lua
+Settings/XFoundMode/GroupConfirmPage.lua
 
 ## Constants
 Constants/PresetSections.lua
