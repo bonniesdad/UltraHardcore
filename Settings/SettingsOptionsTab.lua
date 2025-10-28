@@ -50,6 +50,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'rejectBuffsFromOthers',
   tooltip = 'Automatically cancel buffs that do not come from the player themselves',
 }, {
+  name = 'Route Planner',
+  dbSettingsValueName = 'routePlanner',
+  tooltip = 'Map only usable near campfire or when resting. Plan your routes carefully',
+}, {
   -- Experimental Preset Settings
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
@@ -132,10 +136,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 }, {
-  name = 'Route Planner',
-  dbSettingsValueName = 'routePlanner',
-  tooltip = 'Map only usable near campfire or when resting. Plan your routes carefully',
-}, {
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
@@ -197,6 +197,7 @@ local presets = { {
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
   rejectBuffsFromOthers = false,
+  routePlanner = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -204,7 +205,6 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  routePlanner = false,
   routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
@@ -236,6 +236,7 @@ local presets = { {
   hideActionBars = true,
   tunnelVisionMaxStrata = true,
   rejectBuffsFromOthers = true,
+  routePlanner = true,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -243,7 +244,6 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  routePlanner = false,
   routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
