@@ -389,7 +389,9 @@ function InitializeSettingsOptionsTab()
   local totalHeight = (5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 40
   -- Extra space for Resource Bar Colors section
   local colorSectionExtraHeight = 150
-  scrollChild:SetSize(420, totalHeight + colorSectionExtraHeight)
+  -- Extra space for statistics background opacity slider
+  local statsOpacityExtraHeight = 80
+  scrollChild:SetSize(420, totalHeight + colorSectionExtraHeight + statsOpacityExtraHeight)
 
   function createCheckboxes()
     local yOffset = -10
@@ -615,4 +617,60 @@ function InitializeSettingsOptionsTab()
   createColorRow('Rage', 'RAGE', 2)
   createColorRow('Mana', 'MANA', 3)
   createColorRow('Pet', 'PET', 4, { 0.5, 0, 1 })
+
+  -- Statistics Background section
+  local statsHeaderYOffset = baseYOffset - (5 * 28) - 20
+  local statsHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  statsHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, statsHeaderYOffset)
+  statsHeader:SetText('Statistics Background')
+  statsHeader:SetTextColor(1, 1, 0.5)
+
+  local opacityRow = CreateFrame('Frame', nil, scrollChild)
+  opacityRow:SetSize(380, 24)
+  opacityRow:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, statsHeaderYOffset - 28)
+
+  local LABEL_WIDTH = 140
+  local GAP = 12
+
+  local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  opacityLabel:SetPoint('LEFT', opacityRow, 'LEFT', 0, 0)
+  opacityLabel:SetWidth(LABEL_WIDTH)
+  opacityLabel:SetJustifyH('LEFT')
+  opacityLabel:SetText('Opacity')
+
+  -- Initialize default if missing
+  if tempSettings.statisticsBackgroundOpacity == nil then
+    tempSettings.statisticsBackgroundOpacity = GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
+  end
+
+  local percentText = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  percentText:SetPoint('LEFT', opacityRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  percentText:SetWidth(40)
+  percentText:SetJustifyH('LEFT')
+  percentText:SetText(
+    tostring(math.floor((tempSettings.statisticsBackgroundOpacity or 0.3) * 100)) .. '%'
+  )
+
+  local slider = CreateFrame('Slider', nil, opacityRow, 'OptionsSliderTemplate')
+  slider:SetPoint('LEFT', percentText, 'RIGHT', 10, 0)
+  slider:SetSize(180, 16)
+  slider:SetMinMaxValues(0, 100)
+  slider:SetValueStep(1)
+  slider:SetObeyStepOnDrag(true)
+  slider:SetValue((tempSettings.statisticsBackgroundOpacity or 0.3) * 100)
+  if slider.Low then
+    slider.Low:SetText('0%')
+  end
+  if slider.High then
+    slider.High:SetText('100%')
+  end
+  if slider.Text then
+    slider.Text:SetText('')
+  end
+
+  slider:SetScript('OnValueChanged', function(self, val)
+    local pct = math.floor(val + 0.5)
+    percentText:SetText(pct .. '%')
+    tempSettings.statisticsBackgroundOpacity = pct / 100
+  end)
 end
