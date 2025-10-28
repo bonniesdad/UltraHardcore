@@ -641,3 +641,60 @@ SLASH_SETLOWESTHEALTH1 = '/setlowesthealth'
 SlashCmdList['SETLOWESTHEALTH'] = function(msg)
   CharacterStats:SetLowestHealth(msg)
 end
+
+-- Slash command to post version to current chat
+SLASH_POSTVERSION1 = '/uhcversion'
+SLASH_POSTVERSION2 = '/uhcv'
+SlashCmdList['POSTVERSION'] = function()
+  local version = GetAddOnMetadata('UltraHardcore', 'Version') or 'Unknown'
+  local playerName = UnitName('player')
+  local message = playerName .. ' is using UltraHardcore version ' .. version
+
+  -- Determine the best chat channel to use
+  local chatType = nil
+  local chatTarget = nil
+  local detectedType = nil
+
+  -- Check main chat frame's edit box for the current chat type
+  if ChatFrame1 and ChatFrame1.editBox then
+    detectedType = ChatFrame1.editBox:GetAttribute('chatType')
+    chatTarget = ChatFrame1.editBox:GetAttribute('tellTarget')
+
+    if detectedType then
+      if detectedType == 'WHISPER' and chatTarget then
+        -- WHISPER requires a target
+        chatType = detectedType
+      elseif detectedType == 'CHANNEL' then
+        -- CHANNEL requires a channel number (get it from the edit box attribute)
+        local channelNum = ChatFrame1.editBox:GetAttribute('channelTarget')
+        if channelNum then
+          chatType = 'CHANNEL'
+          chatTarget = channelNum
+        end
+      else
+        -- Other chat types (SAY, PARTY, RAID, GUILD, etc.)
+        chatType = detectedType
+      end
+    end
+  end
+
+  -- If no valid chat type was detected, prioritize group channels
+  if not chatType then
+    if IsInRaid() then
+      chatType = 'RAID'
+    elseif IsInGroup() then
+      chatType = 'PARTY'
+    elseif IsInGuild() then
+      chatType = 'GUILD'
+    else
+      chatType = 'SAY' -- Default to SAY
+    end
+  end
+
+  -- Send the message to the determined chat channel
+  if chatTarget then
+    SendChatMessage(message, chatType, nil, chatTarget)
+  else
+    SendChatMessage(message, chatType)
+  end
+end
