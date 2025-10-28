@@ -9,6 +9,7 @@ UltraHardcore.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua
+Libs/CallbackHandler-1.0/CallbackHandler-1.0.lua
 Libs/LibDataBroker-1.1/LibDataBroker-1.1.lua
 Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua
 
@@ -35,8 +36,12 @@ Functions/HealingIndicator.lua
 Functions/PikabooResting.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
+Functions/HidePlayerMapIndicators.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
+Functions/RoutePlanner.lua
+Functions/RoutePlannerCompass.lua
+Functions/TradeRestriction.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -63,6 +68,7 @@ Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
 Functions/Checks/IsEnemyWorldBoss.lua
 Functions/Checks/IsDungeonBoss.lua
+Functions/Checks/HasBuff.lua
 
 Functions/DamageOverlayHandler.lua
 Functions/CritTracker.lua
@@ -70,6 +76,7 @@ Functions/KillTracker.lua
 Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
 Functions/DazedEffectHandler.lua
+Functions/RejectBuffsFromOthers.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
@@ -103,6 +110,10 @@ Settings/AchievementTab.lua
 Settings/InfoTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
+Settings/XFoundMode/IntroPage.lua
+Settings/XFoundMode/StatusPage.lua
+Settings/XFoundMode/GuildConfirmPage.lua
+Settings/XFoundMode/GroupConfirmPage.lua
 
 ## Constants
 Constants/PresetSections.lua

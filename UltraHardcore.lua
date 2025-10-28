@@ -26,6 +26,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
+    HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
     SetPlayerFrameDisplay(
@@ -57,6 +58,8 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         end
       end)
     end
+    SetRoutePlanner(GLOBAL_SETTINGS.routePlanner or false)
+    SetRoutePlannerCompass(GLOBAL_SETTINGS.routePlannerCompass or false)
     DisablePetCombatText()
     RepositionPetHappinessTexture()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
@@ -67,11 +70,22 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if unit == 'pet' then
       CheckAndAbandonPet()
     end
+  elseif event == 'UNIT_AURA' then
+    local unit = ...
+    if unit == 'player' then
+      if GLOBAL_SETTINGS.routePlanner then
+        SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
+      end
+      if _G.RejectBuffsFromOthers then
+        _G.RejectBuffsFromOthers(event, unit)
+      end
+    end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
     HealingIndicator(GLOBAL_SETTINGS.showHealingIndicator, self, event)
   elseif event == 'PLAYER_UPDATE_RESTING' then
     OnPlayerUpdateRestingEvent(self)
+    SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
   elseif event == 'PLAYER_LEVEL_UP' then
     OnPlayerLevelUpEvent(self, event, ...)
     AnnounceLevelUpToGuild(GLOBAL_SETTINGS.announceLevelUpToGuild)

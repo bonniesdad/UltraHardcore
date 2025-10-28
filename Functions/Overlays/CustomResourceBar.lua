@@ -8,12 +8,7 @@ resourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
 resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
--- Cache power type colors and max values
-local POWER_COLORS = {
-  ENERGY = { 1, 1, 0 },
-  RAGE = { 1, 0, 0 },
-  MANA = { 0, 0, 1 },
-}
+-- Colors are provided by GetPowerTypeColor() which respects user overrides
 
 -- Position persistence functions
 local function SaveResourceBarPosition()
@@ -181,7 +176,7 @@ local function UpdateResourcePoints()
 
   resourceBar:SetMinMaxValues(0, maxValue)
   resourceBar:SetValue(value)
-  resourceBar:SetStatusBarColor(unpack(POWER_COLORS[powerType]))
+  resourceBar:SetStatusBarColor(GetPowerTypeColor(powerType))
 end
 
 -- Function to update pet resource points
@@ -200,8 +195,15 @@ local function UpdatePetResourcePoints()
     petResourceBar:SetMinMaxValues(0, petMaxValue)
     petResourceBar:SetValue(petValue)
 
-    -- Use purple color for pet resource bar
-    petResourceBar:SetStatusBarColor(0.5, 0, 1) -- Purple color
+    -- Use user-selected pet color (default to purple)
+    local pr, pg, pb = 0.5, 0, 1
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.resourceBarColors and GLOBAL_SETTINGS.resourceBarColors.PET then
+      local c = GLOBAL_SETTINGS.resourceBarColors.PET
+      if type(c) == 'table' and #c >= 3 then
+        pr, pg, pb = c[1], c[2], c[3]
+      end
+    end
+    petResourceBar:SetStatusBarColor(pr, pg, pb)
     petResourceBar:Show()
   else
     petResourceBar:Hide()
@@ -221,12 +223,9 @@ end
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
   if not ShouldRepositionBuffBar() then return end
-
-  -- This is never going to be ideal because we're moving the buff frame which also includes the debuffs.
-  -- What we really need is a custom frame that holds buffs and is only as wide as it needs to be and a separate debuff frame.
-
   if BuffFrame then
     local buffCount = 0
+    local debuffCount = 0
     local pixelsToMove = 13.25
     local xOffset = 0
     local yOffset = 5
@@ -249,18 +248,35 @@ local function CenterPlayerBuffBar()
     end
 
     if buffCount == 0 then return end
+    local firstBuffButton = _G['BuffButton1']
 
-    if buffCount > 1 then
-      xOffset = (buffCount - 1) * pixelsToMove
+    -- We're no longer calculating a xOffset to try to move the buff bar around
+    -- Instead, we're going to figure out how wide each buff icon is and calculate a newWidth
+    -- and just resize the frame to fit exactly.
+    if firstBuffButton then
+      local width = firstBuffButton:GetWidth()
+      local height = firstBuffButton:GetHeight()
+
+      -- buffCount + width is the total width of all buff icons
+      -- (buffCount - 1) * 5 is the spacing between each icon (~5 pixels each)
+      -- 5 pixels is subtracted to account for spacing in front of the first icon
+      local newWidth = (buffCount * width) + (buffCount * 5) - 5
+      if buffCount < debuffCount then
+        newWidth = debuffCount * width
+      end
+
+      BuffFrame:SetScale(1.0)
+      BuffFrame:SetWidth(newWidth)
+
+      if buffRows > 1 then
+        yOffset = ((buffRows - 1) * height) + ((buffRows - 1) * 5)
+      end
+
+      local anchor = CanGainComboPoints() and comboFrame or resourceBar
+
+      BuffFrame:ClearAllPoints()
+      BuffFrame:SetPoint('BOTTOM', anchor, 'TOP', 0, yOffset)
     end
-
-    if buffRows > 1 then
-      -- Buff icons appear to be 45x45 (with borders), so this is a rough movement number
-      yOffset = (buffRows - 1) * 45
-    end
-
-    BuffFrame:ClearAllPoints()
-    BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', xOffset, yOffset)
   end
 end
 
@@ -289,8 +305,7 @@ local function RepositionPlayerBuffBar()
   -- Wait for buff frame to be created
   C_Timer.After(0.5, function()
     if BuffFrame and BuffFrame:IsVisible() then
-      BuffFrame:ClearAllPoints()
-      BuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
+      CenterPlayerBuffBar()
     end
   end)
 end
