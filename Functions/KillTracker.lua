@@ -13,11 +13,10 @@ function KillTracker.HandlePartyKill(destGUID)
       -- Track as solo elite kill
       local soloElites = CharacterStats:GetStat("soloElitesSlain") or 0
       CharacterStats:UpdateStat("soloElitesSlain", soloElites + 1)
-    else
-      -- Track as regular elite kill
-      local currentElites = CharacterStats:GetStat("elitesSlain") or 0
-      CharacterStats:UpdateStat("elitesSlain", currentElites + 1)
     end
+    -- Track as regular elite kill
+    local currentElites = CharacterStats:GetStat("elitesSlain") or 0
+    CharacterStats:UpdateStat("elitesSlain", currentElites + 1)
   end
 
   -- Track rare elite kills
