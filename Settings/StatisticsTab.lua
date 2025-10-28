@@ -11,6 +11,7 @@ local STATISTIC_TOOLTIPS = {
   -- Enemies Slain section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
+  soloElitesSlain = 'Number of elite enemies you have killed while solo (no other players in range)',
   rareElitesSlain = 'Number of rare elite enemies you have killed',
   worldBossesSlain = 'Number of world bosses you have killed',
   dungeonBossesSlain = 'Number of dungeon bosses you have killed',
@@ -78,7 +79,7 @@ function InitializeStatisticsTab()
 
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(500, 1100) -- Increased height to accommodate proper bottom spacing for XP section
+  statsScrollChild:SetSize(500, 1200) -- Increased height to accommodate proper bottom spacing for XP section
   statsScrollFrame:SetScrollChild(statsScrollChild)
 
   -- Create modern WoW-style lowest health section (no accordion functionality)
@@ -346,7 +347,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainContent:SetSize(450, 7 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 7 rows + padding (added rare elites and world bosses)
+  enemiesSlainContent:SetSize(450, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added solo elites)
   enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -212)
   enemiesSlainContent:Show() -- Show by default
   -- Modern content frame styling
@@ -439,6 +440,43 @@ function InitializeStatisticsTab()
     end
   end)
 
+  -- Create the solo elites slain text display (indented)
+  local soloElitesSlainLabel = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  soloElitesSlainLabel:SetPoint(
+    'TOPLEFT',
+    enemiesSlainContent,
+    'TOPLEFT',
+    LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 1.5
+  )
+  soloElitesSlainLabel:SetText('Solo Elites Slain:')
+  AddStatisticTooltip(soloElitesSlainLabel, 'soloElitesSlain')
+
+  local soloElitesSlainText = enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  soloElitesSlainText:SetPoint(
+    'TOPRIGHT',
+    enemiesSlainContent,
+    'TOPRIGHT',
+    -LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 1.5
+  )
+  soloElitesSlainText:SetText(formatNumberWithCommas(0))
+
+  -- Create radio button for showing solo elites slain in main screen statistics
+  local showStatsSoloElitesSlainRadio =
+    CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+  showStatsSoloElitesSlainRadio:SetPoint('LEFT', soloElitesSlainLabel, 'LEFT', -20, 0)
+  showStatsSoloElitesSlainRadio:SetChecked(false) -- Initialize as unchecked, will be updated by updateRadioButtons()
+  radioButtons.showMainStatisticsPanelSoloElitesSlain = showStatsSoloElitesSlainRadio
+  showStatsSoloElitesSlainRadio:SetScript('OnClick', function(self)
+    tempSettings.showMainStatisticsPanelSoloElitesSlain = self:GetChecked()
+    GLOBAL_SETTINGS.showMainStatisticsPanelSoloElitesSlain = self:GetChecked()
+    -- Trigger immediate update of main screen statistics
+    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    end
+  end)
+
   -- Create the rare elites slain text display (indented)
   local rareElitesSlainLabel =
     enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -447,7 +485,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2.5
   )
   rareElitesSlainLabel:SetText('Rare Elites Slain:')
   AddStatisticTooltip(rareElitesSlainLabel, 'rareElitesSlain')
@@ -459,7 +497,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPRIGHT',
     -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2.5
   )
   rareElitesSlainText:SetText(formatNumberWithCommas(0))
 
@@ -486,7 +524,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3.5
   )
   worldBossesSlainLabel:SetText('World Bosses Slain:')
   AddStatisticTooltip(worldBossesSlainLabel, 'worldBossesSlain')
@@ -498,7 +536,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPRIGHT',
     -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3.5
   )
   worldBossesSlainText:SetText(formatNumberWithCommas(0))
 
@@ -525,7 +563,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4.5
   )
   dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
   AddStatisticTooltip(dungeonBossesLabel, 'dungeonBossesSlain')
@@ -537,7 +575,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPRIGHT',
     -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4.5
   )
   dungeonBossesText:SetText(formatNumberWithCommas(0))
 
@@ -564,7 +602,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5.5
   )
   dungeonsCompletedLabel:SetText('Dungeons Completed:')
   AddStatisticTooltip(dungeonsCompletedLabel, 'dungeonsCompleted')
@@ -576,7 +614,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPRIGHT',
     -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5.5
   )
   dungeonsCompletedText:SetText(formatNumberWithCommas(0))
 
@@ -602,7 +640,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6.5
   )
   highestCritLabel:SetText('Highest Crit Value:')
   AddStatisticTooltip(highestCritLabel, 'highestCritValue')
@@ -613,7 +651,7 @@ function InitializeStatisticsTab()
     enemiesSlainContent,
     'TOPRIGHT',
     -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6.5
   )
   highestCritText:SetText(formatNumberWithCommas(0))
 
@@ -635,7 +673,7 @@ function InitializeStatisticsTab()
   -- Create modern WoW-style Survival section (no accordion functionality)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -399) -- Moved down by 50px for new rows
+  survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -449) -- Moved down by 50px for new rows
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -660,7 +698,7 @@ function InitializeStatisticsTab()
   -- Create content frame for Survival breakdown (always visible)
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Height for 5 items
-  survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -432) -- Moved down by 50px for new rows
+  survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -482) -- Moved down by 50px for new rows
   survivalContent:Show() -- Always show
   -- Modern content frame styling
   survivalContent:SetBackdrop({
@@ -741,7 +779,7 @@ function InitializeStatisticsTab()
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
+  xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -643) -- Added 20px gap after Close Escapes
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -766,7 +804,7 @@ function InitializeStatisticsTab()
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
-  xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
+  xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -676) -- Adjusted to maintain proper gap from header
   xpGainedContent:Show() -- Show by default
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
@@ -937,6 +975,11 @@ function InitializeStatisticsTab()
     if elitesSlainText then
       local elites = CharacterStats:GetStat('elitesSlain') or 0
       elitesSlainText:SetText(formatNumberWithCommas(elites))
+    end
+
+    if soloElitesSlainText then
+      local soloElites = CharacterStats:GetStat('soloElitesSlain') or 0
+      soloElitesSlainText:SetText(formatNumberWithCommas(soloElites))
     end
 
     if rareElitesSlainText then

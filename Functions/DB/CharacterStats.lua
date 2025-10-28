@@ -8,6 +8,7 @@ local CharacterStats = {
     lowestHealthThisSession = 100,
     petDeaths = 0,
     elitesSlain = 0,
+    soloElitesSlain = 0,
     enemiesSlain = 0,
     lastSessionXP = 0, -- XP at the end of last session
     -- XP tracking for each UHC setting
@@ -99,6 +100,12 @@ function CharacterStats:ResetElitesSlain()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetSoloElitesSlain()
+  local stats = self:GetCurrentCharacterStats()
+  stats.soloElitesSlain = self.defaults.soloElitesSlain
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 function CharacterStats:ResetEnemiesSlain()
   local stats = self:GetCurrentCharacterStats()
   stats.enemiesSlain = self.defaults.enemiesSlain
@@ -181,6 +188,9 @@ function CharacterStats:GetCurrentCharacterStats()
   if stats.highestCritValue == nil then
     stats.highestCritValue = self.defaults.highestCritValue
   end
+  if stats.soloElitesSlain == nil then
+    stats.soloElitesSlain = self.defaults.soloElitesSlain
+  end
   if stats.rareElitesSlain == nil then
     stats.rareElitesSlain = self.defaults.rareElitesSlain
   end
@@ -250,7 +260,7 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
     '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
       '%.1f',
       stats.lowestHealth
-    ) .. ' - Elites: ' .. formatNumberWithCommas(
+    ) .. '%' .. ' - Solo Elites: ' .. formatNumberWithCommas(stats.soloElitesSlain) .. ' - Elites: ' .. formatNumberWithCommas(
       stats.elitesSlain
     ) .. ' - Enemies: ' .. formatNumberWithCommas(stats.enemiesSlain)
   sendMessage(condensedMessage)
@@ -415,8 +425,12 @@ function CharacterStats:ShowChatChannelDialog()
   elitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -68)
   elitesText:SetText('Elites Slain: ' .. stats.elitesSlain)
 
+  local soloElitesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  soloElitesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
+  soloElitesText:SetText('Solo Elites Slain: ' .. stats.soloElitesSlain)
+
   local enemiesText = statsPreview:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -88)
+  enemiesText:SetPoint('TOPLEFT', statsPreview, 'TOPLEFT', 12, -108)
   enemiesText:SetText('Enemies Slain: ' .. stats.enemiesSlain)
 
   -- Create channel selection section
@@ -454,7 +468,7 @@ function CharacterStats:ShowChatChannelDialog()
       '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
         '%.1f',
         stats.lowestHealth
-      ) .. '%' .. ' - Party Deaths Witnessed: ' .. stats.partyMemberDeaths .. ' - Elites: ' .. stats.elitesSlain .. ' - Enemies: ' .. stats.enemiesSlain
+      ) .. '%' .. ' - Party Deaths Witnessed: ' .. stats.partyMemberDeaths .. ' - Solo Elites: ' .. stats.soloElitesSlain .. ' - Elites: ' .. stats.elitesSlain .. ' - Enemies: ' .. stats.enemiesSlain
     sendMessage(condensedMessage)
 
     dialog:Hide()
@@ -554,6 +568,11 @@ end
 SLASH_RESETELITESSLAIN1 = '/resetelitesslain'
 SlashCmdList['RESETELITESSLAIN'] = function()
   CharacterStats:ResetElitesSlain()
+end
+
+SLASH_RESETSOLOELITESSLAIN1 = '/resetsoloelitesslain'
+SlashCmdList['RESETSOLOELITESSLAIN'] = function()
+  CharacterStats:ResetSoloElitesSlain()
 end
 
 SLASH_RESETENEMIESSLAIN1 = '/resetenemiesslain'

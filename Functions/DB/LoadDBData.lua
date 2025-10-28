@@ -6,6 +6,7 @@ function LoadDBData()
 
   enemiesSlain = UltraHardcoreDB.enemiesSlain or 0
   elitesSlain = UltraHardcoreDB.elitesSlain or 0
+  soloElitesSlain = UltraHardcoreDB.soloElitesSlain or 0
   lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
   WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
 
@@ -72,6 +73,7 @@ function LoadDBData()
     showMainStatisticsPanelDungeonsCompleted = true,
     showMainStatisticsPanelPetDeaths = false,
     showMainStatisticsPanelElitesSlain = false,
+    showMainStatisticsPanelSoloElitesSlain = false,
     showMainStatisticsPanelDungeonBosses = false,
     -- Survival Statistics Row Visibility Settings
     showMainStatisticsPanelHealthPotionsUsed = false,

@@ -3,7 +3,7 @@
 
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
+statsFrame:SetSize(200, 375) -- Increased height to accommodate all statistics including solo elites slain
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
 
 -- Make the frame draggable
@@ -93,106 +93,116 @@ elitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -110)
 elitesSlainValue:SetText(formatNumberWithCommas(0))
 elitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+local soloElitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+soloElitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -125)
+soloElitesSlainLabel:SetText('Solo Elites Slain:')
+soloElitesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local soloElitesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+soloElitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -125)
+soloElitesSlainValue:SetText(formatNumberWithCommas(0))
+soloElitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 local rareElitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-rareElitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -125)
+rareElitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -140)
 rareElitesSlainLabel:SetText('Rare Elites Slain:')
 rareElitesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local rareElitesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-rareElitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -125)
+rareElitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -140)
 rareElitesSlainValue:SetText(formatNumberWithCommas(0))
 rareElitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local worldBossesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-worldBossesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -140)
+worldBossesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -155)
 worldBossesSlainLabel:SetText('World Bosses Slain:')
 worldBossesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local worldBossesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-worldBossesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -140)
+worldBossesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -155)
 worldBossesSlainValue:SetText(formatNumberWithCommas(0))
 worldBossesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonBossesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -155)
+dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -170)
 dungeonBossesLabel:SetText('Dungeon Bosses:')
 dungeonBossesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local dungeonBossesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -155)
+dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
 dungeonBossesValue:SetText(formatNumberWithCommas(0))
 dungeonBossesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Survival statistics rows
 local healthPotionsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-healthPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -170)
+healthPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -185)
 healthPotionsLabel:SetText('Health Potions:')
 healthPotionsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local healthPotionsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
+healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -185)
 healthPotionsValue:SetText(formatNumberWithCommas(0))
 healthPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local bandagesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bandagesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -185)
+bandagesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -200)
 bandagesLabel:SetText('Bandages Used:')
 bandagesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local bandagesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bandagesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -185)
+bandagesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -200)
 bandagesValue:SetText(formatNumberWithCommas(0))
 bandagesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local targetDummiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-targetDummiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -200)
+targetDummiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -215)
 targetDummiesLabel:SetText('Target Dummies:')
 targetDummiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local targetDummiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-targetDummiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -200)
+targetDummiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -215)
 targetDummiesValue:SetText(formatNumberWithCommas(0))
 targetDummiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local grenadesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-grenadesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -215)
+grenadesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -230)
 grenadesLabel:SetText('Grenades Used:')
 grenadesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local grenadesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-grenadesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -215)
+grenadesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -230)
 grenadesValue:SetText(formatNumberWithCommas(0))
 grenadesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local partyDeathsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-partyDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -230)
+partyDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
 partyDeathsLabel:SetText('Party Deaths:')
 partyDeathsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local partyDeathsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -230)
+partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 partyDeathsValue:SetText(formatNumberWithCommas(0))
 partyDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Highest crit value row
 local highestCritLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+highestCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
 highestCritLabel:SetText('Highest Crit:')
 highestCritLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local highestCritValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
 highestCritValue:SetText(formatNumberWithCommas(0))
 highestCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Tunnel vision overlay count row
 local tunnelVisionLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
+tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -275)
 tunnelVisionLabel:SetText('Close Escapes:')
 tunnelVisionLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local tunnelVisionValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
+tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -275)
 tunnelVisionValue:SetText(formatNumberWithCommas(0))
 tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
@@ -225,6 +235,10 @@ local statsElements = { {
   label = elitesSlainLabel,
   value = elitesSlainValue,
   setting = 'showMainStatisticsPanelElitesSlain',
+}, {
+  label = soloElitesSlainLabel,
+  value = soloElitesSlainValue,
+  setting = 'showMainStatisticsPanelSoloElitesSlain',
 }, {
   label = rareElitesSlainLabel,
   value = rareElitesSlainValue,
@@ -362,6 +376,10 @@ local function UpdateStatistics()
   -- Update elites slain
   local elitesSlain = CharacterStats:GetStat('elitesSlain') or 0
   elitesSlainValue:SetText(formatNumberWithCommas(elitesSlain))
+
+  -- Update solo elites slain
+  local soloElitesSlain = CharacterStats:GetStat('soloElitesSlain') or 0
+  soloElitesSlainValue:SetText(formatNumberWithCommas(soloElitesSlain))
 
   -- Update rare elites slain
   local rareElitesSlain = CharacterStats:GetStat('rareElitesSlain') or 0
