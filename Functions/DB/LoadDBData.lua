@@ -39,6 +39,7 @@ function LoadDBData()
     hideActionBars = false,
     tunnelVisionMaxStrata = false,
     rejectBuffsFromOthers = false,
+    routePlanner = false,
     -- Experimental Preset Settings
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
@@ -48,7 +49,6 @@ function LoadDBData()
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
-    routePlanner = false,
     routePlannerCompass = false,
     -- Misc Settings
     showOnScreenStatistics = true,
