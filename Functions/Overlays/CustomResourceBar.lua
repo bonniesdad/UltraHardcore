@@ -8,12 +8,7 @@ resourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
 resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
 resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
--- Cache power type colors and max values
-local POWER_COLORS = {
-  ENERGY = { 1, 1, 0 },
-  RAGE = { 1, 0, 0 },
-  MANA = { 0, 0, 1 },
-}
+-- Colors are provided by GetPowerTypeColor() which respects user overrides
 
 -- Position persistence functions
 local function SaveResourceBarPosition()
@@ -181,7 +176,7 @@ local function UpdateResourcePoints()
 
   resourceBar:SetMinMaxValues(0, maxValue)
   resourceBar:SetValue(value)
-  resourceBar:SetStatusBarColor(unpack(POWER_COLORS[powerType]))
+  resourceBar:SetStatusBarColor(GetPowerTypeColor(powerType))
 end
 
 -- Function to update pet resource points
@@ -200,8 +195,15 @@ local function UpdatePetResourcePoints()
     petResourceBar:SetMinMaxValues(0, petMaxValue)
     petResourceBar:SetValue(petValue)
 
-    -- Use purple color for pet resource bar
-    petResourceBar:SetStatusBarColor(0.5, 0, 1) -- Purple color
+    -- Use user-selected pet color (default to purple)
+    local pr, pg, pb = 0.5, 0, 1
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.resourceBarColors and GLOBAL_SETTINGS.resourceBarColors.PET then
+      local c = GLOBAL_SETTINGS.resourceBarColors.PET
+      if type(c) == 'table' and #c >= 3 then
+        pr, pg, pb = c[1], c[2], c[3]
+      end
+    end
+    petResourceBar:SetStatusBarColor(pr, pg, pb)
     petResourceBar:Show()
   else
     petResourceBar:Hide()
