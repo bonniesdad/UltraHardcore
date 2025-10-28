@@ -4,7 +4,7 @@
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
 statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
-statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 20, -20)
+statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
 
 -- Background behind statistics with configurable opacity
 local statsBackground = statsFrame:CreateTexture(nil, 'BACKGROUND')
