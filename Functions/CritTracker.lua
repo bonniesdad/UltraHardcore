@@ -54,3 +54,24 @@ function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
     end
   end
 end
+
+-- Track healing critical hit statistics
+function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
+  if subEvent == 'SPELL_HEAL' or subEvent == 'SPELL_PERIODIC_HEAL' then
+    local amount = select(15, CombatLogGetCurrentEventInfo())
+    local critical = select(18, CombatLogGetCurrentEventInfo())
+
+    if critical then
+      if sourceGUID == UnitGUID('player') then
+        local currentHighestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
+        if amount > currentHighestHealCrit then
+          print('|cFF00FF00[UHC]|r Highest heal crit updated to: ' .. amount .. '|r')
+          CharacterStats:UpdateStat('highestHealCritValue', amount)
+          if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
+            PlayRandomCritSound()
+          end
+        end
+      end
+    end
+  end
+end
