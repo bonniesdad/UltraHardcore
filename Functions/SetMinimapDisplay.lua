@@ -9,6 +9,22 @@ function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
   end
 end
 
+local function LoadClockPosition()
+  if not TimeManagerClockButton then return end
+
+  TimeManagerClockButton:SetParent(UIParent)
+  TimeManagerClockButton:ClearAllPoints()
+
+  local pos = UltraHardcoreDB.minimapClockPosition
+  if pos then
+    TimeManagerClockButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+  else
+    TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+  end
+
+  TimeManagerClockButton:SetFrameStrata("HIGH")
+end
+
 function HideMinimap(showClockEvenWhenMapHidden)
   -- Use custom blip texture to hide party members and objective arrows
   Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
@@ -20,6 +36,37 @@ function HideMinimap(showClockEvenWhenMapHidden)
 
   -- Hide it completely by default
   Minimap:Hide()
+  MinimapCluster:Hide()
+
+  if(showClockEvenWhenMapHidden) then
+    local f = CreateFrame("Frame")
+    f:RegisterEvent("PLAYER_LOGIN")
+    f:SetScript("OnEvent", function()
+
+      -- Safety check in case TimeManager didn't load
+      if not TimeManagerClockButton then
+        print("TimeManagerClockButton not found!")
+        return
+      end
+      -- Load the saved position for the clock
+      LoadClockPosition()
+      TimeManagerClockButton:Show()
+
+      --Make the clock movable and save the position
+      TimeManagerClockButton:SetMovable(true)
+      TimeManagerClockButton:EnableMouse(true)
+      TimeManagerClockButton:RegisterForDrag("LeftButton")
+      TimeManagerClockButton:SetScript("OnDragStart", function(self)
+        self:StartMoving()
+      end)
+      TimeManagerClockButton:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        local point, _, relPoint, x, y = self:GetPoint()
+        UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
+        SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
+      end)
+    end)
+  end
 
   -- Show it for 5 seconds after casting particular spells
   Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
@@ -69,9 +116,7 @@ function HideMinimap(showClockEvenWhenMapHidden)
       minimapHideTimer = C_Timer.NewTimer(5, function() 
         Minimap:Hide() 
         
-        if not showClockEvenWhenMapHidden then
-          MinimapCluster:Hide()
-        end
+        MinimapCluster:Hide()
         
         Minimap:EnableMouse(true)
         
@@ -85,22 +130,6 @@ function HideMinimap(showClockEvenWhenMapHidden)
     end
   end)
 
-  -- Hide the zone text
-  MinimapZoneText:Hide()
-  -- Hide the background bar behind the zone text
-  MinimapZoneTextButton:Hide()
-  -- Hide the close/minimap tracking button (the button that shows tracking options)
-  MiniMapTracking:Hide()
-
-  MinimapBorderTop:Hide()
-  MinimapToggleButton:Hide()
-  
-  -- Hide the day/night indicator (moon/sun icon)
-  -- Hide the minimap cluster (including the "Toggle minimap" button)
-  if not showClockEvenWhenMapHidden then
-    MinimapCluster:Hide()
-    GameTimeFrame:Hide()
-  end
 end
 
 function ShowMinimap()
@@ -120,3 +149,28 @@ function ShowMinimap()
   Minimap:SetBlipTexture("Interface\\Minimap\\ObjectIconsAtlas.blp")
   Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
 end
+
+-- Reset clock position function
+local function ResetClockPosition()
+  -- Safety check in case TimeManager didn't load
+  if not TimeManagerClockButton then
+    print("TimeManagerClockButton not found!")
+    return
+  end
+
+  -- Clear existing points first
+  TimeManagerClockButton:ClearAllPoints()
+  -- Reset to default position (top right)
+  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -50, -50)
+
+  -- Save the reset position
+  local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
+  UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
+  print('UltraHardcore: clock position reset to default')
+end
+
+-- Slash command to reset clock position
+SLASH_RESETCLOCKPOSITION1 = '/resetclockposition'
+SLASH_RESETCLOCKPOSITION2 = '/rcp'
+SlashCmdList['RESETCLOCKPOSITION'] = ResetClockPosition
