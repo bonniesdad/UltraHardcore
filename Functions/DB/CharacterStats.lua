@@ -6,6 +6,7 @@ local CharacterStats = {
     lowestHealth = 100,
     lowestHealthThisLevel = 100,
     lowestHealthThisSession = 100,
+    lowestHPHealed = 100,
     petDeaths = 0,
     elitesSlain = 0,
     enemiesSlain = 0,
@@ -174,6 +175,9 @@ function CharacterStats:GetCurrentCharacterStats()
   end
   if stats.lowestHealthThisSession == nil then
     stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
+  end
+  if stats.lowestHPHealed == nil then
+    stats.lowestHPHealed = self.defaults.lowestHPHealed
   end
   if stats.petDeaths == nil then
     stats.petDeaths = self.defaults.petDeaths

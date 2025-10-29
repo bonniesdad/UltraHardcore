@@ -43,6 +43,7 @@ Functions/RoutePlannerCompass.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
+Functions/Statistics/TrackLowestHPHealed.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua
