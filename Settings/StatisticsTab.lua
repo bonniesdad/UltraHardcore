@@ -16,6 +16,7 @@ local STATISTIC_TOOLTIPS = {
   dungeonBossesSlain = 'Number of dungeon bosses you have killed',
   dungeonsCompleted = 'Number of dungeons you have fully completed',
   highestCritValue = 'The highest critical hit damage you have dealt',
+  highestHealCritValue = 'The highest critical heal you have done',
   -- Survival section
   healthPotionsUsed = 'Number of health potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
@@ -23,6 +24,10 @@ local STATISTIC_TOOLTIPS = {
   grenadesUsed = 'Number of grenades you have thrown',
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
   closeEscapes = "Number of times you've seen the final tunnel vision phase (<20% health)",
+  duelsTotal = 'Total number of duels you have done',
+  duelsWon = 'Number of duels you have won',
+  duelsLost = 'Number of duels you have lost',
+  duelsWinPercent = 'Percentage of duels you have won',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -346,7 +351,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainContent:SetSize(450, 7 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 7 rows + padding (added rare elites and world bosses)
+  enemiesSlainContent:SetSize(450, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
   enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -212)
   enemiesSlainContent:Show() -- Show by default
   -- Modern content frame styling
@@ -632,10 +637,50 @@ function InitializeStatisticsTab()
     end
   end)
 
+  -- Create the highest heal crit value text display (indented)
+  local highestHealCritLabel =
+    enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  highestHealCritLabel:SetPoint(
+    'TOPLEFT',
+    enemiesSlainContent,
+    'TOPLEFT',
+    LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
+  )
+  highestHealCritLabel:SetText('Highest Heal Crit Value:')
+  AddStatisticTooltip(highestHealCritLabel, 'highestHealCritValue')
+
+  local highestHealCritText =
+    enemiesSlainContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  highestHealCritText:SetPoint(
+    'TOPRIGHT',
+    enemiesSlainContent,
+    'TOPRIGHT',
+    -LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
+  )
+  highestHealCritText:SetText(formatNumberWithCommas(0))
+
+  -- Create radio button for showing highest heal crit value in main screen statistics
+  local showStatsHighestHealCritRadio =
+    CreateFrame('CheckButton', nil, enemiesSlainContent, 'UIRadioButtonTemplate')
+  showStatsHighestHealCritRadio:SetPoint('LEFT', highestHealCritLabel, 'LEFT', -20, 0)
+  showStatsHighestHealCritRadio:SetChecked(false) -- Initialize as unchecked, will be updated by updateRadioButtons()
+  radioButtons.showMainStatisticsPanelHighestHealCritValue = showStatsHighestHealCritRadio
+  showStatsHighestHealCritRadio:SetScript('OnClick', function(self)
+    tempSettings.showMainStatisticsPanelHighestHealCritValue = self:GetChecked()
+    GLOBAL_SETTINGS.showMainStatisticsPanelHighestHealCritValue = self:GetChecked()
+    -- Trigger immediate update of main screen statistics
+    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    end
+  end)
+
   -- Create modern WoW-style Survival section (no accordion functionality)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  survivalHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -399) -- Moved down by 50px for new rows
+  -- Anchor directly below the Enemies Slain content to avoid overlap on different UI scales
+  survivalHeader:SetPoint('TOPLEFT', enemiesSlainContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -659,8 +704,9 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Survival breakdown (always visible)
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Height for 5 items
-  survivalContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -432) -- Moved down by 50px for new rows
+  survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  -- Position content directly under its header with consistent padding
+  survivalContent:SetPoint('TOPLEFT', survivalHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   survivalContent:Show() -- Always show
   -- Modern content frame styling
   survivalContent:SetBackdrop({
@@ -705,6 +751,22 @@ function InitializeStatisticsTab()
     key = 'maxTunnelVisionOverlayShown',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
+  }, {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -738,10 +800,15 @@ function InitializeStatisticsTab()
     yOffset = yOffset - LAYOUT.ROW_HEIGHT
   end
 
+  -- Correct survival content height now that we know the total rows
+  local survivalRows = #survivalStats
+  survivalContent:SetSize(450, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  xpGainedHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -593) -- Added 20px gap after Close Escapes
+  -- Anchor directly below Survival content to avoid overlap
+  xpGainedHeader:SetPoint('TOPLEFT', survivalContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -766,7 +833,8 @@ function InitializeStatisticsTab()
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
-  xpGainedContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -626) -- Adjusted to maintain proper gap from header
+  -- Position content directly under its header with consistent padding
+  xpGainedContent:SetPoint('TOPLEFT', xpGainedHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   xpGainedContent:Show() -- Show by default
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
@@ -970,6 +1038,12 @@ function InitializeStatisticsTab()
       highestCritText:SetText(formatNumberWithCommas(highestCrit))
     end
 
+    -- Update highest heal crit value
+    if highestHealCritText then
+      local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
+      highestHealCritText:SetText(formatNumberWithCommas(highestHealCrit))
+    end
+
     -- Update XP breakdown (always visible now)
     UpdateXPBreakdown()
 
@@ -978,7 +1052,15 @@ function InitializeStatisticsTab()
       for _, stat in ipairs(survivalStats) do
         local value = CharacterStats:GetStat(stat.key) or 0
         if survivalTexts[stat.key] then
-          survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          if stat.key == 'duelsWinPercent' then
+            if value % 1 == 0 then
+              survivalTexts[stat.key]:SetText(string.format('%d%%', value))
+            else
+              survivalTexts[stat.key]:SetText(string.format('%.1f%%', value))
+            end
+          else
+            survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          end
         end
       end
     end

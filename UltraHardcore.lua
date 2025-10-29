@@ -21,11 +21,13 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_START')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
+UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
     LoadDBData()
+    HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
     SetPlayerFrameDisplay(
@@ -71,9 +73,13 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'UNIT_AURA' then
     local unit = ...
-    -- Handle buff rejection for buffs from others
-    if unit == 'player' and _G.RejectBuffsFromOthers then
-      _G.RejectBuffsFromOthers(event, unit)
+    if unit == 'player' then
+      if GLOBAL_SETTINGS.routePlanner then
+        SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
+      end
+      if _G.RejectBuffsFromOthers then
+        _G.RejectBuffsFromOthers(event, unit)
+      end
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)
@@ -142,10 +148,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         HideHearthingOverlay()
       end
     end
-  elseif event == 'UNIT_AURA' then
-    local unit = ...
-    if unit == 'player' then
-      SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
-    end
+  elseif event == 'CHAT_MSG_SYSTEM' then
+    DuelTracker(...)
   end
 end)

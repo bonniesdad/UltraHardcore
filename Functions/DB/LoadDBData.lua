@@ -39,6 +39,7 @@ function LoadDBData()
     hideActionBars = false,
     tunnelVisionMaxStrata = false,
     rejectBuffsFromOthers = false,
+    routePlanner = false,
     -- Experimental Preset Settings
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
@@ -48,10 +49,11 @@ function LoadDBData()
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
-    routePlanner = false,
     routePlannerCompass = false,
     -- Misc Settings
     showOnScreenStatistics = true,
+    -- Opacity for on-screen statistics background (0.0 - 1.0)
+    statisticsBackgroundOpacity = 0.0,
     announceLevelUpToGuild = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,
@@ -63,6 +65,10 @@ function LoadDBData()
     playPlayerDeathSoundbite = true,
     spookyTunnelVision = true,
     roachHearthstoneInPartyCombat = true,
+    guildSelfFound = false,
+    groupSelfFound = false,
+    -- Group Found teammate names (locked in at level 2)
+    groupFoundNames = {},
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
@@ -73,12 +79,17 @@ function LoadDBData()
     showMainStatisticsPanelPetDeaths = false,
     showMainStatisticsPanelElitesSlain = false,
     showMainStatisticsPanelDungeonBosses = false,
+    showMainStatisticsPanelHighestHealCritValue = false,
     -- Survival Statistics Row Visibility Settings
     showMainStatisticsPanelHealthPotionsUsed = false,
     showMainStatisticsPanelBandagesUsed = false,
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
+    showMainStatisticsPanelDuelsTotal = false,
+    showMainStatisticsPanelDuelsWon = false,
+    showMainStatisticsPanelDuelsLost = false,
+    showMainStatisticsPanelDuelsWinPercent = false,
   }
 
   -- Initialize settings for current character if they don't exist
@@ -88,6 +99,11 @@ function LoadDBData()
 
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
+
+  -- Ensure new keys exist for existing characters
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupFoundNames == nil then
+    GLOBAL_SETTINGS.groupFoundNames = {}
+  end
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
   if UltraHardcoreDB.GLOBAL_SETTINGS and not UltraHardcoreDB.characterSettings[characterGUID] then

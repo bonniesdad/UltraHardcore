@@ -1,4 +1,5 @@
 -- 🟢 Character Stats Management
+local statsInitialized = false
 
 local CharacterStats = {
   -- Default values for new characters
@@ -39,10 +40,15 @@ local CharacterStats = {
     grenadesUsed = 0,
     partyMemberDeaths = 0,
     maxTunnelVisionOverlayShown = 0,
+    duelsTotal = 0,
+    duelsWon = 0,
+    duelsLost = 0,
+    duelsWinPercent = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
     highestCritValue = 0,
+    highestHealCritValue = 0,
     rareElitesSlain = 0,
     worldBossesSlain = 0,
     -- Add more stats here as needed
@@ -131,6 +137,30 @@ function CharacterStats:ResetGrenadesUsed()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetDuelsTotal()
+  local stats = self:GetCurrentCharacterStats()
+  stats.duelsTotal = self.defaults.duelsTotal
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetDuelsWon()
+  local stats = self:GetCurrentCharacterStats()
+  stats.duelsWon = self.defaults.duelsWon
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetDuelsLost()
+  local stats = self:GetCurrentCharacterStats()
+  stats.duelsLost = self.defaults.duelsLost
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetDuelsWinPercent()
+  local stats = self:GetCurrentCharacterStats()
+  stats.duelsWinPercent = self.defaults.duelsWinPercent
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
 function CharacterStats:ResetPartyMemberDeaths()
   local stats = self:GetCurrentCharacterStats()
   stats.partyMemberDeaths = self.defaults.partyMemberDeaths
@@ -140,6 +170,12 @@ end
 function CharacterStats:ResetHighestCritValue()
   local stats = self:GetCurrentCharacterStats()
   stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetHighestHealCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestHealCritValue = self.defaults.highestHealCritValue
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
@@ -170,29 +206,14 @@ function CharacterStats:GetCurrentCharacterStats()
 
   -- Initialize new stats for existing characters (backward compatibility)
   local stats = UltraHardcoreDB.characterStats[characterGUID]
-  if stats.lowestHealthThisLevel == nil then
-    stats.lowestHealthThisLevel = self.defaults.lowestHealthThisLevel
-  end
-  if stats.lowestHealthThisSession == nil then
-    stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
-  end
-  if stats.lowestHPHealed == nil then
-    stats.lowestHPHealed = self.defaults.lowestHPHealed
-  end
-  if stats.petDeaths == nil then
-    stats.petDeaths = self.defaults.petDeaths
-  end
-  if stats.highestCritValue == nil then
-    stats.highestCritValue = self.defaults.highestCritValue
-  end
-  if stats.rareElitesSlain == nil then
-    stats.rareElitesSlain = self.defaults.rareElitesSlain
-  end
-  if stats.worldBossesSlain == nil then
-    stats.worldBossesSlain = self.defaults.worldBossesSlain
-  end
-  if stats.partyMemberDeaths == nil then
-    stats.partyMemberDeaths = self.defaults.partyMemberDeaths
+
+  if not statsInitialized then
+    for statName, _ in pairs(self.defaults) do
+      if stats[statName] == nil then
+        stats[statName] = self.defaults[statName]
+      end
+    end
+    statsInitialized = true
   end
 
   return stats

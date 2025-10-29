@@ -18,6 +18,7 @@ function OnCombatLogEvent(self, event)
   -- Handle critical hit effects and tracking
   CritTracker.HandleCriticalHit(subEvent, sourceGUID, destGUID, amount)
   CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
+  CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
 
   -- Handle party kills
   if subEvent == 'PARTY_KILL' then
@@ -34,7 +35,7 @@ function OnCombatLogEvent(self, event)
   if subEvent == 'UNIT_DIED' then
     PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   end
-  
+
   -- Handle buff application tracking for rejecting buffs from others
   if _G.TrackBuffApplication then
     _G.TrackBuffApplication(subEvent, sourceGUID, destGUID, spellID)
