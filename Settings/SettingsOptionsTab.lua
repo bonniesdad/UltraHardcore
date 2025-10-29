@@ -52,7 +52,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Route Planner',
   dbSettingsValueName = 'routePlanner',
-  tooltip = 'Map only usable near campfire or when resting. Plan your routes carefully',
+  tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
 }, {
   -- Experimental Preset Settings
   name = 'UHC Breath Indicator',
