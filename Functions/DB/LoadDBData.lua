@@ -52,6 +52,7 @@ function LoadDBData()
     routePlannerCompass = false,
     -- Misc Settings
     showOnScreenStatistics = true,
+    minimapClockPosition = {},
     -- Opacity for on-screen statistics background (0.0 - 1.0)
     statisticsBackgroundOpacity = 0.0,
     announceLevelUpToGuild = true,
