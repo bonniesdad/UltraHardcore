@@ -47,6 +47,7 @@ local CharacterStats = {
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
     highestCritValue = 0,
+    highestHealCritValue = 0,
     rareElitesSlain = 0,
     worldBossesSlain = 0,
     -- Add more stats here as needed
@@ -168,6 +169,12 @@ end
 function CharacterStats:ResetHighestCritValue()
   local stats = self:GetCurrentCharacterStats()
   stats.highestCritValue = self.defaults.highestCritValue
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetHighestHealCritValue()
+  local stats = self:GetCurrentCharacterStats()
+  stats.highestHealCritValue = self.defaults.highestHealCritValue
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 

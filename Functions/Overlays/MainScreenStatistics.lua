@@ -207,6 +207,17 @@ highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 highestCritValue:SetText(formatNumberWithCommas(0))
 highestCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Highest heal crit value row
+local highestHealCritLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestHealCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+highestHealCritLabel:SetText('Highest Heal Crit:')
+highestHealCritLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local highestHealCritValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+highestHealCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+highestHealCritValue:SetText(formatNumberWithCommas(0))
+highestHealCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Tunnel vision overlay count row
 local tunnelVisionLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
@@ -332,6 +343,10 @@ local statsElements = { {
   value = highestCritValue,
   setting = 'showMainStatisticsPanelHighestCritValue',
 }, {
+  label = highestHealCritLabel,
+  value = highestHealCritValue,
+  setting = 'showMainStatisticsPanelHighestHealCritValue',
+}, {
   label = tunnelVisionLabel,
   value = tunnelVisionValue,
   setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown',
@@ -376,6 +391,9 @@ local function UpdateRowVisibility()
     end
 
     if isVisible then
+      -- Clear previous anchors to avoid conflicting points building up over time
+      element.label:ClearAllPoints()
+      element.value:ClearAllPoints()
       element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, yOffset)
       element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, yOffset)
       element.label:Show()
@@ -478,15 +496,19 @@ local function UpdateStatistics()
   local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
   highestCritValue:SetText(formatNumberWithCommas(highestCrit))
 
+  -- Update highest heal crit value
+  local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
+  highestHealCritValue:SetText(formatNumberWithCommas(highestHealCrit))
+
   -- Update tunnel vision overlay count
   local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
   tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
 
--- Update Duels Total value
+  -- Update Duels Total value
   local duelsTotal = CharacterStats:GetStat('duelsTotal') or 0
   duelsTotalValue:SetText(formatNumberWithCommas(duelsTotal))
 
--- Update Duels Won value
+  -- Update Duels Won value
   local duelsWon = CharacterStats:GetStat('duelsWon') or 0
   duelsWonValue:SetText(formatNumberWithCommas(duelsWon))
 
@@ -497,9 +519,9 @@ local function UpdateStatistics()
   -- Update Duels Win Percentage value
   local duelsWinPercent = CharacterStats:GetStat('duelsWinPercent') or 0
   if duelsWinPercent % 1 == 0 then
-    duelsWinPercentValue:SetText(string.format("%d%%", duelsWinPercent))
+    duelsWinPercentValue:SetText(string.format('%d%%', duelsWinPercent))
   else
-    duelsWinPercentValue:SetText(string.format("%.1f%%", duelsWinPercent))
+    duelsWinPercentValue:SetText(string.format('%.1f%%', duelsWinPercent))
   end
 
   -- Update row visibility after updating values

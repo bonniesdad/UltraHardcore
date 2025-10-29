@@ -79,6 +79,7 @@ function LoadDBData()
     showMainStatisticsPanelPetDeaths = false,
     showMainStatisticsPanelElitesSlain = false,
     showMainStatisticsPanelDungeonBosses = false,
+    showMainStatisticsPanelHighestHealCritValue = false,
     -- Survival Statistics Row Visibility Settings
     showMainStatisticsPanelHealthPotionsUsed = false,
     showMainStatisticsPanelBandagesUsed = false,
