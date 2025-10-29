@@ -50,6 +50,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'rejectBuffsFromOthers',
   tooltip = 'Automatically cancel buffs that do not come from the player themselves',
 }, {
+  name = 'Route Planner',
+  dbSettingsValueName = 'routePlanner',
+  tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
+}, {
   -- Experimental Preset Settings
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
@@ -132,10 +136,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 }, {
-  name = 'Route Planner',
-  dbSettingsValueName = 'routePlanner',
-  tooltip = 'Map only usable near campfire or when resting. Plan your routes carefully',
-}, {
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
@@ -197,6 +197,7 @@ local presets = { {
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
   rejectBuffsFromOthers = false,
+  routePlanner = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -204,7 +205,6 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  routePlanner = false,
   routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
@@ -236,6 +236,7 @@ local presets = { {
   hideActionBars = true,
   tunnelVisionMaxStrata = true,
   rejectBuffsFromOthers = true,
+  routePlanner = true,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
@@ -243,7 +244,6 @@ local presets = { {
   showIncomingDamageEffect = false,
   showHealingIndicator = false,
   setFirstPersonCamera = false,
-  routePlanner = false,
   routePlannerCompass = false,
   -- Misc Settings
   showOnScreenStatistics = true,
@@ -387,7 +387,11 @@ function InitializeSettingsOptionsTab()
   local scrollChild = CreateFrame('Frame')
   scrollFrame:SetScrollChild(scrollChild)
   local totalHeight = (5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 40
-  scrollChild:SetSize(420, totalHeight)
+  -- Extra space for Resource Bar Colors section
+  local colorSectionExtraHeight = 150
+  -- Extra space for statistics background opacity slider
+  local statsOpacityExtraHeight = 80
+  scrollChild:SetSize(420, totalHeight + colorSectionExtraHeight + statsOpacityExtraHeight)
 
   function createCheckboxes()
     local yOffset = -10
@@ -487,4 +491,186 @@ function InitializeSettingsOptionsTab()
   _G.selectedPreset = selectedPreset
 
   createCheckboxes()
+
+  -- Resource Bar Colors section (within scroll area)
+  local baseYOffset = -((5 * 25) + (#settingsCheckboxOptions * 30) + (5 * 10) + 20)
+
+  local colorHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  colorHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, baseYOffset)
+  colorHeader:SetText('Resource Bar Colors')
+  colorHeader:SetTextColor(1, 1, 0.5)
+
+  tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
+
+  local function createColorRow(labelText, powerKey, rowIndex, fallbackColor)
+    local row = CreateFrame('Frame', nil, scrollChild)
+    row:SetSize(380, 24)
+    row:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, baseYOffset - (rowIndex * 28))
+
+    local LABEL_WIDTH = 140
+    local SWATCH_WIDTH = 24
+    local GAP = 12
+
+    local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    label:SetPoint('LEFT', row, 'LEFT', 0, 0)
+    label:SetWidth(LABEL_WIDTH)
+    label:SetJustifyH('LEFT')
+    label:SetText(labelText)
+
+    local swatch = CreateFrame('Frame', nil, row, 'BackdropTemplate')
+    swatch:SetSize(SWATCH_WIDTH, 16)
+    swatch:SetPoint('LEFT', row, 'LEFT', LABEL_WIDTH + GAP, 0)
+    swatch:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      edgeSize = 8,
+      insets = {
+        left = 1,
+        right = 1,
+        top = 1,
+        bottom = 1,
+      },
+    })
+
+    local function getDefaultColor()
+      if POWER_COLORS and POWER_COLORS[powerKey] then
+        return POWER_COLORS[powerKey][1], POWER_COLORS[powerKey][2], POWER_COLORS[powerKey][3]
+      end
+      if fallbackColor then
+        return fallbackColor[1], fallbackColor[2], fallbackColor[3]
+      end
+      return 1, 1, 1
+    end
+
+    local function getCurrentColor()
+      local c = nil
+      if tempSettings.resourceBarColors[powerKey] then
+        c = tempSettings.resourceBarColors[powerKey]
+      elseif POWER_COLORS and POWER_COLORS[powerKey] then
+        c = POWER_COLORS[powerKey]
+      else
+        c = fallbackColor
+      end
+      return c[1], c[2], c[3]
+    end
+
+    local function setSwatchColor(r, g, b)
+      swatch:SetBackdropColor(r, g, b, 1)
+      swatch:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+    end
+
+    setSwatchColor(getCurrentColor())
+
+    local pickButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    pickButton:SetSize(70, 20)
+    pickButton:SetPoint('LEFT', row, 'LEFT', LABEL_WIDTH + GAP + SWATCH_WIDTH + GAP, 0)
+    pickButton:SetText('Pick')
+
+    local resetButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    resetButton:SetSize(56, 20)
+    resetButton:SetPoint('LEFT', pickButton, 'RIGHT', 6, 0)
+    resetButton:SetText('Reset')
+
+    pickButton:SetScript('OnClick', function()
+      local r, g, b = getCurrentColor()
+
+      local function onColorPicked()
+        local nr, ng, nb = ColorPickerFrame:GetColorRGB()
+        tempSettings.resourceBarColors[powerKey] = { nr, ng, nb }
+        setSwatchColor(nr, ng, nb)
+      end
+
+      local function onCancel(prev)
+        local pr, pg, pb = r, g, b
+        if prev and prev.r and prev.g and prev.b then
+          pr, pg, pb = prev.r, prev.g, prev.b
+        end
+        tempSettings.resourceBarColors[powerKey] = { pr, pg, pb }
+        setSwatchColor(pr, pg, pb)
+      end
+
+      if ColorPickerFrame then
+        ColorPickerFrame:Hide()
+        ColorPickerFrame.hasOpacity = false
+        ColorPickerFrame.opacityFunc = nil
+        ColorPickerFrame.func = onColorPicked
+        ColorPickerFrame.swatchFunc = onColorPicked
+        ColorPickerFrame.cancelFunc = onCancel
+        ColorPickerFrame.previousValues = {
+          r = r,
+          g = g,
+          b = b,
+        }
+        ColorPickerFrame:SetColorRGB(r, g, b)
+        ColorPickerFrame:Show()
+      end
+    end)
+
+    resetButton:SetScript('OnClick', function()
+      tempSettings.resourceBarColors[powerKey] = nil
+      local dr, dg, db = getDefaultColor()
+      setSwatchColor(dr, dg, db)
+    end)
+  end
+
+  createColorRow('Energy', 'ENERGY', 1)
+  createColorRow('Rage', 'RAGE', 2)
+  createColorRow('Mana', 'MANA', 3)
+  createColorRow('Pet', 'PET', 4, { 0.5, 0, 1 })
+
+  -- Statistics Background section
+  local statsHeaderYOffset = baseYOffset - (5 * 28) - 20
+  local statsHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  statsHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, statsHeaderYOffset)
+  statsHeader:SetText('Statistics Background')
+  statsHeader:SetTextColor(1, 1, 0.5)
+
+  local opacityRow = CreateFrame('Frame', nil, scrollChild)
+  opacityRow:SetSize(380, 24)
+  opacityRow:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, statsHeaderYOffset - 28)
+
+  local LABEL_WIDTH = 140
+  local GAP = 12
+
+  local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  opacityLabel:SetPoint('LEFT', opacityRow, 'LEFT', 0, 0)
+  opacityLabel:SetWidth(LABEL_WIDTH)
+  opacityLabel:SetJustifyH('LEFT')
+  opacityLabel:SetText('Opacity')
+
+  -- Initialize default if missing
+  if tempSettings.statisticsBackgroundOpacity == nil then
+    tempSettings.statisticsBackgroundOpacity = GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
+  end
+
+  local percentText = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  percentText:SetPoint('LEFT', opacityRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  percentText:SetWidth(40)
+  percentText:SetJustifyH('LEFT')
+  percentText:SetText(
+    tostring(math.floor((tempSettings.statisticsBackgroundOpacity or 0.3) * 100)) .. '%'
+  )
+
+  local slider = CreateFrame('Slider', nil, opacityRow, 'OptionsSliderTemplate')
+  slider:SetPoint('LEFT', percentText, 'RIGHT', 10, 0)
+  slider:SetSize(180, 16)
+  slider:SetMinMaxValues(0, 100)
+  slider:SetValueStep(1)
+  slider:SetObeyStepOnDrag(true)
+  slider:SetValue((tempSettings.statisticsBackgroundOpacity or 0.3) * 100)
+  if slider.Low then
+    slider.Low:SetText('0%')
+  end
+  if slider.High then
+    slider.High:SetText('100%')
+  end
+  if slider.Text then
+    slider.Text:SetText('')
+  end
+
+  slider:SetScript('OnValueChanged', function(self, val)
+    local pct = math.floor(val + 0.5)
+    percentText:SetText(pct .. '%')
+    tempSettings.statisticsBackgroundOpacity = pct / 100
+  end)
 end

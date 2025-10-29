@@ -21,7 +21,13 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Ultra:',
-  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'rejectBuffsFromOthers' },
+  settings = {
+    'petsDiePermanently',
+    'hideActionBars',
+    'tunnelVisionMaxStrata',
+    'rejectBuffsFromOthers',
+    'routePlanner',
+  },
 }, {
   title = 'Experimental:',
   settings = {
@@ -33,7 +39,6 @@ local PRESET_SECTIONS = { {
     'setFirstPersonCamera',
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
-    'routePlanner',
     'routePlannerCompass',
   },
 }, {

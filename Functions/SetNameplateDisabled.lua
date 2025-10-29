@@ -21,6 +21,7 @@ local nameplateCVars =
 
 local nameplateMonitorFrame = nil
 local nameplateDisabled = false
+local nameplateFallbackFrame = nil
 
 -- Safe SetCVar wrapper that checks for protected state
 local function SafeSetCVar(cvar, value)
@@ -56,6 +57,113 @@ local function CheckNameplateCVars()
   end
 end
 
+-- Fallback: if nameplates appear, force them to look like 100% HP with no level
+local function ApplyNameplateFallbackToFrame(plate)
+  if not plate then return end
+
+  -- Try to locate a health bar on the nameplate
+  local unitFrame = plate.UnitFrame or plate.unitFrame
+  local healthBar = nil
+
+  if unitFrame then
+    healthBar = unitFrame.healthBar or unitFrame.healthbar
+    if not healthBar and unitFrame.healthBarContainer and unitFrame.healthBarContainer.healthBar then
+      healthBar = unitFrame.healthBarContainer.healthBar
+    end
+  end
+
+  if not healthBar then
+    -- Fallback: search children for a StatusBar
+    local numChildren = select('#', plate:GetChildren())
+    for i = 1, numChildren do
+      local child = select(i, plate:GetChildren())
+      if child and child.GetObjectType and child:GetObjectType() == 'StatusBar' then
+        healthBar = child
+        break
+      end
+    end
+  end
+
+  if healthBar and healthBar.GetMinMaxValues then
+    local _, maxValue = healthBar:GetMinMaxValues()
+    if maxValue then
+      if healthBar.GetValue and healthBar.SetValue then
+        if healthBar:GetValue() ~= maxValue then
+          healthBar:SetValue(maxValue)
+        end
+      end
+      if not healthBar._UHC_ForcedFull then
+        healthBar._UHC_ForcedFull = true
+        if healthBar.HookScript then
+          healthBar:HookScript('OnValueChanged', function(bar)
+            local _, maxV = bar:GetMinMaxValues()
+            if maxV and bar.GetValue and bar.SetValue and bar:GetValue() ~= maxV then
+              bar:SetValue(maxV)
+            end
+          end)
+        end
+      end
+    end
+  end
+
+  -- Hide potential level displays if present on the unit frame
+  if unitFrame then
+    if unitFrame.LevelText and unitFrame.LevelText.Hide then
+      unitFrame.LevelText:Hide()
+    end
+    if unitFrame.levelText and unitFrame.levelText.Hide then
+      unitFrame.levelText:Hide()
+    end
+    if unitFrame.LevelFrame and unitFrame.LevelFrame.Hide then
+      unitFrame.LevelFrame:Hide()
+    end
+  end
+end
+
+local function ApplyNameplateFallback()
+  if not nameplateDisabled then return end
+  if not C_NamePlate or not C_NamePlate.GetNamePlates then return end
+  local plates = C_NamePlate.GetNamePlates() or {}
+  for _, plate in ipairs(plates) do
+    ApplyNameplateFallbackToFrame(plate)
+  end
+end
+
+local function StartNameplateFallback()
+  if nameplateFallbackFrame then return end
+  if not C_NamePlate or not C_NamePlate.GetNamePlates then return end
+
+  nameplateFallbackFrame = CreateFrame('Frame')
+  nameplateFallbackFrame:RegisterEvent('NAME_PLATE_UNIT_ADDED')
+  nameplateFallbackFrame:RegisterEvent('NAME_PLATE_UNIT_REMOVED')
+  nameplateFallbackFrame:SetScript('OnEvent', function(_, event, unit)
+    if not nameplateDisabled then return end
+    if event == 'NAME_PLATE_UNIT_ADDED' then
+      local plate = C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)
+      ApplyNameplateFallbackToFrame(plate)
+    elseif event == 'NAME_PLATE_UNIT_REMOVED' then
+    -- nothing needed on remove for now
+    end
+  end)
+
+  -- Periodic enforcement in case other addons modify plates after creation
+  nameplateFallbackFrame:SetScript('OnUpdate', function(self, elapsed)
+    self.timer = (self.timer or 0) + elapsed
+    if self.timer >= 0.5 then
+      self.timer = 0
+      ApplyNameplateFallback()
+    end
+  end)
+end
+
+local function StopNameplateFallback()
+  if not nameplateFallbackFrame then return end
+  nameplateFallbackFrame:UnregisterAllEvents()
+  nameplateFallbackFrame:SetScript('OnEvent', nil)
+  nameplateFallbackFrame:SetScript('OnUpdate', nil)
+  nameplateFallbackFrame = nil
+end
+
 -- Start monitoring nameplate CVars
 local function StartNameplateMonitoring()
   if nameplateMonitorFrame then
@@ -89,8 +197,11 @@ function SetNameplateDisabled(disabled)
     DisableAllNameplates()
     -- Start monitoring to prevent re-enabling
     StartNameplateMonitoring()
+    -- Fallback enforcement in case nameplates appear
+    StartNameplateFallback()
   else
     -- Stop monitoring
     StopNameplateMonitoring()
+    StopNameplateFallback()
   end
 end
