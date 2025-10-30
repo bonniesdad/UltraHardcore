@@ -34,6 +34,7 @@ local CharacterStats = {
     xpGainedWithoutOptionShowHealingIndicator = 0,
     -- Survival statistics
     healthPotionsUsed = 0,
+    manaPotionsUsed = 0,
     bandagesUsed = 0,
     targetDummiesUsed = 0,
     grenadesUsed = 0,
@@ -115,6 +116,12 @@ end
 function CharacterStats:ResetHealthPotionsUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.healthPotionsUsed = self.defaults.healthPotionsUsed
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetManaPotionsUsed()
+  local stats = self:GetCurrentCharacterStats()
+  stats.manaPotionsUsed = self.defaults.manaPotionsUsed
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
@@ -589,6 +596,11 @@ end
 SLASH_RESETHEALTHPOTIONS1 = '/resethealthpotions'
 SlashCmdList['RESETHEALTHPOTIONS'] = function()
   CharacterStats:ResetHealthPotionsUsed()
+end
+
+SLASH_RESETMANAPOTIONS1 = '/resetmanapotions'
+SlashCmdList['RESETMANAPOTIONS'] = function()
+  CharacterStats:ResetManaPotionsUsed()
 end
 
 SLASH_RESETBANDAGES1 = '/resetbandages'

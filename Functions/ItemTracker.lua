@@ -19,6 +19,16 @@ local healingPotionSpellIDs = {
   [22729] = true, -- Rejuvenation Potion
 }
 
+-- Mana potion spell IDs in WoW Classic
+local manaPotionSpellIDs = {
+  [437] = true, -- Minor Mana Potion
+  [438] = true, -- Lesser Mana Potion
+  [2023] = true, -- Mana Potion
+  [11903] = true, -- Greater Mana Potion
+  [17530] = true, -- Superior Mana Potion
+  [17531] = true, -- Major Mana Potion
+}
+
 -- Target dummy spell IDs in WoW Classic
 local targetDummySpellIDs = {
   [4071] = true, -- Target Dummy
@@ -60,6 +70,17 @@ function ItemTracker.HandleHealthPotionUsage(subEvent, sourceGUID, spellID)
   end
 end
 
+function ItemTracker.HandleManaPotionUsage(subEvent, sourceGUID, spellID)
+  if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
+    print('Mana potion used: ' .. spellID)
+    if manaPotionSpellIDs[spellID] then
+      local currentManaPotions = CharacterStats:GetStat('manaPotionsUsed') or 0
+      local newCount = currentManaPotions + 1
+      CharacterStats:UpdateStat('manaPotionsUsed', newCount)
+    end
+  end
+end
+
 -- Handle target dummy usage tracking
 function ItemTracker.HandleTargetDummyUsage(subEvent, sourceGUID, spellID)
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
@@ -86,6 +107,7 @@ end
 function ItemTracker.HandleItemUsage(subEvent, sourceGUID, destGUID, spellID)
   ItemTracker.HandleBandageUsage(subEvent, destGUID, spellID)
   ItemTracker.HandleHealthPotionUsage(subEvent, sourceGUID, spellID)
+  ItemTracker.HandleManaPotionUsage(subEvent, sourceGUID, spellID)
   ItemTracker.HandleTargetDummyUsage(subEvent, sourceGUID, spellID)
   ItemTracker.HandleGrenadeUsage(subEvent, sourceGUID, spellID)
 end

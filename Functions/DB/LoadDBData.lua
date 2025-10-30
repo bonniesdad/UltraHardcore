@@ -85,6 +85,7 @@ function LoadDBData()
     showMainStatisticsPanelHighestHealCritValue = false,
     -- Survival Statistics Row Visibility Settings
     showMainStatisticsPanelHealthPotionsUsed = false,
+    showMainStatisticsPanelManaPotionsUsed = false,
     showMainStatisticsPanelBandagesUsed = false,
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
