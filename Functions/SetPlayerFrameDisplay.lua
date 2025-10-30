@@ -1,19 +1,9 @@
 local healthBarPosition = nil
-local originalStatusText = nil
 
-local function SetStatusTextDisplay(enable)
-  if enable then
-    -- Restore original statusText setting if we have it stored
-    if originalStatusText then
-      SetCVar('statusText', originalStatusText)
-    end
-  else
-    -- Store current statusText setting before disabling it
-    if not originalStatusText then
-      originalStatusText = GetCVar('statusText')
-    end
-    -- Set statusText to None (0) to disable status text display
+local function SetStatusTextDisplay(setStatusTextDisplayToNone)
+  if setStatusTextDisplayToNone then
     SetCVar('statusText', '0')
+    SetCVar('statusTextDisplay', 'NONE')
   end
 end
 
@@ -190,8 +180,8 @@ local function ShowPlayerFrameHealthMana()
   ShowCharacterPanelText()
 end
 
-function SetPlayerFrameDisplay(value, completelyRemove)
-  if value then
+function SetPlayerFrameDisplay(minimalFrameDisplay, completelyRemove)
+  if minimalFrameDisplay then
     if completelyRemove then
       -- Completely hide the entire player frame
       CompletelyHidePlayerFrame()
@@ -199,16 +189,17 @@ function SetPlayerFrameDisplay(value, completelyRemove)
       HidePlayerFrameHealthMana()
     end
     -- Set Interface Status Text to None when hiding player frame
-    SetStatusTextDisplay(false)
+    SetStatusTextDisplay(true)
   else
     if completelyRemove then
       -- Completely restore the entire player frame
       CompletelyShowPlayerFrame()
+      SetStatusTextDisplay(false)
     else
       ShowPlayerFrameHealthMana()
+      -- Restore Interface Status Text when showing player frame
+      SetStatusTextDisplay(false)
     end
-    -- Restore Interface Status Text when showing player frame
-    SetStatusTextDisplay(true)
   end
 end
 
