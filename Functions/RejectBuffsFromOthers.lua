@@ -14,10 +14,6 @@ local function CancelBuff(buffName)
   -- We need to cancel by index because CancelUnitBuff requires an index
   for i = 1, 40 do
     local name, _, _, _, _, _, sourceUnit, _, _, spellId = UnitBuff('player', i)
-    if sourceUnit then
-      local casterName = UnitName(sourceUnit)
-      print('casterName: ', casterName)
-    end
     if not name then
       break
     end
