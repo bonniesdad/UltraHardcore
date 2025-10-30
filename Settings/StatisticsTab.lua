@@ -19,6 +19,7 @@ local STATISTIC_TOOLTIPS = {
   highestHealCritValue = 'The highest critical heal you have done',
   -- Survival section
   healthPotionsUsed = 'Number of health potions you have consumed',
+  manaPotionsUsed = 'Number of mana potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
@@ -731,6 +732,10 @@ function InitializeStatisticsTab()
     key = 'healthPotionsUsed',
     label = 'Health Potions Used:',
     tooltipKey = 'healthPotionsUsed',
+  }, {
+    key = 'manaPotionsUsed',
+    label = 'Mana Potions Used:',
+    tooltipKey = 'manaPotionsUsed',
   }, {
     key = 'bandagesUsed',
     label = 'Bandages Applied:',

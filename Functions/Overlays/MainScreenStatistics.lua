@@ -156,6 +156,16 @@ healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
 healthPotionsValue:SetText(formatNumberWithCommas(0))
 healthPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+local manaPotionsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+manaPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -170)
+manaPotionsLabel:SetText('Mana Potions:')
+manaPotionsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local manaPotionsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+manaPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
+manaPotionsValue:SetText(formatNumberWithCommas(0))
+manaPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 local bandagesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 bandagesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -185)
 bandagesLabel:SetText('Bandages Used:')
@@ -323,6 +333,10 @@ local statsElements = { {
   value = healthPotionsValue,
   setting = 'showMainStatisticsPanelHealthPotionsUsed',
 }, {
+  label = manaPotionsLabel,
+  value = manaPotionsValue,
+  setting = 'showMainStatisticsPanelManaPotionsUsed',
+}, {
   label = bandagesLabel,
   value = bandagesValue,
   setting = 'showMainStatisticsPanelBandagesUsed',
@@ -479,6 +493,9 @@ local function UpdateStatistics()
   -- Update survival statistics
   local healthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
   healthPotionsValue:SetText(formatNumberWithCommas(healthPotions))
+
+  local manaPotions = CharacterStats:GetStat('manaPotionsUsed') or 0
+  manaPotionsValue:SetText(formatNumberWithCommas(manaPotions))
 
   local bandages = CharacterStats:GetStat('bandagesUsed') or 0
   bandagesValue:SetText(formatNumberWithCommas(bandages))
