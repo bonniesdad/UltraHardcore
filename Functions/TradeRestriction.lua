@@ -1,3 +1,44 @@
+-- Helper: normalize name to character name without realm and lowercase
+function NormalizeName(name)
+  if not name then
+    return nil
+  end
+  local short = name
+  local dashPos = string.find(short, '-')
+  if dashPos then
+    short = string.sub(short, 1, dashPos - 1)
+  end
+  return string.lower(short)
+end
+
+-- Helper: check if a name is allowed by the saved group list
+function IsAllowedByGroupList(name)
+  local normalized = NormalizeName(name)
+  if not normalized then
+    return false
+  end
+  local list = (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupFoundNames) or {}
+  for _, allowed in ipairs(list) do
+    if NormalizeName(allowed) == normalized then
+      return true
+    end
+  end
+  return false
+end
+
+function IsAllowedByGuildList(name)
+  local numGuildMembers = GetNumGuildMembers()
+  for j = 1, numGuildMembers do
+    local name = GetGuildRosterInfo(j)
+    if name and string.find(name, targetName) then
+      allowed = true
+      break
+    end
+  end
+
+  return false
+end
+
 local frame = CreateFrame('Frame')
 
 frame:RegisterEvent('TRADE_SHOW')
@@ -9,34 +50,6 @@ frame:SetScript('OnEvent', function(self, event, ...)
   local inGroupFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
 
   if not (inGuildFound or inGroupFound) then return end
-
-  -- Helper: normalize name to character name without realm and lowercase
-  local function NormalizeName(name)
-    if not name then
-      return nil
-    end
-    local short = name
-    local dashPos = string.find(short, '-')
-    if dashPos then
-      short = string.sub(short, 1, dashPos - 1)
-    end
-    return string.lower(short)
-  end
-
-  -- Helper: check if a name is allowed by the saved group list
-  local function IsAllowedByGroupList(name)
-    local normalized = NormalizeName(name)
-    if not normalized then
-      return false
-    end
-    local list = (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupFoundNames) or {}
-    for _, allowed in ipairs(list) do
-      if NormalizeName(allowed) == normalized then
-        return true
-      end
-    end
-    return false
-  end
 
   if event == 'MAIL_INBOX_UPDATE' then
     for i = GetInboxNumItems(), 1, -1 do
@@ -58,14 +71,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
       if sender and not isGM then
         local allowed = false
         if inGuildFound then
-          local numGuildMembers = GetNumGuildMembers()
-          for j = 1, numGuildMembers do
-            local guildName = GetGuildRosterInfo(j)
-            if guildName and string.find(guildName, sender) then
-              allowed = true
-              break
-            end
-          end
+          allowed = IsAllowedByGuildList(sender)
         elseif inGroupFound then
           allowed = IsAllowedByGroupList(sender)
         end
