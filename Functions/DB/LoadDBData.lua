@@ -53,7 +53,7 @@ function LoadDBData()
     -- Misc Settings
     showOnScreenStatistics = true,
     -- Opacity for on-screen statistics background (0.0 - 1.0)
-    statisticsBackgroundOpacity = 0.0,
+    statisticsBackgroundOpacity = 0.3,
     announceLevelUpToGuild = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,
@@ -72,13 +72,16 @@ function LoadDBData()
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
-    showMainStatisticsPanelSessionHealth = false,
+    showMainStatisticsPanelSessionHealth = true,
     showMainStatisticsPanelThisLevel = false,
     showMainStatisticsPanelEnemiesSlain = true,
-    showMainStatisticsPanelDungeonsCompleted = true,
+    showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelPetDeaths = false,
     showMainStatisticsPanelElitesSlain = false,
     showMainStatisticsPanelDungeonBosses = false,
+    showMainStatisticsPanelRareElitesSlain = false,
+    showMainStatisticsPanelWorldBossesSlain = false,
+    showMainStatisticsPanelHighestCritValue = true,
     showMainStatisticsPanelHighestHealCritValue = false,
     -- Survival Statistics Row Visibility Settings
     showMainStatisticsPanelHealthPotionsUsed = false,
@@ -86,6 +89,7 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
+    showMainStatisticsPanelMaxTunnelVisionOverlayShown = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
