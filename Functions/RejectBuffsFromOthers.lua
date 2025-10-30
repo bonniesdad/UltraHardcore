@@ -13,8 +13,11 @@ local function CancelBuff(buffName)
   -- Use CancelUnitBuff to cancel the buff
   -- We need to cancel by index because CancelUnitBuff requires an index
   for i = 1, 40 do
-    local name, icon, count, debuffType, duration, expirationTime, source, isStealable =
-      UnitBuff('player', i)
+    local name, _, _, _, _, _, sourceUnit, _, _, spellId = UnitBuff('player', i)
+    if sourceUnit then
+      local casterName = UnitName(sourceUnit)
+      print('casterName: ', casterName)
+    end
     if not name then
       break
     end
@@ -46,7 +49,7 @@ local function TrackBuffSource(spellID, sourceGUID)
 end
 
 -- Function to check and reject incoming buffs
-local function CheckAndRejectBuffs()
+local function CheckAndRejectBuffs(incomingBuffUnit)
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.rejectBuffsFromOthers then return end
 
   local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
@@ -78,11 +81,22 @@ local function CheckAndRejectBuffs()
 
     if spellID and buffSourceGUID then
       -- If the buff was from someone other than the player, cancel it
-      local _, _, _, _, _, incomingBuffPlayerName, _ = GetPlayerInfoByGUID(buffSourceGUID)
-      if inGuildFound and not IsAllowedByGuildList(incomingBuffPlayerName) then
-        CancelBuff(name)
-      elseif inGroupFound and not IsAllowedByGroupList(incomingBuffPlayerName) then
-        CancelBuff(name)
+      local incomingBuffPlayerName = nil
+      if source then
+        incomingBuffPlayerName = UnitName(source)
+      end
+      if inGuildFound and incomingBuffPlayerName and not IsAllowedByGuildList(
+        incomingBuffPlayerName
+      ) then
+        if buffSourceGUID ~= playerGUID then
+          CancelBuff(name)
+        end
+      elseif inGroupFound and incomingBuffPlayerName and not IsAllowedByGroupList(
+        incomingBuffPlayerName
+      ) then
+        if buffSourceGUID ~= playerGUID then
+          CancelBuff(name)
+        end
       elseif not inGuildFound and not inGroupFound then
         if buffSourceGUID ~= playerGUID then
           CancelBuff(name)
@@ -108,7 +122,7 @@ end
 function RejectBuffsFromOthers(event, unit)
   if event == 'UNIT_AURA' and unit == 'player' then
     -- When auras update, check and reject buffs
-    CheckAndRejectBuffs()
+    CheckAndRejectBuffs(unit)
   end
 end
 
