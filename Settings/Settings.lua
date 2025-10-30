@@ -39,7 +39,9 @@ local function initializeTempSettings()
   end
 end
 
-local settingsFrame = CreateFrame('Frame', nil, UIParent, 'BackdropTemplate')
+local settingsFrame =
+  CreateFrame('Frame', 'UltraHardcoreSettingsFrame', UIParent, 'BackdropTemplate')
+tinsert(UISpecialFrames, 'UltraHardcoreSettingsFrame')
 settingsFrame:SetSize(560, 640)
 settingsFrame:SetMovable(true)
 settingsFrame:EnableMouse(true)
