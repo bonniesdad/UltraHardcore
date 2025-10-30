@@ -49,6 +49,9 @@ end
 local function CheckAndRejectBuffs()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.rejectBuffsFromOthers then return end
 
+  local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
+  local inGroupFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
+
   local playerGUID = UnitGUID('player')
 
   -- Check all active buffs
@@ -75,10 +78,17 @@ local function CheckAndRejectBuffs()
 
     if spellID and buffSourceGUID then
       -- If the buff was from someone other than the player, cancel it
-      if buffSourceGUID ~= playerGUID then
+      local _, _, _, _, _, incomingBuffPlayerName, _ = GetPlayerInfoByGUID(buffSourceGUID)
+      if inGuildFound and not IsAllowedByGuildList(incomingBuffPlayerName) then
         CancelBuff(name)
-        -- Remove from tracking after canceling
-        buffSources[spellID] = nil
+      elseif inGroupFound and not IsAllowedByGroupList(incomingBuffPlayerName) then
+        CancelBuff(name)
+      elseif not inGuildFound and not inGroupFound then
+        if buffSourceGUID ~= playerGUID then
+          CancelBuff(name)
+          -- Remove from tracking after canceling
+          buffSources[spellID] = nil
+        end
       end
     end
   end
