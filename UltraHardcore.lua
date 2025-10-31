@@ -63,6 +63,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetRoutePlannerCompass(GLOBAL_SETTINGS.routePlannerCompass or false)
     DisablePetCombatText()
     RepositionPetHappinessTexture()
+    if GLOBAL_SETTINGS.completelyRemovePlayerFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+      if InitializeGroupButtons then
+        InitializeGroupButtons()
+      end
+    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)

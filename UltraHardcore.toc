@@ -42,6 +42,7 @@ Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/TradeRestriction.lua
+Functions/GroupButtons.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
