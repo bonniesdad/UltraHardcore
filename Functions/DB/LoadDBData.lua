@@ -55,6 +55,7 @@ function LoadDBData()
     minimapClockPosition = {},
     -- Opacity for on-screen statistics background (0.0 - 1.0)
     statisticsBackgroundOpacity = 0.3,
+    minimapClockScale = 1.0,
     announceLevelUpToGuild = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,

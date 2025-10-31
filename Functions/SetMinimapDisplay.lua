@@ -23,6 +23,7 @@ local function LoadClockPosition()
   end
 
   TimeManagerClockButton:SetFrameStrata("HIGH")
+  TimeManagerClockButton:SetScale(GLOBAL_SETTINGS.minimapClockScale or 1.0)
 end
 
 function HideMinimap(showClockEvenWhenMapHidden)
