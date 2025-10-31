@@ -16,6 +16,7 @@ jumpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
     self.count = self.count + 1
     self.lastJump = GetTime()
     CharacterStats:UpdateStat('playerJumps', JumpCounter.count)
+    UpdateStatistics()
   end
 
   -- Hook AscendStop to detect player jumps
