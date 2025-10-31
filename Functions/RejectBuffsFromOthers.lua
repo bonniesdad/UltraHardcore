@@ -9,7 +9,7 @@
 local buffSources = {}
 
 -- Function to cancel a buff
-local function CancelBuff(buffName)
+function CancelBuff(buffName)
   -- Use CancelUnitBuff to cancel the buff
   -- We need to cancel by index because CancelUnitBuff requires an index
   for i = 1, 40 do
@@ -17,6 +17,7 @@ local function CancelBuff(buffName)
     if not name then
       break
     end
+
     if name == buffName then
       CancelUnitBuff('player', i)
       return true

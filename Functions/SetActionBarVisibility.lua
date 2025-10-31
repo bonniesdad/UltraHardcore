@@ -32,6 +32,7 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 end
 
 function HideActionBars()
+  CancelBuff('Cozy Fire')
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
     ForceHideFrame(frame)
   end

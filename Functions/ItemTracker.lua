@@ -72,7 +72,6 @@ end
 
 function ItemTracker.HandleManaPotionUsage(subEvent, sourceGUID, spellID)
   if subEvent == 'SPELL_CAST_SUCCESS' and sourceGUID == UnitGUID('player') then
-    print('Mana potion used: ' .. spellID)
     if manaPotionSpellIDs[spellID] then
       local currentManaPotions = CharacterStats:GetStat('manaPotionsUsed') or 0
       local newCount = currentManaPotions + 1
