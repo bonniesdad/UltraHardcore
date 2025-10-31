@@ -1,5 +1,6 @@
 -- 🟢 Character Stats Management
 local statsInitialized = false
+local printPrefix = '[ULTRA] '
 
 local CharacterStats = {
   -- Default values for new characters
@@ -32,6 +33,7 @@ local CharacterStats = {
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
     xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
+    xpGWA = 0, -- This is used to track XP gained _with_ the addon
     -- Survival statistics
     healthPotionsUsed = 0,
     manaPotionsUsed = 0,
@@ -69,16 +71,16 @@ function CharacterStats:SetLowestHealth(value)
   if numValue and numValue >= 0 and numValue <= 100 then
     local stats = self:GetCurrentCharacterStats()
     if numValue < stats.lowestHealth then
-      print('UltraHardcore: You cannot set a lowest health lower than the current lowest health.')
+      print(printPrefix .. 'You cannot set a lowest health lower than the current lowest health.')
       return
     end
     local stats = self:GetCurrentCharacterStats()
     stats.lowestHealth = numValue
     SaveDBData('characterStats', UltraHardcoreDB.characterStats)
-    print('UltraHardcore: Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
+    print(printPrefix .. 'Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
   else
     print(
-      'UltraHardcore: Invalid value. Please enter a number between 0 and 100 (e.g., /setLowestHealth 20)'
+      printPrefix .. 'Invalid value. Please enter a number between 0 and 100 (e.g., /setLowestHealth 20)'
     )
   end
 end
@@ -204,6 +206,66 @@ function CharacterStats:ResetWorldBossesSlain()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ReportXPWithoutAddon()
+  local stats = self:GetCurrentCharacterStats()
+  local xpGainedWithAddon = stats.xpGWA
+  if xpGainedWithAddon ~= nil then
+    local playerXP = UnitXP("player")
+    -- local xpDiffAsString = formatNumberWithCommas(playerXP - xpGainedWithAddon)
+    --print(printPrefix .. 'Player has ' .. formatNumberWithCommas(playerXP) .. ' XP.' .. ' XP gained with UHC: ' .. formatNumberWithCommas(stats.xpGWA) .. ' (difference: ' .. xpDiffAsString .. ')')
+
+    return (playerXP - xpGainedWithAddon)
+  else
+    print(printPrefix .. 'Cannot load XP Gained with Addon stat')
+    return false
+  end
+end
+
+
+-- This will retroactively figure out the amount of XP gained _with_ the addon
+function CharacterStats:ResetXPGainedWithAddon(forceReset)
+  local stats = self:GetCurrentCharacterStats()
+
+  if stats.xpGWA == nil or forceReset ~= nil then
+    local lowestXP = 9999999 -- Start with a high number
+    for statName, _ in pairs(self.defaults) do
+      local xpForStat = stats[statName] 
+
+      -- Only use XP Gained Without stats for finding lowest XP value
+      local startIdx = string.find(statName, "xpGainedWithout")
+
+      if startIdx == 1 and xpForStat ~= nil and xpForStat < lowestXP then
+        lowestXP = stats[statName]
+      end
+    end
+
+    if lowestXP < 9999999 then
+      local playerXP = UnitXP("player")
+      -- This subtracts the lowest "xpGainedWithout" stat value from current XP to figure out
+      -- how much XP was gained with the addon.
+      local xpDiff = playerXP - lowestXP
+
+      CharacterStats:UpdateStat("xpGWA", xpDiff)
+    end
+  end
+end
+
+function CharacterStats:XPChecksum(playerXP, deficit, playerLevel)
+  local stats = self:GetCurrentCharacterStats()
+
+  if playerXP == nil then playerXP = UnitXP("player") end
+  if deficit == nil then deficit = playerXP - stats.xpGWA end
+  if playerLevel == nil then playerLevel = UnitLevel("player") end
+
+  local digits = getDigitsFromString(playerXP - deficit)
+  local checkTotal = 0 
+  for i, digit in ipairs(digits) do
+    checkTotal = checkTotal + digit
+  end
+
+  return string.format("%.2f", (checkTotal / playerLevel))
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
@@ -285,12 +347,11 @@ function CharacterStats:LogStatsToSpecificChannel(channel)
   -- if channel == 'GUILD' then
   -- Condensed single line for guild chat to avoid spam
   local condensedMessage =
-    '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
-      '%.1f',
-      stats.lowestHealth
-    ) .. ' - Elites: ' .. formatNumberWithCommas(
-      stats.elitesSlain
-    ) .. ' - Enemies: ' .. formatNumberWithCommas(stats.enemiesSlain)
+    printPrefix .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ')' 
+      .. ' - Health: ' .. string.format('%.1f', stats.lowestHealth)
+      .. ' - Elites: ' .. formatNumberWithCommas(stats.elitesSlain)
+      .. ' - Enemies: ' .. formatNumberWithCommas(stats.enemiesSlain)
+
   sendMessage(condensedMessage)
   -- else
   --   -- Multi-line format for say/party chat
@@ -489,10 +550,11 @@ function CharacterStats:ShowChatChannelDialog()
 
     -- Single line format for all channels
     local condensedMessage =
-      '[ULTRA] ' .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ') - Health: ' .. string.format(
-        '%.1f',
-        stats.lowestHealth
-      ) .. '%' .. ' - Party Deaths Witnessed: ' .. stats.partyMemberDeaths .. ' - Elites: ' .. stats.elitesSlain .. ' - Enemies: ' .. stats.enemiesSlain
+      printPrefix .. playerName .. ' (' .. playerClass .. ' L' .. playerLevel .. ')'
+      .. ' - Health: ' .. string.format( '%.1f', stats.lowestHealth) .. '%'
+      .. ' - Party Deaths Witnessed: ' .. stats.partyMemberDeaths
+      .. ' - Elites: ' .. stats.elitesSlain
+      .. ' - Enemies: ' .. stats.enemiesSlain
     sendMessage(condensedMessage)
 
     dialog:Hide()
@@ -579,6 +641,11 @@ end
 _G.CharacterStats = CharacterStats
 
 -- Register slash commands for individual stat resets
+--[[SLASH_RESETXPGWA1 = '/resetxpgwa'
+SlashCmdList['RESETXPGWA'] = function()
+  CharacterStats:ResetXPGainedWithAddon(true)
+end]]
+
 SLASH_RESETLOWESTHEALTH1 = '/resetlowesthealth'
 SlashCmdList['RESETLOWESTHEALTH'] = function()
   CharacterStats:ResetLowestHealth()
@@ -685,13 +752,49 @@ SlashCmdList['SETLOWESTHEALTH'] = function(msg)
   CharacterStats:SetLowestHealth(msg)
 end
 
+SLASH_CHECKXPREPORT1 = '/uhcxp'
+SLASH_CHECKXPREPORT2 = '/uhccheckxp'
+SlashCmdList['CHECKXPREPORT'] = function(msg)
+  local playerXP = 0
+  local deficit = 0
+  local level = 0
+  if msg == nil or msg == '' then 
+    print(printPrefix .. 'Check for a valid /uhcv message.  If the checksum from this command does not match theirs, it might be fake.')
+    print(printPrefix .. 'Usage: /uhcxp total_xp xp_without_uhc player_level')
+  else
+    local results = {}
+    for part in string.gmatch(msg, "([^ ]+)") do
+        table.insert(results, part)
+    end
+    playerXP = results[1]
+    deficit = results[2]
+    level = results[3]
+
+    if playerXP ~= nil and deficit ~= nil and level ~= nil then
+      local checksum = CharacterStats:XPChecksum(playerXP, deficit, level)
+      print(printPrefix .. 'Player checksum should be ' .. checksum)
+    else
+      print(printPrefix .. 'Cannot check XP report, run /uhcxp by itself to see usage')
+    end
+  end
+end
+
 -- Slash command to post version to current chat
 SLASH_POSTVERSION1 = '/uhcversion'
 SLASH_POSTVERSION2 = '/uhcv'
 SlashCmdList['POSTVERSION'] = function()
   local version = GetAddOnMetadata('UltraHardcore', 'Version') or 'Unknown'
   local playerName = UnitName('player')
-  local message = playerName .. ' is using UltraHardcore version ' .. version
+  local playerXP = UnitXP('player')
+  local xpDeficit = CharacterStats:ReportXPWithoutAddon()
+  local message = playerName .. ' is using UltraHardcore version ' .. version .. '.' 
+
+  if xpDeficit ~= false then
+    message = message
+              .. ' [Total XP: ' .. playerXP .. ']' 
+              .. ' [XP w/o UHC: ' .. formatNumberWithCommas(xpDeficit) .. ']'
+              .. ' (Checksum: '.. CharacterStats:XPChecksum() .. ')'
+  end
 
   -- Determine the best chat channel to use
   local chatType = nil
