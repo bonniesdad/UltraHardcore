@@ -45,6 +45,7 @@ Functions/TradeRestriction.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
+Functions/Statistics/TrackJumps.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua

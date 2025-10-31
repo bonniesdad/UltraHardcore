@@ -283,6 +283,18 @@ duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 duelsWinPercentValue:SetText('100%')
 duelsWinPercentValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Player Jumps because who doesn't want to know how much they jump. ;)
+local playerJumpsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+playerJumpsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+playerJumpsLabel:SetText('Jumps:')
+playerJumpsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local playerJumpsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+playerJumpsValue:SetText(formatNumberWithCommas(0))
+playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+
 -- Store all statistics elements for easy management
 local statsElements = { {
   label = levelLabel,
@@ -380,6 +392,10 @@ local statsElements = { {
   label = duelsWinPercentLabel,
   value = duelsWinPercentValue,
   setting = 'showMainStatisticsPanelDuelsWinPercent',
+}, {
+  label = playerJumpsLabel,
+  value = playerJumpsValue,
+  setting = 'showMainStatisticsPanelPlayerJumps',
 } }
 
 -- Function to update row visibility and positioning
@@ -540,6 +556,10 @@ local function UpdateStatistics()
   else
     duelsWinPercentValue:SetText(string.format('%.1f%%', duelsWinPercent))
   end
+
+  -- Update player jumps value
+  local playerJumps = CharacterStats:GetStat('playerJumps') or 0
+  playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
