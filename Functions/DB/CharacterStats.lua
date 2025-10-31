@@ -44,6 +44,7 @@ local CharacterStats = {
     duelsWon = 0,
     duelsLost = 0,
     duelsWinPercent = 0,
+    playerJumps = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,
@@ -164,6 +165,12 @@ end
 function CharacterStats:ResetDuelsWinPercent()
   local stats = self:GetCurrentCharacterStats()
   stats.duelsWinPercent = self.defaults.duelsWinPercent
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetPlayerJumps()
+  local stats = self:GetCurrentCharacterStats()
+  stats.playerJumps = self.defaults.playerJumps
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 

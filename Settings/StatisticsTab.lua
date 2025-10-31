@@ -29,6 +29,7 @@ local STATISTIC_TOOLTIPS = {
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
+  playerJumps = 'Number of jumps you have performed.  Work that jump key!',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -772,6 +773,10 @@ function InitializeStatisticsTab()
     key = 'duelsWinPercent',
     label = 'Duel Win Percent:',
     tooltipKey = 'duelsWinPercent',
+  }, {
+    key = 'playerJumps',
+    label = 'Jumps Performed:',
+    tooltipKey = 'playerJumps',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
