@@ -673,4 +673,61 @@ function InitializeSettingsOptionsTab()
     percentText:SetText(pct .. '%')
     tempSettings.statisticsBackgroundOpacity = pct / 100
   end)
+
+
+  -- Minimap Clock Scale section
+  local minimapClockScaleHeaderYOffset = baseYOffset - (5 * 28) - 20 - 68
+  local minimapClockScaleHeader = scrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  minimapClockScaleHeader:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, minimapClockScaleHeaderYOffset)
+  minimapClockScaleHeader:SetText('Minimap Clock Scale')
+  minimapClockScaleHeader:SetTextColor(1, 1, 0.5)
+
+  local minimapClockScaleRow = CreateFrame('Frame', nil, scrollChild)
+  minimapClockScaleRow:SetSize(380, 24)
+  minimapClockScaleRow:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 20, minimapClockScaleHeaderYOffset - 28)
+
+  local LABEL_WIDTH = 140
+  local GAP = 12
+
+  local minimapClockScaleLabel = minimapClockScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapClockScaleLabel:SetPoint('LEFT', minimapClockScaleRow, 'LEFT', 0, 0)
+  minimapClockScaleLabel:SetWidth(LABEL_WIDTH)
+  minimapClockScaleLabel:SetJustifyH('LEFT')
+  minimapClockScaleLabel:SetText('Minimap Clock Scale')
+
+  -- Initialize default if missing
+  if tempSettings.minimapClockScale == nil then
+    tempSettings.minimapClockScale = GLOBAL_SETTINGS.minimapClockScale or 1.0
+  end
+
+  local minimapClockScalePercentText = minimapClockScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapClockScalePercentText:SetPoint('LEFT', minimapClockScaleRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  minimapClockScalePercentText:SetWidth(40)
+  minimapClockScalePercentText:SetJustifyH('LEFT')
+  minimapClockScalePercentText:SetText(
+    tostring(math.floor((tempSettings.minimapClockScale or 1.0) * 100)) .. '%'
+  )
+
+  local minimapClockScaleSlider = CreateFrame('Slider', nil, minimapClockScaleRow, 'OptionsSliderTemplate')
+  minimapClockScaleSlider:SetPoint('LEFT', minimapClockScalePercentText, 'RIGHT', 10, 0)
+  minimapClockScaleSlider:SetSize(180, 16)
+  minimapClockScaleSlider:SetMinMaxValues(10, 20)
+  minimapClockScaleSlider:SetValueStep(1)
+  minimapClockScaleSlider:SetObeyStepOnDrag(true)
+  minimapClockScaleSlider:SetValue(math.floor(((tempSettings.minimapClockScale or 1.0) * 10) + 0.5))
+  if minimapClockScaleSlider.Low then
+    minimapClockScaleSlider.Low:SetText('100%')
+  end
+  if minimapClockScaleSlider.High then
+    minimapClockScaleSlider.High:SetText('200%')
+  end
+  if minimapClockScaleSlider.Text then
+    minimapClockScaleSlider.Text:SetText('')
+  end
+
+  minimapClockScaleSlider:SetScript('OnValueChanged', function(self, val)
+    local steps = math.floor(val + 0.5)
+    minimapClockScalePercentText:SetText((steps * 10) .. '%')
+    tempSettings.minimapClockScale = steps / 10
+  end)
 end
