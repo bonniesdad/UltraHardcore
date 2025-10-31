@@ -7,6 +7,7 @@ local CharacterStats = {
     lowestHealth = 100,
     lowestHealthThisLevel = 100,
     lowestHealthThisSession = 100,
+    lowestHPHealed = 100,
     petDeaths = 0,
     elitesSlain = 0,
     enemiesSlain = 0,
