@@ -27,12 +27,17 @@ function IsAllowedByGroupList(name)
 end
 
 function IsAllowedByGuildList(name)
-  local numGuildMembers = GetNumGuildMembers()
+  local normalizedTarget = NormalizeName(name)
+  if not normalizedTarget then
+    return false
+  end
+
+  local numGuildMembers = GetNumGuildMembers() or 0
   for j = 1, numGuildMembers do
-    local name = GetGuildRosterInfo(j)
-    if name and string.find(name, targetName) then
-      allowed = true
-      break
+    local guildName = GetGuildRosterInfo(j)
+    local normalizedGuildName = NormalizeName(guildName)
+    if normalizedGuildName and normalizedGuildName == normalizedTarget then
+      return true
     end
   end
 
