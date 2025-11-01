@@ -25,8 +25,9 @@ UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and los
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
+  if event == 'ADDON_LOADED' and addonName == 'UltraHardcore' then
     LoadDBData()
+  elseif event == 'PLAYER_ENTERING_WORLD' then
     HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()

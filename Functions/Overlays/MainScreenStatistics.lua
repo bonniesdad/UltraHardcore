@@ -1,6 +1,9 @@
 -- Main Screen Statistics Display
 -- Shows the same statistics that appear in the settings panel, but on the main screen at all times
 
+-- To gate activity until the addon is fully loaded
+local isAddonLoaded = false
+
 -- Create the main statistics frame (invisible container for positioning)
 local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
 statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
@@ -458,6 +461,10 @@ end
 
 -- Function to update all statistics
 local function UpdateStatistics()
+  if not isAddonLoaded then
+    return
+  end
+
   if not UltraHardcoreDB then
     LoadDBData()
   end
@@ -572,20 +579,21 @@ statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
 statsFrame:RegisterEvent('ADDON_LOADED') -- Check setting when addon loads
 statsFrame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' then
+  if event == 'PLAYER_ENTERING_WORLD' and isAddonLoaded then
     UpdateStatistics()
     CheckAddonEnabled()
-  elseif event == 'UNIT_HEALTH_FREQUENT' then
+  elseif event == 'UNIT_HEALTH_FREQUENT' and isAddonLoaded then
     -- Update lowest health when health changes
     UpdateStatistics()
-  elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
+  elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' and isAddonLoaded then
     -- Update kill counts when combat events occur
     UpdateStatistics()
-  elseif event == 'PLAYER_LEVEL_UP' then
+  elseif event == 'PLAYER_LEVEL_UP' and isAddonLoaded then
     -- Update XP when leveling up
     UpdateStatistics()
-  elseif event == 'ADDON_LOADED' then
+  elseif event == 'ADDON_LOADED' and addonName == 'UltraHardcore' then
     -- Check setting when addon loads
+    isAddonLoaded = true
     CheckAddonEnabled()
   end
 end)
