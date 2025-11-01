@@ -87,10 +87,17 @@ local f = CreateFrame('Frame')
 f:RegisterEvent('UNIT_AURA')
 f:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
 f:RegisterEvent('PLAYER_REGEN_ENABLED') -- leaving combat
+f:RegisterEvent("PLAYER_CONTROL_LOST") -- flight path initiated
+f:RegisterEvent("PLAYER_CONTROL_GAINED") -- flight path finished
 f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == "PLAYER_CONTROL_LOST" or event == "PLAYER_CONTROL_GAINED" then
+    -- I have to add a small delay otherwise the UnitOnTaxi() has not registered
+    C_Timer.After(0.1, function()
+      SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+    end)
   end
 end)
