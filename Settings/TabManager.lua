@@ -98,6 +98,14 @@ function TabManager.switchToTab(index)
   tabButtons[index]:SetAlpha(1.0)
   activeTab = index
 
+  -- Persist last opened settings tab per character
+  if GLOBAL_SETTINGS then
+    GLOBAL_SETTINGS.lastOpenedSettingsTab = index
+    if SaveCharacterSettings then
+      SaveCharacterSettings(GLOBAL_SETTINGS)
+    end
+  end
+
   -- Initialize tabs only if not already initialized
   -- Initialize X Found Mode tab if it's being shown
   if index == 4 and InitializeXFoundModeTab then
@@ -131,7 +139,14 @@ end
 
 -- Set the default tab (Statistics tab)
 function TabManager.setDefaultTab()
-  TabManager.switchToTab(1)
+  local defaultIndex = 1
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.lastOpenedSettingsTab then
+    local saved = GLOBAL_SETTINGS.lastOpenedSettingsTab
+    if type(saved) == 'number' and tabContents[saved] then
+      defaultIndex = saved
+    end
+  end
+  TabManager.switchToTab(defaultIndex)
 end
 
 -- Get the currently active tab
