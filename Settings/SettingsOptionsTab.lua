@@ -305,6 +305,9 @@ function InitializeSettingsOptionsTab()
         checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
       end
     end
+    if _G.updateSectionCounts then
+      _G.updateSectionCounts()
+    end
   end
 
   local function applyPreset(presetIndex)
@@ -422,6 +425,18 @@ function InitializeSettingsOptionsTab()
 
     local sectionChildren = {}
     local sectionCollapsed = {}
+    local sectionChildSettingNames = {}
+    local sectionCountTexts = {}
+
+    local function updateSectionCount(idx)
+      if not sectionCountTexts[idx] or not sectionChildSettingNames[idx] then return end
+      local total = #sectionChildSettingNames[idx]
+      local selected = 0
+      for _, settingName in ipairs(sectionChildSettingNames[idx]) do
+        if tempSettings[settingName] then selected = selected + 1 end
+      end
+      sectionCountTexts[idx]:SetText(selected .. "/" .. total)
+    end
 
     local presetSections = GetPresetSections('simple', true) -- Include Misc section
     for sectionIndex, section in ipairs(presetSections) do
@@ -462,11 +477,14 @@ function InitializeSettingsOptionsTab()
       sectionHeader:SetTextColor(1, 1, 0.5)
 
       local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
+      local headerCountText = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
       headerIcon:SetPoint('RIGHT', sectionHeaderButton, 'RIGHT', -6, 0)
+      headerCountText:SetPoint('RIGHT', headerIcon, 'LEFT', -6, 0)
       headerIcon:SetSize(16, 16)
       headerIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
 
       sectionChildren[sectionIndex] = {}
+      sectionChildSettingNames[sectionIndex] = {}
 
       local numRows = 0
       for _, settingName in ipairs(section.settings) do
@@ -488,6 +506,7 @@ function InitializeSettingsOptionsTab()
 
           checkboxes[checkboxItem.dbSettingsValueName] = checkbox
           table.insert(sectionChildren[sectionIndex], checkbox)
+          table.insert(sectionChildSettingNames[sectionIndex], checkboxItem.dbSettingsValueName)
 
           checkbox:SetScript('OnClick', function(self)
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
@@ -501,6 +520,7 @@ function InitializeSettingsOptionsTab()
                 _G.UltraHardcoreHandleBuffBarSettingChange()
               end
             end
+            updateSectionCount(sectionIndex)
           end)
 
           checkbox:SetScript('OnEnter', function(self)
@@ -531,6 +551,10 @@ function InitializeSettingsOptionsTab()
       end
       sectionFrame:SetHeight(initialCollapsed and collapsedHeight or expandedHeight)
 
+      -- Initialize and display count text for this section
+      sectionCountTexts[sectionIndex] = headerCountText
+      updateSectionCount(sectionIndex)
+
       -- Toggle all child checkboxes and resize the section so the layout reflows
       sectionHeaderButton:SetScript('OnClick', function()
         local collapsed = not sectionCollapsed[sectionIndex]
@@ -551,6 +575,13 @@ function InitializeSettingsOptionsTab()
       prevSectionFrame = sectionFrame
       lastSectionFrame = sectionFrame
       table.insert(sectionFrames, sectionFrame)
+    end
+
+    -- Expose a global to refresh all section counts after bulk changes
+    _G.updateSectionCounts = function()
+      for idx, _ in ipairs(sectionCountTexts) do
+        updateSectionCount(idx)
+      end
     end
   end
 
@@ -598,8 +629,8 @@ function InitializeSettingsOptionsTab()
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
   colorSectionFrame:SetWidth(420)
   if lastSectionFrame then
-    colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -20)
-    colorSectionFrame:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -20)
+    colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -10)
+    colorSectionFrame:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -10)
   else
     colorSectionFrame:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, -10)
     colorSectionFrame:SetPoint('TOPRIGHT', scrollChild, 'TOPRIGHT', 0, -10)
@@ -762,8 +793,8 @@ function InitializeSettingsOptionsTab()
   -- Collapsible: Statistics Background
   local statsSectionFrame = CreateFrame('Frame', nil, scrollChild)
   statsSectionFrame:SetWidth(420)
-  statsSectionFrame:SetPoint('TOPLEFT', colorSectionFrame, 'BOTTOMLEFT', 0, -20)
-  statsSectionFrame:SetPoint('TOPRIGHT', colorSectionFrame, 'BOTTOMRIGHT', 0, -20)
+  statsSectionFrame:SetPoint('TOPLEFT', colorSectionFrame, 'BOTTOMLEFT', 0, -10)
+  statsSectionFrame:SetPoint('TOPRIGHT', colorSectionFrame, 'BOTTOMRIGHT', 0, -10)
 
   local statsHeaderButton = CreateFrame('Button', nil, statsSectionFrame, 'BackdropTemplate')
   statsHeaderButton:SetPoint('TOPLEFT', statsSectionFrame, 'TOPLEFT', 0, 0)
@@ -852,8 +883,8 @@ function InitializeSettingsOptionsTab()
   -- Collapsible: Minimap Clock Scale
   local clockSectionFrame = CreateFrame('Frame', nil, scrollChild)
   clockSectionFrame:SetWidth(420)
-  clockSectionFrame:SetPoint('TOPLEFT', statsSectionFrame, 'BOTTOMLEFT', 0, -20)
-  clockSectionFrame:SetPoint('TOPRIGHT', statsSectionFrame, 'BOTTOMRIGHT', 0, -20)
+  clockSectionFrame:SetPoint('TOPLEFT', statsSectionFrame, 'BOTTOMLEFT', 0, -10)
+  clockSectionFrame:SetPoint('TOPRIGHT', statsSectionFrame, 'BOTTOMRIGHT', 0, -10)
 
   local clockHeaderButton = CreateFrame('Button', nil, clockSectionFrame, 'BackdropTemplate')
   clockHeaderButton:SetPoint('TOPLEFT', clockSectionFrame, 'TOPLEFT', 0, 0)
@@ -948,9 +979,9 @@ function InitializeSettingsOptionsTab()
       total = total + (sf:GetHeight() or 0)
     end
     -- Gaps between major UI sections
-    total = total + 20 + (colorSectionFrame:GetHeight() or 0)
-    total = total + 20 + (statsSectionFrame:GetHeight() or 0)
-    total = total + 20 + (clockSectionFrame:GetHeight() or 0)
+    total = total + SECTION_GAP + (colorSectionFrame:GetHeight() or 0)
+    total = total + SECTION_GAP + (statsSectionFrame:GetHeight() or 0)
+    total = total + SECTION_GAP + (clockSectionFrame:GetHeight() or 0)
     total = total + 20 -- bottom padding
     scrollChild:SetHeight(total)
   end
