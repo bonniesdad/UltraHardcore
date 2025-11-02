@@ -51,7 +51,16 @@ function ShowTunnelVision(blurIntensity)
   
   -- Check if frame already exists and is visible
   if UltraHardcore.tunnelVisionFrames[frameName] and UltraHardcore.tunnelVisionFrames[frameName]:IsShown() then
-    return -- Frame already exists and is visible
+    local existingFrame = UltraHardcore.tunnelVisionFrames[frameName]
+    local currentAlpha = existingFrame:GetAlpha() or 0
+    -- If it's mid-fade-out (shown but alpha < 1), cancel fade-out and fade back in immediately
+    if currentAlpha < 1 then
+      if UIFrameFadeRemoveFrame then
+        UIFrameFadeRemoveFrame(existingFrame)
+      end
+      UIFrameFadeIn(existingFrame, 0.2, currentAlpha, 1)
+    end
+    return -- Already shown; either ensured fully visible or already at full alpha
   end
   
   -- Create the frame if it doesn't exist
