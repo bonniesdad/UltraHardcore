@@ -43,6 +43,7 @@ Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/TradeRestriction.lua
 Functions/GroupButtons.lua
+Functions/ProfessionPanel.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
