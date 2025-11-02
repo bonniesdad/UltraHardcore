@@ -40,7 +40,6 @@ function IsAllowedByGuildList(name)
       return true
     end
   end
-
   return false
 end
 

@@ -421,6 +421,7 @@ function InitializeSettingsOptionsTab()
     local HEADER_HEIGHT = 22
     local ROW_HEIGHT = 30
     local SECTION_GAP = 10
+    local HEADER_CONTENT_GAP = 10
     local prevSectionFrame = nil
 
     local sectionChildren = {}
@@ -499,7 +500,7 @@ function InitializeSettingsOptionsTab()
         if checkboxItem then
           numRows = numRows + 1
           local checkbox = CreateFrame('CheckButton', nil, sectionFrame, 'ChatConfigCheckButtonTemplate')
-          checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + ((numRows - 1) * ROW_HEIGHT)))
+          checkbox:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT)))
           checkbox.Text:SetText(checkboxItem.name)
           checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
           checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
@@ -535,7 +536,7 @@ function InitializeSettingsOptionsTab()
         end
       end
 
-      local expandedHeight = HEADER_HEIGHT + (numRows * ROW_HEIGHT) + 5
+      local expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + (numRows * ROW_HEIGHT) + 5
       local collapsedHeight = HEADER_HEIGHT
 
       -- Determine initial collapsed state (persisted or default collapsed for sections after Ultra)
@@ -625,6 +626,8 @@ function InitializeSettingsOptionsTab()
   -- Collapsible: Resource Bar Colors
   local HEADER_HEIGHT = 22
   local ROW_HEIGHT = 28
+  local HEADER_CONTENT_GAP = 10
+  local SUBHEADER_TO_ROWS_GAP = 10
 
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
   colorSectionFrame:SetWidth(420)
@@ -656,7 +659,7 @@ function InitializeSettingsOptionsTab()
   end)
   local colorHeaderText = colorHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   colorHeaderText:SetPoint('LEFT', colorHeaderButton, 'LEFT', 4, 0)
-  colorHeaderText:SetText('Resource Bar Colors')
+  colorHeaderText:SetText('UHC UI Colour')
   colorHeaderText:SetTextColor(1, 1, 0.5)
   local colorHeaderIcon = colorHeaderButton:CreateTexture(nil, 'ARTWORK')
   colorHeaderIcon:SetPoint('RIGHT', colorHeaderButton, 'RIGHT', -6, 0)
@@ -666,10 +669,18 @@ function InitializeSettingsOptionsTab()
   tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
   local colorRows = {}
 
+  -- Subheader: Resource Bar Colours
+  local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  resourceSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+  resourceSubHeader:SetText('Resource Bar Colours')
+  resourceSubHeader:SetTextColor(1, 0.85, 0.4)
+
+  local COLOR_ROWS_TOP_OFFSET = HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP
+
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
     local row = CreateFrame('Frame', nil, colorSectionFrame)
     row:SetSize(380, 24)
-    row:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 20, -(HEADER_HEIGHT + ((rowIndex - 1) * ROW_HEIGHT)))
+    row:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 20, -(COLOR_ROWS_TOP_OFFSET + ((rowIndex - 1) * ROW_HEIGHT)))
 
     local LABEL_WIDTH = 140
     local SWATCH_WIDTH = 24
@@ -772,60 +783,19 @@ function InitializeSettingsOptionsTab()
   createColorRowInSection('Mana', 'MANA', 3)
   createColorRowInSection('Pet', 'PET', 4, { 0.5, 0, 1 })
 
-  local colorExpandedHeight = HEADER_HEIGHT + (#colorRows * ROW_HEIGHT) + 8
-  local colorCollapsedHeight = HEADER_HEIGHT
-  -- Initial collapsed state (default collapsed)
-  local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.resourceBarColors
-  if colorCollapsed == nil then colorCollapsed = true end
-  colorHeaderIcon:SetTexture(colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-  for _, r in ipairs(colorRows) do r:SetShown(not colorCollapsed) end
-  colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
-  colorHeaderButton:SetScript('OnClick', function()
-    colorCollapsed = not colorCollapsed
-    colorHeaderIcon:SetTexture(colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-    for _, r in ipairs(colorRows) do r:SetShown(not colorCollapsed) end
-    colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
-    GLOBAL_SETTINGS.collapsedSettingsSections.resourceBarColors = colorCollapsed
-    if SaveCharacterSettings then SaveCharacterSettings(GLOBAL_SETTINGS) end
-    if recalcContentHeight then recalcContentHeight() end
-  end)
+  -- Subheaders and additional fields consolidated under this single collapsible section
+  local SUBHEADER_GAP = 12
+  local SUBHEADER_FONT = 'GameFontNormal'
 
-  -- Collapsible: Statistics Background
-  local statsSectionFrame = CreateFrame('Frame', nil, scrollChild)
-  statsSectionFrame:SetWidth(420)
-  statsSectionFrame:SetPoint('TOPLEFT', colorSectionFrame, 'BOTTOMLEFT', 0, -10)
-  statsSectionFrame:SetPoint('TOPRIGHT', colorSectionFrame, 'BOTTOMRIGHT', 0, -10)
+  -- Statistics Background subheader
+  local statsSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  statsSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(COLOR_ROWS_TOP_OFFSET + (#colorRows * ROW_HEIGHT) + SUBHEADER_GAP))
+  statsSubHeader:SetText('Statistics Background')
+  statsSubHeader:SetTextColor(1, 0.85, 0.4)
 
-  local statsHeaderButton = CreateFrame('Button', nil, statsSectionFrame, 'BackdropTemplate')
-  statsHeaderButton:SetPoint('TOPLEFT', statsSectionFrame, 'TOPLEFT', 0, 0)
-  statsHeaderButton:SetPoint('TOPRIGHT', statsSectionFrame, 'TOPRIGHT', 0, 0)
-  statsHeaderButton:SetHeight(HEADER_HEIGHT)
-  statsHeaderButton:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    edgeSize = 8,
-    insets = { left = 1, right = 1, top = 1, bottom = 1 },
-  })
-  statsHeaderButton:SetBackdropColor(0, 0, 0, 0.35)
-  statsHeaderButton:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  statsHeaderButton:SetScript('OnEnter', function(self)
-    self:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
-  end)
-  statsHeaderButton:SetScript('OnLeave', function(self)
-    self:SetBackdropColor(0, 0, 0, 0.35)
-  end)
-  local statsHeaderText = statsHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  statsHeaderText:SetPoint('LEFT', statsHeaderButton, 'LEFT', 4, 0)
-  statsHeaderText:SetText('Statistics Background')
-  statsHeaderText:SetTextColor(1, 1, 0.5)
-  local statsHeaderIcon = statsHeaderButton:CreateTexture(nil, 'ARTWORK')
-  statsHeaderIcon:SetPoint('RIGHT', statsHeaderButton, 'RIGHT', -6, 0)
-  statsHeaderIcon:SetSize(16, 16)
-  statsHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
-
-  local opacityRow = CreateFrame('Frame', nil, statsSectionFrame)
+  local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
   opacityRow:SetSize(380, 24)
-  opacityRow:SetPoint('TOPLEFT', statsSectionFrame, 'TOPLEFT', 20, -(HEADER_HEIGHT + 6))
+  opacityRow:SetPoint('TOPLEFT', statsSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH = 140
   local GAP = 12
@@ -863,59 +833,15 @@ function InitializeSettingsOptionsTab()
     tempSettings.statisticsBackgroundOpacity = pct / 100
   end)
 
-  local statsExpandedHeight = HEADER_HEIGHT + 28 + 12
-  local statsCollapsedHeight = HEADER_HEIGHT
-  local statsCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.statisticsBackground
-  if statsCollapsed == nil then statsCollapsed = true end
-  statsHeaderIcon:SetTexture(statsCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-  opacityRow:SetShown(not statsCollapsed)
-  statsSectionFrame:SetHeight(statsCollapsed and statsCollapsedHeight or statsExpandedHeight)
-  statsHeaderButton:SetScript('OnClick', function()
-    statsCollapsed = not statsCollapsed
-    statsHeaderIcon:SetTexture(statsCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-    opacityRow:SetShown(not statsCollapsed)
-    statsSectionFrame:SetHeight(statsCollapsed and statsCollapsedHeight or statsExpandedHeight)
-    GLOBAL_SETTINGS.collapsedSettingsSections.statisticsBackground = statsCollapsed
-    if SaveCharacterSettings then SaveCharacterSettings(GLOBAL_SETTINGS) end
-    if recalcContentHeight then recalcContentHeight() end
-  end)
+  -- Minimap Clock Scale subheader
+  local clockSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  clockSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
+  clockSubHeader:SetText('Minimap Clock Scale')
+  clockSubHeader:SetTextColor(1, 0.85, 0.4)
 
-  -- Collapsible: Minimap Clock Scale
-  local clockSectionFrame = CreateFrame('Frame', nil, scrollChild)
-  clockSectionFrame:SetWidth(420)
-  clockSectionFrame:SetPoint('TOPLEFT', statsSectionFrame, 'BOTTOMLEFT', 0, -10)
-  clockSectionFrame:SetPoint('TOPRIGHT', statsSectionFrame, 'BOTTOMRIGHT', 0, -10)
-
-  local clockHeaderButton = CreateFrame('Button', nil, clockSectionFrame, 'BackdropTemplate')
-  clockHeaderButton:SetPoint('TOPLEFT', clockSectionFrame, 'TOPLEFT', 0, 0)
-  clockHeaderButton:SetPoint('TOPRIGHT', clockSectionFrame, 'TOPRIGHT', 0, 0)
-  clockHeaderButton:SetHeight(HEADER_HEIGHT)
-  clockHeaderButton:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    edgeSize = 8,
-    insets = { left = 1, right = 1, top = 1, bottom = 1 },
-  })
-  clockHeaderButton:SetBackdropColor(0, 0, 0, 0.35)
-  clockHeaderButton:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  clockHeaderButton:SetScript('OnEnter', function(self)
-    self:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
-  end)
-  clockHeaderButton:SetScript('OnLeave', function(self)
-    self:SetBackdropColor(0, 0, 0, 0.35)
-  end)
-  local clockHeaderText = clockHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  clockHeaderText:SetPoint('LEFT', clockHeaderButton, 'LEFT', 4, 0)
-  clockHeaderText:SetText('Minimap Clock Scale')
-  clockHeaderText:SetTextColor(1, 1, 0.5)
-  local clockHeaderIcon = clockHeaderButton:CreateTexture(nil, 'ARTWORK')
-  clockHeaderIcon:SetPoint('RIGHT', clockHeaderButton, 'RIGHT', -6, 0)
-  clockHeaderIcon:SetSize(16, 16)
-  clockHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
-
-  local minimapClockScaleRow = CreateFrame('Frame', nil, clockSectionFrame)
+  local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(380, 24)
-  minimapClockScaleRow:SetPoint('TOPLEFT', clockSectionFrame, 'TOPLEFT', 20, -(HEADER_HEIGHT + 6))
+  minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH2 = 140
   local GAP2 = 12
@@ -953,19 +879,34 @@ function InitializeSettingsOptionsTab()
     tempSettings.minimapClockScale = steps / 10
   end)
 
-  local clockExpandedHeight = HEADER_HEIGHT + 28 + 12
-  local clockCollapsedHeight = HEADER_HEIGHT
-  local clockCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.minimapClockScale
-  if clockCollapsed == nil then clockCollapsed = true end
-  clockHeaderIcon:SetTexture(clockCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-  minimapClockScaleRow:SetShown(not clockCollapsed)
-  clockSectionFrame:SetHeight(clockCollapsed and clockCollapsedHeight or clockExpandedHeight)
-  clockHeaderButton:SetScript('OnClick', function()
-    clockCollapsed = not clockCollapsed
-    clockHeaderIcon:SetTexture(clockCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
-    minimapClockScaleRow:SetShown(not clockCollapsed)
-    clockSectionFrame:SetHeight(clockCollapsed and clockCollapsedHeight or clockExpandedHeight)
-    GLOBAL_SETTINGS.collapsedSettingsSections.minimapClockScale = clockCollapsed
+  -- Expanded height now includes resource subheader + color rows + other subheaders + two rows
+  local colorExpandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP + (#colorRows * ROW_HEIGHT) + 12 + 18 + 8 + 24 + 12 + 18 + 8 + 24 + 8
+  local colorCollapsedHeight = HEADER_HEIGHT
+  -- Initial collapsed state (default collapsed) using unified key
+  local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
+  if colorCollapsed == nil then
+    colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.resourceBarColors
+    if colorCollapsed == nil then colorCollapsed = true end
+  end
+  colorHeaderIcon:SetTexture(colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
+  resourceSubHeader:SetShown(not colorCollapsed)
+  for _, r in ipairs(colorRows) do r:SetShown(not colorCollapsed) end
+  statsSubHeader:SetShown(not colorCollapsed)
+  opacityRow:SetShown(not colorCollapsed)
+  clockSubHeader:SetShown(not colorCollapsed)
+  minimapClockScaleRow:SetShown(not colorCollapsed)
+  colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
+  colorHeaderButton:SetScript('OnClick', function()
+    colorCollapsed = not colorCollapsed
+    colorHeaderIcon:SetTexture(colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
+    resourceSubHeader:SetShown(not colorCollapsed)
+    for _, r in ipairs(colorRows) do r:SetShown(not colorCollapsed) end
+    statsSubHeader:SetShown(not colorCollapsed)
+    opacityRow:SetShown(not colorCollapsed)
+    clockSubHeader:SetShown(not colorCollapsed)
+    minimapClockScaleRow:SetShown(not colorCollapsed)
+    colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
+    GLOBAL_SETTINGS.collapsedSettingsSections.uiColour = colorCollapsed
     if SaveCharacterSettings then SaveCharacterSettings(GLOBAL_SETTINGS) end
     if recalcContentHeight then recalcContentHeight() end
   end)
@@ -980,8 +921,6 @@ function InitializeSettingsOptionsTab()
     end
     -- Gaps between major UI sections
     total = total + SECTION_GAP + (colorSectionFrame:GetHeight() or 0)
-    total = total + SECTION_GAP + (statsSectionFrame:GetHeight() or 0)
-    total = total + SECTION_GAP + (clockSectionFrame:GetHeight() or 0)
     total = total + 20 -- bottom padding
     scrollChild:SetHeight(total)
   end
