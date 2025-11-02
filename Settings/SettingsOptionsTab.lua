@@ -176,10 +176,10 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = true,
   newHighCritAppreciationSoundbite = true,
   buffBarOnResourceBar = false,
-  playPartyDeathSoundbite = true,
-  playPlayerDeathSoundbite = true,
-  spookyTunnelVision = true,
-  roachHearthstoneInPartyCombat = true,
+  playPartyDeathSoundbite = false,
+  playPlayerDeathSoundbite = false,
+  spookyTunnelVision = false,
+  roachHearthstoneInPartyCombat = false,
 }, {
   -- Preset 2: Recommended
   -- Lite Preset Settings
@@ -215,10 +215,10 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = true,
   newHighCritAppreciationSoundbite = true,
   buffBarOnResourceBar = false,
-  playPartyDeathSoundbite = true,
-  playPlayerDeathSoundbite = true,
-  spookyTunnelVision = true,
-  roachHearthstoneInPartyCombat = true,
+  playPartyDeathSoundbite = false,
+  playPlayerDeathSoundbite = false,
+  spookyTunnelVision = false,
+  roachHearthstoneInPartyCombat = false,
 }, {
   -- Preset 3: Ultra
   -- Lite Preset Settings
@@ -254,10 +254,10 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = true,
   newHighCritAppreciationSoundbite = true,
   buffBarOnResourceBar = false,
-  playPartyDeathSoundbite = true,
-  playPlayerDeathSoundbite = true,
-  spookyTunnelVision = true,
-  roachHearthstoneInPartyCombat = true,
+  playPartyDeathSoundbite = false,
+  playPlayerDeathSoundbite = false,
+  spookyTunnelVision = false,
+  roachHearthstoneInPartyCombat = false,
 } }
 
 -- Global function to update radio buttons (needed by Statistics tab)
@@ -343,9 +343,9 @@ function InitializeSettingsOptionsTab()
 
   local presetIcons =
     {
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100_halloween.png',
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100_halloween.png',
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100_halloween.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100.png',
     }
 
   local buttonSize = 100

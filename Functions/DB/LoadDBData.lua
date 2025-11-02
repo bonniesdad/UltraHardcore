@@ -53,7 +53,6 @@ function LoadDBData()
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
-    -- Opacity for on-screen statistics background (0.0 - 1.0)
     statisticsBackgroundOpacity = 0.3,
     minimapClockScale = 1.0,
     announceLevelUpToGuild = true,
@@ -63,10 +62,10 @@ function LoadDBData()
     announceDungeonsCompletedOnGroupJoin = true,
     newHighCritAppreciationSoundbite = true,
     buffBarOnResourceBar = false,
-    playPartyDeathSoundbite = true,
-    playPlayerDeathSoundbite = true,
-    spookyTunnelVision = true,
-    roachHearthstoneInPartyCombat = true,
+    playPartyDeathSoundbite = false,
+    playPlayerDeathSoundbite = false,
+    spookyTunnelVision = false,
+    roachHearthstoneInPartyCombat = false,
     guildSelfFound = false,
     groupSelfFound = false,
     -- Group Found teammate names (locked in at level 2)
