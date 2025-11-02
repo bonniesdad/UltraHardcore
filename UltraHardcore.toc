@@ -104,6 +104,7 @@ Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
 Functions/Overlays/ShowNatureDamageOverlay.lua
 Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
+Functions/Overlays/ShowKnockdownOverlay.lua
 
 Settings/Settings.lua
 Settings/TabManager.lua
