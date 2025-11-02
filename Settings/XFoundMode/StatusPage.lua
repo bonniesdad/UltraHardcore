@@ -9,7 +9,7 @@ local function CreateStatusPage(parentFrame)
   -- Title
   local titleText = statusPage:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
   titleText:SetPoint('TOP', statusPage, 'TOP', 0, -60)
-  titleText:SetText('Your X Found Status')
+  titleText:SetText('Your X Found Status (BETA)')
   titleText:SetTextColor(1, 1, 0.5) -- Light yellow
   -- Status Frame
   local statusFrame = CreateFrame('Frame', nil, statusPage, 'BackdropTemplate')
