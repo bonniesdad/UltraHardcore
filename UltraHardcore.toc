@@ -80,6 +80,7 @@ Functions/PartyDeathTracker.lua
 Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
 Functions/RejectBuffsFromOthers.lua
+Functions/PlayerIsSolo.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
