@@ -14,7 +14,7 @@ local function CreateStatusPage(parentFrame)
   -- Status Frame
   local statusFrame = CreateFrame('Frame', nil, statusPage, 'BackdropTemplate')
   statusFrame:SetSize(450, 500)
-  statusFrame:SetPoint('TOP', statusPage, 'TOP', 0, -70)
+  statusFrame:SetPoint('TOP', statusPage, 'TOP', 0, -45)
 
   statusFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -42,7 +42,7 @@ local function CreateStatusPage(parentFrame)
 
   -- Current Mode Display
   local modeLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  modeLabel:SetPoint('TOPLEFT', statusFrame, 'TOPLEFT', 20, -60)
+  modeLabel:SetPoint('TOPLEFT', statusFrame, 'TOPLEFT', 20, -48)
   modeLabel:SetText('Current Mode:')
   modeLabel:SetTextColor(1, 1, 1)
 
@@ -58,12 +58,12 @@ local function CreateStatusPage(parentFrame)
 
   -- Restrictions List
   local restrictionsLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  restrictionsLabel:SetPoint('TOPLEFT', modeLabel, 'BOTTOMLEFT', 0, -14)
+  restrictionsLabel:SetPoint('TOPLEFT', modeLabel, 'BOTTOMLEFT', 0, -10)
   restrictionsLabel:SetText('Current Restrictions:')
   restrictionsLabel:SetTextColor(1, 1, 1)
 
   local restrictionsText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  restrictionsText:SetPoint('TOPLEFT', restrictionsLabel, 'BOTTOMLEFT', 0, -10)
+  restrictionsText:SetPoint('TOPLEFT', restrictionsLabel, 'BOTTOMLEFT', 0, -6)
   restrictionsText:SetWidth(400)
   restrictionsText:SetText('No restrictions active. You can trade freely with all players.')
   restrictionsText:SetJustifyH('LEFT')
@@ -72,8 +72,8 @@ local function CreateStatusPage(parentFrame)
 
   -- Group Found Teammate Inputs (Only meaningful when Group Found is active)
   local groupSectionLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  groupSectionLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -15)
-  groupSectionLabel:SetText('Group Found: Teammates')
+  groupSectionLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -10)
+  groupSectionLabel:SetText('Group Found Teammates: (Do not include yourself)')
   groupSectionLabel:SetTextColor(1, 1, 1)
 
   local editBoxes = {}
@@ -87,7 +87,7 @@ local function CreateStatusPage(parentFrame)
       rowAnchors[row] = CreateFrame('Frame', nil, statusFrame)
       rowAnchors[row]:SetSize(1, 1)
       if row == 1 then
-        rowAnchors[row]:SetPoint('TOPLEFT', groupSectionLabel, 'BOTTOMLEFT', 0, -20)
+        rowAnchors[row]:SetPoint('TOPLEFT', groupSectionLabel, 'BOTTOMLEFT', 0, -18)
       else
         rowAnchors[row]:SetPoint('TOPLEFT', rowAnchors[row - 1], 'BOTTOMLEFT', 0, -36)
       end
@@ -108,9 +108,24 @@ local function CreateStatusPage(parentFrame)
   end
 
   local saveNamesButton = CreateFrame('Button', nil, statusFrame, 'UIPanelButtonTemplate')
-  saveNamesButton:SetSize(100, 24)
-  saveNamesButton:SetPoint('TOPLEFT', rowAnchors[5], 'BOTTOMLEFT', 0, -14)
+  saveNamesButton:SetSize(120, 24)
+  saveNamesButton:SetPoint('TOPLEFT', rowAnchors[5], 'BOTTOMLEFT', 0, -20)
   saveNamesButton:SetText('Save Names')
+
+  -- Auto-Fill button to populate from current party/raid
+  local autofillButton = CreateFrame('Button', nil, statusFrame, 'UIPanelButtonTemplate')
+  autofillButton:SetSize(120, 24)
+  autofillButton:ClearAllPoints()
+  autofillButton:SetPoint('TOPLEFT', saveNamesButton, 'BOTTOMLEFT', 0, -6)
+  autofillButton:SetText('Auto-Fill Group')
+
+  -- Description to the right of the Auto-Fill button
+  local autofillDesc = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  autofillDesc:SetPoint('LEFT', autofillButton, 'RIGHT', 10, 0)
+  autofillDesc:SetWidth(280)
+  autofillDesc:SetJustifyH('LEFT')
+  autofillDesc:SetText('Fill with your current party or raid members (excluding you) and save automatically.')
+  autofillDesc:SetTextColor(0.9, 0.9, 0.9)
 
   local lockNote = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   lockNote:SetPoint('LEFT', saveNamesButton, 'RIGHT', 10, 0)
@@ -129,16 +144,39 @@ local function CreateStatusPage(parentFrame)
   end
   -- Ensure button draws above the panel backdrop
   backButton:SetFrameLevel(statusFrame:GetFrameLevel() + 2)
-  -- Warning Text
-  local warningText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
-  warningText:SetPoint('BOTTOM', backButton, 'TOP', 0, 8)
-  warningText:SetWidth(430)
+
+  -- Styled warning panel with icon and text
+  local warningPanel = CreateFrame('Frame', nil, statusFrame, 'BackdropTemplate')
+  warningPanel:SetSize(430, 56)
+  warningPanel:SetPoint('BOTTOM', backButton, 'TOP', 15)
+  warningPanel:SetBackdrop({
+    bgFile = 'Interface\\Tooltips\\UI-Tooltip-Background',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 16,
+    edgeSize = 12,
+    insets = { left = 6, right = 6, top = 6, bottom = 6 },
+  })
+  warningPanel:SetBackdropColor(0.08, 0.06, 0.02, 0.9)
+  warningPanel:SetBackdropBorderColor(1, 0.8, 0.2, 1)
+  warningPanel:SetFrameLevel(statusFrame:GetFrameLevel() + 1)
+
+  local warningIcon = warningPanel:CreateTexture(nil, 'OVERLAY')
+  warningIcon:SetSize(24, 24)
+  warningIcon:SetPoint('LEFT', warningPanel, 'LEFT', 10, 0)
+  warningIcon:SetTexture('Interface\\DialogFrame\\UI-Dialog-Icon-AlertNew')
+
+  local warningText = warningPanel:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
+  warningText:ClearAllPoints()
+  warningText:SetPoint('LEFT', warningIcon, 'RIGHT', 10, 0)
+  warningText:SetPoint('RIGHT', warningPanel, 'RIGHT', -12, 0)
+  warningText:SetWidth(380)
   warningText:SetText(
     'Note: X Found modes can only be selected at level 1. Your current mode is locked.'
   )
-  warningText:SetJustifyH('CENTER')
+  warningText:SetJustifyH('LEFT')
   warningText:SetNonSpaceWrap(true)
-  warningText:SetTextColor(1, 0.6, 0.1) -- Brighter color
+  warningText:SetTextColor(1, 0.85, 0.2)
   if warningText.SetDrawLayer then
     warningText:SetDrawLayer('OVERLAY', 2)
   end
@@ -158,13 +196,19 @@ local function CreateStatusPage(parentFrame)
     if playerLevel == 1 then
       backButton:Show()
       warningText:SetText('Note: You can still change your X Found mode selection at level 1.')
-      warningText:SetTextColor(1, 1, 0) -- Bright yellow for level 1
+      warningText:SetTextColor(1, 0.95, 0.4) -- Bright yellow for level 1
+      if warningPanel and warningPanel.SetBackdropBorderColor then
+        warningPanel:SetBackdropBorderColor(1, 0.9, 0.3, 1)
+      end
     else
       backButton:Hide()
       warningText:SetText(
         'Note: X Found modes can only be selected at level 1. Your current mode is locked.'
       )
-      warningText:SetTextColor(1, 0.6, 0.6) -- Brighter red for higher levels
+      warningText:SetTextColor(1, 0.6, 0.4) -- Warm orange-red for higher levels
+      if warningPanel and warningPanel.SetBackdropBorderColor then
+        warningPanel:SetBackdropBorderColor(1, 0.5, 0.3, 1)
+      end
     end
 
     -- Get current X Found mode from settings
@@ -217,6 +261,8 @@ local function CreateStatusPage(parentFrame)
         editBoxes[i]:Show()
       end
       saveNamesButton:Show()
+      if autofillButton then autofillButton:Show() end
+      if autofillDesc then autofillDesc:Show() end
       lockNote:Show()
 
       -- Prefill from saved settings
@@ -236,6 +282,7 @@ local function CreateStatusPage(parentFrame)
         end
       end
       saveNamesButton:SetEnabled(canEdit)
+      if autofillButton then autofillButton:SetEnabled(canEdit) end
       if canEdit then
         lockNote:SetText('Editable at level 1. Locked from level 2.')
         lockNote:SetTextColor(1, 0.8, 0.2)
@@ -249,12 +296,30 @@ local function CreateStatusPage(parentFrame)
         editBoxes[i]:Hide()
       end
       saveNamesButton:Hide()
+      if autofillButton then autofillButton:Hide() end
+      if autofillDesc then autofillDesc:Hide() end
       lockNote:Hide()
     end
   end
 
   -- Store update function for external access
   statusPage.UpdateStatus = UpdateStatus
+
+  -- Refresh UI when player levels up (e.g., from 1 to 2)
+  local levelEventFrame = CreateFrame('Frame', nil, statusPage)
+  levelEventFrame:RegisterEvent('PLAYER_LEVEL_UP')
+  levelEventFrame:RegisterEvent('UNIT_LEVEL')
+  levelEventFrame:SetScript('OnEvent', function(_, event, arg1)
+    if event == 'PLAYER_LEVEL_UP' then
+      if XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
+        statusPage:UpdateStatus()
+      end
+    elseif event == 'UNIT_LEVEL' then
+      if arg1 == 'player' and XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
+        statusPage:UpdateStatus()
+      end
+    end
+  end)
 
   -- Save handler
   saveNamesButton:SetScript('OnClick', function()
@@ -274,6 +339,120 @@ local function CreateStatusPage(parentFrame)
       SaveCharacterSettings(GLOBAL_SETTINGS)
     end
     print('|cff00ff00[ULTRA]|r Group Found teammate names saved.')
+  end)
+
+  -- Helper to collect current party/raid member names (excluding player)
+  local function GetCurrentGroupMemberNames()
+    local names = {}
+    local seen = {}
+    local playerName = UnitName('player')
+
+    local function addName(name)
+      if not name then return end
+      name = string.match(name, '([^%-]+)') or name
+      if name ~= '' and name ~= playerName then
+        local key = string.lower(name)
+        if not seen[key] then
+          table.insert(names, name)
+          seen[key] = true
+        end
+      end
+    end
+
+    if IsInRaid and IsInRaid() then
+      local num = (GetNumGroupMembers and GetNumGroupMembers()) or 0
+      for i = 1, num do
+        local n = GetRaidRosterInfo and GetRaidRosterInfo(i)
+        addName(n)
+      end
+    else
+      -- Party (classic compatible: party1..party4)
+      for i = 1, 4 do
+        local unit = 'party' .. i
+        if UnitExists and UnitExists(unit) then
+          local n = UnitName(unit)
+          addName(n)
+        end
+      end
+    end
+
+    return names
+  end
+
+  -- Auto-Fill click handler
+  autofillButton:SetScript('OnEnter', function(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_TOP')
+    GameTooltip:SetText('Auto-Fill from Group')
+    GameTooltip:AddLine('Copy current party/raid members into the fields (excludes you).', 1, 1, 1, true)
+    GameTooltip:Show()
+  end)
+  autofillButton:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+  autofillButton:SetScript('OnClick', function()
+    if UnitLevel('player') ~= 1 then return end
+    local groupNames = GetCurrentGroupMemberNames()
+    if not groupNames or #groupNames == 0 then
+      print('|cffffd000[ULTRA]|r No party/raid members found to add.')
+      return
+    end
+
+    local existing = {}
+    for i = 1, 10 do
+      local raw = editBoxes[i]:GetText() or ''
+      raw = string.gsub(raw, '^%s+', '')
+      raw = string.gsub(raw, '%s+$', '')
+      if raw ~= '' then
+        existing[string.lower(raw)] = true
+      end
+    end
+
+    local filled = 0
+    local nextIndex = 1
+    local function isEmpty(idx)
+      local t = editBoxes[idx]:GetText() or ''
+      t = string.gsub(t, '^%s+', '')
+      t = string.gsub(t, '%s+$', '')
+      return t == ''
+    end
+
+    for _, name in ipairs(groupNames) do
+      local key = string.lower(name)
+      if not existing[key] then
+        while nextIndex <= 10 and not isEmpty(nextIndex) do
+          nextIndex = nextIndex + 1
+        end
+        if nextIndex > 10 then break end
+        editBoxes[nextIndex]:SetText(name)
+        existing[key] = true
+        filled = filled + 1
+        nextIndex = nextIndex + 1
+      end
+    end
+
+    if filled > 0 then
+      print('|cff00ff00[ULTRA]|r Auto-filled ' .. filled .. ' names from your group.')
+    else
+      print('|cffffd000[ULTRA]|r No empty slots or all names already present.')
+    end
+
+    -- Persist the current input values immediately after auto-fill
+    if GLOBAL_SETTINGS then
+      local namesToSave = {}
+      for i = 1, 10 do
+        local raw = editBoxes[i]:GetText() or ''
+        raw = string.gsub(raw, '^%s+', '')
+        raw = string.gsub(raw, '%s+$', '')
+        if raw ~= '' then table.insert(namesToSave, raw) end
+      end
+      GLOBAL_SETTINGS.groupFoundNames = namesToSave
+      if SaveCharacterSettings then
+        SaveCharacterSettings(GLOBAL_SETTINGS)
+      end
+      if filled > 0 then
+        print('|cff00ff00[ULTRA]|r Group Found names saved.')
+      end
+    end
   end)
 
   return statusPage
