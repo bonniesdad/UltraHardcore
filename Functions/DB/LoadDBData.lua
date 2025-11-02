@@ -38,9 +38,9 @@ function LoadDBData()
     petsDiePermanently = false,
     hideActionBars = false,
     tunnelVisionMaxStrata = false,
-    rejectBuffsFromOthers = false,
     routePlanner = false,
     -- Experimental Preset Settings
+    rejectBuffsFromOthers = false,
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,

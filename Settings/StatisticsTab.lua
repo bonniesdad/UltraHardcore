@@ -878,7 +878,7 @@ function InitializeStatisticsTab()
     showDazedEffect = 'Show Dazed Effect',
     hideGroupHealth = 'Use UHC Party Frames',
     hideMinimap = 'Hide Minimap',
-    -- Ultra section
+    -- Extreme section
     petsDiePermanently = 'Pets Die Permanently',
     hideActionBars = 'Hide Action Bars',
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',

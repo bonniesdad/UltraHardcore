@@ -20,17 +20,17 @@ local PRESET_SECTIONS = { {
     'hideMinimap',
   },
 }, {
-  title = 'Ultra:',
+  title = 'Extreme:',
   settings = {
     'petsDiePermanently',
     'hideActionBars',
     'tunnelVisionMaxStrata',
-    'rejectBuffsFromOthers',
     'routePlanner',
   },
 }, {
   title = 'Experimental:',
   settings = {
+    'rejectBuffsFromOthers',
     'hideBreathIndicator',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',

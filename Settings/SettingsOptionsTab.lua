@@ -33,7 +33,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideMinimap',
   tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
 }, {
-  -- Ultra Preset Settings {
+  -- Extreme Preset Settings {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
   tooltip = "Pets can't be resurrected when they are killed",
@@ -45,16 +45,15 @@ local settingsCheckboxOptions = { {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
-}, {
-  name = 'Reject buffs from others',
-  dbSettingsValueName = 'rejectBuffsFromOthers',
-  tooltip = 'Automatically cancel buffs that do not come from the player themselves',
-}, {
+},  {
   name = 'Route Planner',
   dbSettingsValueName = 'routePlanner',
   tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
-}, {
-  -- Experimental Preset Settings
+}, { -- Experimental Preset Settings
+  name = 'Reject buffs from others',
+  dbSettingsValueName = 'rejectBuffsFromOthers',
+  tooltip = 'Automatically cancel buffs that do not come from the player themselves',
+},{
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
@@ -153,12 +152,12 @@ local presets = { {
   disableNameplateHealth = false,
   showDazedEffect = false,
   hideGroupHealth = false,
-  -- Ultra Preset Settings
+  -- Extreme Preset Settings
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
-  rejectBuffsFromOthers = false,
   -- Experimental Preset Settings
+  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
@@ -192,13 +191,13 @@ local presets = { {
   disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  -- Ultra Preset Settings
+  -- Extreme Preset Settings
   petsDiePermanently = false,
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
-  rejectBuffsFromOthers = false,
   routePlanner = false,
   -- Experimental Preset Settings
+  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
@@ -220,7 +219,7 @@ local presets = { {
   spookyTunnelVision = false,
   roachHearthstoneInPartyCombat = false,
 }, {
-  -- Preset 3: Ultra
+  -- Preset 3: Extreme
   -- Lite Preset Settings
   hidePlayerFrame = true,
   showTunnelVision = true,
@@ -231,13 +230,13 @@ local presets = { {
   disableNameplateHealth = true,
   showDazedEffect = true,
   hideGroupHealth = true,
-  -- Ultra Preset Settings
+  -- Extreme Preset Settings
   petsDiePermanently = true,
   hideActionBars = true,
   tunnelVisionMaxStrata = true,
-  rejectBuffsFromOthers = true,
   routePlanner = true,
   -- Experimental Preset Settings
+  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
@@ -381,7 +380,7 @@ function InitializeSettingsOptionsTab()
     elseif i == 2 then
       presetText:SetText('Recommended')
     elseif i == 3 then
-      presetText:SetText('Ultra')
+      presetText:SetText('Extreme')
     end
 
     button:SetScript('OnClick', function()
@@ -659,7 +658,7 @@ function InitializeSettingsOptionsTab()
   end)
   local colorHeaderText = colorHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   colorHeaderText:SetPoint('LEFT', colorHeaderButton, 'LEFT', 4, 0)
-  colorHeaderText:SetText('UHC UI Colour')
+  colorHeaderText:SetText('Ultra UI Settings')
   colorHeaderText:SetTextColor(1, 1, 0.5)
   local colorHeaderIcon = colorHeaderButton:CreateTexture(nil, 'ARTWORK')
   colorHeaderIcon:SetPoint('RIGHT', colorHeaderButton, 'RIGHT', -6, 0)
