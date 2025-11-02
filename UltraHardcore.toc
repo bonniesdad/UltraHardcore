@@ -45,6 +45,7 @@ Functions/TradeRestriction.lua
 Functions/GroupButtons.lua
 
 Functions/Statistics/TrackLowestHealth.lua
+Functions/Statistics/TrackLowestHPHealed.lua
 Functions/Statistics/TrackXPPerSetting.lua
 Functions/Statistics/TrackJumps.lua
 
