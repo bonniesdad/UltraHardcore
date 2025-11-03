@@ -104,13 +104,60 @@ function HideMinimap(showClockEvenWhenMapHidden)
       -- Allow clicks through minimap while this is up
       Minimap:EnableMouse(false)
 
+      -- Capture original state so we can restore it cleanly
+      local originalParent = Minimap:GetParent()
+      local originalPoint, _, originalRelPoint, originalX, originalY = Minimap:GetPoint(1)
+      local originalScale = Minimap:GetScale()
+      local originalAlpha = Minimap:GetAlpha()
+
+      -- Detach the minimap from its cluster so we can show ONLY the map
+      Minimap:SetParent(UIParent)
+
       Minimap:ClearAllPoints()
       Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, -24)
       Minimap:SetScale(8.0)
+      -- Minimap:SetAlpha(1)
 
-      -- Show the relevant minimap elements
+      -- Ensure we don't alter the minimap mask; rely on the game's default circular mask
+
+      -- Hide extra minimap adornments while revealing
+      local toggledFrames = {}
+      local toggledRegions = {}
+      local function hideTemp(frame)
+        if frame and frame.Hide then
+          table.insert(toggledFrames, { frame = frame, wasShown = frame:IsShown() })
+          frame:Hide()
+        end
+      end
+
+      hideTemp(_G.MiniMapTracking)
+      hideTemp(_G.GameTimeFrame)
+      hideTemp(_G.MiniMapMailFrame)
+      hideTemp(_G.MinimapBorder)
+      hideTemp(_G.MinimapBackdrop)
+      hideTemp(_G.MinimapBorderTop)
+      hideTemp(_G.MinimapZoomIn)
+      hideTemp(_G.MinimapZoomOut)
+      hideTemp(_G.MinimapCompassTexture)
+      hideTemp(_G.MinimapNorthTag)
+
+      -- Hide terrain/background and border texture regions so only blips remain
+      do
+        local regions = { Minimap:GetRegions() }
+        for _, region in ipairs(regions) do
+          if region and region.GetObjectType and region:GetObjectType() == "Texture" then
+            local layer = (region.GetDrawLayer and region:GetDrawLayer()) or nil
+            -- Hide all terrain/background/border art so only blips remain
+            if layer == "BACKGROUND" or layer == "BORDER" or layer == "ARTWORK" then
+              table.insert(toggledRegions, { region = region, wasShown = region:IsShown() })
+              region:Hide()
+            end
+          end
+        end
+      end
+
+      -- Show only the minimap (keep cluster elements hidden)
       Minimap:Show()
-      MinimapCluster:Show()
       Minimap:SetZoom(0)
 
       -- Cancel any existing 'hide' timer
@@ -120,18 +167,42 @@ function HideMinimap(showClockEvenWhenMapHidden)
       
       -- After a few seconds, hide the minimap again
       minimapHideTimer = C_Timer.NewTimer(5, function() 
-        Minimap:Hide() 
-        
-        MinimapCluster:Hide()
-        
+        -- Hide the map again and restore state
+        Minimap:Hide()
         Minimap:EnableMouse(true)
+        Minimap:SetAlpha(originalAlpha or 0)
         
         -- Reset the user's initial minimap options
         SetCVar("RotateMinimap", initialRotateMinimap)
         Minimap:SetZoom(initialZoom)
 
-        -- Reset the position
+        -- Reset the position and parent
         Minimap:ClearAllPoints()
+        if originalParent then
+          Minimap:SetParent(originalParent)
+        end
+        if originalPoint then
+          Minimap:SetPoint(originalPoint, originalParent or UIParent, originalRelPoint, originalX, originalY)
+        end
+        if originalScale then
+          Minimap:SetScale(originalScale)
+        end
+        
+        -- Restore frames hidden during reveal
+        for _, entry in ipairs(toggledFrames) do
+          if entry.wasShown and entry.frame and entry.frame.Show then
+            entry.frame:Show()
+          end
+        end
+
+        -- Restore regions hidden during reveal
+        for _, entry in ipairs(toggledRegions) do
+          if entry.wasShown and entry.region and entry.region.Show then
+            entry.region:Show()
+          end
+        end
+
+        -- No mask changes were applied; nothing to restore here
       end)
     end
   end)
