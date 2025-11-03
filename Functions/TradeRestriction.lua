@@ -43,11 +43,42 @@ function IsAllowedByGuildList(name)
   return false
 end
 
+-- Guild Found handshake (silent addon messages during trade)
+local ADDON_PREFIX_GF = 'UHC_GF'
+local verifiedPartners = {}
+
+local function MarkPartnerVerifiedGF(name)
+  local normalized = NormalizeName(name)
+  if not normalized then return end
+  verifiedPartners[normalized] = { gf = true, ts = GetTime() }
+end
+
+local function IsPartnerVerifiedGF(name)
+  local normalized = NormalizeName(name)
+  if not normalized then return false end
+  local entry = verifiedPartners[normalized]
+  if not entry then return false end
+  -- consider verification fresh for 60 seconds
+  return entry.gf and (GetTime() - (entry.ts or 0) < 60)
+end
+
+local function SendGuildFoundPing(targetName)
+  if not targetName then return end
+  if C_ChatInfo and C_ChatInfo.SendAddonMessage then
+    C_ChatInfo.SendAddonMessage(ADDON_PREFIX_GF, 'PING', 'WHISPER', targetName)
+  end
+end
+
+if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
+  C_ChatInfo.RegisterAddonMessagePrefix(ADDON_PREFIX_GF)
+end
+
 local frame = CreateFrame('Frame')
 
 frame:RegisterEvent('TRADE_SHOW')
 frame:RegisterEvent('AUCTION_HOUSE_SHOW')
 frame:RegisterEvent('MAIL_INBOX_UPDATE')
+frame:RegisterEvent('CHAT_MSG_ADDON')
 
 frame:SetScript('OnEvent', function(self, event, ...)
   local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
@@ -96,26 +127,41 @@ frame:SetScript('OnEvent', function(self, event, ...)
       return -- No trade target, allow
     end
 
-    local allowed = false
     if inGuildFound then
-      local numGuildMembers = GetNumGuildMembers()
-      for j = 1, numGuildMembers do
-        local name = GetGuildRosterInfo(j)
-        if name and string.find(name, targetName) then
-          allowed = true
-          break
-        end
+      -- First, enforce guild membership
+      if not IsAllowedByGuildList(targetName) then
+        print(
+          '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' cancelled - not in my guild.|r'
+        )
+        CancelTrade()
+        return
       end
-    elseif inGroupFound then
-      allowed = IsAllowedByGroupList(targetName)
-    end
 
-    if not allowed then
-      local reason = inGuildFound and 'not in my guild' or 'not on my Group Found list'
-      print(
-        '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' cancelled - ' .. reason .. '.|r'
-      )
-      CancelTrade()
+      -- If already verified via addon handshake, allow
+      if IsPartnerVerifiedGF(targetName) then
+        return
+      end
+
+      -- Start handshake and cancel if no ACK within timeout
+      SendGuildFoundPing(targetName)
+      local nameForTimer = targetName
+      C_Timer.After(1.5, function()
+        if not IsPartnerVerifiedGF(nameForTimer) then
+          print(
+            '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. nameForTimer .. ' cancelled - other player not using Guild Found.|r'
+          )
+          CancelTrade()
+        end
+      end)
+      return
+    elseif inGroupFound then
+      local allowed = IsAllowedByGroupList(targetName)
+      if not allowed then
+        print(
+          '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' cancelled - not on my Group Found list.|r'
+        )
+        CancelTrade()
+      end
     end
   elseif event == 'AUCTION_HOUSE_SHOW' then
     local modeLabel = inGuildFound and 'Guild Found' or 'Group Found'
@@ -127,5 +173,22 @@ frame:SetScript('OnEvent', function(self, event, ...)
         CloseAuctionHouse()
       end
     end)
+  elseif event == 'CHAT_MSG_ADDON' then
+    local prefix, msg, channel, sender = ...
+    if prefix ~= ADDON_PREFIX_GF then return end
+    if not sender or sender == '' then return end
+
+    -- Only care about Guild Found mode handshakes
+    if msg == 'PING' then
+      -- Respond only if we are in Guild Found mode
+      if inGuildFound and C_ChatInfo and C_ChatInfo.SendAddonMessage then
+        C_ChatInfo.SendAddonMessage(ADDON_PREFIX_GF, 'ACK', 'WHISPER', sender)
+        -- Their PING implies they are in GF; mark them as verified
+        MarkPartnerVerifiedGF(sender)
+      end
+    elseif msg == 'ACK' then
+      -- They acknowledged our ping; mark verified
+      MarkPartnerVerifiedGF(sender)
+    end
   end
 end)
