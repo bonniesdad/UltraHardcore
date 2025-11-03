@@ -3,7 +3,7 @@
 ## Version 1.2.7 - 2025-11-03
 
 ### New Features
-- Reject buffs from others (ultra option)
+- Reject buffs from others (experimental option)
   - When enabled, the addon will reject buffs from other players.
 - Route planner now hides player position markers on the map.
 - Added buttons for invite to party and leave group
