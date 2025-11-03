@@ -21,9 +21,11 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 
   if hideActionBars and playerLevel >= MIN_LEVEL_HIDE_ACTION_BARS then
     local inCombat = UnitAffectingCombat('player') == true
-    if (IsResting() or HasCozyFire() or UnitOnTaxi('player') or UnitIsDead(
-      'player'
-    )) and not inCombat then
+    if (IsResting() or 
+        HasCozyFire() or 
+        UnitOnTaxi('player') or 
+        UnitIsDead( 'player')) and 
+        not inCombat then
       ShowActionBars()
     else
       HideActionBars()
@@ -87,10 +89,17 @@ local f = CreateFrame('Frame')
 f:RegisterEvent('UNIT_AURA')
 f:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
 f:RegisterEvent('PLAYER_REGEN_ENABLED') -- leaving combat
+f:RegisterEvent('PLAYER_CONTROL_LOST') -- Player has lost control, we will check for taxi
+f:RegisterEvent('PLAYER_CONTROL_GAINED') -- Player has control again (after taxi)
 f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == 'PLAYER_CONTROL_LOST' or event == 'PLAYER_CONTROL_GAINED' then
+    C_Timer.After(0.5, function()
+      -- We need a slight delay before UnitOnTaxi will return true
+      SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+    end)
   end
 end)
