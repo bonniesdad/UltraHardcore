@@ -1,17 +1,10 @@
 # Patch Notes
 
-## Version 2.0.0 - 2025-11-03
+## Version 1.2.7 - 2025-11-03
 
 ### New Features
-
-- Added Group Found Mode
-  - Restricts trading to the members of your group.
-- Added Guild Found Mode
-  - Restricts trading to the members of your guild.
 - Reject buffs from others (ultra option)
   - When enabled, the addon will reject buffs from other players.
-  - When Group Found Mode is enabled, allow buffs from group found members.
-  - When Guild Found Mode is enabled, allow buffs from guild members.
 - Route planner now hides player position markers on the map.
 - Added buttons for invite to party and leave group
   - These buttons will be displayed in the bottom right corner of the screen.

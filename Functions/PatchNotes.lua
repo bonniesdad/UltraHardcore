@@ -1,18 +1,12 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { 
   {
-    version = '2.0.0',
+    version = '1.2.7',
     date = '2025-11-03',
     notes = {
       'NEW FEATURES:',
-      '• Added Group Found Mode',
-      '  • Restricts trading to the members of your group.',
-      '• Added Guild Found Mode',
-      '  • Restricts trading to the members of your guild.',
       '• Reject buffs from others (ultra option)',
       '  • When enabled, the addon will reject buffs from other players.',
-      '  • When Group Found Mode is enabled, allow buffs from group found members.',
-      '  • When Guild Found Mode is enabled, allow buffs from guild members.',
       '• Route planner now hides player position markers on the map.',
       '• Added buttons for invite to party and leave group',
       '  • These buttons will be displayed in the bottom right corner of the screen.',
