@@ -1,6 +1,6 @@
 # Patch Notes
 
-## Version 1.2.7 - 2025-11-03
+## Version 2.0.0 - 2025-11-03
 
 ### New Features
 

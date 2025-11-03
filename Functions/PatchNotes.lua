@@ -1,7 +1,7 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { 
   {
-    version = '1.2.7',
+    version = '2.0.0',
     date = '2025-11-03',
     notes = {
       'NEW FEATURES:',
