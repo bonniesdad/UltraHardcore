@@ -3,7 +3,12 @@ local initialRotateMinimap = GetCVar("RotateMinimap") or false
 
 function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
   if hideMinimap then
-    HideMinimap(showClockEvenWhenMapHidden)
+    local inCombat = UnitAffectingCombat('player') == true
+    if (UnitOnTaxi('player') or UnitIsDead('player') or IsResting()) and not inCombat then
+      ShowMinimap()
+    else
+      HideMinimap(showClockEvenWhenMapHidden)
+    end
   else
     ShowMinimap()
   end
@@ -134,6 +139,14 @@ function HideMinimap(showClockEvenWhenMapHidden)
 end
 
 function ShowMinimap()
+  -- Clean up any temporary handlers/timers from HideMinimap()
+  if minimapHideTimer then
+    minimapHideTimer:Cancel()
+    minimapHideTimer = nil
+  end
+  Minimap:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+  Minimap:SetScript('OnEvent', nil)
+
   Minimap:Show()
   Minimap:SetAlpha(1)
   -- Hide the zone text
@@ -150,6 +163,18 @@ function ShowMinimap()
   Minimap:SetBlipTexture("Interface\\Minimap\\ObjectIconsAtlas.blp")
   Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
 end
+
+-- Self-contained event registration to mirror action bar taxi handling
+local minimapEventsFrame = CreateFrame('Frame')
+minimapEventsFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
+minimapEventsFrame:RegisterEvent('PLAYER_REGEN_ENABLED')  -- leaving combat
+minimapEventsFrame:RegisterEvent('PLAYER_CONTROL_LOST')   -- starting taxi/control loss
+minimapEventsFrame:RegisterEvent('PLAYER_CONTROL_GAINED') -- ending taxi/control gain
+minimapEventsFrame:SetScript('OnEvent', function()
+  if GLOBAL_SETTINGS then
+    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false)
+  end
+end)
 
 -- Reset clock position function
 local function ResetClockPosition()
