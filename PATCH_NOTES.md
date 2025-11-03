@@ -1,5 +1,21 @@
 # Patch Notes
 
+## Version 1.2.8 - 2025-11-04
+
+### New Features
+
+### New Statistics
+
+### UI Improvements
+
+- Add fstack name to route planner compass
+
+### Bug Fixes
+
+### Other
+
+
+
 ## Version 1.2.7 - 2025-11-03
 
 ### New Features
@@ -16,6 +32,7 @@
   - Allows you to change the colour of the resource and pet resource bars.
 - Added statistics background opacity slider.
   - Allows you to change the opacity of the on screen statistics background.
+
 ### New Statistics
 
 - Mana potions used.
