@@ -108,6 +108,58 @@ local function GetPlayerLocation()
   }
 end
 
+-- Simple hash function for data integrity
+-- Combines important values (items, money, level) into a hash to detect tampering
+local function GenerateStateHash(state)
+  local hash = 0
+  
+  -- Hash equipped items
+  if state.equippedItems then
+    for slotId = 0, 19 do
+      local itemId = state.equippedItems[slotId] or 0
+      hash = hash + (slotId * 1000000) + itemId
+    end
+  end
+  
+  -- Hash inventory items
+  if state.inventoryItems then
+    for bagId = 0, 4 do
+      if state.inventoryItems[bagId] then
+        for slotId, itemId in pairs(state.inventoryItems[bagId]) do
+          hash = hash + (bagId * 100000) + (slotId * 10000) + itemId
+        end
+      end
+    end
+  end
+  
+  -- Hash money
+  if state.currency then
+    hash = hash + (state.currency.money or 0)
+  end
+  
+  -- Hash level
+  if state.levelInfo then
+    hash = hash + ((state.levelInfo.level or 0) * 1000000000)
+  end
+  
+  -- Simple modulo to keep hash reasonable size
+  return hash % 2147483647
+end
+
+-- Verify hash matches state data
+-- Returns true if valid, false if tampered
+local function VerifyStateHash(state)
+  if not state or not state.hash then
+    return false -- No state or no hash
+  end
+  
+  -- Calculate expected hash from current state data
+  local expectedHash = GenerateStateHash(state)
+  
+  -- Compare stored hash with calculated hash
+  return state.hash == expectedHash
+end
+
 -- Capture complete player state snapshot
 function PlayerStateSnapshot:CapturePlayerState()
   local characterGUID = UnitGUID('player')
@@ -130,6 +182,9 @@ function PlayerStateSnapshot:CapturePlayerState()
     levelInfo = GetLevelAndExperience(),
     location = GetPlayerLocation(),
   }
+  
+  -- Generate and store hash for integrity checking
+  state.hash = GenerateStateHash(state)
   
   -- Store the state
   UltraHardcoreDB.playerState[characterGUID] = state
@@ -217,6 +272,11 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   local lastState = nil
   if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
     lastState = UltraHardcoreDB.playerState[characterGUID]
+    
+    -- Verify hash integrity - if hash doesn't match, data was tampered with
+    if not VerifyStateHash(lastState) then
+      return true -- Hash mismatch indicates tampering
+    end
   end
   
   -- Get current state
@@ -230,6 +290,26 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   
   -- Compare states
   return CompareStates(lastState, currentState)
+end
+
+-- Verify integrity of stored state (returns true if valid, false if tampered)
+function PlayerStateSnapshot:VerifyStateIntegrity()
+  local characterGUID = UnitGUID('player')
+  
+  if not characterGUID then
+    return false
+  end
+  
+  local state = nil
+  if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
+    state = UltraHardcoreDB.playerState[characterGUID]
+  end
+  
+  if not state then
+    return false -- No state to verify
+  end
+  
+  return VerifyStateHash(state)
 end
 
 -- Get last captured state for current player
@@ -306,5 +386,20 @@ initFrame:SetScript('OnEvent', function(self, event)
   self:UnregisterEvent('PLAYER_ENTERING_WORLD')
 end)
 
--- Export the PlayerStateSnapshot object
+-- Login/Logout event frame
+local loginLogoutFrame = CreateFrame('Frame')
+loginLogoutFrame:RegisterEvent('PLAYER_LOGIN')
+loginLogoutFrame:RegisterEvent('PLAYER_LOGOUT')
+loginLogoutFrame:SetScript('OnEvent', function(self, event)
+  if event == 'PLAYER_LOGIN' then
+    -- Check for changes on login (tampering detection)
+    PlayerStateSnapshot:OnLogin()
+  elseif event == 'PLAYER_LOGOUT' then
+    -- Capture final state before logout
+    PlayerStateSnapshot:OnLogout()
+  end
+end)
+
+-- Export the PlayerStateSnapshot object (optional - for manual access if needed)
+-- eg. /dump PlayerStateSnapshot:VerifyStateIntegrity()
 _G.PlayerStateSnapshot = PlayerStateSnapshot
