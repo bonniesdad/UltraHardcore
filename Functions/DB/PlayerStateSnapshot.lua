@@ -4,8 +4,8 @@
 -- Usage:
 -- Eg. During a trade
 -- if event == 'TRADE_SHOW' then
---    local myStateValid = PlayerStateSnapshot:VerifyStateIntegrity()
---    if not myStateValid then
+--    local isTampered = PlayerStateSnapshot:IsTampered()
+--    if isTampered then
 --      print("|cffff0000[ULTRA]|r Your state has been tampered with - trading blocked.")
 --      return
 --    end
@@ -175,6 +175,11 @@ function PlayerStateSnapshot:CapturePlayerState()
     UltraHardcoreDB.playerState = {}
   end
   
+  -- Preserve existing tamper flags (don't overwrite them)
+  local existingState = UltraHardcoreDB.playerState[characterGUID] or {}
+  local existingTamperHash = existingState.tamperHash
+  local existingTamperTimestamp = existingState.tamperTimestamp
+  
   -- Capture all state information
   local state = {
     timestamp = time(),
@@ -187,6 +192,14 @@ function PlayerStateSnapshot:CapturePlayerState()
   
   -- Generate and store hash for integrity checking
   state.hash = GenerateStateHash(state)
+  
+  -- Preserve tamper flags (don't overwrite persistent tamper detection)
+  if existingTamperHash then
+    state.tamperHash = existingTamperHash
+  end
+  if existingTamperTimestamp then
+    state.tamperTimestamp = existingTamperTimestamp
+  end
   
   -- Store the state
   UltraHardcoreDB.playerState[characterGUID] = state
@@ -329,10 +342,158 @@ function PlayerStateSnapshot:GetLastState()
   return nil
 end
 
--- Helper function for login: Check for changes
+-- Generate tamper flag hash (prevents players from editing the database)
+-- Uses player GUID + tamper status + passkey to create a unique hash
+local function GenerateTamperFlagHash(characterGUID, isTampered)
+  local passkey = "UHCTMPKEY" -- Secret passkey (not easily guessable)
+  local status = isTampered and "1" or "0"
+  local data = characterGUID .. status .. passkey
+  
+  -- Simple hash function
+  local hash = 0
+  for i = 1, #data do
+    hash = ((hash * 31) + string.byte(data, i)) % 2147483647
+  end
+  
+  return hash
+end
+
+-- Verify tamper flag hash matches expected value
+local function VerifyTamperFlagHash(characterGUID, storedHash, isTampered)
+  if not characterGUID or not storedHash then
+    return false
+  end
+  
+  local expectedHash = GenerateTamperFlagHash(characterGUID, isTampered)
+  return storedHash == expectedHash
+end
+
+-- Check if player has been flagged for tampering (persistent hashed flag)
+-- Returns true if tampered, false if clean
+function PlayerStateSnapshot:IsTampered()
+  local characterGUID = UnitGUID('player')
+  
+  if not characterGUID then
+    return false
+  end
+  
+  if not UltraHardcoreDB.playerState or not UltraHardcoreDB.playerState[characterGUID] then
+    return false
+  end
+  
+  local state = UltraHardcoreDB.playerState[characterGUID]
+  
+  -- If no tamper hash exists, assume clean
+  if not state.tamperHash then
+    return false
+  end
+  
+  -- If tamper timestamp exists, tampering was detected at some point
+  -- This makes it one-way - even if hash is edited to "false", timestamp proves tampering occurred
+  if state.tamperTimestamp then
+    -- Verify hash matches expected value for tampered=true
+    local isValidTampered = VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
+    
+    -- If hash matches tampered state, return true
+    if isValidTampered then
+      return true
+    end
+    
+    -- Hash doesn't match tampered state - they tried to edit it!
+    -- But timestamp exists, so tampering was detected - treat as tampered
+    return true
+  end
+  
+  -- No timestamp exists, check hash normally
+  -- Verify hash matches expected value for tampered=true
+  local isValidTampered = VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
+  
+  if isValidTampered then
+    return true
+  end
+  
+  -- Verify hash matches expected value for tampered=false
+  local isValidClean = VerifyTamperFlagHash(characterGUID, state.tamperHash, false)
+  
+  if isValidClean then
+    return false
+  end
+  
+  -- Hash doesn't match either state - tamper flag itself was tampered with!
+  -- Treat as tampered
+  return true
+end
+
+-- Set tamper flag (creates hashed value that's hard to fake)
+function PlayerStateSnapshot:SetTampered(isTampered)
+  local characterGUID = UnitGUID('player')
+  
+  if not characterGUID then
+    return false
+  end
+  
+  if not UltraHardcoreDB.playerState then
+    UltraHardcoreDB.playerState = {}
+  end
+  
+  if not UltraHardcoreDB.playerState[characterGUID] then
+    UltraHardcoreDB.playerState[characterGUID] = {}
+  end
+  
+  -- Generate and store hashed tamper flag
+  local tamperHash = GenerateTamperFlagHash(characterGUID, isTampered)
+  UltraHardcoreDB.playerState[characterGUID].tamperHash = tamperHash
+  
+  -- If setting tampered=true, store timestamp (one-way flag)
+  -- This prevents clearing by editing hash to "false" value
+  if isTampered then
+    UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = time()
+  else
+    -- Only clear timestamp if explicitly clearing via function (appeals)
+    UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = nil
+  end
+  
+  SaveDBData('playerState', UltraHardcoreDB.playerState)
+  return true
+end
+
+-- Clear tamper flag (for appeals/manual override)
+function PlayerStateSnapshot:ClearTamperFlag()
+  return self:SetTampered(false)
+end
+
+-- Helper function for login: Check for changes and set persistent hashed tamper flag
 -- Returns true if changes were detected, false otherwise
 function PlayerStateSnapshot:OnLogin()
+  local characterGUID = UnitGUID('player')
+  
+  if not characterGUID then
+    return false
+  end
+  
+  -- Initialize player state database if it doesn't exist
+  if not UltraHardcoreDB.playerState then
+    UltraHardcoreDB.playerState = {}
+  end
+  
+  if not UltraHardcoreDB.playerState[characterGUID] then
+    UltraHardcoreDB.playerState[characterGUID] = {}
+  end
+  
   local hasChanged = self:HasPlayerStateChanged()
+  
+  -- If tampering detected, set persistent hashed flag
+  if hasChanged then
+    self:SetTampered(true)
+  end
+  
+  -- Also check hash integrity and set flag if invalid
+  local isValid = self:VerifyStateIntegrity()
+  if not isValid then
+    self:SetTampered(true)
+    hasChanged = true
+  end
+  
   return hasChanged
 end
 
