@@ -87,10 +87,20 @@ local f = CreateFrame('Frame')
 f:RegisterEvent('UNIT_AURA')
 f:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
 f:RegisterEvent('PLAYER_REGEN_ENABLED') -- leaving combat
+f:RegisterEvent('PLAYER_CONTROL_LOST') -- starting taxi/control loss
+f:RegisterEvent('PLAYER_CONTROL_GAINED') -- ending taxi/control gain
+f:RegisterEvent('PLAYER_ENTERING_WORLD') -- ensure state correct on reload/login
 f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
-  elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
+  elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' or event == 'PLAYER_CONTROL_LOST' or event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_ENTERING_WORLD' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+    if event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_ENTERING_WORLD' then
+      if C_Timer and C_Timer.After then
+        C_Timer.After(0.1, function()
+          SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+        end)
+      end
+    end
   end
 end)

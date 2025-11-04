@@ -1,14 +1,95 @@
 local minimapHideTimer = nil
 local initialRotateMinimap = GetCVar("RotateMinimap") or false
 
-function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
-  if hideMinimap then
-    local inCombat = UnitAffectingCombat('player') == true
-    if (UnitOnTaxi('player') or UnitIsDead('player') or IsResting()) and not inCombat then
-      ShowMinimap()
-    else
-      HideMinimap(showClockEvenWhenMapHidden)
+-- Track temporary reveal state so we can restore cleanly on any event
+local minimapRevealState = {
+  active = false,
+  originalParent = nil,
+  originalPoint = nil,
+  originalRelPoint = nil,
+  originalX = nil,
+  originalY = nil,
+  originalScale = nil,
+  originalAlpha = nil,
+  initialZoom = nil,
+  toggledFrames = nil,
+  toggledRegions = nil,
+}
+
+local function ResetMinimapRevealState()
+  if minimapHideTimer then
+    minimapHideTimer:Cancel()
+    minimapHideTimer = nil
+  end
+  if not minimapRevealState.active then return end
+
+  -- Restore hidden UI frames
+  if minimapRevealState.toggledFrames then
+    for _, entry in ipairs(minimapRevealState.toggledFrames) do
+      if entry.wasShown and entry.frame and entry.frame.Show then
+        entry.frame:Show()
+      end
     end
+  end
+
+  -- Restore hidden texture regions
+  if minimapRevealState.toggledRegions then
+    for _, entry in ipairs(minimapRevealState.toggledRegions) do
+      if entry.wasShown and entry.region and entry.region.Show then
+        entry.region:Show()
+      end
+    end
+  end
+
+  -- Restore minimap state
+  Minimap:EnableMouse(true)
+  if minimapRevealState.originalAlpha ~= nil then
+    Minimap:SetAlpha(minimapRevealState.originalAlpha)
+  end
+  if minimapRevealState.initialZoom ~= nil then
+    Minimap:SetZoom(minimapRevealState.initialZoom)
+  end
+  SetCVar("RotateMinimap", initialRotateMinimap)
+
+  Minimap:ClearAllPoints()
+  if minimapRevealState.originalParent then
+    Minimap:SetParent(minimapRevealState.originalParent)
+  end
+  if minimapRevealState.originalPoint then
+    Minimap:SetPoint(
+      minimapRevealState.originalPoint,
+      minimapRevealState.originalParent or UIParent,
+      minimapRevealState.originalRelPoint,
+      minimapRevealState.originalX,
+      minimapRevealState.originalY
+    )
+  end
+  if minimapRevealState.originalScale then
+    Minimap:SetScale(minimapRevealState.originalScale)
+  end
+
+  -- Clear state
+  minimapRevealState = {
+    active = false,
+    originalParent = nil,
+    originalPoint = nil,
+    originalRelPoint = nil,
+    originalX = nil,
+    originalY = nil,
+    originalScale = nil,
+    originalAlpha = nil,
+    initialZoom = nil,
+    toggledFrames = nil,
+    toggledRegions = nil,
+  }
+end
+
+function SetMinimapDisplay(hideMinimap, showClockEvenWhenMapHidden)
+  -- Always reset any temporary reveal state first
+  ResetMinimapRevealState()
+  if hideMinimap then
+    -- With Hide Minimap enabled, keep it hidden in all cases (including taxi/dead)
+    HideMinimap(showClockEvenWhenMapHidden)
   else
     ShowMinimap()
   end
@@ -32,6 +113,8 @@ local function LoadClockPosition()
 end
 
 function HideMinimap(showClockEvenWhenMapHidden)
+  -- Ensure no temporary reveal leftovers are active
+  ResetMinimapRevealState()
   -- Use custom blip texture to hide party members and objective arrows
   Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
   -- Hide the player arrow
@@ -105,10 +188,16 @@ function HideMinimap(showClockEvenWhenMapHidden)
       Minimap:EnableMouse(false)
 
       -- Capture original state so we can restore it cleanly
-      local originalParent = Minimap:GetParent()
+      minimapRevealState.active = true
+      minimapRevealState.originalParent = Minimap:GetParent()
       local originalPoint, _, originalRelPoint, originalX, originalY = Minimap:GetPoint(1)
-      local originalScale = Minimap:GetScale()
-      local originalAlpha = Minimap:GetAlpha()
+      minimapRevealState.originalPoint = originalPoint
+      minimapRevealState.originalRelPoint = originalRelPoint
+      minimapRevealState.originalX = originalX
+      minimapRevealState.originalY = originalY
+      minimapRevealState.originalScale = Minimap:GetScale()
+      minimapRevealState.originalAlpha = Minimap:GetAlpha()
+      minimapRevealState.initialZoom = initialZoom
 
       -- Detach the minimap from its cluster so we can show ONLY the map
       Minimap:SetParent(UIParent)
@@ -121,11 +210,11 @@ function HideMinimap(showClockEvenWhenMapHidden)
       -- Ensure we don't alter the minimap mask; rely on the game's default circular mask
 
       -- Hide extra minimap adornments while revealing
-      local toggledFrames = {}
-      local toggledRegions = {}
+      minimapRevealState.toggledFrames = {}
+      minimapRevealState.toggledRegions = {}
       local function hideTemp(frame)
         if frame and frame.Hide then
-          table.insert(toggledFrames, { frame = frame, wasShown = frame:IsShown() })
+          table.insert(minimapRevealState.toggledFrames, { frame = frame, wasShown = frame:IsShown() })
           frame:Hide()
         end
       end
@@ -149,7 +238,7 @@ function HideMinimap(showClockEvenWhenMapHidden)
             local layer = (region.GetDrawLayer and region:GetDrawLayer()) or nil
             -- Hide all terrain/background/border art so only blips remain
             if layer == "BACKGROUND" or layer == "BORDER" or layer == "ARTWORK" then
-              table.insert(toggledRegions, { region = region, wasShown = region:IsShown() })
+              table.insert(minimapRevealState.toggledRegions, { region = region, wasShown = region:IsShown() })
               region:Hide()
             end
           end
@@ -166,43 +255,15 @@ function HideMinimap(showClockEvenWhenMapHidden)
       end
       
       -- After a few seconds, hide the minimap again
-      minimapHideTimer = C_Timer.NewTimer(5, function() 
-        -- Hide the map again and restore state
-        Minimap:Hide()
-        Minimap:EnableMouse(true)
-        Minimap:SetAlpha(originalAlpha or 0)
-        
-        -- Reset the user's initial minimap options
-        SetCVar("RotateMinimap", initialRotateMinimap)
-        Minimap:SetZoom(initialZoom)
-
-        -- Reset the position and parent
-        Minimap:ClearAllPoints()
-        if originalParent then
-          Minimap:SetParent(originalParent)
+      minimapHideTimer = C_Timer.NewTimer(5, function()
+        -- Restore any temporary reveal state
+        ResetMinimapRevealState()
+        -- Then ensure minimap stays hidden if the setting is enabled
+        if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideMinimap then
+          Minimap:Hide()
+          MinimapCluster:Hide()
+          Minimap:SetAlpha(0)
         end
-        if originalPoint then
-          Minimap:SetPoint(originalPoint, originalParent or UIParent, originalRelPoint, originalX, originalY)
-        end
-        if originalScale then
-          Minimap:SetScale(originalScale)
-        end
-        
-        -- Restore frames hidden during reveal
-        for _, entry in ipairs(toggledFrames) do
-          if entry.wasShown and entry.frame and entry.frame.Show then
-            entry.frame:Show()
-          end
-        end
-
-        -- Restore regions hidden during reveal
-        for _, entry in ipairs(toggledRegions) do
-          if entry.wasShown and entry.region and entry.region.Show then
-            entry.region:Show()
-          end
-        end
-
-        -- No mask changes were applied; nothing to restore here
       end)
     end
   end)
@@ -210,11 +271,8 @@ function HideMinimap(showClockEvenWhenMapHidden)
 end
 
 function ShowMinimap()
-  -- Clean up any temporary handlers/timers from HideMinimap()
-  if minimapHideTimer then
-    minimapHideTimer:Cancel()
-    minimapHideTimer = nil
-  end
+  -- Clean up any temporary handlers/timers and restore reveal state
+  ResetMinimapRevealState()
   Minimap:UnregisterEvent('UNIT_SPELLCAST_SUCCEEDED')
   Minimap:SetScript('OnEvent', nil)
 
