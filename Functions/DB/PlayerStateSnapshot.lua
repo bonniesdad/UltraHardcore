@@ -1,15 +1,5 @@
 -- Player State Snapshot
 -- Captures and stores player information to detect cheating by turning addon off/on
---
--- Usage:
--- Eg. During a trade
--- if event == 'TRADE_SHOW' then
---    local isTampered = PlayerStateSnapshot:IsTampered()
---    if isTampered then
---      print("|cffff0000[ULTRA]|r Your state has been tampered with - trading blocked.")
---      return
---    end
---  end
 
 local PlayerStateSnapshot = {}
 
