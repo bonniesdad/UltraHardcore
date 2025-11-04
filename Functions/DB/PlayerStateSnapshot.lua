@@ -50,11 +50,11 @@ local function GetInventoryItems()
   -- Backpack (bag 0) - typically 16 slots
   for bagId = 0, 4 do
     local bagSlots = {}
-    local numSlots = GetContainerNumSlots(bagId)
+    local numSlots = C_Container.GetContainerNumSlots(bagId)
     
     if numSlots and numSlots > 0 then
       for slotId = 1, numSlots do
-        local itemId = GetContainerItemID(bagId, slotId)
+        local itemId = C_Container.GetContainerItemID(bagId, slotId)
         if itemId then
           bagSlots[slotId] = itemId
         else
