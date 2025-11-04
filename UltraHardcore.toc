@@ -63,6 +63,7 @@ Functions/Utils/FormatNumber.lua
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
 Functions/DB/CharacterStats.lua
+Functions/DB/PlayerStateSnapshot.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
