@@ -32,6 +32,7 @@ local CharacterStats = {
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
     xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
+    xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
     healthPotionsUsed = 0,
     manaPotionsUsed = 0,

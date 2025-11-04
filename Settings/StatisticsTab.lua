@@ -882,6 +882,7 @@ function InitializeStatisticsTab()
     petsDiePermanently = 'Pets Die Permanently',
     hideActionBars = 'Hide Action Bars',
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
+    routePlanner = 'Route Planner',
     -- Experimental section
     hideBreathIndicator = 'Use UHC Breath Indicator',
     showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
