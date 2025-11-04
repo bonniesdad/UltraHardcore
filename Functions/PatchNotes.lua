@@ -1,5 +1,23 @@
 -- Patch notes data structure - update this for each release
-PATCH_NOTES = { 
+PATCH_NOTES = {
+  {
+    version = '1.2.9',
+    date = '2025-11-05',
+    notes = {
+      'NEW STATISTICS:',
+      '• Map key presses while map blocked',
+      '  • Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.',
+      '',
+      'UI IMPROVEMENTS:',
+      '• ',
+      '',
+      'BUG FIXES:',
+      '• Fix: Route planner added to xp gained tracker',
+      '',
+      'OTHER:',
+      '• Don`t send the join party message on non-Hardcore servers',
+    },
+  },
   {
     version = '1.2.8',
     date = '2025-11-04',
