@@ -31,6 +31,13 @@ end
 
 -- Function to automatically post warning message
 local function postWarningMessage()
+
+  local isHardcoreActive = C_GameRules.IsHardcoreActive()
+  
+  if not isHardcoreActive then
+    return
+  end
+
   if IsInGroup() then
     -- Check if there are other members besides ourselves
     local numMembers = GetNumGroupMembers()
