@@ -4,7 +4,11 @@
 
 ### New Features
 
+NA 
+
 ### New Statistics
+
+NA
 
 ### UI Improvements
 
@@ -12,9 +16,13 @@
 
 ### Bug Fixes
 
+- Fix action bar visibility after taxi
+- Fix tracking map overlay showing party members etc
+
 ### Other
 
-
+- Remove Trade Restrictions
+- Remove Cancel Buffs
 
 ## Version 1.2.7 - 2025-11-03
 

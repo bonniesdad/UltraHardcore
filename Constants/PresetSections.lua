@@ -30,7 +30,6 @@ local PRESET_SECTIONS = { {
 }, {
   title = 'Experimental:',
   settings = {
-    'rejectBuffsFromOthers',
     'hideBreathIndicator',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',

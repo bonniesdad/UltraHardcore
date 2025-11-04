@@ -50,10 +50,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'routePlanner',
   tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
 }, { -- Experimental Preset Settings
-  name = 'Reject buffs from others',
-  dbSettingsValueName = 'rejectBuffsFromOthers',
-  tooltip = 'Automatically cancel buffs that do not come from the player themselves',
-},{
   name = 'UHC Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
@@ -157,7 +153,6 @@ local presets = { {
   hideActionBars = false,
   tunnelVisionMaxStrata = false,
   -- Experimental Preset Settings
-  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
@@ -197,7 +192,6 @@ local presets = { {
   tunnelVisionMaxStrata = false,
   routePlanner = false,
   -- Experimental Preset Settings
-  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
@@ -236,7 +230,6 @@ local presets = { {
   tunnelVisionMaxStrata = true,
   routePlanner = true,
   -- Experimental Preset Settings
-  rejectBuffsFromOthers = false,
   hideBreathIndicator = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,

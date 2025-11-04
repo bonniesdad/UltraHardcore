@@ -70,24 +70,11 @@ local function postWarningMessage()
       end
 
       local chatType = IsInRaid() and 'RAID' or 'PARTY'
-      if(playerName == "Ultrapikaboo") then
-        local pikaMessage = 'Is there anyone else doing it like me in the WoW section?';
-        local pikaMessage2 = 'If you do not give me loot priority, minute thirty ad!';
-        
-        -- Randomly choose between 1 or 2 messages
-        local useSecondMessage = math.random(1, 2) == 2
-        local finalMessage = '[ULTRA] I am using the Ultra Hardcore addon. ' .. (useSecondMessage and pikaMessage2 or pikaMessage)
-        
-        SendChatMessage(
-          finalMessage .. messageSuffix,
-          chatType
-        )
-      else
-        SendChatMessage(
-          '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.' .. messageSuffix,
-          chatType
-        )
-      end
+      
+      SendChatMessage(
+        '[ULTRA] I am using the Ultra Hardcore addon. You are at a higher risk of death if you group with me.' .. messageSuffix,
+        chatType
+      )
     end
   end
 end

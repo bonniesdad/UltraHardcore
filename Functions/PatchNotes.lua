@@ -1,6 +1,22 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { 
   {
+    version = '1.2.8',
+    date = '2025-11-04',
+    notes = {
+      'UI IMPROVEMENTS:',
+      '• Add fstack name to route planner compass',
+      '',
+      'BUG FIXES:',
+      '• Fix action bar visibility after taxi',
+      '• Fix tracking map overlay showing party members etc',
+      '',
+      'OTHER:',
+      '• Remove Trade Restrictions',
+      '• Remove Cancel Buffs',
+    },
+  },
+  {
     version = '1.2.7',
     date = '2025-11-03',
     notes = {

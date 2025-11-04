@@ -82,9 +82,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       if GLOBAL_SETTINGS.routePlanner then
         SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
       end
-      if _G.RejectBuffsFromOthers then
-        _G.RejectBuffsFromOthers(event, unit)
-      end
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     OnCombatLogEvent(self, event)

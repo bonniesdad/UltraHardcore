@@ -7,8 +7,6 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
--- Temporary: show Phase 2 placeholder instead of full X Found UI
-local XFOUND_MODE_PHASE2_PLACEHOLDER = true
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
@@ -16,7 +14,6 @@ function InitializeXFoundModeTab()
   if not tabContents or not tabContents[4] then return end
 
   -- If placeholder is enabled, show a simple message and skip building pages
-  if XFOUND_MODE_PHASE2_PLACEHOLDER then
     if not XFoundModeManager.parentFrame then
       XFoundModeManager.parentFrame = tabContents[4]
     end
@@ -50,10 +47,10 @@ function InitializeXFoundModeTab()
     XFoundModeManager:HideAllPages()
     XFoundModeManager.placeholder:Show()
     XFoundModeManager.currentPage = 'placeholder'
-    return
-  end
+end
 
   -- Initialize the manager if not already done
+--[[
   if not XFoundModeManager.parentFrame then
     XFoundModeManager.parentFrame = tabContents[4]
 
@@ -82,7 +79,9 @@ function InitializeXFoundModeTab()
     XFoundModeManager:ShowStatusPage()
   end
 end
+]]
 
+--[[
 -- Show Intro Page (for level 1 players)
 function XFoundModeManager:ShowIntroPage()
   self:HideAllPages()
@@ -122,6 +121,7 @@ function XFoundModeManager:ShowGroupConfirmPage()
     self.currentPage = 'groupConfirm'
   end
 end
+]]
 
 -- Hide all pages
 function XFoundModeManager:HideAllPages()

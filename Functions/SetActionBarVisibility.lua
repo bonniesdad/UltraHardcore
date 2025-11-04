@@ -32,7 +32,6 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 end
 
 function HideActionBars()
-  CancelBuff('Cozy Fire')
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
     ForceHideFrame(frame)
   end
@@ -64,9 +63,6 @@ end
 
 function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
-  if IsResting() then
-    PikabooResting()
-  end
 end
 
 function OnPlayerLevelUpEvent(self, event, newLevel)

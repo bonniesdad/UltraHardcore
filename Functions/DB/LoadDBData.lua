@@ -40,7 +40,6 @@ function LoadDBData()
     tunnelVisionMaxStrata = false,
     routePlanner = false,
     -- Experimental Preset Settings
-    rejectBuffsFromOthers = false,
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
@@ -69,7 +68,7 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     -- Group Found teammate names (locked in at level 2)
-    groupFoundNames = {},
+    -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
@@ -107,10 +106,6 @@ function LoadDBData()
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
 
-  -- Ensure new keys exist for existing characters
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupFoundNames == nil then
-    GLOBAL_SETTINGS.groupFoundNames = {}
-  end
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
   if UltraHardcoreDB.GLOBAL_SETTINGS and not UltraHardcoreDB.characterSettings[characterGUID] then
