@@ -46,6 +46,7 @@ local CharacterStats = {
     duelsLost = 0,
     duelsWinPercent = 0,
     playerJumps = 0,
+    mapKeyPressesWhileMapBlocked = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,

@@ -21,7 +21,12 @@ function MakeMapUnusable()
     if WorldMapFrame:IsShown() then
         ToggleWorldMap()
     end
-    ToggleWorldMap = function() end
+    ToggleWorldMap = function()
+      if CharacterStats and CharacterStats.GetStat and CharacterStats.UpdateStat then
+        local current = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
+        CharacterStats:UpdateStat('mapKeyPressesWhileMapBlocked', current + 1)
+      end
+    end
 
     if BattlefieldMapFrame and BattlefieldMapFrame:IsShown() then
         ToggleBattlefieldMap()

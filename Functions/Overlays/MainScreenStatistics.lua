@@ -294,6 +294,17 @@ playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 playerJumpsValue:SetText(formatNumberWithCommas(0))
 playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Blocked Map Opens (Route Planner) statistic
+local blockedMapOpensLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+blockedMapOpensLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+blockedMapOpensLabel:SetText('Blocked Map Opens:')
+blockedMapOpensLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local blockedMapOpensValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+blockedMapOpensValue:SetText(formatNumberWithCommas(0))
+blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 
 -- Store all statistics elements for easy management
 local statsElements = { {
@@ -396,6 +407,10 @@ local statsElements = { {
   label = playerJumpsLabel,
   value = playerJumpsValue,
   setting = 'showMainStatisticsPanelPlayerJumps',
+}, {
+  label = blockedMapOpensLabel,
+  value = blockedMapOpensValue,
+  setting = 'showMainStatisticsPanelMapKeyPressesWhileMapBlocked',
 } }
 
 -- Function to update row visibility and positioning
@@ -561,6 +576,10 @@ local function UpdateStatistics()
   local playerJumps = CharacterStats:GetStat('playerJumps') or 0
   playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
 
+  -- Update Blocked Map Opens value
+  local blockedMapOpens = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
+  blockedMapOpensValue:SetText(formatNumberWithCommas(blockedMapOpens))
+
   -- Update row visibility after updating values
   UpdateRowVisibility()
 end
@@ -593,8 +612,11 @@ end)
 -- Create a timer to periodically check for settings changes
 local settingsCheckTimer = C_Timer.NewTicker(1, function()
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showOnScreenStatistics then
+    statsFrame:Show()
     UpdateRowVisibility()
     ApplyStatsBackgroundOpacity()
+  else
+    statsFrame:Hide()
   end
 end)
 
