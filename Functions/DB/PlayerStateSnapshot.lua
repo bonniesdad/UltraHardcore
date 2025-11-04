@@ -2,10 +2,14 @@
 -- Captures and stores player information to detect cheating by turning addon off/on
 --
 -- Usage:
---   On LOGOUT Call PlayerStateSnapshot:OnLogout() to save final state
---   On LOGIN Call PlayerStateSnapshot:OnLogin() to check for changes
---     - Returns true if changes were detected (possible cheating)
---     - Returns false if no changes detected
+-- Eg. During a trade
+-- if event == 'TRADE_SHOW' then
+--    local myStateValid = PlayerStateSnapshot:VerifyStateIntegrity()
+--    if not myStateValid then
+--      print("|cffff0000[ULTRA]|r Your state has been tampered with - trading blocked.")
+--      return
+--    end
+--  end
 
 local PlayerStateSnapshot = {}
 
@@ -92,8 +96,6 @@ local function GetLevelAndExperience()
   return {
     level = UnitLevel('player'),
     currentXP = UnitXP('player'),
-    maxXP = UnitXPMax('player'),
-    restedXP = GetXPExhaustion() or 0,
   }
 end
 
