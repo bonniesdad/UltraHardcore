@@ -68,6 +68,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         InitializeGroupButtons()
       end
     end
+    -- Initialize XP Bar at the top of the screen if enabled
+    if GLOBAL_SETTINGS.showExpBar then
+      InitializeExpBar()
+    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
