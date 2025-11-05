@@ -173,12 +173,14 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("CVAR_UPDATE")
 f:SetScript("OnEvent", function(self, event, cvar, value)
+  if UltraHardcoreDB.disableNameplateHealth then
     if cvar == "nameplateShowEnemies" or cvar == "nameplateShowFriends" or cvar == "nameplateShowAll" then
-        -- force them off again
-        RunWhenOutOfCombat(function()
-          SetCVar("nameplateShowEnemies", 0)
-          SetCVar("nameplateShowFriends", 0)
-          SetCVar("nameplateShowAll", 0)
-        end)
+      -- force them off again
+      RunWhenOutOfCombat(function()
+        SetCVar("nameplateShowEnemies", 0)
+        SetCVar("nameplateShowFriends", 0)
+        SetCVar("nameplateShowAll", 0)
+      end)
     end
+  end
 end)

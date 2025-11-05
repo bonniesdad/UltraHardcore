@@ -385,7 +385,7 @@ function InitializeSettingsOptionsTab()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
-  searchBox:SetSize(360, 24)
+  searchBox:SetSize(405, 24)
   searchBox:SetAutoFocus(false)
   searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
 
