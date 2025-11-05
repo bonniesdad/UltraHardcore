@@ -25,7 +25,7 @@ local function CreateGroupConfirmPage(parentFrame)
   -- Title (overlaying the banner)
   local titleText = confirmPage:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
   titleText:SetPoint('TOP', confirmPage, 'TOP', 0, -80) -- Moved down by 20 pixels
-  titleText:SetText('Confirm Group Found Mode (BETA)')
+  titleText:SetText('Confirm Group Found Mode')
   titleText:SetTextColor(1, 1, 1) -- White color
   titleText:SetShadowColor(0, 0, 0, 1) -- Black shadow for border effect
   titleText:SetShadowOffset(2, -2) -- Shadow offset for depth
@@ -76,7 +76,7 @@ local function CreateGroupConfirmPage(parentFrame)
   restrictionsList:SetPoint('TOP', restrictionsLabel, 'BOTTOM', 0, -10)
   restrictionsList:SetWidth(400)
   restrictionsList:SetText('• Trading with players not on your trusted list\n• Sending mail to players not on your trusted list\n• Receiving items from players not on your trusted list\n• Using Auction House')
-  restrictionsList:SetJustifyH('LEFT')
+  restrictionsList:SetJustifyH('CENTER')
   restrictionsList:SetNonSpaceWrap(true)
   restrictionsList:SetTextColor(0.8, 0.8, 0.8)
   
@@ -100,10 +100,17 @@ local function CreateGroupConfirmPage(parentFrame)
   
   -- Button click handlers
   confirmButton:SetScript('OnClick', function()
-    -- Enable Group Found mode and disable Guild Found mode
+    -- Enable Group Found mode and disable all other modes
     if GLOBAL_SETTINGS then
       GLOBAL_SETTINGS.groupSelfFound = true
-      GLOBAL_SETTINGS.guildSelfFound = false -- Ensure only one mode is active
+      GLOBAL_SETTINGS.guildSelfFound = false
+      GLOBAL_SETTINGS.duoSelfFound = false
+      GLOBAL_SETTINGS.duoPartner = nil -- Clear duo partner
+      -- Initialize empty group names list
+      GLOBAL_SETTINGS.groupFoundNames = {}
+      if GLOBAL_SETTINGS.trustedPlayers then
+        GLOBAL_SETTINGS.trustedPlayers = {}
+      end
     end
     
     -- Save settings
