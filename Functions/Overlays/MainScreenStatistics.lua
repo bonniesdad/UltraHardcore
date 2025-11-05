@@ -297,7 +297,7 @@ playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 -- Blocked Map Opens (Route Planner) statistic
 local blockedMapOpensLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 blockedMapOpensLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
-blockedMapOpensLabel:SetText('Blocked Map Opens:')
+blockedMapOpensLabel:SetText('Map Attempts:')
 blockedMapOpensLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local blockedMapOpensValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')

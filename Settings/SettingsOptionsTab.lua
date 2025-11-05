@@ -383,8 +383,89 @@ function InitializeSettingsOptionsTab()
     presetButtons[i] = button
   end
 
+  -- Search bar (filters options below)
+  local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
+  searchBox:SetSize(360, 24)
+  searchBox:SetAutoFocus(false)
+  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
+
+  local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
+  searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
+  searchPlaceholder:SetText('Search options...')
+
+  local clearSearchButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  clearSearchButton:SetSize(56, 22)
+  clearSearchButton:SetPoint('LEFT', searchBox, 'RIGHT', 6, 0)
+  clearSearchButton:SetText('Clear')
+
+  -- Global filter function (uses globals set after checkbox creation)
+  _G.UHC_ApplySettingsSearchFilter = function(query)
+    local q = (query or '')
+    _G.__UHC_CurrentSearchQuery = q
+    local ql = string.lower(q)
+
+    local childrenBySection = _G.__UHC_SectionChildren
+    local framesBySection = _G.__UHC_SectionFrames
+    local collapsedBySection = _G.__UHC_SectionCollapsed
+    local HEADER_HEIGHT = _G.__UHC_SECTION_HEADER_HEIGHT or 22
+    local ROW_HEIGHT = _G.__UHC_ROW_HEIGHT or 30
+    local HEADER_CONTENT_GAP = _G.__UHC_HEADER_CONTENT_GAP or 10
+
+    if not childrenBySection or not framesBySection or not collapsedBySection then return end
+
+    for idx, children in ipairs(childrenBySection) do
+      local sf = framesBySection[idx]
+      local isCollapsed = collapsedBySection[idx]
+      local visibleCount = 0
+
+      for _, cb in ipairs(children) do
+        local searchBlob = cb._uhcSearch or ''
+        local isMatch = (ql == '' or string.find(searchBlob, ql, 1, true) ~= nil)
+        if not isCollapsed and isMatch then
+          cb:Show()
+          cb:ClearAllPoints()
+          cb:SetPoint('TOPLEFT', sf, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP + (visibleCount * ROW_HEIGHT)))
+          visibleCount = visibleCount + 1
+        else
+          cb:Hide()
+        end
+      end
+
+      local expandedHeight = HEADER_HEIGHT
+      if visibleCount > 0 then
+        expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + (visibleCount * ROW_HEIGHT) + 5
+      end
+      local collapsedHeight = HEADER_HEIGHT
+      sf:SetHeight(isCollapsed and collapsedHeight or expandedHeight)
+    end
+
+    if _G.__UHC_RecalcContentHeight then _G.__UHC_RecalcContentHeight() end
+  end
+
+  searchBox:SetScript('OnTextChanged', function(self)
+    local txt = self:GetText() or ''
+    if txt == '' then searchPlaceholder:Show() else searchPlaceholder:Hide() end
+    if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter(txt) end
+  end)
+  searchBox:SetScript('OnEditFocusGained', function()
+    if (searchBox:GetText() or '') == '' then searchPlaceholder:Hide() end
+  end)
+  searchBox:SetScript('OnEditFocusLost', function()
+    if (searchBox:GetText() or '') == '' then searchPlaceholder:Show() end
+  end)
+  searchBox:SetScript('OnEscapePressed', function(self)
+    self:SetText('')
+    self:ClearFocus()
+    if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter('') end
+  end)
+
+  clearSearchButton:SetScript('OnClick', function()
+    searchBox:SetText('')
+    if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter('') end
+  end)
+
   local scrollFrame = CreateFrame('ScrollFrame', nil, tabContents[2], 'UIPanelScrollFrameTemplate')
-  scrollFrame:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 10, -190)
+  scrollFrame:SetPoint('TOPLEFT', searchBox, 'BOTTOMLEFT', -15, -10)
   scrollFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
 
   local scrollChild = CreateFrame('Frame')
@@ -420,6 +501,11 @@ function InitializeSettingsOptionsTab()
     local sectionCollapsed = {}
     local sectionChildSettingNames = {}
     local sectionCountTexts = {}
+
+    -- Expose layout numbers and section arrays for the search filter
+    _G.__UHC_SECTION_HEADER_HEIGHT = HEADER_HEIGHT
+    _G.__UHC_ROW_HEIGHT = ROW_HEIGHT
+    _G.__UHC_HEADER_CONTENT_GAP = HEADER_CONTENT_GAP
 
     local function updateSectionCount(idx)
       if not sectionCountTexts[idx] or not sectionChildSettingNames[idx] then return end
@@ -497,6 +583,12 @@ function InitializeSettingsOptionsTab()
           checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
           checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
+          -- Precompute search blob for fast filtering
+          local n = checkboxItem.name or ''
+          local t = checkboxItem.tooltip or ''
+          local k = checkboxItem.dbSettingsValueName or ''
+          checkbox._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
+
           checkboxes[checkboxItem.dbSettingsValueName] = checkbox
           table.insert(sectionChildren[sectionIndex], checkbox)
           table.insert(sectionChildSettingNames[sectionIndex], checkboxItem.dbSettingsValueName)
@@ -563,6 +655,8 @@ function InitializeSettingsOptionsTab()
           SaveCharacterSettings(GLOBAL_SETTINGS)
         end
         if recalcContentHeight then recalcContentHeight() end
+        -- Reapply current filter to fix heights and visibility after toggle
+        if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter(_G.__UHC_CurrentSearchQuery or '') end
       end)
 
       prevSectionFrame = sectionFrame
@@ -576,6 +670,11 @@ function InitializeSettingsOptionsTab()
         updateSectionCount(idx)
       end
     end
+
+    -- Expose built arrays for search filter usage
+    _G.__UHC_SectionChildren = sectionChildren
+    _G.__UHC_SectionFrames = sectionFrames
+    _G.__UHC_SectionCollapsed = sectionCollapsed
   end
 
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
@@ -916,6 +1015,9 @@ function InitializeSettingsOptionsTab()
     total = total + 20 -- bottom padding
     scrollChild:SetHeight(total)
   end
+
+  -- Make recalc accessible to search filter
+  _G.__UHC_RecalcContentHeight = recalcContentHeight
 
   -- Initial recalculation after building UI
   if recalcContentHeight then recalcContentHeight() end
