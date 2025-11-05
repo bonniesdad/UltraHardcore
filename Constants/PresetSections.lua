@@ -53,6 +53,8 @@ local PRESET_SECTIONS = { {
     'newHighCritAppreciationSoundbite',
     'playPartyDeathSoundbite',
     'playPlayerDeathSoundbite',
+    'showExpBar',
+    'showXpBarToolTip',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
   },
