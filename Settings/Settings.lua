@@ -45,6 +45,9 @@ local function initializeTempSettings()
   if tempSettings.showXpBarToolTip == nil then
     tempSettings.showXpBarToolTip = false -- Default to off (hide tooltip)
   end
+  if tempSettings.xpBarHeight == nil then
+    tempSettings.xpBarHeight = 3 -- Default height
+  end
 end
 
 local settingsFrame =
@@ -143,6 +146,9 @@ function ToggleSettings()
     settingsFrame:Show()
     if _G.updateCheckboxes then
       _G.updateCheckboxes()
+    end
+    if _G.updateSliders then
+      _G.updateSliders()
     end
     if _G.updateRadioButtons then
       _G.updateRadioButtons()

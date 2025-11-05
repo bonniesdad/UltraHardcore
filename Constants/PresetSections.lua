@@ -41,6 +41,13 @@ local PRESET_SECTIONS = { {
     'routePlannerCompass',
   },
 }, {
+  title = 'XP Bar:',
+  settings = {
+    'showExpBar',
+    'showXpBarToolTip',
+    'xpBarHeight',
+  },
+}, {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
@@ -53,8 +60,6 @@ local PRESET_SECTIONS = { {
     'newHighCritAppreciationSoundbite',
     'playPartyDeathSoundbite',
     'playPlayerDeathSoundbite',
-    'showExpBar',
-    'showXpBarToolTip',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
   },
