@@ -52,7 +52,7 @@ T.Refresh = refresh
 
 function InitializeGuildAHTab()
   -- set your actual tab index here (e.g., 7)
-  local content = TabManager.getTabContent(6)
+  local content = TabManager.getTabContent(7)
   if widgets.container then widgets.container:Show(); refresh(); return end
 
   local container = CreateFrame("Frame", nil, content)
