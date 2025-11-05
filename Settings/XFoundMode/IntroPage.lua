@@ -9,7 +9,7 @@ local function CreateIntroPage(parentFrame)
   -- Title
   local titleText = introPage:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
   titleText:SetPoint('TOP', introPage, 'TOP', 0, -60)
-  titleText:SetText('Choose Your X Found Mode')
+  titleText:SetText('Choose Your X Found Mode (BETA)')
   titleText:SetTextColor(1, 1, 0.5) -- Light yellow
   
   -- Description

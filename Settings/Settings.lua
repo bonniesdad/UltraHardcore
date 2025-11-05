@@ -183,7 +183,7 @@ initializeTempSettings()
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   type = 'data source',
   text = 'Ultra Hardcore',
-  icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100_halloween.png',
+  icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
   OnClick = function(self, btn)
     if btn == 'LeftButton' then
       ToggleSettings()

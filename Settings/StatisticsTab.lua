@@ -30,6 +30,7 @@ local STATISTIC_TOOLTIPS = {
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
+  mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -777,6 +778,10 @@ function InitializeStatisticsTab()
     key = 'playerJumps',
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
+  }, {
+    key = 'mapKeyPressesWhileMapBlocked',
+    label = 'Blocked Map Opens (Route Planner):',
+    tooltipKey = 'mapKeyPressesWhileMapBlocked',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -878,10 +883,11 @@ function InitializeStatisticsTab()
     showDazedEffect = 'Show Dazed Effect',
     hideGroupHealth = 'Use UHC Party Frames',
     hideMinimap = 'Hide Minimap',
-    -- Ultra section
+    -- Extreme section
     petsDiePermanently = 'Pets Die Permanently',
     hideActionBars = 'Hide Action Bars',
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
+    routePlanner = 'Route Planner',
     -- Experimental section
     hideBreathIndicator = 'Use UHC Breath Indicator',
     showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
