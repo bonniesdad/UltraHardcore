@@ -32,7 +32,7 @@ local settingsCheckboxOptions = { {
   name = 'Hide Minimap',
   dbSettingsValueName = 'hideMinimap',
   tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
-}, {
+},  {
   -- Extreme Preset Settings {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
@@ -131,6 +131,14 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 }, {
+  name = 'Show XP Bar',
+  dbSettingsValueName = 'showExpBar',
+  tooltip = 'Shows experience percentage and current XP/max XP in a bar at the top of the screen',
+}, {
+  name = 'Show XP Bar Tooltip',
+  dbSettingsValueName = 'showXpBarToolTip',
+  tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
+},{
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
@@ -294,7 +302,13 @@ function InitializeSettingsOptionsTab()
     for _, checkboxItem in ipairs(settingsCheckboxOptions) do
       local checkbox = checkboxes[checkboxItem.dbSettingsValueName]
       if checkbox then
-        checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
+        -- Provide proper defaults for checkboxes if they're nil
+        local isChecked = tempSettings[checkboxItem.dbSettingsValueName]
+        if isChecked == nil then
+          -- Default showExpBar to false (user must explicitly enable it)
+          isChecked = false
+        end
+        checkbox:SetChecked(isChecked)
       end
     end
     if _G.updateSectionCounts then
@@ -513,6 +527,15 @@ function InitializeSettingsOptionsTab()
                 _G.UltraHardcoreHandleBuffBarSettingChange()
               end
             end
+
+            -- Handle XP Bar toggle
+            if checkboxItem.dbSettingsValueName == 'showExpBar' then
+              if self:GetChecked() then
+                InitializeExpBar()
+              else
+                HideExpBar()
+              end
+            end
             updateSectionCount(sectionIndex)
           end)
 
@@ -600,6 +623,18 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS.hideTargetFrame or false,
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
     )
+
+    -- Handle XP Bar setting
+    if GLOBAL_SETTINGS.showExpBar then
+      InitializeExpBar()
+    else
+      HideExpBar()
+    end
+    
+    -- Update XP bar color if it exists
+    if _G.UpdateExpBarColor then
+      UpdateExpBarColor()
+    end
 
     SaveCharacterSettings(GLOBAL_SETTINGS)
     ReloadUI()
@@ -774,6 +809,7 @@ function InitializeSettingsOptionsTab()
   createColorRowInSection('Rage', 'RAGE', 2)
   createColorRowInSection('Mana', 'MANA', 3)
   createColorRowInSection('Pet', 'PET', 4, { 0.5, 0, 1 })
+  createColorRowInSection('XP Bar', 'EXPBAR', 5, { 0.0, 0.4, 1.0 })
 
   -- Subheaders and additional fields consolidated under this single collapsible section
   local SUBHEADER_GAP = 12
