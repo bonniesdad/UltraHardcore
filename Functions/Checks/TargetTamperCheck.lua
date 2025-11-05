@@ -1,6 +1,10 @@
 -- Target Tamper Check
 -- Simple helper to check if target player is tampered
 
+-- Example script to use in game for testing
+--    /script GetPlayerTamper(GetUnitName('target'), function(isTampered) print("Result: " .. (isTampered and "TAMPERED" or "CLEAN")) end)
+--
+-- EXAMPLE USAGE:
 -- Target Specific Example:
 -- local isTampered = GetTargetTamper(function(isTampered)
 --   if isTampered then

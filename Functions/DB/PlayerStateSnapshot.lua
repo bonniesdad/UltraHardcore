@@ -273,15 +273,35 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
     return false
   end
   
+  -- Ensure database is loaded
+  if not UltraHardcoreDB then
+    return false
+  end
+  
+  if not UltraHardcoreDB.playerState then
+    UltraHardcoreDB.playerState = {}
+  end
+  
   -- Get last known state
   local lastState = nil
-  if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
+  if UltraHardcoreDB.playerState[characterGUID] then
     lastState = UltraHardcoreDB.playerState[characterGUID]
+    
+    -- Only treat it as a valid previous state if it has a hash (meaning it was captured before)
+    -- An empty state entry doesn't count as a previous state
+    if not lastState.hash then
+      return false -- No valid previous state (empty entry, first time)
+    end
     
     -- Verify hash integrity - if hash doesn't match, data was tampered with
     if not VerifyStateHash(lastState) then
       return true -- Hash mismatch indicates tampering
     end
+  end
+  
+  -- If no previous state exists, we can't compare
+  if not lastState then
+    return false -- No previous state to compare against
   end
   
   -- Get current state
@@ -302,7 +322,7 @@ function PlayerStateSnapshot:VerifyStateIntegrity()
   local characterGUID = UnitGUID('player')
   
   if not characterGUID then
-    return false
+    return true -- Can't verify without GUID, but not tampered (no evidence)
   end
   
   local state = nil
@@ -310,11 +330,19 @@ function PlayerStateSnapshot:VerifyStateIntegrity()
     state = UltraHardcoreDB.playerState[characterGUID]
   end
   
+  -- If no state exists, there's nothing to verify - this is normal for new databases
+  -- Return true (not tampered) because there's no evidence of tampering
   if not state then
-    return false -- No state to verify
+    return true -- No state to verify, but not tampered (normal for new database)
   end
   
-  return VerifyStateHash(state)
+  -- If state exists but has no hash, it's invalid (shouldn't happen normally)
+  if not state.hash then
+    return false -- State exists but corrupted (no hash)
+  end
+  
+  local hashValid = VerifyStateHash(state)
+  return hashValid
 end
 
 -- Get last captured state for current player
@@ -367,7 +395,7 @@ function PlayerStateSnapshot:IsTampered()
     return false
   end
   
-  if not UltraHardcoreDB.playerState or not UltraHardcoreDB.playerState[characterGUID] then
+  if not UltraHardcoreDB or not UltraHardcoreDB.playerState or not UltraHardcoreDB.playerState[characterGUID] then
     return false
   end
   
@@ -378,40 +406,57 @@ function PlayerStateSnapshot:IsTampered()
     return false
   end
   
-  -- If tamper timestamp exists, tampering was detected at some point
-  -- This makes it one-way - even if hash is edited to "false", timestamp proves tampering occurred
-  if state.tamperTimestamp then
-    -- Verify hash matches expected value for tampered=true
-    local isValidTampered = VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
-    
-    -- If hash matches tampered state, return true
-    if isValidTampered then
-      return true
-    end
-    
-    -- Hash doesn't match tampered state - they tried to edit it!
-    -- But timestamp exists, so tampering was detected - treat as tampered
+  -- Check hash first - this is the source of truth
+  -- Verify hash matches expected value for tampered=true
+  local isValidTampered = false
+  local success, result = pcall(function()
+    return VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
+  end)
+  if success then
+    isValidTampered = result
+  else
+    isValidTampered = false
+  end
+  
+  if isValidTampered then
+    -- Hash matches tampered state - player is tampered
     return true
   end
   
-  -- No timestamp exists, check hash normally
-  -- Verify hash matches expected value for tampered=true
-  local isValidTampered = VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
-  
-  if isValidTampered then
-    return true
+  -- Hash doesn't match tampered=true, so player is NOT tampered
+  -- Clear any invalid timestamp (from old bug or corruption)
+  local needsSave = false
+  if state.tamperTimestamp then
+    state.tamperTimestamp = nil
+    needsSave = true
   end
   
   -- Verify hash matches expected value for tampered=false
-  local isValidClean = VerifyTamperFlagHash(characterGUID, state.tamperHash, false)
-  
-  if isValidClean then
-    return false
+  local isValidClean = false
+  success, result = pcall(function()
+    return VerifyTamperFlagHash(characterGUID, state.tamperHash, false)
+  end)
+  if success then
+    isValidClean = result
+  else
+    isValidClean = false
   end
   
-  -- Hash doesn't match either state - tamper flag itself was tampered with!
-  -- Treat as tampered
-  return true
+  -- If hash doesn't match clean state, update it to match clean state
+  if not isValidClean then
+    -- Hash is corrupted or invalid - update it to match clean state
+    local cleanHash = GenerateTamperFlagHash(characterGUID, false)
+    state.tamperHash = cleanHash
+    needsSave = true
+  end
+  
+  -- Save if we made any changes
+  if needsSave then
+    SaveDBData('playerState', UltraHardcoreDB.playerState)
+  end
+  
+  -- Player is clean
+  return false
 end
 
 -- Set tamper flag (creates hashed value that's hard to fake)
@@ -462,6 +507,10 @@ function PlayerStateSnapshot:OnLogin()
   end
   
   -- Initialize player state database if it doesn't exist
+  if not UltraHardcoreDB then
+    return false
+  end
+  
   if not UltraHardcoreDB.playerState then
     UltraHardcoreDB.playerState = {}
   end
@@ -472,16 +521,20 @@ function PlayerStateSnapshot:OnLogin()
   
   local hasChanged = self:HasPlayerStateChanged()
   
-  -- If tampering detected, set persistent hashed flag
+  -- If tampering detected, set persistent hashed flag (one-way, never clears)
   if hasChanged then
     self:SetTampered(true)
   end
   
-  -- Also check hash integrity and set flag if invalid
-  local isValid = self:VerifyStateIntegrity()
-  if not isValid then
-    self:SetTampered(true)
-    hasChanged = true
+  -- Also check hash integrity and set flag if invalid (one-way, never clears)
+  -- Only check if we have a previous state - if no state exists, there's nothing to verify
+  local previousStateExists = UltraHardcoreDB.playerState[characterGUID] and UltraHardcoreDB.playerState[characterGUID].hash ~= nil
+  if previousStateExists then
+    local isValid = self:VerifyStateIntegrity()
+    if not isValid then
+      self:SetTampered(true)
+      hasChanged = true
+    end
   end
   
   return hasChanged
@@ -528,15 +581,118 @@ eventFrame:SetScript('OnEvent', function(self, event, ...)
   OnStateChangeEvent(self, event, ...)
 end)
 
+-- Helper function to initialize player state (checks for changes and captures state)
+local function InitializePlayerState()
+  -- Wait for player GUID to be available
+  if not UnitGUID('player') then
+    return false
+  end
+  
+  local characterGUID = UnitGUID('player')
+  
+  -- Ensure database is loaded (SavedVariables should be loaded by now, but double-check)
+  if not UltraHardcoreDB then
+    return false -- Database not loaded yet
+  end
+  
+  -- Initialize player state database if it doesn't exist
+  if not UltraHardcoreDB.playerState then
+    UltraHardcoreDB.playerState = {}
+  end
+  
+  -- Wait for bags to be loaded before capturing state
+  -- Check if at least one bag has slots (indicating bags are loaded)
+  local bagsReady = false
+  for bagId = 0, 4 do
+    local numSlots = C_Container.GetContainerNumSlots(bagId)
+    if numSlots and numSlots >= 0 then -- Even 0 slots means the bag is "loaded"
+      bagsReady = true
+      break
+    end
+  end
+  
+  if not bagsReady then
+    return false -- Bags not ready yet
+  end
+  
+  -- Add a delay to ensure all data is fully loaded and database is ready
+  -- This is especially important when re-enabling the addon
+  C_Timer.After(1.0, function()
+    if not UnitGUID('player') then
+      return
+    end
+    
+    -- Double-check database is loaded
+    if not UltraHardcoreDB then
+      return
+    end
+    
+    if not UltraHardcoreDB.playerState then
+      UltraHardcoreDB.playerState = {}
+    end
+    
+    -- Check for changes FIRST (for addon re-enable detection)
+    -- This compares the old state (from SavedVariables) to the current state
+    PlayerStateSnapshot:OnLogin()
+    
+    -- Then capture current state after checking for changes
+    -- This updates the saved state with the current state
+    PlayerStateSnapshot:CapturePlayerState()
+  end)
+  
+  return true
+end
+
 -- Initialize event frame after player is in world
 local initFrame = CreateFrame('Frame')
+local hasInitialized = false
+local initializationScheduled = false
+local addonLoaded = false
+
 initFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
-initFrame:SetScript('OnEvent', function(self, event)
-  -- Initial capture when entering world
-  if UnitGUID('player') then
-    PlayerStateSnapshot:CapturePlayerState()
+initFrame:RegisterEvent('BAG_UPDATE')
+initFrame:RegisterEvent('ADDON_LOADED')
+
+initFrame:SetScript('OnEvent', function(self, event, addonName)
+  -- Track when addon is loaded
+  if event == 'ADDON_LOADED' and addonName == 'UltraHardcore' then
+    addonLoaded = true
+    -- Ensure database exists
+    if not UltraHardcoreDB then
+      UltraHardcoreDB = {}
+    end
+    if not UltraHardcoreDB.playerState then
+      UltraHardcoreDB.playerState = {}
+    end
   end
-  self:UnregisterEvent('PLAYER_ENTERING_WORLD')
+  
+  -- Only handle ADDON_LOADED for this addon
+  if event == 'ADDON_LOADED' and addonName ~= 'UltraHardcore' then
+    return
+  end
+  
+  -- Only initialize once per session
+  if hasInitialized then
+    return
+  end
+  
+  if initializationScheduled then
+    return
+  end
+  
+  -- Wait for addon to be loaded before trying to initialize
+  if event == 'ADDON_LOADED' and not addonLoaded then
+    return
+  end
+  
+  -- Try to initialize
+  if InitializePlayerState() then
+    initializationScheduled = true
+    -- Mark as initialized after the delay completes
+    C_Timer.After(2.0, function()
+      hasInitialized = true
+    end)
+  end
 end)
 
 -- Login/Logout event frame

@@ -57,12 +57,15 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
     attempts = attempts + 1
   end
   
+  -- Normalize player name (remove server/realm if present)
+  local normalizedPlayerName = Ambiguate(playerName, "none")
+  
   -- Store request info
   local requestStartTime = GetTime()
   pendingRequests[requestId] = {
     callback = callback,
     timestamp = requestStartTime,
-    playerName = playerName,
+    playerName = normalizedPlayerName, -- Store normalized name for matching
     messageType = "TAMPER_STATUS",
     requestId = requestId,
   }
@@ -79,19 +82,20 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
   if not success or not serialized then
     -- Serialization failed - call callback with failure
     pendingRequests[requestId] = nil
-    callback(false, playerName, false)
+    callback(false, normalizedPlayerName, false)
     return false
   end
   
-  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", playerName, "NORMAL")
+  -- Note: SendCommMessage may return nil in Classic, but message is still sent
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", normalizedPlayerName, "NORMAL")
   
   -- Set up timeout check
   C_Timer.After(REQUEST_TIMEOUT, function()
     local request = pendingRequests[requestId]
-    if request and request.playerName == playerName then
+    if request and request.playerName == normalizedPlayerName then
       -- Request timed out - call callback with failure
       pendingRequests[requestId] = nil
-      request.callback(false, playerName, false)
+      request.callback(false, normalizedPlayerName, false)
     end
   end)
   
@@ -107,8 +111,14 @@ local function SendTamperStatusResponse(playerName, requestId, isTampered)
     isTampered = isTampered,
   }
   
-  local serialized = AceSerializer:Serialize(message)
+  local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
+  if not success or not serialized then
+    return false
+  end
+  
+  -- Note: SendCommMessage may return nil in Classic, but message is still sent
   AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", playerName, "NORMAL")
+  return true
 end
 
 -- Handle incoming communication
@@ -120,9 +130,14 @@ local function OnCommReceived(prefix, message, distribution, sender)
   -- Normalize sender name (remove server name if present)
   sender = Ambiguate(sender, "none")
   
-  -- Deserialize message (with error handling)
-  local success, data = pcall(AceSerializer.Deserialize, AceSerializer, message)
-  if not success or not data or not data.type then
+  -- Deserialize message
+  local deserializeSuccess, data = AceSerializer:Deserialize(message)
+  
+  if not deserializeSuccess then
+    return -- Invalid or corrupted message
+  end
+  
+  if not data or type(data) ~= "table" or not data.type then
     return -- Invalid or corrupted message
   end
   
@@ -135,22 +150,27 @@ local function OnCommReceived(prefix, message, distribution, sender)
         return -- Invalid request ID
       end
       
-      -- Get our tamper status (double-check for robustness)
+      -- Get our tamper status
       local isTampered = false
       if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
-        isTampered = PlayerStateSnapshot:IsTampered()
+        local success, result = pcall(function()
+          return PlayerStateSnapshot:IsTampered()
+        end)
+        if success then
+          isTampered = result
+        else
+          isTampered = false -- Default to clean on error
+        end
       end
       
       -- Send response
       SendTamperStatusResponse(sender, data.requestId, isTampered)
-      
-    -- Handle response (someone responded to our request)
     elseif data.type == "RESPONSE" and data.requestId and data.isTampered ~= nil then
+      -- Handle response (someone responded to our request)
       -- Find pending request
       local request = pendingRequests[data.requestId]
       if request then
         -- Validate response matches request (prevent spoofing)
-        -- Verify sender matches requested player name
         local senderNormalized = string.lower(sender or "")
         local requestedPlayerNormalized = string.lower(request.playerName or "")
         
@@ -164,11 +184,8 @@ local function OnCommReceived(prefix, message, distribution, sender)
           -- Call callback with success
           request.callback(data.isTampered, sender, true)
           
-          -- Remove from pending (only remove valid responses)
+          -- Remove from pending
           pendingRequests[data.requestId] = nil
-        else
-          -- Response from wrong player - ignore it
-          -- Don't remove request, might still get valid response from correct player
         end
       end
     end
