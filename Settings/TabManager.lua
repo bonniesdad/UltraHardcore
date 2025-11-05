@@ -68,6 +68,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabButtons[3] = createTabButton('Achievements', 3, settingsFrame)
   tabButtons[4] = createTabButton('X Found Mode', 4, settingsFrame)
   tabButtons[5] = createTabButton('Info', 5, settingsFrame)
+  tabButtons[6] = createTabButton('Challenges', 6, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
@@ -75,6 +76,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame) -- Achievements tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
+  tabContents[6] = createTabContent(6, settingsFrame) -- Challenges tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
 end
