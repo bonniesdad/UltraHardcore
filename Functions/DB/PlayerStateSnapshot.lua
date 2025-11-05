@@ -73,6 +73,53 @@ local function GetInventoryItems()
   return inventoryItems
 end
 
+-- Get all bank items
+local function GetBankItems()
+  local bankItems = {}
+  
+  -- Main bank window (bag -1) - 28 slots in Classic
+  local mainBankSlots = {}
+  for slotId = 1, 28 do
+    local itemId = C_Container.GetContainerItemID(-1, slotId)
+    if itemId then
+      mainBankSlots[slotId] = itemId
+    else
+      mainBankSlots[slotId] = nil
+    end
+  end
+  
+  if next(mainBankSlots) then
+    bankItems[-1] = mainBankSlots
+  else
+    bankItems[-1] = nil
+  end
+  
+  -- Bank bags (bags 5-11 in Classic)
+  for bagId = 5, 11 do
+    local bagSlots = {}
+    local numSlots = C_Container.GetContainerNumSlots(bagId)
+    
+    if numSlots and numSlots > 0 then
+      for slotId = 1, numSlots do
+        local itemId = C_Container.GetContainerItemID(bagId, slotId)
+        if itemId then
+          bagSlots[slotId] = itemId
+        else
+          bagSlots[slotId] = nil
+        end
+      end
+    end
+    
+    if next(bagSlots) then
+      bankItems[bagId] = bagSlots
+    else
+      bankItems[bagId] = nil
+    end
+  end
+  
+  return bankItems
+end
+
 -- Get player currency information
 local function GetCurrencyInfo()
   local currency = {
@@ -119,6 +166,17 @@ local function GenerateStateHash(state)
       if state.inventoryItems[bagId] then
         for slotId, itemId in pairs(state.inventoryItems[bagId]) do
           hash = hash + (bagId * 100000) + (slotId * 10000) + itemId
+        end
+      end
+    end
+  end
+  
+  -- Hash bank items
+  if state.bankItems then
+    for bagId = -1, 11 do
+      if state.bankItems[bagId] then
+        for slotId, itemId in pairs(state.bankItems[bagId]) do
+          hash = hash + ((bagId + 100) * 100000) + (slotId * 10000) + itemId
         end
       end
     end
@@ -175,6 +233,7 @@ function PlayerStateSnapshot:CapturePlayerState()
     timestamp = time(),
     equippedItems = GetEquippedItems(),
     inventoryItems = GetInventoryItems(),
+    bankItems = GetBankItems(),
     currency = GetCurrencyInfo(),
     levelInfo = GetLevelAndExperience(),
     location = GetPlayerLocation(),
@@ -200,6 +259,35 @@ function PlayerStateSnapshot:CapturePlayerState()
   return state
 end
 
+-- Build item count map from bags and bank (items can move between them)
+local function BuildItemCountMap(inventoryItems, bankItems)
+  local itemCounts = {}
+  
+  -- Count items in bags
+  if inventoryItems then
+    for bagId = 0, 4 do
+      if inventoryItems[bagId] then
+        for slotId, itemId in pairs(inventoryItems[bagId]) do
+          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  -- Count items in bank
+  if bankItems then
+    for bagId = -1, 11 do
+      if bankItems[bagId] then
+        for slotId, itemId in pairs(bankItems[bagId]) do
+          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  return itemCounts
+end
+
 -- Compare two states and return true if anything changed
 local function CompareStates(oldState, newState)
   if not oldState or not newState then
@@ -215,36 +303,26 @@ local function CompareStates(oldState, newState)
     end
   end
   
-  -- Compare inventory items
-  -- Check all possible bags (0-4)
-  for bagId = 0, 4 do
-    local oldBagSlots = oldState.inventoryItems and oldState.inventoryItems[bagId] or nil
-    local newBagSlots = newState.inventoryItems and newState.inventoryItems[bagId] or nil
-    
-    -- If one exists but not the other, they're different
-    if (oldBagSlots and not newBagSlots) or (not oldBagSlots and newBagSlots) then
-      return true
-    end
-    
-    -- If both exist, compare all slots
-    if oldBagSlots and newBagSlots then
-      -- Get all slot IDs from both bags
-      local allSlotIds = {}
-      for slotId in pairs(oldBagSlots) do
-        allSlotIds[slotId] = true
-      end
-      for slotId in pairs(newBagSlots) do
-        allSlotIds[slotId] = true
-      end
-      
-      -- Compare each slot
-      for slotId in pairs(allSlotIds) do
-        local oldItemId = oldBagSlots[slotId]
-        local newItemId = newBagSlots[slotId]
-        if oldItemId ~= newItemId then
-          return true -- Inventory item changed
-        end
-      end
+  -- Compare items by count (allowing movement between bags and bank)
+  -- Build item count maps from both bags and bank combined
+  local oldItemCounts = BuildItemCountMap(oldState.inventoryItems, oldState.bankItems)
+  local newItemCounts = BuildItemCountMap(newState.inventoryItems, newState.bankItems)
+  
+  -- Get all unique item IDs
+  local allItemIds = {}
+  for itemId in pairs(oldItemCounts) do
+    allItemIds[itemId] = true
+  end
+  for itemId in pairs(newItemCounts) do
+    allItemIds[itemId] = true
+  end
+  
+  -- Compare counts
+  for itemId in pairs(allItemIds) do
+    local oldCount = oldItemCounts[itemId] or 0
+    local newCount = newItemCounts[itemId] or 0
+    if oldCount ~= newCount then
+      return true -- Item count changed (item added or removed)
     end
   end
   
@@ -308,6 +386,7 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   local currentState = {
     equippedItems = GetEquippedItems(),
     inventoryItems = GetInventoryItems(),
+    bankItems = GetBankItems(),
     currency = GetCurrencyInfo(),
     levelInfo = GetLevelAndExperience(),
     location = GetPlayerLocation(),
@@ -571,6 +650,7 @@ end
 
 -- Register events for state changes
 eventFrame:RegisterEvent('BAG_UPDATE') -- Triggered when bag contents change
+eventFrame:RegisterEvent('BANKFRAME_OPENED') -- Triggered when bank is opened
 eventFrame:RegisterEvent('PLAYER_MONEY') -- Triggered when money changes
 eventFrame:RegisterEvent('PLAYER_XP_UPDATE') -- Triggered when XP changes
 eventFrame:RegisterEvent('PLAYER_LEVEL_UP') -- Triggered when player levels up
