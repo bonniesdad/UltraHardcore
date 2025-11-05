@@ -107,6 +107,9 @@ function UHC_XPBar:Initialize()
         GameTooltip:Hide()
     end)
     
+    -- Hide the default XP bar when custom one is initialized
+    UHC_XPBar:HideDefaultXPBar()
+    
     -- Initial update
     UHC_XPBar:UpdateXPBar()
     
@@ -242,10 +245,28 @@ function UHC_XPBar:FormatNumber(num)
     return formatted
 end
 
+-- Hide/Show the default WoW experience bar
+function UHC_XPBar:HideDefaultXPBar()
+    C_Timer.After(0.1, function()
+        if MainMenuExpBar then
+            ForceHideFrame(MainMenuExpBar)
+        end
+    end)
+end
+
+function UHC_XPBar:ShowDefaultXPBar()
+    C_Timer.After(0.1, function()
+        if MainMenuExpBar then
+            RestoreAndShowFrame(MainMenuExpBar)
+        end
+    end)
+end
+
 -- Show the XP bar
 function UHC_XPBar:Show()
     if xpBarFrame then
         xpBarFrame:Show()
+        UHC_XPBar:HideDefaultXPBar()
     end
 end
 
@@ -253,6 +274,7 @@ end
 function UHC_XPBar:Hide()
     if xpBarFrame then
         xpBarFrame:Hide()
+        UHC_XPBar:ShowDefaultXPBar()
     end
 end
 
@@ -278,6 +300,8 @@ function UHC_XPBar:Destroy()
         xpBarBackground = nil
         xpBarFill = nil
         xpBarDot = nil
+        -- Restore the default XP bar when cleaning up
+        UHC_XPBar:ShowDefaultXPBar()
     end
 end
 
@@ -314,6 +338,14 @@ function UpdateExpBarHeight()
     end
 end
 
+function HideDefaultExpBar()
+    UHC_XPBar:HideDefaultXPBar()
+end
+
+function ShowDefaultExpBar()
+    UHC_XPBar:ShowDefaultXPBar()
+end
+
 -- Slash command for testing
 SLASH_UHCXPBAR1 = "/uhcxp"
 SlashCmdList["UHCXPBAR"] = function(msg)
@@ -338,6 +370,12 @@ SlashCmdList["UHCXPBAR"] = function(msg)
         else
             print("UHC XP Bar: Invalid height. Use 1-10.")
         end
+    elseif msg == "showdefault" then
+        print("UHC XP Bar: Showing default XP bar")
+        ShowDefaultExpBar()
+    elseif msg == "hidedefault" then
+        print("UHC XP Bar: Hiding default XP bar")
+        HideDefaultExpBar()
     elseif msg == "test" then
         print("UHC XP Bar: Test - Frame exists:", xpBarFrame ~= nil)
         if xpBarFrame then
@@ -346,12 +384,19 @@ SlashCmdList["UHCXPBAR"] = function(msg)
         end
         print("UHC XP Bar: Setting enabled:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.showExpBar)
         print("UHC XP Bar: Height setting:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight)
+        if MainMenuExpBar then
+            print("UHC XP Bar: Default XP bar is shown:", MainMenuExpBar:IsShown())
+        else
+            print("UHC XP Bar: Default XP bar not found")
+        end
     else
         print("UHC XP Bar Commands:")
         print("/uhcxp show - Show XP bar")
         print("/uhcxp hide - Hide XP bar") 
         print("/uhcxp toggle - Toggle XP bar")
         print("/uhcxp height <1-10> - Set bar height")
+        print("/uhcxp showdefault - Show default XP bar")
+        print("/uhcxp hidedefault - Hide default XP bar")
         print("/uhcxp test - Debug info")
     end
 end
