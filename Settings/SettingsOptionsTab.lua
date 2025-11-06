@@ -138,6 +138,10 @@ local settingsCheckboxOptions = { {
   name = 'Show XP Bar Tooltip',
   dbSettingsValueName = 'showXpBarToolTip',
   tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
+}, {
+  name = 'Show Default WoW XP Bar',
+  dbSettingsValueName = 'showDefaultExpBar',
+  tooltip = 'Display the original World of Warcraft experience bar instead of the custom UHC XP bar',
 },{
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
@@ -536,7 +540,7 @@ function InitializeSettingsOptionsTab()
         tempSettings[sliderItem.dbSettingsValueName] = sliderItem.defaultValue
       end
     end
-    
+
     local HEADER_HEIGHT = 22
     local ROW_HEIGHT = 30
     local SECTION_GAP = 10
@@ -568,7 +572,7 @@ function InitializeSettingsOptionsTab()
             break
           end
         end
-        
+
         if isSlider then
           if value and value > 0 then selected = selected + 1 end
         else
@@ -630,7 +634,7 @@ function InitializeSettingsOptionsTab()
       for _, settingName in ipairs(section.settings) do
         local checkboxItem = nil
         local sliderItem = nil
-        
+
         -- Check if this setting is a checkbox
         for _, item in ipairs(settingsCheckboxOptions) do
           if item.dbSettingsValueName == settingName then
@@ -638,7 +642,7 @@ function InitializeSettingsOptionsTab()
             break
           end
         end
-        
+
         -- Check if this setting is a slider
         if not checkboxItem then
           for _, item in ipairs(settingsSliderOptions) do
@@ -680,14 +684,6 @@ function InitializeSettingsOptionsTab()
               end
             end
 
-            -- Handle XP Bar toggle
-            if checkboxItem.dbSettingsValueName == 'showExpBar' then
-              if self:GetChecked() then
-                InitializeExpBar()
-              else
-                HideExpBar()
-              end
-            end
             updateSectionCount(sectionIndex)
           end)
 
@@ -702,17 +698,17 @@ function InitializeSettingsOptionsTab()
           end)
         elseif sliderItem then
           numRows = numRows + 1
-          
+
           -- Create slider frame
           local sliderFrame = CreateFrame('Frame', nil, sectionFrame)
           sliderFrame:SetSize(400, ROW_HEIGHT)
           sliderFrame:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT)))
-          
+
           -- Create slider label
           local sliderLabel = sliderFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
           sliderLabel:SetPoint('LEFT', sliderFrame, 'LEFT', 0, 0)
           sliderLabel:SetText(sliderItem.name)
-          
+
           -- Create the slider
           local slider = CreateFrame('Slider', nil, sliderFrame, 'OptionsSliderTemplate')
           slider:SetSize(150, 15)
@@ -721,34 +717,34 @@ function InitializeSettingsOptionsTab()
           slider:SetValue(tempSettings[sliderItem.dbSettingsValueName] or sliderItem.defaultValue)
           slider:SetValueStep(1)
           slider:SetObeyStepOnDrag(true)
-          
+
           -- Create value label
           local valueLabel = sliderFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
           valueLabel:SetPoint('RIGHT', sliderFrame, 'RIGHT', -10, 0)
           valueLabel:SetText(tostring(math.floor(slider:GetValue())))
-          
+
           -- Precompute search blob for fast filtering
           local n = sliderItem.name or ''
           local t = sliderItem.tooltip or ''
           local k = sliderItem.dbSettingsValueName or ''
           sliderFrame._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
-          
+
           sliders[sliderItem.dbSettingsValueName] = slider
           table.insert(sectionChildren[sectionIndex], sliderFrame)
           table.insert(sectionChildSettingNames[sectionIndex], sliderItem.dbSettingsValueName)
-          
+
           -- Handle slider value changes
           slider:SetScript('OnValueChanged', function(self, value)
             local newValue = math.floor(value)
             tempSettings[sliderItem.dbSettingsValueName] = newValue
             valueLabel:SetText(tostring(newValue))
-            
+
             -- Handle XP Bar height changes
             if sliderItem.dbSettingsValueName == 'xpBarHeight' and _G.UpdateExpBarHeight then
               UpdateExpBarHeight()
             end
           end)
-          
+
           -- Add tooltip functionality
           sliderFrame:EnableMouse(true)
           sliderFrame:SetScript('OnEnter', function(self)
@@ -756,7 +752,7 @@ function InitializeSettingsOptionsTab()
             GameTooltip:SetText(sliderItem.tooltip)
             GameTooltip:Show()
           end)
-          
+
           sliderFrame:SetScript('OnLeave', function(self)
             GameTooltip:Hide()
           end)
@@ -843,13 +839,19 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
     )
 
-    -- Handle XP Bar setting
+    -- Handle XP Bar settings
     if GLOBAL_SETTINGS.showExpBar then
       InitializeExpBar()
     else
       HideExpBar()
     end
-    
+
+    if GLOBAL_SETTINGS.showDefaultExpBar then
+      ShowDefaultExpBar()
+    else
+      HideDefaultExpBar()
+    end
+
     -- Update XP bar color and height if it exists
     if _G.UpdateExpBarColor then
       UpdateExpBarColor()
