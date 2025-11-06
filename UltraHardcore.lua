@@ -71,6 +71,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     -- Initialize XP Bar at the top of the screen if enabled
     if GLOBAL_SETTINGS.showExpBar then
       InitializeExpBar()
+    else
+      -- Ensure default XP bar is shown when custom XP bar is disabled
+      ShowDefaultExpBar()
     end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...

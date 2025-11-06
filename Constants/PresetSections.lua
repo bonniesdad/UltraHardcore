@@ -40,7 +40,7 @@ local PRESET_SECTIONS = { {
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
   },
-}, {
+},  {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
@@ -53,12 +53,17 @@ local PRESET_SECTIONS = { {
     'newHighCritAppreciationSoundbite',
     'playPartyDeathSoundbite',
     'playPlayerDeathSoundbite',
-    'showExpBar',
-    'showXpBarToolTip',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
   },
-} }
+}, {
+  title = 'XP Bar:',
+  settings = {
+    'showExpBar',
+    'showXpBarToolTip',
+    'xpBarHeight',
+  },
+}, }
 
 -- Function to get preset sections with custom title formatting
 -- @param titleFormat: "simple" for "Lite:", "extended" for "Lite Preset Settings:", or custom function
