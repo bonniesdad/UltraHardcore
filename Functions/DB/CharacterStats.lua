@@ -835,7 +835,7 @@ SlashCmdList['POSTVERSION'] = function()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local playerXP = stats.xpTotal
     message = message
-              .. ' [Total XP: ' .. playerXP .. ']' 
+              .. ' [Total XP: ' .. formatNumberWithCommas(playerXP) .. ']' 
               .. ' [XP w/o UHC: ' .. formatNumberWithCommas(xpDeficit) .. ']'
               .. ' (Checksum: '.. CharacterStats:XPChecksum() .. ')'
   end
