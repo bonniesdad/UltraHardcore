@@ -803,7 +803,7 @@ SlashCmdList['CHECKXPREPORT'] = function(msg)
   local level = 0
   if msg == nil or msg == '' then 
     print('Check for a valid /uhcv message.  If the checksum from this command does not match theirs, it might be fake.')
-    print('Usage: /uhcxp total_xp xp_without_uhc player_level')
+    print('Usage: /uhccheckxp total_xp xp_without_uhc player_level')
   else
     local results = {}
     for part in string.gmatch(msg, "([^ ]+)") do
