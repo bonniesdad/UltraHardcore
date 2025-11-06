@@ -744,11 +744,6 @@ SlashCmdList['RESETWORLDBOSSES'] = function()
   CharacterStats:ResetWorldBossesSlain()
 end
 
-SLASH_RESETXP1 = '/resetxp'
-SlashCmdList['RESETXP'] = function()
-  CharacterStats:ResetXPWithoutAddon()
-end
-
 -- Register slash command to reset stats
 SLASH_RESETSTATS1 = '/resetstats'
 SlashCmdList['RESETSTATS'] = function()
