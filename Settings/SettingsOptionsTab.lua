@@ -138,10 +138,24 @@ local settingsCheckboxOptions = { {
   name = 'Show XP Bar Tooltip',
   dbSettingsValueName = 'showXpBarToolTip',
   tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
-},{
+}, {
+  name = 'Hide Default WoW XP Bar',
+  dbSettingsValueName = 'hideDefaultExpBar',
+  tooltip = 'Hide the original World of Warcraft experience bar',
+}, {
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
+} }
+
+-- XP Bar Settings
+local settingsSliderOptions = { {
+  name = 'XP Bar Height',
+  dbSettingsValueName = 'xpBarHeight',
+  tooltip = 'Adjust the height of the XP bar at the top of the screen (1-10 pixels)',
+  minValue = MINIMUM_XP_BAR_HEIGHT,
+  maxValue = MAXIMUM_XP_BAR_HEIGHT,
+  defaultValue = 3,
 } }
 
 local presets = { {
@@ -295,6 +309,7 @@ function InitializeSettingsOptionsTab()
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
+  local sliders = {}
   local presetButtons = {}
   local selectedPreset = nil
 
@@ -313,6 +328,19 @@ function InitializeSettingsOptionsTab()
     end
     if _G.updateSectionCounts then
       _G.updateSectionCounts()
+    end
+  end
+
+  local function updateSliders()
+    for _, sliderItem in ipairs(settingsSliderOptions) do
+      local slider = sliders[sliderItem.dbSettingsValueName]
+      if slider then
+        local value = tempSettings[sliderItem.dbSettingsValueName]
+        if value == nil then
+          value = sliderItem.defaultValue
+        end
+        slider:SetValue(value)
+      end
     end
   end
 
@@ -338,6 +366,7 @@ function InitializeSettingsOptionsTab()
     )
 
     updateCheckboxes()
+    updateSliders()
     updateRadioButtons()
 
     if selectedPreset then
@@ -505,6 +534,13 @@ function InitializeSettingsOptionsTab()
   local recalcContentHeight = nil
 
   function createCheckboxes()
+    -- Initialize slider defaults for settings that don't exist
+    for _, sliderItem in ipairs(settingsSliderOptions) do
+      if tempSettings[sliderItem.dbSettingsValueName] == nil then
+        tempSettings[sliderItem.dbSettingsValueName] = sliderItem.defaultValue
+      end
+    end
+
     local HEADER_HEIGHT = 22
     local ROW_HEIGHT = 30
     local SECTION_GAP = 10
@@ -526,7 +562,22 @@ function InitializeSettingsOptionsTab()
       local total = #sectionChildSettingNames[idx]
       local selected = 0
       for _, settingName in ipairs(sectionChildSettingNames[idx]) do
-        if tempSettings[settingName] then selected = selected + 1 end
+        local value = tempSettings[settingName]
+        -- For sliders (numeric values), count as selected if value exists and > 0
+        -- For checkboxes (boolean values), count as selected if true
+        local isSlider = false
+        for _, sliderItem in ipairs(settingsSliderOptions) do
+          if sliderItem.dbSettingsValueName == settingName then
+            isSlider = true
+            break
+          end
+        end
+
+        if isSlider then
+          if value and value > 0 then selected = selected + 1 end
+        else
+          if value then selected = selected + 1 end
+        end
       end
       sectionCountTexts[idx]:SetText(selected .. "/" .. total)
     end
@@ -582,10 +633,23 @@ function InitializeSettingsOptionsTab()
       local numRows = 0
       for _, settingName in ipairs(section.settings) do
         local checkboxItem = nil
+        local sliderItem = nil
+
+        -- Check if this setting is a checkbox
         for _, item in ipairs(settingsCheckboxOptions) do
           if item.dbSettingsValueName == settingName then
             checkboxItem = item
             break
+          end
+        end
+
+        -- Check if this setting is a slider
+        if not checkboxItem then
+          for _, item in ipairs(settingsSliderOptions) do
+            if item.dbSettingsValueName == settingName then
+              sliderItem = item
+              break
+            end
           end
         end
 
@@ -620,14 +684,6 @@ function InitializeSettingsOptionsTab()
               end
             end
 
-            -- Handle XP Bar toggle
-            if checkboxItem.dbSettingsValueName == 'showExpBar' then
-              if self:GetChecked() then
-                InitializeExpBar()
-              else
-                HideExpBar()
-              end
-            end
             updateSectionCount(sectionIndex)
           end)
 
@@ -638,6 +694,66 @@ function InitializeSettingsOptionsTab()
           end)
 
           checkbox:SetScript('OnLeave', function(self)
+            GameTooltip:Hide()
+          end)
+        elseif sliderItem then
+          numRows = numRows + 1
+
+          -- Create slider frame
+          local sliderFrame = CreateFrame('Frame', nil, sectionFrame)
+          sliderFrame:SetSize(400, ROW_HEIGHT)
+          sliderFrame:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT)))
+
+          -- Create slider label
+          local sliderLabel = sliderFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+          sliderLabel:SetPoint('LEFT', sliderFrame, 'LEFT', 0, 0)
+          sliderLabel:SetText(sliderItem.name)
+
+          -- Create the slider
+          local slider = CreateFrame('Slider', nil, sliderFrame, 'OptionsSliderTemplate')
+          slider:SetSize(150, 15)
+          slider:SetPoint('RIGHT', sliderFrame, 'RIGHT', -50, 0)
+          slider:SetMinMaxValues(sliderItem.minValue, sliderItem.maxValue)
+          slider:SetValue(tempSettings[sliderItem.dbSettingsValueName] or sliderItem.defaultValue)
+          slider:SetValueStep(1)
+          slider:SetObeyStepOnDrag(true)
+
+          -- Create value label
+          local valueLabel = sliderFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+          valueLabel:SetPoint('RIGHT', sliderFrame, 'RIGHT', -10, 0)
+          valueLabel:SetText(tostring(math.floor(slider:GetValue())))
+
+          -- Precompute search blob for fast filtering
+          local n = sliderItem.name or ''
+          local t = sliderItem.tooltip or ''
+          local k = sliderItem.dbSettingsValueName or ''
+          sliderFrame._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
+
+          sliders[sliderItem.dbSettingsValueName] = slider
+          table.insert(sectionChildren[sectionIndex], sliderFrame)
+          table.insert(sectionChildSettingNames[sectionIndex], sliderItem.dbSettingsValueName)
+
+          -- Handle slider value changes
+          slider:SetScript('OnValueChanged', function(self, value)
+            local newValue = math.floor(value)
+            tempSettings[sliderItem.dbSettingsValueName] = newValue
+            valueLabel:SetText(tostring(newValue))
+
+            -- Handle XP Bar height changes
+            if sliderItem.dbSettingsValueName == 'xpBarHeight' and _G.UpdateExpBarHeight then
+              UpdateExpBarHeight()
+            end
+          end)
+
+          -- Add tooltip functionality
+          sliderFrame:EnableMouse(true)
+          sliderFrame:SetScript('OnEnter', function(self)
+            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+            GameTooltip:SetText(sliderItem.tooltip)
+            GameTooltip:Show()
+          end)
+
+          sliderFrame:SetScript('OnLeave', function(self)
             GameTooltip:Hide()
           end)
         end
@@ -723,16 +839,25 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
     )
 
-    -- Handle XP Bar setting
+    -- Handle XP Bar settings
     if GLOBAL_SETTINGS.showExpBar then
       InitializeExpBar()
     else
       HideExpBar()
     end
-    
-    -- Update XP bar color if it exists
+
+    if GLOBAL_SETTINGS.hideDefaultExpBar then
+      HideDefaultExpBar()
+    else
+      ShowDefaultExpBar()
+    end
+
+    -- Update XP bar color and height if it exists
     if _G.UpdateExpBarColor then
       UpdateExpBarColor()
+    end
+    if _G.UpdateExpBarHeight then
+      UpdateExpBarHeight()
     end
 
     SaveCharacterSettings(GLOBAL_SETTINGS)
@@ -740,10 +865,12 @@ function InitializeSettingsOptionsTab()
   end)
 
   _G.updateCheckboxes = updateCheckboxes
+  _G.updateSliders = updateSliders
   _G.updateRadioButtons = updateRadioButtons
   _G.applyPreset = applyPreset
   _G.createCheckboxes = createCheckboxes
   _G.checkboxes = checkboxes
+  _G.sliders = sliders
   _G.presetButtons = presetButtons
   _G.selectedPreset = selectedPreset
 
@@ -886,6 +1013,8 @@ function InitializeSettingsOptionsTab()
         ColorPickerFrame:Hide()
         ColorPickerFrame.hasOpacity = false
         ColorPickerFrame.opacityFunc = nil
+        ColorPickerFrame.func = onColorPicked
+        ColorPickerFrame.swatchFunc = onColorPicked
 
         -- Only create inputs once per ColorPickerFrame
         if not ColorPickerFrame.__UHC_InputsCreated then
