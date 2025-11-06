@@ -37,13 +37,16 @@ local function initializeTempSettings()
       tempSettings[settingName] = shouldRadioBeChecked(settingName, GLOBAL_SETTINGS)
     end
   end
-  
+
   -- Initialize checkbox defaults for settings that don't exist
   if tempSettings.showExpBar == nil then
     tempSettings.showExpBar = false -- Default to off
   end
   if tempSettings.showXpBarToolTip == nil then
     tempSettings.showXpBarToolTip = false -- Default to off (hide tooltip)
+  end
+  if tempSettings.showDefaultExpBar == nil then
+    tempSettings.showDefaultExpBar = true -- Default to on (show default XP bar)
   end
   if tempSettings.xpBarHeight == nil then
     tempSettings.xpBarHeight = 3 -- Default height

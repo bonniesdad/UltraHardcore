@@ -68,12 +68,22 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         InitializeGroupButtons()
       end
     end
-    -- Initialize XP Bar at the top of the screen if enabled
+    -- Initialize XP Bars at the top of the screen if enabled
+    -- Both bars can be active independently
     if GLOBAL_SETTINGS.showExpBar then
+      -- Show custom UHC XP bar
       InitializeExpBar()
     else
-      -- Ensure default XP bar is shown when custom XP bar is disabled
+      -- Hide custom UHC XP bar if not enabled
+      HideExpBar()
+    end
+
+    if GLOBAL_SETTINGS.showDefaultExpBar then
+      -- Show default WoW XP bar
       ShowDefaultExpBar()
+    else
+      -- Hide default WoW XP bar if not enabled
+      HideDefaultExpBar()
     end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
