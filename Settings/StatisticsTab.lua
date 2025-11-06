@@ -30,6 +30,8 @@ local STATISTIC_TOOLTIPS = {
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
+  xpGWA = 'XP gained with addon enabled.',
+  xpGWOA = 'XP gained with addon disabled.'
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -777,6 +779,14 @@ function InitializeStatisticsTab()
     key = 'playerJumps',
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
+  }, {
+    key = 'xpGWA',
+    label = 'XP With Addon:',
+    tooltipKey = 'xpGWA',
+  }, {
+    key = 'xpGWOA',
+    label = 'XP Without Addon:',
+    tooltipKey = 'xpGWOA',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING

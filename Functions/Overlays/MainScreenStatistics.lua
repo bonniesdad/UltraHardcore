@@ -295,6 +295,30 @@ playerJumpsValue:SetText(formatNumberWithCommas(0))
 playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 
+-- XP Gained With Addon
+local xpGWALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+xpGWALabel:SetText('XP w Addon:')
+xpGWALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local xpGWAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWAValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+xpGWAValue:SetText(formatNumberWithCommas(0))
+xpGWAValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+
+-- XP Gained Without Addon
+local xpGWOALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWOALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+xpGWOALabel:SetText('XP w/o Addon:')
+xpGWOALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local xpGWOAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWOAValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+xpGWOAValue:SetText(formatNumberWithCommas(0))
+xpGWOAValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+
 -- Store all statistics elements for easy management
 local statsElements = { {
   label = levelLabel,
@@ -396,6 +420,14 @@ local statsElements = { {
   label = playerJumpsLabel,
   value = playerJumpsValue,
   setting = 'showMainStatisticsPanelPlayerJumps',
+}, {
+  label = xpGWALabel,
+  value = xpGWAValue,
+  setting = 'showMainStatisticsPanelXpGWA',
+}, {
+  label = xpGWOALabel,
+  value = xpGWOAValue,
+  setting = 'showMainStatisticsPanelXpGWOA',
 } }
 
 -- Function to update row visibility and positioning
@@ -560,6 +592,14 @@ local function UpdateStatistics()
   -- Update player jumps value
   local playerJumps = CharacterStats:GetStat('playerJumps') or 0
   playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
+
+  -- Update XP gained with addon
+  local xpGWA = CharacterStats:GetStat('xpGWA') or 0
+  xpGWAValue:SetText(formatNumberWithCommas(xpGWA))
+
+  -- Update XP gained without addon
+  local xpGWOA = CharacterStats:GetStat('xpGWOA') or 0
+  xpGWOAValue:SetText(formatNumberWithCommas(xpGWOA))
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
