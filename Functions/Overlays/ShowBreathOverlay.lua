@@ -73,8 +73,13 @@ function OnBreathUpdate(self, elapsed)
       -- Show red-tinted overlay (higher breath = less red, lower breath = more red)
       ShowBreathOverlay(breathPercent)
     else
-      -- No breath data, hide overlay
-      RemoveBreathOverlay()
+      -- If we're still in water but out of breath, keep the overlay at max intensity
+      if IsSwimming and IsSwimming() then
+        ShowBreathOverlay(0)
+      else
+        -- Not in water, hide overlay
+        RemoveBreathOverlay()
+      end
     end
   end
 end
@@ -88,12 +93,30 @@ function OnBreathStart()
     UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
     UltraHardcore.breathOverlayFrame:Show() -- Make sure frame is visible
   end
+
+  -- Hide only the BREATH mirror timer (once) without affecting fatigue (EXHAUSTION)
+  -- Do not use ForceHideFrame here to avoid suppressing the frame for other timers
+  for i = 1, 3 do
+    local frame = _G["MirrorTimer" .. i]
+    if frame and frame.timer == "BREATH" then
+      frame:Hide()
+    end
+  end
 end
 
 -- 🟢 Function to stop breath monitoring
 function OnBreathStop()
-  RemoveBreathOverlay()
-  if UltraHardcore.breathOverlayFrame then
-    UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+  -- If still in water, keep the overlay active until we actually leave the water
+  if IsSwimming and IsSwimming() then
+    ShowBreathOverlay(0)
+    if UltraHardcore.breathOverlayFrame then
+      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
+      UltraHardcore.breathOverlayFrame:Show()
+    end
+  else
+    RemoveBreathOverlay()
+    if UltraHardcore.breathOverlayFrame then
+      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    end
   end
 end
