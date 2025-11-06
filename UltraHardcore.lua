@@ -78,12 +78,12 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       HideExpBar()
     end
 
-    if GLOBAL_SETTINGS.showDefaultExpBar then
-      -- Show default WoW XP bar
-      ShowDefaultExpBar()
-    else
-      -- Hide default WoW XP bar if not enabled
+    if GLOBAL_SETTINGS.hideDefaultExpBar then
+      -- Hide default WoW XP bar when setting is enabled
       HideDefaultExpBar()
+    else
+      -- Show default WoW XP bar by default
+      ShowDefaultExpBar()
     end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...

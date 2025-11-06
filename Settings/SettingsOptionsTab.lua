@@ -139,9 +139,9 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showXpBarToolTip',
   tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
 }, {
-  name = 'Show Default WoW XP Bar',
-  dbSettingsValueName = 'showDefaultExpBar',
-  tooltip = 'Display the original World of Warcraft experience bar instead of the custom UHC XP bar',
+  name = 'Hide Default WoW XP Bar',
+  dbSettingsValueName = 'hideDefaultExpBar',
+  tooltip = 'Hide the original World of Warcraft experience bar',
 },{
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
@@ -846,10 +846,10 @@ function InitializeSettingsOptionsTab()
       HideExpBar()
     end
 
-    if GLOBAL_SETTINGS.showDefaultExpBar then
-      ShowDefaultExpBar()
-    else
+    if GLOBAL_SETTINGS.hideDefaultExpBar then
       HideDefaultExpBar()
+    else
+      ShowDefaultExpBar()
     end
 
     -- Update XP bar color and height if it exists
