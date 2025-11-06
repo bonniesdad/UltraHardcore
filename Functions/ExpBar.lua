@@ -7,23 +7,36 @@ local xpBarBackground = nil
 local xpBarFill = nil
 local xpBarDot = nil
 
--- Configuration
-local BAR_HEIGHT = 3
+MINIMUM_XP_BAR_HEIGHT = 3
+MAXIMUM_XP_BAR_HEIGHT = 10
+
+-- Get bar height from settings or use default
+local function GetBarHeight()
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight then
+        return GLOBAL_SETTINGS.xpBarHeight
+    end
+    return MINIMUM_XP_BAR_HEIGHT -- Default height
+end
 
 -- Initialize the XP Bar
 function UHC_XPBar:Initialize()
     if xpBarFrame then
-        return -- Already initialized
+        return 
+    end
+    
+    -- Initialize height setting if it doesn't exist (only a safety check)
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight == nil then
+        GLOBAL_SETTINGS.xpBarHeight = 3 -- Default height
     end
     
     
     -- Create main frame that spans full screen width
     xpBarFrame = CreateFrame("Frame", "UHC_XPBarFrame", UIParent)
-    xpBarFrame:SetHeight(BAR_HEIGHT)
+    xpBarFrame:SetHeight(GetBarHeight())
     xpBarFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0)
     xpBarFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
     xpBarFrame:SetFrameStrata("HIGH")
-    xpBarFrame:Show() -- Ensure it's visible
+    xpBarFrame:Show()
     
     -- Create background
     xpBarBackground = xpBarFrame:CreateTexture(nil, "BACKGROUND")
@@ -49,7 +62,7 @@ function UHC_XPBar:Initialize()
     
     -- Create XP position indicator dot
     xpBarDot = xpBarFrame:CreateTexture(nil, "OVERLAY")
-    xpBarDot:SetSize(6, 6) -- Slightly larger to see texture detail
+    xpBarDot:SetSize(GetBarHeight()*2, GetBarHeight()*2) -- Slightly larger to see texture detail
     -- Use your custom circular PNG texture
     xpBarDot:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png")
     -- Don't crop the texture coordinates since your PNG should already be circular
@@ -93,6 +106,9 @@ function UHC_XPBar:Initialize()
     xpBarFrame:SetScript("OnLeave", function(self)
         GameTooltip:Hide()
     end)
+    
+    -- Hide the default XP bar when custom one is initialized
+    UHC_XPBar:HideDefaultXPBar()
     
     -- Initial update
     UHC_XPBar:UpdateXPBar()
@@ -194,6 +210,22 @@ function UHC_XPBar:SetBarColor()
     end
 end
 
+-- Update XP bar height based on settings
+function UHC_XPBar:UpdateBarHeight()
+    if not xpBarFrame then
+        return
+    end
+    
+    local newHeight = GetBarHeight()
+    xpBarFrame:SetHeight(newHeight)
+    
+    -- Also need to update dot size proportionally if desired
+    local dotSize = math.max(4, newHeight + 1) -- Ensure dot is visible but proportional
+    if xpBarDot then
+        xpBarDot:SetSize(dotSize, dotSize)
+    end
+end
+
 -- Format numbers with commas for better readability
 function UHC_XPBar:FormatNumber(num)
     if not num then return "0" end
@@ -213,10 +245,28 @@ function UHC_XPBar:FormatNumber(num)
     return formatted
 end
 
+-- Hide/Show the default WoW experience bar
+function UHC_XPBar:HideDefaultXPBar()
+    C_Timer.After(0.1, function()
+        if MainMenuExpBar then
+            ForceHideFrame(MainMenuExpBar)
+        end
+    end)
+end
+
+function UHC_XPBar:ShowDefaultXPBar()
+    C_Timer.After(0.1, function()
+        if MainMenuExpBar then
+            RestoreAndShowFrame(MainMenuExpBar)
+        end
+    end)
+end
+
 -- Show the XP bar
 function UHC_XPBar:Show()
     if xpBarFrame then
         xpBarFrame:Show()
+        UHC_XPBar:HideDefaultXPBar()
     end
 end
 
@@ -224,6 +274,7 @@ end
 function UHC_XPBar:Hide()
     if xpBarFrame then
         xpBarFrame:Hide()
+        UHC_XPBar:ShowDefaultXPBar()
     end
 end
 
@@ -249,6 +300,8 @@ function UHC_XPBar:Destroy()
         xpBarBackground = nil
         xpBarFill = nil
         xpBarDot = nil
+        -- Restore the default XP bar when cleaning up
+        UHC_XPBar:ShowDefaultXPBar()
     end
 end
 
@@ -279,6 +332,20 @@ function UpdateExpBarColor()
     end
 end
 
+function UpdateExpBarHeight()
+    if xpBarFrame and xpBarFrame:IsShown() then
+        UHC_XPBar:UpdateBarHeight()
+    end
+end
+
+function HideDefaultExpBar()
+    UHC_XPBar:HideDefaultXPBar()
+end
+
+function ShowDefaultExpBar()
+    UHC_XPBar:ShowDefaultXPBar()
+end
+
 -- Slash command for testing
 SLASH_UHCXPBAR1 = "/uhcxp"
 SlashCmdList["UHCXPBAR"] = function(msg)
@@ -292,6 +359,23 @@ SlashCmdList["UHCXPBAR"] = function(msg)
     elseif msg == "toggle" then
         print("UHC XP Bar: Manual toggle command")
         ToggleExpBar()
+    elseif msg:match("^height (%d+)$") then
+        local height = tonumber(msg:match("^height (%d+)$"))
+        if height and height >= 1 and height <= 10 then
+            GLOBAL_SETTINGS.xpBarHeight = height
+            print("UHC XP Bar: Set height to", height)
+            if _G.UpdateExpBarHeight then
+                UpdateExpBarHeight()
+            end
+        else
+            print("UHC XP Bar: Invalid height. Use 1-10.")
+        end
+    elseif msg == "showdefault" then
+        print("UHC XP Bar: Showing default XP bar")
+        ShowDefaultExpBar()
+    elseif msg == "hidedefault" then
+        print("UHC XP Bar: Hiding default XP bar")
+        HideDefaultExpBar()
     elseif msg == "test" then
         print("UHC XP Bar: Test - Frame exists:", xpBarFrame ~= nil)
         if xpBarFrame then
@@ -299,11 +383,20 @@ SlashCmdList["UHCXPBAR"] = function(msg)
             print("UHC XP Bar: Frame size:", xpBarFrame:GetWidth(), "x", xpBarFrame:GetHeight())
         end
         print("UHC XP Bar: Setting enabled:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.showExpBar)
+        print("UHC XP Bar: Height setting:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight)
+        if MainMenuExpBar then
+            print("UHC XP Bar: Default XP bar is shown:", MainMenuExpBar:IsShown())
+        else
+            print("UHC XP Bar: Default XP bar not found")
+        end
     else
         print("UHC XP Bar Commands:")
         print("/uhcxp show - Show XP bar")
         print("/uhcxp hide - Hide XP bar") 
         print("/uhcxp toggle - Toggle XP bar")
+        print("/uhcxp height <1-10> - Set bar height")
+        print("/uhcxp showdefault - Show default XP bar")
+        print("/uhcxp hidedefault - Hide default XP bar")
         print("/uhcxp test - Debug info")
     end
 end
