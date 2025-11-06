@@ -47,6 +47,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     -- Only update group indicators when not in combat lockdown
     if not InCombatLockdown() then
@@ -136,6 +137,12 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
+    -- Hide player cast bar if setting is enabled
+    local unit = ...
+    if unit == 'player' then
+      HidePlayerCastBar()
+    end
+    
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
     if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then
