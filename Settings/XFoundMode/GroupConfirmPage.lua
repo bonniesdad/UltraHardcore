@@ -25,7 +25,7 @@ local function CreateGroupConfirmPage(parentFrame)
   -- Title (overlaying the banner)
   local titleText = confirmPage:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
   titleText:SetPoint('TOP', confirmPage, 'TOP', 0, -80) -- Moved down by 20 pixels
-  titleText:SetText('Confirm Group Found Mode')
+  titleText:SetText('Confirm Group Found Mode (BETA)')
   titleText:SetTextColor(1, 1, 1) -- White color
   titleText:SetShadowColor(0, 0, 0, 1) -- Black shadow for border effect
   titleText:SetShadowOffset(2, -2) -- Shadow offset for depth

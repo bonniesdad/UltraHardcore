@@ -44,6 +44,7 @@ local CharacterStats = {
     xpGWA = 0, -- Used to track XP gained with the addon
     xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing
     xpTotal = 0,
+    xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
     healthPotionsUsed = 0,
     manaPotionsUsed = 0,
@@ -57,6 +58,7 @@ local CharacterStats = {
     duelsLost = 0,
     duelsWinPercent = 0,
     playerJumps = 0,
+    mapKeyPressesWhileMapBlocked = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
     dungeonsCompleted = 0,

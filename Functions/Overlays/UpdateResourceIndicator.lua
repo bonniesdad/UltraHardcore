@@ -2,6 +2,46 @@ local resourceIndicator = CreateFrame('Frame', 'CustomresourceIndicator', UIPare
 resourceIndicator:SetSize(125, 125) -- Single icon size
 resourceIndicator:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -20, 70)
 resourceIndicator:Hide()
+resourceIndicator:SetMovable(true)
+resourceIndicator:SetClampedToScreen(true)
+
+-- Position persistence
+local function SaveResourceIndicatorPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local point, _, relPoint, x, y = resourceIndicator:GetPoint()
+  UltraHardcoreDB.resourceIndicatorPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  if SaveDBData then
+    SaveDBData('resourceIndicatorPosition', UltraHardcoreDB.resourceIndicatorPosition)
+  end
+end
+
+local function LoadResourceIndicatorPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local pos = UltraHardcoreDB.resourceIndicatorPosition
+  resourceIndicator:ClearAllPoints()
+  if pos then
+    resourceIndicator:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+  else
+    resourceIndicator:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -20, 70)
+  end
+end
+
+-- Make draggable and save position
+resourceIndicator:EnableMouse(true)
+resourceIndicator:RegisterForDrag('LeftButton')
+resourceIndicator:SetScript('OnDragStart', function(self)
+  self:StartMoving()
+end)
+resourceIndicator:SetScript('OnDragStop', function(self)
+  self:StopMovingOrSizing()
+  SaveResourceIndicatorPosition()
+end)
 local icon = resourceIndicator:CreateTexture(nil, 'OVERLAY')
 icon:SetSize(125, 125) -- Size of the single icon
 icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie0.png') -- Default texture
@@ -51,10 +91,18 @@ end
 -- Slash command to toggle the frame
 SLASH_TOGGLEBONNIE1 = '/bonnie'
 SlashCmdList.TOGGLEBONNIE = function()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
   if resourceIndicator:IsShown() then
     resourceIndicator:Hide()
+    UltraHardcoreDB.resourceIndicatorShown = false
   else
     resourceIndicator:Show()
+    UltraHardcoreDB.resourceIndicatorShown = true
+  end
+  if SaveDBData then
+    SaveDBData('resourceIndicatorShown', UltraHardcoreDB.resourceIndicatorShown)
   end
 end
 
@@ -66,6 +114,15 @@ resourceIndicator:SetScript('OnEvent', function(self, event, unit)
   local powerType = GetCurrentResourceType()
 
   if event == 'PLAYER_ENTERING_WORLD' then
+    -- Defer loading position/visibility slightly to ensure DB is ready
+    C_Timer.After(0.1, function()
+      LoadResourceIndicatorPosition()
+      if UltraHardcoreDB and UltraHardcoreDB.resourceIndicatorShown then
+        resourceIndicator:Show()
+      else
+        resourceIndicator:Hide()
+      end
+    end)
     if powerType == 'ENERGY' then
       icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 5 .. '.png')
     elseif powerType == 'RAGE' then

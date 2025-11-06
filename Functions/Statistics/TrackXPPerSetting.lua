@@ -29,6 +29,7 @@ local settingToXPVariable = {
   showCritScreenMoveEffect = 'xpGainedWithoutOptionShowCritScreenMoveEffect',
   hideActionBars = 'xpGainedWithoutOptionHideActionBars',
   petsDiePermanently = 'xpGainedWithoutOptionPetsDiePermanently',
+  routePlanner = 'xpGainedWithoutOptionRoutePlanner',
   showFullHealthIndicator = 'xpGainedWithoutOptionShowFullHealthIndicator',
   showIncomingDamageEffect = 'xpGainedWithoutOptionShowIncomingDamageEffect',
   showHealingIndicator = 'xpGainedWithoutOptionShowHealingIndicator',

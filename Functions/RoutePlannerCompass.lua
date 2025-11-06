@@ -15,7 +15,7 @@ function createCompass()
     local width = 400
     local height = 30
 
-    local compassFrame = CreateFrame("Frame", nil, UIParent)
+    local compassFrame = CreateFrame("Frame", 'UltraHardcoreCompassFrame', UIParent)
     compassFrame:SetSize(width, height)
     compassFrame:SetPoint("TOP", 0, -25)
 
