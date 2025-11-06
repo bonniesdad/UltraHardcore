@@ -31,7 +31,7 @@ local STATISTIC_TOOLTIPS = {
   duelsWinPercent = 'Percentage of duels you have won',
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
   xpGWA = 'XP gained with addon enabled.',
-  xpGWOA = 'XP gained with addon disabled.',
+  xpGWOA = 'XP gained with addon disabled or on another device.',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
 }
 
