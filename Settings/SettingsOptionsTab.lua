@@ -142,10 +142,20 @@ local settingsCheckboxOptions = { {
   name = 'Hide Default WoW XP Bar',
   dbSettingsValueName = 'hideDefaultExpBar',
   tooltip = 'Hide the original World of Warcraft experience bar',
-},{
+}, {
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
+} }
+
+-- XP Bar Settings
+local settingsSliderOptions = { {
+  name = 'XP Bar Height',
+  dbSettingsValueName = 'xpBarHeight',
+  tooltip = 'Adjust the height of the XP bar at the top of the screen (1-10 pixels)',
+  minValue = MINIMUM_XP_BAR_HEIGHT,
+  maxValue = MAXIMUM_XP_BAR_HEIGHT,
+  defaultValue = 3,
 } }
 
 local presets = { {
@@ -299,6 +309,7 @@ function InitializeSettingsOptionsTab()
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
+  local sliders = {}
   local presetButtons = {}
   local selectedPreset = nil
 
@@ -317,6 +328,19 @@ function InitializeSettingsOptionsTab()
     end
     if _G.updateSectionCounts then
       _G.updateSectionCounts()
+    end
+  end
+
+  local function updateSliders()
+    for _, sliderItem in ipairs(settingsSliderOptions) do
+      local slider = sliders[sliderItem.dbSettingsValueName]
+      if slider then
+        local value = tempSettings[sliderItem.dbSettingsValueName]
+        if value == nil then
+          value = sliderItem.defaultValue
+        end
+        slider:SetValue(value)
+      end
     end
   end
 
@@ -342,6 +366,7 @@ function InitializeSettingsOptionsTab()
     )
 
     updateCheckboxes()
+    updateSliders()
     updateRadioButtons()
 
     if selectedPreset then
@@ -831,16 +856,21 @@ function InitializeSettingsOptionsTab()
     if _G.UpdateExpBarColor then
       UpdateExpBarColor()
     end
+    if _G.UpdateExpBarHeight then
+      UpdateExpBarHeight()
+    end
 
     SaveCharacterSettings(GLOBAL_SETTINGS)
     ReloadUI()
   end)
 
   _G.updateCheckboxes = updateCheckboxes
+  _G.updateSliders = updateSliders
   _G.updateRadioButtons = updateRadioButtons
   _G.applyPreset = applyPreset
   _G.createCheckboxes = createCheckboxes
   _G.checkboxes = checkboxes
+  _G.sliders = sliders
   _G.presetButtons = presetButtons
   _G.selectedPreset = selectedPreset
 
@@ -983,6 +1013,8 @@ function InitializeSettingsOptionsTab()
         ColorPickerFrame:Hide()
         ColorPickerFrame.hasOpacity = false
         ColorPickerFrame.opacityFunc = nil
+        ColorPickerFrame.func = onColorPicked
+        ColorPickerFrame.swatchFunc = onColorPicked
 
         -- Only create inputs once per ColorPickerFrame
         if not ColorPickerFrame.__UHC_InputsCreated then
