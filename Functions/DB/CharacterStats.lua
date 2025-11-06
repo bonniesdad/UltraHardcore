@@ -297,7 +297,7 @@ function CharacterStats:XPChecksum(playerXP, deficit, playerLevel)
   local digits = getDigitsFromString(playerXP - deficit)
   local checkTotal = 0 
   for i, digit in ipairs(digits) do
-    checkTotal = checkTotal + digit
+    checkTotal = checkTotal + (i * digit)
   end
 
   return string.format("%.2f", (checkTotal / playerLevel))
