@@ -92,10 +92,12 @@ function UHC_XPBar:Initialize()
             if level >= GetMaxPlayerLevel() then
                 GameTooltip:SetText("Experience: MAX LEVEL")
             else
-                local displayText = string.format("Experience: %.1f%% (%s / %s)",
+                local displayText = string.format("Experience: %.1f%% (%s / %s)   Rested: %.1f%% (%s)",
                     UHC_XPBar.xpPercent or 0,
-                    UHC_XPBar:FormatNumber(UHC_XPBar.currentXP),
-                    UHC_XPBar:FormatNumber(UHC_XPBar.maxXP)
+                    formatNumberWithCommas(UHC_XPBar.currentXP),
+                    formatNumberWithCommas(UHC_XPBar.maxXP),
+                    UHC_XPBar.restedxpPercent or 0,
+                    formatNumberWithCommas(UHC_XPBar.restedXP)
                 )
                 GameTooltip:SetText(displayText)
             end
@@ -126,6 +128,7 @@ function UHC_XPBar:UpdateXPBar()
 
     local currentXP = UnitXP("player")
     local maxXP = UnitXPMax("player")
+    local restedXP = GetXPExhaustion()
     local level = UnitLevel("player")
 
 
@@ -146,13 +149,6 @@ function UHC_XPBar:UpdateXPBar()
         xpBarDot:SetPoint("CENTER", xpBarFrame, "LEFT", 0, 0)
         return
     end
-
-    -- Calculate percentage
-    local xpPercent = 0
-    if maxXP > 0 then
-        xpPercent = (currentXP / maxXP) * 100
-    end
-
 
     -- Update fill bar width
     local fillWidth = 0
@@ -176,7 +172,9 @@ function UHC_XPBar:UpdateXPBar()
     -- Store XP info for tooltip
     UHC_XPBar.currentXP = currentXP
     UHC_XPBar.maxXP = maxXP
-    UHC_XPBar.xpPercent = xpPercent
+    UHC_XPBar.xpPercent = UHC_XPBar:GetPercentage(currentXP, maxXP)
+    UHC_XPBar.restedXP = restedXP
+    UHC_XPBar.restedxpPercent = UHC_XPBar:GetPercentage(restedXP,maxXP)
 end
 
 -- Set the XP bar color based on settings
@@ -223,23 +221,15 @@ function UHC_XPBar:UpdateBarHeight()
     end
 end
 
--- Format numbers with commas for better readability
-function UHC_XPBar:FormatNumber(num)
-    if not num then return "0" end
-
-    local formatted = tostring(num)
-    local k = 1
-
-    -- Add commas every 3 digits
-    while k < string.len(formatted) do
-        if (string.len(formatted) - k) % 3 == 0 and k > 1 then
-            formatted = string.sub(formatted, 1, k - 1) .. "," .. string.sub(formatted, k)
-            k = k + 1
-        end
-        k = k + 1
+-- Calculate Percentage
+function UHC_XPBar:GetPercentage(left,right)
+    if not left or not right then
+        return 0
     end
-
-    return formatted
+    if right > 0 then
+       return (left/right) * 100
+    end
+    return 0
 end
 
 -- Hide/Show the default WoW experience bar
