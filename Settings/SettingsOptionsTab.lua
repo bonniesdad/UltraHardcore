@@ -148,16 +148,6 @@ local settingsCheckboxOptions = { {
   tooltip = 'Get a compass to aid you in your journey',
 } }
 
--- Settings that need sliders instead of checkboxes
-local settingsSliderOptions = { {
-  name = 'XP Bar Height',
-  dbSettingsValueName = 'xpBarHeight',
-  tooltip = 'Adjust the height of the XP bar at the top of the screen (1-10 pixels)',
-  minValue = MINIMUM_XP_BAR_HEIGHT,
-  maxValue = MAXIMUM_XP_BAR_HEIGHT,
-  defaultValue = 3,
-} }
-
 local presets = { {
   -- Preset 1: Lite
   -- Lite Preset Settings
@@ -309,7 +299,6 @@ function InitializeSettingsOptionsTab()
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
-  local sliders = {}
   local presetButtons = {}
   local selectedPreset = nil
 
@@ -328,19 +317,6 @@ function InitializeSettingsOptionsTab()
     end
     if _G.updateSectionCounts then
       _G.updateSectionCounts()
-    end
-  end
-
-  local function updateSliders()
-    for _, sliderItem in ipairs(settingsSliderOptions) do
-      local slider = sliders[sliderItem.dbSettingsValueName]
-      if slider then
-        local value = tempSettings[sliderItem.dbSettingsValueName]
-        if value == nil then
-          value = sliderItem.defaultValue
-        end
-        slider:SetValue(value)
-      end
     end
   end
 
@@ -366,7 +342,6 @@ function InitializeSettingsOptionsTab()
     )
 
     updateCheckboxes()
-    updateSliders()
     updateRadioButtons()
 
     if selectedPreset then
@@ -856,21 +831,16 @@ function InitializeSettingsOptionsTab()
     if _G.UpdateExpBarColor then
       UpdateExpBarColor()
     end
-    if _G.UpdateExpBarHeight then
-      UpdateExpBarHeight()
-    end
 
     SaveCharacterSettings(GLOBAL_SETTINGS)
     ReloadUI()
   end)
 
   _G.updateCheckboxes = updateCheckboxes
-  _G.updateSliders = updateSliders
   _G.updateRadioButtons = updateRadioButtons
   _G.applyPreset = applyPreset
   _G.createCheckboxes = createCheckboxes
   _G.checkboxes = checkboxes
-  _G.sliders = sliders
   _G.presetButtons = presetButtons
   _G.selectedPreset = selectedPreset
 
@@ -1013,11 +983,186 @@ function InitializeSettingsOptionsTab()
         ColorPickerFrame:Hide()
         ColorPickerFrame.hasOpacity = false
         ColorPickerFrame.opacityFunc = nil
-        ColorPickerFrame.func = onColorPicked
-        ColorPickerFrame.swatchFunc = onColorPicked
+
+        -- Only create inputs once per ColorPickerFrame
+        if not ColorPickerFrame.__UHC_InputsCreated then
+          local inputs = CreateFrame('Frame', nil, ColorPickerFrame)
+          inputs:SetSize(240, 44)
+          -- Slightly increase frame height to make room
+          local fh = (ColorPickerFrame.GetHeight and ColorPickerFrame:GetHeight()) or 0
+          if fh and fh > 0 then
+            ColorPickerFrame:SetHeight(fh + 40)
+          end
+          -- Position inputs above the standard OK/Cancel buttons (closer to bottom)
+          inputs:SetPoint('BOTTOM', ColorPickerFrame, 'BOTTOM', 0, 20)
+
+          -- RGB inputs
+          inputs.rgb = {}
+          local labels = {'R: ', 'G: ', 'B: '}
+          for i = 1, 3 do
+            local lbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+            lbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', -15 + ((i-1) * 55), -4)
+            lbl:SetText(labels[i])
+
+            local box = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
+            box:SetSize(30, 20)
+            box:SetPoint('TOPLEFT', lbl, 'TOPRIGHT', 4, 4)
+            box:SetAutoFocus(false)
+            box:SetMaxLetters(3)
+            box:SetNumeric(true)
+
+            local function updateColorFromRGB()
+              local r = tonumber(inputs.rgb[1]:GetText() or '') or 0
+              local g = tonumber(inputs.rgb[2]:GetText() or '') or 0
+              local b = tonumber(inputs.rgb[3]:GetText() or '') or 0
+              r = math.max(0, math.min(255, r)) / 255
+              g = math.max(0, math.min(255, g)) / 255
+              b = math.max(0, math.min(255, b)) / 255
+              ColorPickerFrame:SetColorRGB(r, g, b)
+            end
+            box:SetScript('OnTextChanged', function(self, user)
+              if user then updateColorFromRGB() end
+            end)
+            box:SetScript('OnEnterPressed', function(self)
+              self:ClearFocus()
+            end)
+
+            inputs.rgb[i] = box
+          end
+
+          -- Hex input
+          local hexLbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+          hexLbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', 160, -4)
+          hexLbl:SetText('Hex: ')
+
+          local hexBox = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
+          hexBox:SetSize(56, 20)
+          hexBox:SetPoint('LEFT', hexLbl, 'RIGHT', 4, 0)
+          hexBox:SetAutoFocus(false)
+          hexBox:SetMaxLetters(6)
+
+          local function updateColorFromHex()
+            local hex = (hexBox:GetText() or ''):gsub('#', ''):upper()
+            if hex:match('^%x%x%x%x%x%x$') then
+              local rr = (tonumber(hex:sub(1,2), 16) or 0) / 255
+              local gg = (tonumber(hex:sub(3,4), 16) or 0) / 255
+              local bb = (tonumber(hex:sub(5,6), 16) or 0) / 255
+              rr = rr or 0; gg = gg or 0; bb = bb or 0
+              ColorPickerFrame:SetColorRGB(rr, gg, bb)
+            end
+          end
+          hexBox:SetScript('OnTextChanged', function(self, user)
+            if not user then return end
+            local hex = (self:GetText() or ''):gsub('#', ''):upper()
+            if #hex == 6 and hex:match('^%x%x%x%x%x%x$') then
+              updateColorFromHex()
+            end
+          end)
+          hexBox:SetScript('OnEnterPressed', function(self)
+            self:ClearFocus()
+          end)
+
+          inputs.hex = hexBox
+
+          -- Attempt to find the default top-right preview texture and replace it
+          local preview
+          for _, region in pairs({ColorPickerFrame:GetRegions()}) do
+            if region and region:IsObjectType('Texture') then
+              local w = (region.GetWidth and region.GetWidth(region)) or 0
+              local h = (region.GetHeight and region.GetHeight(region)) or 0
+              if w >= 18 and w <= 48 and math.abs(w - h) <= 6 then
+                -- hide original preview region and reparent preview to same anchor
+                local p, rel, rp, ox, oy = region:GetPoint()
+                region:Hide()
+                preview = ColorPickerFrame:CreateTexture(nil, 'ARTWORK')
+                preview:SetSize(w, h)
+                if p then
+                  preview:ClearAllPoints()
+                  preview:SetPoint(p, rel or ColorPickerFrame, rp or p, ox or 0, oy or 0)
+                else
+                  preview:SetPoint('RIGHT', inputs, 'RIGHT', -8, 0)
+                end
+                break
+              end
+            end
+          end
+          if not preview then
+            preview = inputs:CreateTexture(nil, 'ARTWORK')
+            preview:SetSize(28, 28)
+            preview:SetPoint('RIGHT', inputs, 'RIGHT', -8, 0)
+          end
+          if preview.SetColorTexture then
+            preview:SetColorTexture(1, 1, 1, 1)
+          else
+            preview:SetTexture('Interface\\Buttons\\WHITE8X8')
+            preview:SetVertexColor(1, 1, 1, 1)
+          end
+          inputs.preview = preview
+
+          ColorPickerFrame.__UHC_Inputs = inputs
+          ColorPickerFrame.__UHC_InputsCreated = true
+          -- try repositioning the default OK/Cancel buttons to sit below our inputs
+          -- find likely OK/Cancel buttons among children
+          local okBtn, cancelBtn
+          for _, child in pairs({ColorPickerFrame:GetChildren()}) do
+            if child and child:IsObjectType('Button') and child.GetText then
+              local t = child:GetText() or ''
+              if t == 'Okay' or t == 'OK' then okBtn = child end
+              if t == 'Cancel' then cancelBtn = child end
+            end
+          end
+          if okBtn and cancelBtn then
+            okBtn:ClearAllPoints()
+            cancelBtn:ClearAllPoints()
+            okBtn:SetPoint('TOP', inputs, 'BOTTOM', -70, 12)
+            cancelBtn:SetPoint('TOP', inputs, 'BOTTOM', 70, 12)
+          end
+        end
+
+        -- update function to sync picker -> inputs/preview
+        local function updateInputs()
+          local rr, gg, bb = ColorPickerFrame:GetColorRGB()
+          rr = rr or 0; gg = gg or 0; bb = bb or 0
+          local inputs = ColorPickerFrame.__UHC_Inputs
+          if inputs and inputs.rgb then
+            for i, box in ipairs(inputs.rgb) do
+              local val = math.floor((i == 1 and rr or i == 2 and gg or bb) * 255 + 0.5)
+              box:SetText(tostring(val))
+            end
+            inputs.hex:SetText(string.format('%02X%02X%02X', math.floor(rr * 255 + 0.5), math.floor(gg * 255 + 0.5), math.floor(bb * 255 + 0.5)))
+            local pv = inputs.preview
+            if pv then
+              if pv.SetColorTexture then
+                pv:SetColorTexture(rr, gg, bb, 1)
+              else
+                pv:SetVertexColor(rr, gg, bb, 1)
+              end
+            end
+          end
+        end
+
+        -- chain existing OnColorSelect
+        local oldOnColorSelect = ColorPickerFrame:GetScript('OnColorSelect')
+        ColorPickerFrame:SetScript('OnColorSelect', function(self)
+          if oldOnColorSelect then pcall(oldOnColorSelect, self) end
+          pcall(updateInputs)
+        end)
+
+        -- assign picker callbacks to keep original behavior and sync inputs
+        ColorPickerFrame.func = function()
+          onColorPicked()
+          pcall(updateInputs)
+        end
+        ColorPickerFrame.swatchFunc = function()
+          pcall(onColorPicked)
+          pcall(updateInputs)
+        end
         ColorPickerFrame.cancelFunc = onCancel
         ColorPickerFrame.previousValues = { r = r, g = g, b = b }
+
+        r = r or 0; g = g or 0; b = b or 0
         ColorPickerFrame:SetColorRGB(r, g, b)
+        pcall(updateInputs)
         ColorPickerFrame:Show()
       end
     end)
