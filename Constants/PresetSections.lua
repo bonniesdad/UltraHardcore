@@ -61,7 +61,7 @@ local PRESET_SECTIONS = { {
   settings = {
     'showExpBar',
     'showXpBarToolTip',
-    'showDefaultExpBar',
+    'hideDefaultExpBar',
     'xpBarHeight',
   },
 }, }
