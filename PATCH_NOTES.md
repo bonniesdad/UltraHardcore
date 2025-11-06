@@ -1,5 +1,73 @@
 # Patch Notes
 
+## Version 1.2.8 - 2025-11-04
+
+### New Features
+
+NA 
+
+### New Statistics
+
+NA
+
+### UI Improvements
+
+- Add fstack name to route planner compass
+
+### Bug Fixes
+
+- Fix action bar visibility after taxi
+- Fix tracking map overlay showing party members etc
+
+### Other
+
+- Remove Trade Restrictions
+- Remove Cancel Buffs
+
+## Version 1.2.7 - 2025-11-03
+
+### New Features
+- Reject buffs from others (experimental option)
+  - When enabled, the addon will reject buffs from other players.
+- Route planner now hides player position markers on the map.
+- Added buttons for invite to party and leave group
+  - These buttons will be displayed in the bottom right corner of the screen.
+  - Only show when the "Completely Remove Player Frame" and "Completely Remove Target Frame" are enabled.
+- Minimap Clock
+  - Added a clock to the top right corner of the screen.
+  - Added a scaling slider to update the size of the clock.
+- Added resource bar colour picker.
+  - Allows you to change the colour of the resource and pet resource bars.
+- Added statistics background opacity slider.
+  - Allows you to change the opacity of the on screen statistics background.
+
+### New Statistics
+
+- Mana potions used.
+- Max heal crit value.
+- Duels total.
+- Duels won.
+- Duels lost.
+- Duels win percentage.
+- Player jumps.
+
+### UI Improvements
+
+- Add collapseable sections to the settings menu.
+- Show selection count on each option section header.
+- Escape key now closes the settings menu.
+- Tooltips show grey if you will receive no xp for killing the unit.
+- Buffs on resource bar positioning improved for combo point characters.
+
+### Bug Fixes
+
+- Fix: Tunnel vision fails when reapplied within 0.6s.
+- Fix: Moonkin and dire bear form resource bar default colours.
+
+### Other
+
+- Removed halloween holiday updates from default settings
+
 ## Version 1.2.6 - 2025-10-22
 
 ### New Features
