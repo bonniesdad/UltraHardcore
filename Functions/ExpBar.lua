@@ -21,15 +21,15 @@ end
 -- Initialize the XP Bar
 function UHC_XPBar:Initialize()
     if xpBarFrame then
-        return 
+        return
     end
-    
+
     -- Initialize height setting if it doesn't exist (only a safety check)
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight == nil then
         GLOBAL_SETTINGS.xpBarHeight = 3 -- Default height
     end
-    
-    
+
+
     -- Create main frame that spans full screen width
     xpBarFrame = CreateFrame("Frame", "UHC_XPBarFrame", UIParent)
     xpBarFrame:SetHeight(GetBarHeight())
@@ -37,21 +37,21 @@ function UHC_XPBar:Initialize()
     xpBarFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", 0, 0)
     xpBarFrame:SetFrameStrata("HIGH")
     xpBarFrame:Show()
-    
+
     -- Create background
     xpBarBackground = xpBarFrame:CreateTexture(nil, "BACKGROUND")
     xpBarBackground:SetAllPoints(xpBarFrame)
     xpBarBackground:SetColorTexture(0, 0, 0, 0.8) -- Black background with transparency
-    
+
     -- Create border
     local border = xpBarFrame:CreateTexture(nil, "BORDER")
     border:SetAllPoints(xpBarFrame)
     border:SetColorTexture(0.3, 0.3, 0.3, 1) -- Gray border
-    
+
     -- Adjust background to be slightly smaller for border effect
     xpBarBackground:SetPoint("TOPLEFT", xpBarFrame, "TOPLEFT", 1, -1)
     xpBarBackground:SetPoint("BOTTOMRIGHT", xpBarFrame, "BOTTOMRIGHT", -1, 1)
-    
+
     -- Create XP fill bar
     xpBarFill = xpBarFrame:CreateTexture(nil, "ARTWORK")
     xpBarFill:SetPoint("TOPLEFT", xpBarBackground, "TOPLEFT", 0, 0)
@@ -59,7 +59,7 @@ function UHC_XPBar:Initialize()
     -- Use default blue color, will be overridden by settings
     xpBarFill:SetColorTexture(0.2, 0.6, 1.0, 0.8)
     xpBarFill:SetWidth(0) -- Start with no fill
-    
+
     -- Create XP position indicator dot
     xpBarDot = xpBarFrame:CreateTexture(nil, "OVERLAY")
     xpBarDot:SetSize(GetBarHeight()*2, GetBarHeight()*2) -- Slightly larger to see texture detail
@@ -71,17 +71,17 @@ function UHC_XPBar:Initialize()
     -- xpBarDot:SetVertexColor(0.0, 0.4, 1.0, 1.0) -- We'll set this in SetBarColor
     -- Start at the left edge
     xpBarDot:SetPoint("CENTER", xpBarFrame, "LEFT", 0, 0)
-    
+
     -- Register for experience events
     xpBarFrame:RegisterEvent("PLAYER_XP_UPDATE")
     xpBarFrame:RegisterEvent("PLAYER_LEVEL_UP")
     xpBarFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-    
+
     -- Set up event handler
     xpBarFrame:SetScript("OnEvent", function(self, event, ...)
         UHC_XPBar:UpdateXPBar()
     end)
-    
+
     -- Add tooltip functionality
     xpBarFrame:EnableMouse(true)
     xpBarFrame:SetScript("OnEnter", function(self)
@@ -92,32 +92,31 @@ function UHC_XPBar:Initialize()
             if level >= GetMaxPlayerLevel() then
                 GameTooltip:SetText("Experience: MAX LEVEL")
             else
-                local displayText = string.format("Experience: %.1f%% (%s / %s)", 
-                    UHC_XPBar.xpPercent or 0, 
-                    UHC_XPBar:FormatNumber(UHC_XPBar.currentXP), 
-                    UHC_XPBar:FormatNumber(UHC_XPBar.maxXP)
+                local displayText = string.format("Experience: %.1f%% (%s / %s)   Rested: %.1f%% (%s)",
+                    UHC_XPBar.xpPercent or 0,
+                    formatNumberWithCommas(UHC_XPBar.currentXP),
+                    formatNumberWithCommas(UHC_XPBar.maxXP),
+                    UHC_XPBar.restedxpPercent or 0,
+                    formatNumberWithCommas(UHC_XPBar.restedXP)
                 )
                 GameTooltip:SetText(displayText)
             end
             GameTooltip:Show()
         end
     end)
-    
+
     xpBarFrame:SetScript("OnLeave", function(self)
         GameTooltip:Hide()
     end)
-    
-    -- Hide the default XP bar when custom one is initialized
-    UHC_XPBar:HideDefaultXPBar()
-    
+
     -- Initial update
     UHC_XPBar:UpdateXPBar()
-    
+
     -- Delayed update to ensure frame is properly sized
     C_Timer.After(0.1, function()
         UHC_XPBar:UpdateXPBar()
     end)
-    
+
 end
 
 -- Update the XP bar display
@@ -126,21 +125,22 @@ function UHC_XPBar:UpdateXPBar()
         print("UHC XP Bar: UpdateXPBar called but frame doesn't exist")
         return
     end
-    
+
     local currentXP = UnitXP("player")
     local maxXP = UnitXPMax("player")
+    local restedXP = GetXPExhaustion()
     local level = UnitLevel("player")
-    
-    
+
+
     -- Get the actual frame width
     local frameWidth = xpBarFrame:GetWidth()
-    
-    
+
+
     -- If frame width is 0 or nil, use screen width as fallback
     if not frameWidth or frameWidth <= 0 then
         frameWidth = UIParent:GetWidth() or 1024
     end
-    
+
     -- Handle max level characters
     if level >= GetMaxPlayerLevel() then
         -- Max level, hide the bar
@@ -149,22 +149,15 @@ function UHC_XPBar:UpdateXPBar()
         xpBarDot:SetPoint("CENTER", xpBarFrame, "LEFT", 0, 0)
         return
     end
-    
-    -- Calculate percentage
-    local xpPercent = 0
-    if maxXP > 0 then
-        xpPercent = (currentXP / maxXP) * 100
-    end
-    
-    
+
     -- Update fill bar width
     local fillWidth = 0
     if maxXP > 0 then
         fillWidth = ((currentXP / maxXP) * (frameWidth - 2))
     end
-    
+
     xpBarFill:SetWidth(math.max(0, fillWidth))
-    
+
     -- Update dot position to show current XP location
     local dotPosition = 1 -- Start at left edge (1 pixel from left to account for border)
     if maxXP > 0 then
@@ -172,21 +165,23 @@ function UHC_XPBar:UpdateXPBar()
     end
     xpBarDot:ClearAllPoints()
     xpBarDot:SetPoint("CENTER", xpBarFrame, "LEFT", dotPosition, 0)
-    
+
     -- Set XP bar color (configurable through settings)
     UHC_XPBar:SetBarColor()
-    
+
     -- Store XP info for tooltip
     UHC_XPBar.currentXP = currentXP
     UHC_XPBar.maxXP = maxXP
-    UHC_XPBar.xpPercent = xpPercent
+    UHC_XPBar.xpPercent = UHC_XPBar:GetPercentage(currentXP, maxXP)
+    UHC_XPBar.restedXP = restedXP
+    UHC_XPBar.restedxpPercent = UHC_XPBar:GetPercentage(restedXP,maxXP)
 end
 
 -- Set the XP bar color based on settings
 function UHC_XPBar:SetBarColor()
     -- Default blue color - matches classic WoW experience bar
     local r, g, b, a = 0.0, 0.4, 1.0, 0.9
-    
+
     -- Check if there are custom color settings in resourceBarColors
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS.resourceBarColors and GLOBAL_SETTINGS.resourceBarColors.EXPBAR then
         local color = GLOBAL_SETTINGS.resourceBarColors.EXPBAR
@@ -194,17 +189,17 @@ function UHC_XPBar:SetBarColor()
         g = color[2] or g
         b = color[3] or b
     end
-    
+
     xpBarFill:SetColorTexture(r, g, b, a)
-    
+
     -- For a custom PNG texture, we have a few options:
     if xpBarDot then
         -- Option 1: Don't color the dot, let the texture show as-is
         -- xpBarDot:SetVertexColor(1, 1, 1, 1.0) -- White = no color change
-        
+
         -- Option 2: Tint the texture (multiply colors - works if your PNG is white/light)
         xpBarDot:SetVertexColor(r, g, b, 1.0)
-        
+
         -- Option 3: If you want the texture to show without coloring, uncomment this:
         -- xpBarDot:SetVertexColor(1, 1, 1, 1.0)
     end
@@ -215,10 +210,10 @@ function UHC_XPBar:UpdateBarHeight()
     if not xpBarFrame then
         return
     end
-    
+
     local newHeight = GetBarHeight()
     xpBarFrame:SetHeight(newHeight)
-    
+
     -- Also need to update dot size proportionally if desired
     local dotSize = math.max(4, newHeight + 1) -- Ensure dot is visible but proportional
     if xpBarDot then
@@ -226,23 +221,15 @@ function UHC_XPBar:UpdateBarHeight()
     end
 end
 
--- Format numbers with commas for better readability
-function UHC_XPBar:FormatNumber(num)
-    if not num then return "0" end
-    
-    local formatted = tostring(num)
-    local k = 1
-    
-    -- Add commas every 3 digits
-    while k < string.len(formatted) do
-        if (string.len(formatted) - k) % 3 == 0 and k > 1 then
-            formatted = string.sub(formatted, 1, k - 1) .. "," .. string.sub(formatted, k)
-            k = k + 1
-        end
-        k = k + 1
+-- Calculate Percentage
+function UHC_XPBar:GetPercentage(left,right)
+    if not left or not right then
+        return 0
     end
-    
-    return formatted
+    if right > 0 then
+       return (left/right) * 100
+    end
+    return 0
 end
 
 -- Hide/Show the default WoW experience bar
@@ -266,7 +253,6 @@ end
 function UHC_XPBar:Show()
     if xpBarFrame then
         xpBarFrame:Show()
-        UHC_XPBar:HideDefaultXPBar()
     end
 end
 
@@ -274,7 +260,6 @@ end
 function UHC_XPBar:Hide()
     if xpBarFrame then
         xpBarFrame:Hide()
-        UHC_XPBar:ShowDefaultXPBar()
     end
 end
 
@@ -283,7 +268,7 @@ function UHC_XPBar:Toggle()
     if not xpBarFrame then
         UHC_XPBar:Initialize()
     end
-    
+
     if xpBarFrame:IsShown() then
         UHC_XPBar:Hide()
     else
@@ -392,7 +377,7 @@ SlashCmdList["UHCXPBAR"] = function(msg)
     else
         print("UHC XP Bar Commands:")
         print("/uhcxp show - Show XP bar")
-        print("/uhcxp hide - Hide XP bar") 
+        print("/uhcxp hide - Hide XP bar")
         print("/uhcxp toggle - Toggle XP bar")
         print("/uhcxp height <1-10> - Set bar height")
         print("/uhcxp showdefault - Show default XP bar")
