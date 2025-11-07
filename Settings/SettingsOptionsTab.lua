@@ -70,10 +70,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
-  name = 'Hide Player Cast Bar',
-  dbSettingsValueName = 'hidePlayerCastBar',
-  tooltip = 'Hide the player casting bar to remove spell casting information',
-}, {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
@@ -180,7 +176,6 @@ local presets = { {
   tunnelVisionMaxStrata = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
-  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -220,7 +215,6 @@ local presets = { {
   routePlanner = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
-  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -259,7 +253,6 @@ local presets = { {
   routePlanner = true,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
-  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -358,11 +351,6 @@ function InitializeSettingsOptionsTab()
       tempSettings[key] = value
     end
 
-    -- Save selected difficulty
-    local difficultyNames = { "lite", "recommended", "extreme" }
-    tempSettings.selectedDifficulty = difficultyNames[presetIndex]
-    GLOBAL_SETTINGS.selectedDifficulty = difficultyNames[presetIndex]
-
     if tempSettings.hidePlayerFrame then
       SetCVar('statusText', '0')
     end
@@ -390,9 +378,9 @@ function InitializeSettingsOptionsTab()
 
   local presetIcons =
     {
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100.png',
     }
 
   local buttonSize = 100
@@ -437,36 +425,6 @@ function InitializeSettingsOptionsTab()
 
     presetButtons[i] = button
   end
-
-  -- Initialize preset selection display based on current selectedDifficulty
-  local function updatePresetSelectionDisplay()
-    local currentDifficulty = GLOBAL_SETTINGS.selectedDifficulty
-    
-    -- Reset all buttons to default appearance
-    for i = 1, 3 do
-      presetButtons[i]:SetBackdropBorderColor(0.5, 0.5, 0.5)
-    end
-    
-    -- Highlight the currently selected preset
-    if currentDifficulty then
-      local presetIndex = nil
-      if currentDifficulty == 'lite' then
-        presetIndex = 1
-      elseif currentDifficulty == 'recommended' then
-        presetIndex = 2
-      elseif currentDifficulty == 'extreme' then
-        presetIndex = 3
-      end
-      
-      if presetIndex and presetButtons[presetIndex] then
-        presetButtons[presetIndex]:SetBackdropBorderColor(1, 1, 0) -- Yellow border
-        selectedPreset = presetButtons[presetIndex]
-      end
-    end
-  end
-
-  -- Call the function to initialize display
-  updatePresetSelectionDisplay()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
@@ -909,7 +867,6 @@ function InitializeSettingsOptionsTab()
   _G.updateCheckboxes = updateCheckboxes
   _G.updateSliders = updateSliders
   _G.updateRadioButtons = updateRadioButtons
-  _G.updatePresetSelectionDisplay = updatePresetSelectionDisplay
   _G.applyPreset = applyPreset
   _G.createCheckboxes = createCheckboxes
   _G.checkboxes = checkboxes
@@ -979,7 +936,7 @@ function InitializeSettingsOptionsTab()
     row:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 20, -(COLOR_ROWS_TOP_OFFSET + ((rowIndex - 1) * ROW_HEIGHT)))
 
     local LABEL_WIDTH = 140
-    local SWATCH_WIDTH = 24
+    local SWATCH_WIDTH = 54
     local GAP = 12
 
     local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -1036,6 +993,19 @@ function InitializeSettingsOptionsTab()
     resetButton:SetSize(56, 20)
     resetButton:SetPoint('LEFT', pickButton, 'RIGHT', 6, 0)
     resetButton:SetText('Reset')
+
+    local classButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    classButton:SetSize(96, 20)
+    classButton:SetPoint('LEFT', resetButton, 'RIGHT', 6, 0)
+    classButton:SetText('Class Colour')
+    classButton:SetScript('OnClick', function()
+      local _, englishClass = UnitClass('player')
+      local classColor = RAID_CLASS_COLORS[englishClass]
+      if classColor then
+        tempSettings.resourceBarColors[powerKey] = { classColor.r, classColor.g, classColor.b }
+        setSwatchColor(classColor.r, classColor.g, classColor.b)
+      end
+    end)
 
     pickButton:SetScript('OnClick', function()
       local r, g, b = getCurrentColor()
