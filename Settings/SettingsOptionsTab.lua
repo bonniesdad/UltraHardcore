@@ -70,6 +70,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
+  name = 'Hide Player Cast Bar',
+  dbSettingsValueName = 'hidePlayerCastBar',
+  tooltip = 'Hide the player casting bar to remove spell casting information',
+}, {
   name = 'First Person Camera',
   dbSettingsValueName = 'setFirstPersonCamera',
   tooltip = 'Play in first person mode, allows to look around for briew records of time',
@@ -176,6 +180,7 @@ local presets = { {
   tunnelVisionMaxStrata = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
+  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -215,6 +220,7 @@ local presets = { {
   routePlanner = false,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
+  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -253,6 +259,7 @@ local presets = { {
   routePlanner = true,
   -- Experimental Preset Settings
   hideBreathIndicator = false,
+  hidePlayerCastBar = false,
   showCritScreenMoveEffect = false,
   showFullHealthIndicator = false,
   showIncomingDamageEffect = false,
@@ -351,6 +358,11 @@ function InitializeSettingsOptionsTab()
       tempSettings[key] = value
     end
 
+    -- Save selected difficulty
+    local difficultyNames = { "lite", "recommended", "extreme" }
+    tempSettings.selectedDifficulty = difficultyNames[presetIndex]
+    GLOBAL_SETTINGS.selectedDifficulty = difficultyNames[presetIndex]
+
     if tempSettings.hidePlayerFrame then
       SetCVar('statusText', '0')
     end
@@ -425,6 +437,36 @@ function InitializeSettingsOptionsTab()
 
     presetButtons[i] = button
   end
+
+  -- Initialize preset selection display based on current selectedDifficulty
+  local function updatePresetSelectionDisplay()
+    local currentDifficulty = GLOBAL_SETTINGS.selectedDifficulty
+    
+    -- Reset all buttons to default appearance
+    for i = 1, 3 do
+      presetButtons[i]:SetBackdropBorderColor(0.5, 0.5, 0.5)
+    end
+    
+    -- Highlight the currently selected preset
+    if currentDifficulty then
+      local presetIndex = nil
+      if currentDifficulty == 'lite' then
+        presetIndex = 1
+      elseif currentDifficulty == 'recommended' then
+        presetIndex = 2
+      elseif currentDifficulty == 'extreme' then
+        presetIndex = 3
+      end
+      
+      if presetIndex and presetButtons[presetIndex] then
+        presetButtons[presetIndex]:SetBackdropBorderColor(1, 1, 0) -- Yellow border
+        selectedPreset = presetButtons[presetIndex]
+      end
+    end
+  end
+
+  -- Call the function to initialize display
+  updatePresetSelectionDisplay()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
@@ -867,6 +909,7 @@ function InitializeSettingsOptionsTab()
   _G.updateCheckboxes = updateCheckboxes
   _G.updateSliders = updateSliders
   _G.updateRadioButtons = updateRadioButtons
+  _G.updatePresetSelectionDisplay = updatePresetSelectionDisplay
   _G.applyPreset = applyPreset
   _G.createCheckboxes = createCheckboxes
   _G.checkboxes = checkboxes
