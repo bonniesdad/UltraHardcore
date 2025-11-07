@@ -42,7 +42,7 @@ end
 local settingsFrame =
   CreateFrame('Frame', 'UltraHardcoreSettingsFrame', UIParent, 'BackdropTemplate')
 tinsert(UISpecialFrames, 'UltraHardcoreSettingsFrame')
-settingsFrame:SetSize(560, 640)
+settingsFrame:SetSize(560, 700)
 settingsFrame:SetMovable(true)
 settingsFrame:EnableMouse(true)
 settingsFrame:RegisterForDrag('LeftButton')
@@ -111,6 +111,39 @@ closeButton:SetScript('OnClick', function()
   settingsFrame:Hide()
 end)
 
+-- Padded, clipped viewport for tab contents
+local viewport = CreateFrame('Frame', 'UltraHardcoreSettingsViewport', settingsFrame)
+viewport:SetPoint('TOPLEFT',  settingsFrame, 'TOPLEFT', 8, -50)   -- under title/tabs
+viewport:SetPoint('BOTTOMRIGHT', settingsFrame, 'BOTTOMRIGHT', -8, 8)
+viewport:SetClipsChildren(true)
+
+-- Also clip the outer frame just in case
+settingsFrame:SetClipsChildren(true)
+
+-- Compute and apply a frame width based on how many tabs exist
+local function ApplyWidthFromTabs()
+  if not TabManager or not TabManager.getTabButton then return end
+
+  -- Count tabs via TabManager's accessor
+  local count = 0
+  while true do
+    local b = TabManager.getTabButton(count + 1)
+    if not b then break end
+    count = count + 1
+  end
+
+  -- Layout assumptions from TabManager.lua:
+  -- - Each tab button is 110 px wide
+  local TAB_WIDTH = 110
+  local SIDE_PADDING = 14
+  local MIN_FRAME_WIDTH = 560 
+  local targetWidth = math.max(MIN_FRAME_WIDTH, count * TAB_WIDTH + SIDE_PADDING)
+
+  -- Apply to the outer frame and title bar
+  settingsFrame:SetWidth(targetWidth)
+  titleBar:SetWidth(targetWidth)
+end
+
 function ToggleSettings()
   if settingsFrame:IsShown() then
     if TabManager then
@@ -131,6 +164,8 @@ function ToggleSettings()
       TabManager.hideAllTabs()
       TabManager.setDefaultTab()
     end
+    ApplyWidthFromTabs()     -- << adjust frame width from tab count
+    settingsFrame:Show()
 
     settingsFrame:Show()
     if _G.updateCheckboxes then
