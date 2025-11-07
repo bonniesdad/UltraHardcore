@@ -1,5 +1,8 @@
 -- 🟢 Function to show greyscale overlay based on breath percentage
 function ShowBreathOverlay(breathPercent)
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
+    return
+  end
   -- Initialize breath overlay frame if it doesn't exist
   if not UltraHardcore.breathOverlayFrame then
     local breathOverlayFrame = CreateFrame('Frame', nil, UIParent)
@@ -53,6 +56,9 @@ local UPDATE_INTERVAL = 0.1 -- Update every 100ms (10 times per second instead o
 
 -- 🟢 Function to handle breath timer updates
 function OnBreathUpdate(self, elapsed)
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
+    return
+  end
   updateThrottle = updateThrottle + elapsed
   
   -- Only update every UPDATE_INTERVAL seconds
@@ -86,6 +92,15 @@ end
 
 -- 🟢 Function to start breath monitoring
 function OnBreathStart()
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
+    if UltraHardcore and UltraHardcore.breathOverlayFrame then
+      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    end
+    if RemoveBreathOverlay then
+      RemoveBreathOverlay()
+    end
+    return
+  end
   -- Initialize the overlay frame first
   ShowBreathOverlay(100) -- Start with full breath
   
@@ -106,6 +121,15 @@ end
 
 -- 🟢 Function to stop breath monitoring
 function OnBreathStop()
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
+    if UltraHardcore and UltraHardcore.breathOverlayFrame then
+      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    end
+    if RemoveBreathOverlay then
+      RemoveBreathOverlay()
+    end
+    return
+  end
   -- If still in water, keep the overlay active until we actually leave the water
   if IsSwimming and IsSwimming() then
     ShowBreathOverlay(0)
