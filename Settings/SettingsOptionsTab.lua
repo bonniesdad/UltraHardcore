@@ -390,9 +390,9 @@ function InitializeSettingsOptionsTab()
 
   local presetIcons =
     {
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull1_100.png',
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull2_100.png',
-      'Interface\\AddOns\\UltraHardcore\\textures\\skull3_100.png',
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
     }
 
   local buttonSize = 100
