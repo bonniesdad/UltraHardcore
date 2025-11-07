@@ -47,6 +47,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     -- Only update group indicators when not in combat lockdown
     if not InCombatLockdown() then
@@ -67,6 +68,23 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       if InitializeGroupButtons then
         InitializeGroupButtons()
       end
+    end
+    -- Initialize XP Bars at the top of the screen if enabled
+    -- Both bars can be active independently
+    if GLOBAL_SETTINGS.showExpBar then
+      -- Show custom UHC XP bar
+      InitializeExpBar()
+    else
+      -- Hide custom UHC XP bar if not enabled
+      HideExpBar()
+    end
+
+    if GLOBAL_SETTINGS.hideDefaultExpBar then
+      -- Hide default WoW XP bar when setting is enabled
+      HideDefaultExpBar()
+    else
+      -- Show default WoW XP bar by default
+      ShowDefaultExpBar()
     end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
@@ -115,10 +133,16 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
     local timerName = ...
-    if timerName == 'BREATH' then
+    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
+    -- Hide player cast bar if setting is enabled
+    local unit = ...
+    if unit == 'player' then
+      HidePlayerCastBar()
+    end
+    
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
     if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then

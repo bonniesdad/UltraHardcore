@@ -31,6 +31,7 @@ local PRESET_SECTIONS = { {
   title = 'Experimental:',
   settings = {
     'hideBreathIndicator',
+    'hidePlayerCastBar',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
     'showIncomingDamageEffect',
@@ -40,7 +41,7 @@ local PRESET_SECTIONS = { {
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
   },
-}, {
+},  {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
@@ -56,7 +57,15 @@ local PRESET_SECTIONS = { {
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
   },
-} }
+}, {
+  title = 'XP Bar:',
+  settings = {
+    'showExpBar',
+    'showXpBarToolTip',
+    'hideDefaultExpBar',
+    'xpBarHeight',
+  },
+}, }
 
 -- Function to get preset sections with custom title formatting
 -- @param titleFormat: "simple" for "Lite:", "extended" for "Lite Preset Settings:", or custom function

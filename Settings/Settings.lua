@@ -37,6 +37,20 @@ local function initializeTempSettings()
       tempSettings[settingName] = shouldRadioBeChecked(settingName, GLOBAL_SETTINGS)
     end
   end
+
+  -- Initialize checkbox defaults for settings that don't exist
+  if tempSettings.showExpBar == nil then
+    tempSettings.showExpBar = false -- Default to off
+  end
+  if tempSettings.showXpBarToolTip == nil then
+    tempSettings.showXpBarToolTip = false -- Default to off (hide tooltip)
+  end
+  if tempSettings.hideDefaultExpBar == nil then
+    tempSettings.hideDefaultExpBar = false -- Default to off (show default XP bar)
+  end
+  if tempSettings.xpBarHeight == nil then
+    tempSettings.xpBarHeight = 3 -- Default height
+  end
 end
 
 local settingsFrame =
@@ -170,6 +184,9 @@ function ToggleSettings()
     settingsFrame:Show()
     if _G.updateCheckboxes then
       _G.updateCheckboxes()
+    end
+    if _G.updateSliders then
+      _G.updateSliders()
     end
     if _G.updateRadioButtons then
       _G.updateRadioButtons()

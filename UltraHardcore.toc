@@ -26,6 +26,7 @@ Functions/WelcomeMessage.lua
 Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
+Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
 Functions/HidePartyInformation.lua
@@ -42,6 +43,7 @@ Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
+Functions/ExpBar.lua
 Functions/Challenges.lua
 Functions/ChallengesDefinitions.lua
 
