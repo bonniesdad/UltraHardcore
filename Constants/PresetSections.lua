@@ -31,6 +31,7 @@ local PRESET_SECTIONS = { {
   title = 'Experimental:',
   settings = {
     'hideBreathIndicator',
+    'hidePlayerCastBar',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
     'showIncomingDamageEffect',
