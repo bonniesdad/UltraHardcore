@@ -64,14 +64,64 @@ local function createTabButton(text, index, parentFrame)
   return button
 end
 
--- Create tab content frames
+  -- Flush-left layout that won't collapse when called too early
+  function TabManager.resizeForTabs()
+    if not TabManager.settingsFrame then return end
+    local frame = TabManager.settingsFrame
+  
+    -- Count tabs SAFELY. If tabs aren't created yet, bail.
+    local numTabs = 0
+    for i = 1, 100 do
+      local b = tabButtons[i]
+      if not b then break end
+      numTabs = numTabs + 1
+    end
+    if numTabs == 0 then
+      return
+    end
+  
+    local TAB_WIDTH   = 110
+    local TAB_HEIGHT  = 35
+    local TAB_SPACING = 0        
+    local SIDE_PAD    = 8         
+    local TOP_OFFSET  = -45
+  
+    local MIN_FRAME_WIDTH = 560
+  
+    local neededTabsWidth = numTabs * TAB_WIDTH + (numTabs - 1) * TAB_SPACING
+    local targetWidth = math.max(MIN_FRAME_WIDTH, neededTabsWidth + SIDE_PAD * 2)
+  
+    frame:SetWidth(targetWidth)
+  
+    for i, button in ipairs(tabButtons) do
+      button:ClearAllPoints()
+      if i == 1 then
+        button:SetPoint('TOPLEFT', frame, 'TOPLEFT', SIDE_PAD, TOP_OFFSET)
+      else
+        button:SetPoint('LEFT', tabButtons[i - 1], 'RIGHT', TAB_SPACING, 0)
+        button:SetPoint('TOP', tabButtons[1], 'TOP')
+      end
+      button:SetSize(TAB_WIDTH, TAB_HEIGHT)
+    end
+  
+    -- 4) Ensure one tab is actually visible after layout
+    if not tabContents[activeTab] or not tabContents[activeTab]:IsShown() then
+      if TabManager.switchToTab and tabContents[1] then
+        TabManager.switchToTab(1)
+      end
+    end 
+  end
+
 local function createTabContent(index, parentFrame)
-  local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(520, 540)
-  content:SetPoint('TOP', parentFrame, 'TOP', 0, -50) -- Positioned below tabs
+  local host = _G.UltraHardcoreSettingsViewport or parentFrame
+  local content = CreateFrame('Frame', nil, host)
+  content:ClearAllPoints()
+  content:SetPoint('TOPLEFT',  host, 'TOPLEFT', 0, 0)
+  content:SetPoint('BOTTOMRIGHT', host, 'BOTTOMRIGHT', 0, 44)
   content:Hide()
   return content
 end
+
 
 -- Initialize tabs for the settings frame
 function TabManager.initializeTabs(settingsFrame)
@@ -100,6 +150,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[7] = createTabContent(7, settingsFrame) -- GuildAH tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
+  TabManager.resizeForTabs()
 end
 
 -- Switch to a specific tab
@@ -180,6 +231,10 @@ function TabManager.switchToTab(index)
    -- Initialize GuildAH tab if it's being shown
    if index == 7 and InitializeGuildAHTab then
     InitializeGuildAHTab()
+    
+-- Initialize Challenges tab if its being shown
+  if index == 6 and InitializeChallengesTab then
+    InitializeChallengesTab()
   end
 
   -- Initialize Statistics tab if it's being shown
@@ -207,6 +262,7 @@ function TabManager.setDefaultTab()
     end
   end
   TabManager.switchToTab(defaultIndex)
+  TabManager.resizeForTabs()
 end
 
 -- Get the currently active tab
