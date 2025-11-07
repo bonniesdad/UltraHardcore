@@ -132,7 +132,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
     local timerName = ...
-    if timerName == 'BREATH' then
+    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
