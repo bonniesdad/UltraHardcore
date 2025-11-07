@@ -43,6 +43,7 @@ function LoadDBData()
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
+    hideCustomResourceBar = false,
     showIncomingDamageEffect = false,
     showHealingIndicator = false,
     setFirstPersonCamera = false,
