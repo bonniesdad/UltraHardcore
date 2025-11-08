@@ -340,7 +340,7 @@ local function HandleBuffBarSettingChange()
 end
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame then
+  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
     resourceBar:Hide()
     comboFrame:Hide()
     petResourceBar:Hide()

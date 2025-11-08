@@ -34,6 +34,7 @@ local PRESET_SECTIONS = { {
     'hidePlayerCastBar',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
+    'hideCustomResourceBar',
     'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',
