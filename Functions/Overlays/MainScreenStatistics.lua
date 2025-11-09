@@ -585,15 +585,14 @@ local function UpdateStatistics()
 end
 
 -- Register events to update statistics when they change
-statsFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
-statsFrame:RegisterEvent('ADDON_LOADED') -- Check setting when addon loads
+statsFrame:RegisterEvent('PLAYER_LOGIN') -- Fires when all savedvariables are loaded
 statsFrame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' then
-    UpdateStatistics()
+  if event == 'PLAYER_LOGIN' then
     CheckAddonEnabled()
+    UpdateStatistics()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     -- Update lowest health when health changes
     UpdateStatistics()
@@ -603,9 +602,6 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Update XP when leveling up
     UpdateStatistics()
-  elseif event == 'ADDON_LOADED' then
-    -- Check setting when addon loads
-    CheckAddonEnabled()
   end
 end)
 
@@ -620,14 +616,8 @@ local settingsCheckTimer = C_Timer.NewTicker(1, function()
   end
 end)
 
--- Initial update
-UpdateStatistics()
-
 -- Initial check with delay to ensure GLOBAL_SETTINGS is loaded
 C_Timer.After(1, function()
   CheckAddonEnabled()
   ApplyStatsBackgroundOpacity()
 end)
-
--- Also check immediately
-CheckAddonEnabled()
