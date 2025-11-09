@@ -588,7 +588,7 @@ end
 statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
-statsFrame:RegisterEvent('PLAYER_LOGIN') -- Fires when all savedvariables are loaded
+statsFrame:RegisterEvent('PLAYER_LOGIN') -- Player entity and world are ready. Addon database and C_ APIs are safe to access.
 statsFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_LOGIN' then
     CheckAddonEnabled()
