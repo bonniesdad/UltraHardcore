@@ -92,13 +92,18 @@ function UHC_XPBar:Initialize()
             if level >= GetMaxPlayerLevel() then
                 GameTooltip:SetText("Experience: MAX LEVEL")
             else
-                local displayText = string.format("Experience: %.1f%% (%s / %s)   Rested: %.1f%% (%s)",
+                local displayText = string.format("Experience: %.1f%% (%s / %s)",
                     UHC_XPBar.xpPercent or 0,
                     formatNumberWithCommas(UHC_XPBar.currentXP),
-                    formatNumberWithCommas(UHC_XPBar.maxXP),
-                    UHC_XPBar.restedxpPercent or 0,
-                    formatNumberWithCommas(UHC_XPBar.restedXP)
+                    formatNumberWithCommas(UHC_XPBar.maxXP)
                 )
+                -- Only append rested XP if the player actually has rested XP
+                if UHC_XPBar.restedXP and UHC_XPBar.restedXP > 0 then
+                    displayText = displayText .. string.format(" | Rested: %.1f%% (%s)",
+                        UHC_XPBar.restedxpPercent or 0,
+                        formatNumberWithCommas(UHC_XPBar.restedXP)
+                    )
+                end
                 GameTooltip:SetText(displayText)
             end
             GameTooltip:Show()
