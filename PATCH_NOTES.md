@@ -13,7 +13,7 @@
 
 ### UI Improvements
 
-N/A
+- Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"
 
 ### Bug Fixes
 
