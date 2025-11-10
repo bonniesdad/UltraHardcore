@@ -1,6 +1,6 @@
 ## Interface: 11508
 ## Title: UltraHardcore
-## Version: 2.0.0
+## Version: 1.2.8
 ## Author: BonniesDad
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -25,6 +25,7 @@ Functions/WelcomeMessage.lua
 Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
+Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
 Functions/HidePartyInformation.lua
@@ -33,7 +34,6 @@ Functions/SetNameplateDisabled.lua
 Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/HealingIndicator.lua
-Functions/PikabooResting.lua
 Functions/PetsDiePermenantly.lua
 Functions/SetBreathBarDisplay.lua
 Functions/HidePlayerMapIndicators.lua
@@ -41,9 +41,9 @@ Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
-Functions/TradeRestriction.lua
 Functions/GroupButtons.lua
 Functions/ProfessionPanel.lua
+Functions/ExpBar.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -80,7 +80,6 @@ Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
 Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
-Functions/RejectBuffsFromOthers.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
@@ -91,7 +90,6 @@ Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
-Functions/Overlays/ShowPikabooRestingOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverlay.lua
 Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
 Functions/Overlays/ShowShadowDamageOverlay.lua
