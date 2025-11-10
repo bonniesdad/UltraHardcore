@@ -12,7 +12,7 @@ PATCH_NOTES = {
       '  • Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.',
       '',
       'UI IMPROVEMENTS:',
-      '• ',
+      '• Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"',
       '',
       'BUG FIXES:',
       '• Fix: Route planner added to xp gained tracker',

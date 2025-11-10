@@ -609,19 +609,31 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   end
 end)
 
--- Create a timer to periodically check for settings changes
-local settingsCheckTimer = C_Timer.NewTicker(1, function()
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showOnScreenStatistics then
-    statsFrame:Show()
-    UpdateRowVisibility()
-    ApplyStatsBackgroundOpacity()
-  else
-    statsFrame:Hide()
-  end
-end)
-
 -- Initial update
 UpdateStatistics()
+
+-- Slash command to reset statistics frame to its saved position
+local function ResetStatsFrameToSavedPosition()
+  if not UltraHardcoreDB then
+    LoadDBData()
+  end
+  statsFrame:ClearAllPoints()
+  local pos = UltraHardcoreDB and UltraHardcoreDB.statsFramePosition or nil
+  if pos then
+    local point = pos.point or 'TOPLEFT'
+    local relPoint = pos.relPoint or pos.relativePoint or 'TOPLEFT'
+    local x = pos.x or pos.xOfs or 130
+    local y = pos.y or pos.yOfs or -10
+    statsFrame:SetPoint(point, UIParent, relPoint, x, y)
+  else
+    statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
+  end
+  print('UltraHardcore: Statistics panel moved to saved position')
+end
+
+SLASH_UHCSTATSRESET1 = '/uhcstatsreset'
+SLASH_UHCSTATSRESET2 = '/uhcsr'
+SlashCmdList['UHCSTATSRESET'] = ResetStatsFrameToSavedPosition
 
 -- Initial check with delay to ensure GLOBAL_SETTINGS is loaded
 C_Timer.After(1, function()
