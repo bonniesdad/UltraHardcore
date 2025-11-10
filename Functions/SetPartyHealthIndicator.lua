@@ -24,6 +24,165 @@ PET_HEALTH_INDICATOR_FRAMES = {}
 -- Cache of all pet target highlight frames
 PET_TARGET_HIGHLIGHT_FRAMES = {}
 
+-- Cache of all raid health indicators
+RAID_HEALTH_INDICATOR_FRAMES = {}
+
+-- Helper to get a CompactRaidFrame's unit, being tolerant of different fields
+local function GetRaidFrameUnit(frame, fallbackIndex)
+  if not frame then return fallbackIndex and ('raid' .. fallbackIndex) or nil end
+  if frame.displayedUnit and type(frame.displayedUnit) == 'string' then
+    return frame.displayedUnit
+  end
+  if frame.unit and type(frame.unit) == 'string' then
+    return frame.unit
+  end
+  if fallbackIndex then
+    return 'raid' .. fallbackIndex
+  end
+  return nil
+end
+
+-- Create or update an indicator for a specific CompactRaidFrame index
+function SetRaidHealthIndicator(enabled, raidIndex)
+  local raidFrame = _G['CompactRaidFrame' .. raidIndex]
+  local nameFrame = _G['CompactRaidFrame' .. raidIndex .. 'Name']
+  if not raidFrame or not nameFrame then
+    return
+  end
+
+  if not enabled then
+    local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
+    if indicator then
+      indicator:Hide()
+      RAID_HEALTH_INDICATOR_FRAMES[raidIndex] = nil
+    end
+    return
+  end
+
+  local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
+  if not indicator then
+    indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
+    indicator:SetSize(30, 30)
+    if raidFrame.uhcCircle then
+      indicator:SetPoint('CENTER', raidFrame.uhcCircle, 'CENTER', 0, 0)
+    else
+      indicator:SetPoint('CENTER', raidFrame, 'TOP', 0, -20)
+    end
+    if indicator.SetDrawLayer then
+      indicator:SetDrawLayer('ARTWORK')
+    end
+    indicator:SetAlpha(0.0)
+    indicator:Hide()
+    RAID_HEALTH_INDICATOR_FRAMES[raidIndex] = indicator
+  end
+
+  UpdateRaidHealthIndicator(raidIndex)
+end
+
+function UpdateRaidHealthIndicator(raidIndex)
+  local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
+  if not indicator then return end
+
+  local raidFrame = _G['CompactRaidFrame' .. raidIndex]
+  if not raidFrame then
+    indicator:Hide()
+    return
+  end
+
+  local unit = GetRaidFrameUnit(raidFrame, raidIndex)
+  if not unit or not UnitExists(unit) then
+    indicator:Hide()
+    return
+  end
+
+  local health = UnitHealth(unit)
+  local maxHealth = UnitHealthMax(unit)
+  if not health or not maxHealth or maxHealth == 0 then
+    indicator:Hide()
+    return
+  end
+
+  local healthRatio = health / maxHealth
+  if health == 0 or UnitIsDead(unit) then
+    healthRatio = 0
+  end
+
+  local alpha = 0.0
+  local texture = nil
+  for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
+    if healthRatio <= step.health then
+      alpha = step.alpha
+      texture = step.texture
+      break
+    end
+  end
+
+  if alpha > 0 then
+    indicator:SetTexture(texture)
+    indicator:SetAlpha(alpha)
+    indicator:Show()
+  else
+    indicator:Hide()
+  end
+end
+
+function UpdateRaidHealthIndicatorForUnit(unit)
+  -- Find all compact raid frames that correspond to this unit and update
+  for i = 1, 40 do
+    local raidFrame = _G['CompactRaidFrame' .. i]
+    if raidFrame then
+      local frameUnit = GetRaidFrameUnit(raidFrame, nil)
+      if frameUnit == unit then
+        UpdateRaidHealthIndicator(i)
+      end
+    end
+  end
+end
+
+function SetAllRaidHealthIndicators(enabled)
+  if not enabled then
+    for i = 1, 40 do
+      local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
+      if indicator then
+        indicator:Hide()
+        RAID_HEALTH_INDICATOR_FRAMES[i] = nil
+      end
+    end
+    return
+  end
+
+  for i = 1, 40 do
+    local raidFrame = _G['CompactRaidFrame' .. i]
+    local nameFrame = _G['CompactRaidFrame' .. i .. 'Name']
+    if raidFrame and nameFrame then
+      local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
+      if not indicator then
+        indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
+        indicator:SetSize(30, 30)
+        if raidFrame.uhcCircle then
+          indicator:SetPoint('CENTER', raidFrame.uhcCircle, 'CENTER', 0, 0)
+        else
+          indicator:SetPoint('CENTER', raidFrame, 'TOP', 0, -20)
+        end
+        if indicator.SetDrawLayer then
+          indicator:SetDrawLayer('ARTWORK')
+        end
+        indicator:SetAlpha(0.0)
+        indicator:Hide()
+        RAID_HEALTH_INDICATOR_FRAMES[i] = indicator
+      end
+      UpdateRaidHealthIndicator(i)
+    end
+  end
+
+  -- Try again shortly in case frames are created asynchronously
+  C_Timer.After(0.5, function()
+    for i = 1, 40 do
+      UpdateRaidHealthIndicator(i)
+    end
+  end)
+end
+
 function SetPartyHealthIndicator(enabled, partyIndex)
   local partyFrame = _G['PartyMemberFrame' .. partyIndex]
   if not partyFrame then 
@@ -609,6 +768,12 @@ function SetAllGroupIndicators()
   SetAllPetHealthIndicators(true)
   SetAllPartyTargetHighlights(true)
   SetAllPetTargetHighlights(true)
+  -- Only enable raid health indicators when group health is hidden
+  if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+    SetAllRaidHealthIndicators(true)
+  else
+    SetAllRaidHealthIndicators(false)
+  end
 end
 
 -- Function to reposition all target highlights when party frames are moved
@@ -638,6 +803,12 @@ partyHealthFrame:RegisterEvent('ADDON_LOADED')
 
 partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
   if event == 'UNIT_HEALTH_FREQUENT' or event == 'UNIT_HEALTH' then
+    -- Raid member health updates
+    if unit and unit:match('^raid%d+$') then
+      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+        UpdateRaidHealthIndicatorForUnit(unit)
+      end
+    end
     -- Check if this is a party member
     if unit and unit:match('^party%d+$') then
       local partyIndex = tonumber(unit:match('party(%d+)'))
@@ -660,6 +831,9 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
       UpdatePartyTargetHighlights()
+      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+        SetAllRaidHealthIndicators(true)
+      end
     end)
   elseif event == 'PLAYER_TARGET_CHANGED' then
     -- Update target highlights when target changes
@@ -669,6 +843,9 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
     C_Timer.After(1.0, function()
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
+      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+        SetAllRaidHealthIndicators(true)
+      end
     end)
   end
 end)
