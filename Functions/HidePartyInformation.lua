@@ -170,6 +170,102 @@ local function HookCompactRaidHealthHiding()
   if uhcRaidHealthHooked then return end
   if type(hooksecurefunc) ~= 'function' then return end
   uhcRaidHealthHooked = true
+  local function styleCompactRaidFrame(frame)
+    if not frame then return end
+    if InCombatLockdown() then
+      C_Timer.After(0.2, function()
+        if not InCombatLockdown() then
+          styleCompactRaidFrame(frame)
+        end
+      end)
+      return
+    end
+    -- Hide borders/backgrounds if present
+    local borderCandidates =
+      {
+        frame.border,
+        frame.borderFrame,
+        frame.background,
+        frame.selectionHighlight,
+        frame.aggroHighlight,
+      }
+    for _, elem in ipairs(borderCandidates) do
+      if elem then
+        ForceHideFrame(elem)
+      end
+    end
+    -- Explicitly hide common background globals if they exist
+    local frameName = frame.GetName and frame:GetName() or nil
+    if frameName then
+      local bg = _G[frameName .. 'Background']
+      if bg then
+        ForceHideFrame(bg)
+      end
+      -- Hide per-frame border slices if present
+      local borderNames =
+        {
+          frameName .. 'HorizTopBorder',
+          frameName .. 'HorixTopBorder', -- handle possible typo
+          frameName .. 'VertRightBorder',
+          frameName .. 'HorizBottomBorder',
+          frameName .. 'VertLeftBorder',
+        }
+      for _, bn in ipairs(borderNames) do
+        local b = _G[bn]
+        if b then
+          ForceHideFrame(b)
+        end
+      end
+    end
+    if _G['CompactRaidFrameBackground'] then
+      ForceHideFrame(_G['CompactRaidFrameBackground'])
+    end
+    if _G['CompactRaidFrameContainerBorderFrame'] then
+      ForceHideFrame(_G['CompactRaidFrameContainerBorderFrame'])
+    end
+    -- Add circular frame if not present
+    if not frame.uhcCircle then
+      frame.uhcCircle = frame:CreateTexture(nil, 'ARTWORK')
+      frame.uhcCircle:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
+      frame.uhcCircle:SetSize(36, 36)
+      frame.uhcCircle:SetPoint('TOP', frame, 'TOP', 0, -2)
+      frame.uhcCircle:SetAlpha(0.2)
+      if frame.uhcCircle.SetDrawLayer then
+        frame.uhcCircle:SetDrawLayer('ARTWORK')
+      end
+    end
+    -- Place the name inside the circle, small
+    local nameFrame = frame.name or _G[frame:GetName() and (frame:GetName() .. 'Name') or '']
+    if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
+      nameFrame:ClearAllPoints()
+      nameFrame:SetPoint('TOP', frame.uhcCircle, 'TOP', 0, -6)
+      if nameFrame.SetDrawLayer then
+        nameFrame:SetDrawLayer('OVERLAY')
+      end
+      if nameFrame.GetFont and nameFrame.SetFont then
+        local font, size, flags = nameFrame:GetFont()
+        if size and size > 8 then
+          nameFrame:SetFont(font, math.max(8, size - 3), flags)
+        end
+      elseif nameFrame.SetTextHeight then
+        nameFrame:SetTextHeight(8)
+      end
+    end
+    -- Re-anchor an existing health indicator into the circle if present
+    if frame.uhcCircle and RAID_HEALTH_INDICATOR_FRAMES then
+      for i = 1, 40 do
+        local ind = RAID_HEALTH_INDICATOR_FRAMES[i]
+        if ind and ind.GetParent and ind:GetParent() == frame then
+          ind:ClearAllPoints()
+          ind:SetPoint('CENTER', frame.uhcCircle, 'CENTER', 0, 0)
+          ind:SetSize(30, 30)
+          if ind.SetDrawLayer then
+            ind:SetDrawLayer('ARTWORK')
+          end
+        end
+      end
+    end
+  end
   local function hideFromUpdate(frame)
     if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideGroupHealth then return end
     if not frame then return end
@@ -197,6 +293,8 @@ local function HookCompactRaidHealthHiding()
       if frame.statusText and frame.statusText.Hide then
         frame.statusText:Hide()
       end
+      -- Apply styling (border removal + circular frame + name position)
+      styleCompactRaidFrame(frame)
     end
   end
   hooksecurefunc('CompactUnitFrame_UpdateHealth', hideFromUpdate)
@@ -234,6 +332,9 @@ frame:SetScript('OnEvent', function(self, event, arg1)
     if GLOBAL_SETTINGS.hideGroupHealth then
       HookCompactRaidHealthHiding()
       SetRaidFramesInfo(true)
+      if _G['CompactRaidFrameContainerBorderFrame'] then
+        ForceHideFrame(_G['CompactRaidFrameContainerBorderFrame'])
+      end
     end
     return
   end
