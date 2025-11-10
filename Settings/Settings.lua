@@ -53,6 +53,27 @@ local function initializeTempSettings()
   end
 end
 
+local CLASS_BACKGROUND_MAP = {
+  WARRIOR = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warrior.png',
+  PALADIN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_pally.png',
+  HUNTER = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_hunter.png',
+  ROGUE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_rogue.png',
+  PRIEST = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_priest.png',
+  MAGE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_mage.png',
+  WARLOCK = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warlock.png',
+  DRUID = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_druid.png',
+}
+
+local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
+
+local function getClassBackgroundTexture()
+  local _, classFileName = UnitClass('player')
+  if classFileName and CLASS_BACKGROUND_MAP[classFileName] then
+    return CLASS_BACKGROUND_MAP[classFileName]
+  end
+  return 'Interface\\DialogFrame\\UI-DialogBox-Background'
+end
+
 local settingsFrame =
   CreateFrame('Frame', 'UltraHardcoreSettingsFrame', UIParent, 'BackdropTemplate')
 tinsert(UISpecialFrames, 'UltraHardcoreSettingsFrame')
@@ -70,53 +91,59 @@ settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30)
 settingsFrame:Hide()
 settingsFrame:SetFrameStrata('DIALOG')
 settingsFrame:SetFrameLevel(15)
-settingsFrame:SetBackdrop({
-  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-  tile = true,
-  tileSize = 64,
-  edgeSize = 16,
-  insets = {
-    left = 4,
-    right = 4,
-    top = 4,
-    bottom = 4,
-  },
-})
+settingsFrame:SetClipsChildren(true)
 
+local settingsFrameBackground = settingsFrame:CreateTexture(nil, 'BACKGROUND')
+settingsFrameBackground:SetPoint('CENTER', settingsFrame, 'CENTER')
+settingsFrameBackground:SetTexCoord(0, 1, 0, 1)
+
+local function updateSettingsFrameBackdrop()
+  settingsFrameBackground:SetTexture(getClassBackgroundTexture())
+  local frameHeight = settingsFrame:GetHeight()
+  settingsFrameBackground:SetSize(frameHeight * CLASS_BACKGROUND_ASPECT_RATIO, frameHeight)
+
+  settingsFrame:SetBackdrop({
+    edgeFile = 'Interface\\Buttons\\WHITE8x8',
+    tile = false,
+    edgeSize = 2,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+  })
+  settingsFrame:SetBackdropBorderColor(0, 0, 0, 1)
+end
+updateSettingsFrameBackdrop()
 local titleBar = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-titleBar:SetSize(560, 50)
+titleBar:SetSize(560, 60)
 titleBar:SetPoint('TOP', settingsFrame, 'TOP')
 titleBar:SetFrameStrata('DIALOG')
 titleBar:SetFrameLevel(20)
-titleBar:SetBackdrop({
-  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-  tile = true,
-  tileSize = 64,
-  edgeSize = 16,
-  insets = {
-    left = 4,
-    right = 4,
-    top = 4,
-    bottom = 4,
-  },
-})
-titleBar:SetBackdropColor(0, 0, 0, 1)
-titleBar:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-local settingsTitleImage = titleBar:CreateTexture(nil, 'OVERLAY')
-settingsTitleImage:SetSize(300, 40)
-settingsTitleImage:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
-settingsTitleImage:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\ultra-hc-title.png')
-settingsTitleImage:SetTexCoord(0, 1, 0, 1)
+
+titleBar:SetBackdropBorderColor(0, 0, 0, 1)
+titleBar:SetBackdropColor(0, 0, 0, 0.95)
+local titleBarBackground = titleBar:CreateTexture(nil, 'BACKGROUND')
+titleBarBackground:SetAllPoints()
+titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header.png')
+titleBarBackground:SetTexCoord(0, 1, 0, 1)
+local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
+settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
+settingsTitleLabel:SetText('Ultrahardcore')
+settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
+local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
+dividerFrame:SetSize(570, 24)
+dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
+dividerFrame:SetFrameStrata('DIALOG')
+dividerFrame:SetFrameLevel(20)
+local dividerTexture = dividerFrame:CreateTexture(nil, 'ARTWORK')
+dividerTexture:SetAllPoints()
+dividerTexture:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\divider.png')
+dividerTexture:SetTexCoord(0, 1, 0, 1)
 local function initializeTabs()
   if TabManager then
     TabManager.initializeTabs(settingsFrame)
   end
 end
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
-closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -4, 0)
-closeButton:SetSize(32, 32)
+closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 0)
+closeButton:SetSize(12, 12)
 closeButton:SetScript('OnClick', function()
   if TabManager then
     TabManager.resetTabState()
@@ -124,6 +151,17 @@ closeButton:SetScript('OnClick', function()
   initializeTempSettings()
   settingsFrame:Hide()
 end)
+closeButton:SetNormalTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header-x.png')
+closeButton:SetPushedTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header-x.png')
+closeButton:SetHighlightTexture('Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight', 'ADD')
+local closeButtonTex = closeButton:GetNormalTexture()
+if closeButtonTex then
+  closeButtonTex:SetTexCoord(0, 1, 0, 1)
+end
+local closeButtonPushed = closeButton:GetPushedTexture()
+if closeButtonPushed then
+  closeButtonPushed:SetTexCoord(0, 1, 0, 1)
+end
 
 function ToggleSettings()
   if settingsFrame:IsShown() then
@@ -132,6 +170,7 @@ function ToggleSettings()
     end
     settingsFrame:Hide()
   else
+    updateSettingsFrameBackdrop()
     initializeTabs()
 
     initializeTempSettings()
@@ -167,6 +206,7 @@ SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
 
 -- Function to open settings and switch to a specific tab
 function OpenSettingsToTab(tabIndex)
+  updateSettingsFrameBackdrop()
   initializeTabs()
 
   initializeTempSettings()
