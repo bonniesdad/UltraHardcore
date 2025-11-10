@@ -90,6 +90,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
 }, {
+  name = 'Show Target Debuffs',
+  dbSettingsValueName = 'showTargetDebuffs',
+  tooltip = 'Show debuffs on the target frame.',
+}, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
