@@ -41,6 +41,7 @@ local PRESET_SECTIONS = { {
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
+    'showTargetDebuffs',
   },
 },  {
   title = 'Misc:',
