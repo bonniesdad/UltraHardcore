@@ -98,6 +98,8 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelXpGWA = false,
+    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Initialize settings for current character if they don't exist
