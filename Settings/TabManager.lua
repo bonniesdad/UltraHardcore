@@ -3,7 +3,7 @@
 
 local TabManager = {}
 
-local NUM_TABS = 5
+local NUM_TABS = 6
 local TAB_WIDTH = 105
 local TAB_HEIGHT = 35
 local TAB_SPACING = 5
@@ -84,7 +84,7 @@ end
     local TAB_HEIGHT  = 35
     local TAB_SPACING = 0        
     local SIDE_PAD    = 8         
-    local TOP_OFFSET  = -45
+    local TOP_OFFSET  = -60
   
     local MIN_FRAME_WIDTH = 560
   
@@ -116,8 +116,8 @@ local function createTabContent(index, parentFrame)
   local host = _G.UltraHardcoreSettingsViewport or parentFrame
   local content = CreateFrame('Frame', nil, host)
   content:ClearAllPoints()
-  content:SetPoint('TOPLEFT',  host, 'TOPLEFT', 0, 0)
-  content:SetPoint('BOTTOMRIGHT', host, 'BOTTOMRIGHT', 0, 44)
+  content:SetPoint('TOPLEFT', parentFrame, 'TOPLEFT', 16, -92)
+  content:SetPoint('BOTTOMRIGHT', parentFrame, 'BOTTOMRIGHT', -16, 16)
   content:Hide()
   return content
 end
@@ -231,7 +231,8 @@ function TabManager.switchToTab(index)
    -- Initialize GuildAH tab if it's being shown
    if index == 7 and InitializeGuildAHTab then
     InitializeGuildAHTab()
-    
+  end 
+
 -- Initialize Challenges tab if its being shown
   if index == 6 and InitializeChallengesTab then
     InitializeChallengesTab()
