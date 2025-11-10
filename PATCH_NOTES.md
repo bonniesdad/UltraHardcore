@@ -1,14 +1,35 @@
 # Patch Notes
 
+## Version 1.2.9 - 2025-11-14
+
+### New Features
+
+- UHC Raid Frames
+
+### New Statistics
+
+- Map attempts blocked
+  - A statistic for the amount of times the player attempts to open the map and routep lanner blocks it
+
+### UI Improvements
+
+- Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"
+
+### Bug Fixes
+
+- Route planner added to xp gained tracker
+
+### Other
+
+- Don't send the join party message on non-Hardcore servers  
+
 ## Version 1.2.8 - 2025-11-04
 
 ### New Features
 
-NA 
 
 ### New Statistics
 
-NA
 
 ### UI Improvements
 
