@@ -62,8 +62,15 @@ function SetRaidHealthIndicator(enabled, raidIndex)
   local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
   if not indicator then
     indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
-    indicator:SetSize(16, 16)
-    indicator:SetPoint('TOP', nameFrame, 'BOTTOM', 0, -2)
+    indicator:SetSize(30, 30)
+    if raidFrame.uhcCircle then
+      indicator:SetPoint('CENTER', raidFrame.uhcCircle, 'CENTER', 0, 0)
+    else
+      indicator:SetPoint('CENTER', raidFrame, 'TOP', 0, -20)
+    end
+    if indicator.SetDrawLayer then
+      indicator:SetDrawLayer('ARTWORK')
+    end
     indicator:SetAlpha(0.0)
     indicator:Hide()
     RAID_HEALTH_INDICATOR_FRAMES[raidIndex] = indicator
@@ -151,8 +158,15 @@ function SetAllRaidHealthIndicators(enabled)
       local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
       if not indicator then
         indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
-        indicator:SetSize(16, 16)
-        indicator:SetPoint('TOP', nameFrame, 'BOTTOM', 0, -2)
+        indicator:SetSize(30, 30)
+        if raidFrame.uhcCircle then
+          indicator:SetPoint('CENTER', raidFrame.uhcCircle, 'CENTER', 0, 0)
+        else
+          indicator:SetPoint('CENTER', raidFrame, 'TOP', 0, -20)
+        end
+        if indicator.SetDrawLayer then
+          indicator:SetDrawLayer('ARTWORK')
+        end
         indicator:SetAlpha(0.0)
         indicator:Hide()
         RAID_HEALTH_INDICATOR_FRAMES[i] = indicator
