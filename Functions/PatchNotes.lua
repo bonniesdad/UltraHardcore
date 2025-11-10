@@ -2,8 +2,11 @@
 PATCH_NOTES = {
   {
     version = '1.2.9',
-    date = '2025-11-05',
+    date = '2025-11-14',
     notes = {
+      'NEW FEATURES:',
+      '• UHC Raid Frames',
+      '',
       'NEW STATISTICS:',
       '• Map key presses while map blocked',
       '  • Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.',
