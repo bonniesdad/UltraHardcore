@@ -91,10 +91,99 @@ function InitializeStatisticsTab()
   statsScrollChild:SetSize(500, 1100) -- Increased height to accommodate proper bottom spacing for XP section
   statsScrollFrame:SetScrollChild(statsScrollChild)
 
+  -- Current Character section (header)
+  local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  currentHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  currentHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
+  -- Modern WoW row styling with rounded corners and greyish background
+  currentHeader:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+  currentHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+  currentHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  -- Header text
+  local currentHeaderLabel = currentHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  currentHeaderLabel:SetPoint('LEFT', currentHeader, 'LEFT', 12, 0)
+  currentHeaderLabel:SetText('Current Character')
+
+  -- Current Character section (content)
+  local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  currentContent:SetSize(450, 1 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  currentContent:SetPoint('TOPLEFT', currentHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
+  currentContent:Show()
+  currentContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    tile = true,
+    tileSize = 16,
+    edgeSize = 8,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+  -- "Preset:" label and dynamic value
+  local currentPresetLabel = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  currentPresetLabel:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
+  currentPresetLabel:SetText('Preset:')
+  local currentPresetText = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  currentPresetText:SetPoint('TOPRIGHT', currentContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
+  currentPresetText:SetText('Not Ultra')
+
+  -- Helper to update the current preset display
+  local function UpdateCurrentPresetDisplay()
+    local sections = GetPresetSections('simple', false) -- Exclude Misc
+    local function allTrueForSettings(settingsList)
+      for _, settingName in ipairs(settingsList or {}) do
+        if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS[settingName] then
+          return false
+        end
+      end
+      return true
+    end
+    local lite = sections[1] and sections[1].settings or {}
+    local recommended = sections[2] and sections[2].settings or {}
+    local extreme = sections[3] and sections[3].settings or {}
+
+    local liteOk = allTrueForSettings(lite)
+    local recOk = liteOk and allTrueForSettings(recommended)
+    local extOk = recOk and allTrueForSettings(extreme)
+
+    if extOk then
+      currentPresetText:SetText('Extreme')
+      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+    elseif recOk then
+      currentPresetText:SetText('Recommended')
+      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+    elseif liteOk then
+      currentPresetText:SetText('Lite')
+      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+    else
+      currentPresetText:SetText('Not Ultra')
+      currentPresetText:SetTextColor(1.0, 0.2, 0.2) -- red
+    end
+  end
+
+  -- Initialize the preset display once
+  UpdateCurrentPresetDisplay()
+
   -- Create modern WoW-style lowest health section (no accordion functionality)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  lowestHealthHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
+  -- Anchor directly below Current Character content
+  lowestHealthHeader:SetPoint('TOPLEFT', currentContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
 
   -- Modern WoW row styling with rounded corners and greyish background
   lowestHealthHeader:SetBackdrop({
@@ -120,7 +209,8 @@ function InitializeStatisticsTab()
   -- Create content frame for Lowest Health breakdown
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
-  lowestHealthContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -38)
+  -- Position content directly under its header with consistent padding
+  lowestHealthContent:SetPoint('TOPLEFT', lowestHealthHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   lowestHealthContent:Show() -- Show by default
   -- Modern content frame styling
   lowestHealthContent:SetBackdrop({
@@ -331,7 +421,8 @@ function InitializeStatisticsTab()
   -- Create modern WoW-style enemies slain section (no accordion functionality)
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  enemiesSlainHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -179)
+  -- Anchor directly below the Lowest Health content to avoid overlap on different UI scales
+  enemiesSlainHeader:SetPoint('TOPLEFT', lowestHealthContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
 
   -- Modern WoW row styling with rounded corners and greyish background
   enemiesSlainHeader:SetBackdrop({
@@ -357,7 +448,8 @@ function InitializeStatisticsTab()
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainContent:SetSize(450, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
-  enemiesSlainContent:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', LAYOUT.CONTENT_INDENT, -212)
+  -- Position content directly under its header with consistent padding
+  enemiesSlainContent:SetPoint('TOPLEFT', enemiesSlainHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   enemiesSlainContent:Show() -- Show by default
   -- Modern content frame styling
   enemiesSlainContent:SetBackdrop({
@@ -907,8 +999,16 @@ function InitializeStatisticsTab()
     showHealingIndicator = 'Use UHC Incoming Healing Effect',
   }
 
-  -- Define preset sections with their settings
-  local presetSections = GetPresetSections('simple', false) -- Exclude Misc section
+  -- Define preset sections with their settings (limit to up to Extreme)
+  local allSectionsSimple = GetPresetSections('simple', false) -- Exclude Misc section
+  local presetSections = {}
+  for i, section in ipairs(allSectionsSimple) do
+    if i <= 3 then
+      table.insert(presetSections, section)
+    else
+      break
+    end
+  end
   -- Create XP breakdown entries with section headers
   local yOffset = -LAYOUT.CONTENT_PADDING
   for sectionIndex, section in ipairs(presetSections) do
@@ -948,8 +1048,16 @@ function InitializeStatisticsTab()
 
   -- Function to update XP breakdown display
   local function UpdateXPBreakdown()
-    -- Define preset sections with their settings (same order as TrackXPPerSetting.lua)
-    local presetSections = GetPresetSections('extended', false) -- Exclude Misc section, use extended titles
+    -- Define preset sections with their settings (limit to up to Extreme, same order as TrackXPPerSetting.lua)
+    local allSectionsExtended = GetPresetSections('extended', false) -- Exclude Misc section, use extended titles
+    local presetSections = {}
+    for i, section in ipairs(allSectionsExtended) do
+      if i <= 3 then
+        table.insert(presetSections, section)
+      else
+        break
+      end
+    end
     -- Update display organized by preset sections
     local yOffset = -LAYOUT.CONTENT_PADDING
     for sectionIndex, section in ipairs(presetSections) do
@@ -998,6 +1106,8 @@ function InitializeStatisticsTab()
     if not UltraHardcoreDB then
       LoadDBData()
     end
+    -- Refresh current preset status in case settings changed
+    UpdateCurrentPresetDisplay()
 
     -- Update level display
     if levelText then
