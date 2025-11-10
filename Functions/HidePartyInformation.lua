@@ -170,6 +170,40 @@ local function HookCompactRaidHealthHiding()
   if uhcRaidHealthHooked then return end
   if type(hooksecurefunc) ~= 'function' then return end
   uhcRaidHealthHooked = true
+  -- Keep the custom circle and health indicator sized to the raid frame
+  local function UHC_UpdateRaidCircleAndIndicatorSizes(frame)
+    if not frame then return end
+    if not frame.uhcCircle then return end
+    if InCombatLockdown() then
+      C_Timer.After(0.2, function()
+        if not InCombatLockdown() then
+          UHC_UpdateRaidCircleAndIndicatorSizes(frame)
+        end
+      end)
+      return
+    end
+    local w = frame.GetWidth and frame:GetWidth() or 0
+    local h = frame.GetHeight and frame:GetHeight() or 0
+    if not w or not h or w == 0 or h == 0 then return end
+    -- Preserve 1:1 aspect ratio using the smaller dimension
+    local size = (w < h) and w or h
+    frame.uhcCircle:ClearAllPoints()
+    frame.uhcCircle:SetPoint('CENTER', frame, 'CENTER', 0, 0)
+    frame.uhcCircle:SetSize(size, size)
+    if RAID_HEALTH_INDICATOR_FRAMES then
+      for i = 1, 40 do
+        local ind = RAID_HEALTH_INDICATOR_FRAMES[i]
+        if ind and ind.GetParent and ind:GetParent() == frame then
+          ind:ClearAllPoints()
+          ind:SetPoint('CENTER', frame.uhcCircle, 'CENTER', 0, 0)
+          ind:SetSize(size, size)
+          if ind.SetDrawLayer then
+            ind:SetDrawLayer('ARTWORK')
+          end
+        end
+      end
+    end
+  end
   local function styleCompactRaidFrame(frame)
     if not frame then return end
     if InCombatLockdown() then
@@ -227,12 +261,28 @@ local function HookCompactRaidHealthHiding()
     if not frame.uhcCircle then
       frame.uhcCircle = frame:CreateTexture(nil, 'ARTWORK')
       frame.uhcCircle:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
-      frame.uhcCircle:SetSize(36, 36)
-      frame.uhcCircle:SetPoint('TOP', frame, 'TOP', 0, -2)
-      frame.uhcCircle:SetAlpha(0.2)
       if frame.uhcCircle.SetDrawLayer then
         frame.uhcCircle:SetDrawLayer('ARTWORK')
       end
+    end
+    -- Ensure the circle uses normal blending and is a subtle dark overlay
+    if frame.uhcCircle then
+      if frame.uhcCircle.SetBlendMode then
+        frame.uhcCircle:SetBlendMode('BLEND')
+      end
+      if frame.uhcCircle.SetVertexColor then
+        frame.uhcCircle:SetVertexColor(0, 0, 0, 0.2)
+      else
+        frame.uhcCircle:SetAlpha(0.2)
+      end
+    end
+    -- Size and position the circle to match the raid frame, and keep it updated
+    UHC_UpdateRaidCircleAndIndicatorSizes(frame)
+    if not frame.uhcSizeHooked and frame.HookScript then
+      frame:HookScript('OnSizeChanged', function(f)
+        UHC_UpdateRaidCircleAndIndicatorSizes(f)
+      end)
+      frame.uhcSizeHooked = true
     end
     -- Place the name inside the circle, small
     local nameFrame = frame.name or _G[frame:GetName() and (frame:GetName() .. 'Name') or '']
@@ -251,19 +301,9 @@ local function HookCompactRaidHealthHiding()
         nameFrame:SetTextHeight(8)
       end
     end
-    -- Re-anchor an existing health indicator into the circle if present
+    -- Re-anchor and resize the health indicator to match the circle/frame
     if frame.uhcCircle and RAID_HEALTH_INDICATOR_FRAMES then
-      for i = 1, 40 do
-        local ind = RAID_HEALTH_INDICATOR_FRAMES[i]
-        if ind and ind.GetParent and ind:GetParent() == frame then
-          ind:ClearAllPoints()
-          ind:SetPoint('CENTER', frame.uhcCircle, 'CENTER', 0, 0)
-          ind:SetSize(30, 30)
-          if ind.SetDrawLayer then
-            ind:SetDrawLayer('ARTWORK')
-          end
-        end
-      end
+      UHC_UpdateRaidCircleAndIndicatorSizes(frame)
     end
   end
   local function hideFromUpdate(frame)
