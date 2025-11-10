@@ -90,10 +90,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
 }, {
-  name = 'Show Target Debuffs',
-  dbSettingsValueName = 'showTargetDebuffs',
-  tooltip = 'Show debuffs on the target frame.',
-}, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
@@ -441,7 +437,6 @@ function InitializeSettingsOptionsTab()
     elseif i == 3 then
       presetText:SetText('Extreme')
     end
-    presetText:SetTextColor(0.922, 0.871, 0.761)
 
     button:SetScript('OnClick', function()
       applyPreset(i)
@@ -672,7 +667,7 @@ function InitializeSettingsOptionsTab()
       local sectionHeader = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
       sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', 4, 0)
       sectionHeader:SetText(section.title)
-      sectionHeader:SetTextColor(0.922, 0.871, 0.761)
+      sectionHeader:SetTextColor(1, 1, 0.5)
 
       local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
       local headerCountText = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -968,7 +963,7 @@ function InitializeSettingsOptionsTab()
   local colorHeaderText = colorHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   colorHeaderText:SetPoint('LEFT', colorHeaderButton, 'LEFT', 4, 0)
   colorHeaderText:SetText('Ultra UI Settings')
-  colorHeaderText:SetTextColor(0.922, 0.871, 0.761)
+  colorHeaderText:SetTextColor(1, 1, 0.5)
   local colorHeaderIcon = colorHeaderButton:CreateTexture(nil, 'ARTWORK')
   colorHeaderIcon:SetPoint('RIGHT', colorHeaderButton, 'RIGHT', -6, 0)
   colorHeaderIcon:SetSize(16, 16)
@@ -981,7 +976,7 @@ function InitializeSettingsOptionsTab()
   local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   resourceSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
   resourceSubHeader:SetText('Resource Bar Colours')
-  resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  resourceSubHeader:SetTextColor(1, 0.85, 0.4)
 
   local COLOR_ROWS_TOP_OFFSET = HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP
 
@@ -991,7 +986,7 @@ function InitializeSettingsOptionsTab()
     row:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 20, -(COLOR_ROWS_TOP_OFFSET + ((rowIndex - 1) * ROW_HEIGHT)))
 
     local LABEL_WIDTH = 140
-    local SWATCH_WIDTH = 24
+    local SWATCH_WIDTH = 54
     local GAP = 12
 
     local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -1048,6 +1043,19 @@ function InitializeSettingsOptionsTab()
     resetButton:SetSize(56, 20)
     resetButton:SetPoint('LEFT', pickButton, 'RIGHT', 6, 0)
     resetButton:SetText('Reset')
+
+    local classButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    classButton:SetSize(96, 20)
+    classButton:SetPoint('LEFT', resetButton, 'RIGHT', 6, 0)
+    classButton:SetText('Class Colour')
+    classButton:SetScript('OnClick', function()
+      local _, englishClass = UnitClass('player')
+      local classColor = RAID_CLASS_COLORS[englishClass]
+      if classColor then
+        tempSettings.resourceBarColors[powerKey] = { classColor.r, classColor.g, classColor.b }
+        setSwatchColor(classColor.r, classColor.g, classColor.b)
+      end
+    end)
 
     pickButton:SetScript('OnClick', function()
       local r, g, b = getCurrentColor()
@@ -1277,7 +1285,7 @@ function InitializeSettingsOptionsTab()
   local statsSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   statsSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(COLOR_ROWS_TOP_OFFSET + (#colorRows * ROW_HEIGHT) + SUBHEADER_GAP))
   statsSubHeader:SetText('Statistics Background')
-  statsSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  statsSubHeader:SetTextColor(1, 0.85, 0.4)
 
   local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
   opacityRow:SetSize(380, 24)
@@ -1323,7 +1331,7 @@ function InitializeSettingsOptionsTab()
   local clockSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   clockSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
   clockSubHeader:SetText('Minimap Clock Scale')
-  clockSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  clockSubHeader:SetTextColor(1, 0.85, 0.4)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(380, 24)
