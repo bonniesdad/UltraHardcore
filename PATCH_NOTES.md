@@ -1,17 +1,55 @@
 # Patch Notes
 
-## Version 1.2.7 - 2025-11-03
+## Version 1.2.9 - 2025-11-14
 
 ### New Features
 
-- Added Group Found Mode
-  - Restricts trading to the members of your group.
-- Added Guild Found Mode
-  - Restricts trading to the members of your guild.
-- Reject buffs from others (ultra option)
+- UHC Raid Frames
+
+### New Statistics
+
+- Map attempts blocked
+  - A statistic for the amount of times the player attempts to open the map and routep lanner blocks it
+
+### UI Improvements
+
+N/A
+
+### Bug Fixes
+
+- Route planner added to xp gained tracker
+
+### Other
+
+- Don't send the join party message on non-Hardcore servers  
+
+## Version 1.2.8 - 2025-11-04
+
+### New Features
+
+
+### New Statistics
+
+
+### UI Improvements
+
+- Add fstack name to route planner compass
+
+### Bug Fixes
+
+- Fix action bar visibility after taxi
+- Fix tracking map overlay showing party members etc
+
+### Other
+
+- Remove Trade Restrictions
+- Remove Cancel Buffs
+
+## Version 1.2.7 - 2025-11-03
+
+### New Features
+- Reject buffs from others (experimental option)
   - When enabled, the addon will reject buffs from other players.
-  - When Group Found Mode is enabled, allow buffs from group found members.
-  - When Guild Found Mode is enabled, allow buffs from guild members.
 - Route planner now hides player position markers on the map.
 - Added buttons for invite to party and leave group
   - These buttons will be displayed in the bottom right corner of the screen.
@@ -23,6 +61,7 @@
   - Allows you to change the colour of the resource and pet resource bars.
 - Added statistics background opacity slider.
   - Allows you to change the opacity of the on screen statistics background.
+
 ### New Statistics
 
 - Mana potions used.

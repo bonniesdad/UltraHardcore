@@ -3,6 +3,22 @@
 
 local TabManager = {}
 
+local NUM_TABS = 5
+local TAB_WIDTH = 105
+local TAB_HEIGHT = 35
+local TAB_SPACING = 5
+
+local BASE_TEXT_COLOR = { r = 0.922, g = 0.871, b = 0.761 }
+local ACTIVE_CLASS_FADE = 0.75
+
+local function getPlayerClassColor()
+  local _, playerClass = UnitClass('player')
+  if not playerClass then return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b end
+  local r, g, b = GetClassColor(playerClass)
+  if not r then return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b end
+  return r, g, b
+end
+
 -- Tab-related variables
 local tabButtons = {}
 local tabContents = {}
@@ -11,27 +27,30 @@ local activeTab = 1
 -- Create proper folder tabs with angled edges
 local function createTabButton(text, index, parentFrame)
   local button = CreateFrame('Button', nil, parentFrame, 'BackdropTemplate')
-  button:SetSize(110, 35)
-  button:SetPoint('TOP', parentFrame, 'TOP', (index - 3) * 110, -45) -- Position below title bar
-  -- Create the main tab background with proper folder tab shape
+  button:SetSize(TAB_WIDTH, TAB_HEIGHT)
+  local centerIndex = (NUM_TABS + 1) / 2
+  local horizontalOffset = (index - centerIndex) * (TAB_WIDTH + TAB_SPACING)
+  button:SetPoint('TOP', parentFrame, 'TOP', horizontalOffset, -57) -- Position below title bar with spacing
+  -- Create the main tab background with the custom texture
+  local background = button:CreateTexture(nil, 'BACKGROUND')
+  background:SetAllPoints()
+  background:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\tab_texture.png')
+  button.backgroundTexture = background
   button:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-    tile = true,
-    tileSize = 64,
-    edgeSize = 16,
-    insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
-    },
+    bgFile = nil,
+    edgeFile = 'Interface\\Buttons\\WHITE8x8',
+    tile = false,
+    edgeSize = 1,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 },
   })
+  button:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
   -- Set the text
   local buttonText = button:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   buttonText:SetPoint('CENTER', button, 'CENTER', 0, -2)
   buttonText:SetText(text)
+  buttonText:SetTextColor(BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b)
+  button.text = buttonText
 
   -- Set up click handler
   button:SetScript('OnClick', function()
@@ -39,8 +58,8 @@ local function createTabButton(text, index, parentFrame)
   end)
 
   -- Set initial appearance
-  button:SetBackdropBorderColor(0.5, 0.5, 0.5)
-  button:SetAlpha(0.8)
+  button.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
+  button:SetAlpha(0.9)
 
   return button
 end
@@ -88,14 +107,46 @@ function TabManager.switchToTab(index)
 
   -- Reset all tab button appearances
   for i, tabButton in ipairs(tabButtons) do
-    tabButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
-    tabButton:SetAlpha(0.8)
+    if tabButton.backgroundTexture then
+      tabButton.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
+    end
+    tabButton:SetAlpha(0.9)
+    tabButton:SetHeight(TAB_HEIGHT)
+    if tabButton.text then
+      tabButton.text:SetTextColor(BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b)
+    end
+    tabButton:SetBackdrop({
+      bgFile = nil,
+      edgeFile = 'Interface\\Buttons\\WHITE8x8',
+      tile = false,
+      edgeSize = 1,
+      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    })
+    tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
 
   -- Show selected tab content and highlight button
   tabContents[index]:Show()
-  tabButtons[index]:SetBackdropBorderColor(1, 1, 0)
+  if tabButtons[index].backgroundTexture then
+    tabButtons[index].backgroundTexture:SetVertexColor(1, 1, 1, 1)
+  end
   tabButtons[index]:SetAlpha(1.0)
+  tabButtons[index]:SetHeight(TAB_HEIGHT + 6)
+  local classR, classG, classB = getPlayerClassColor()
+  local fadedR = (classR * ACTIVE_CLASS_FADE) + (BASE_TEXT_COLOR.r * (1 - ACTIVE_CLASS_FADE))
+  local fadedG = (classG * ACTIVE_CLASS_FADE) + (BASE_TEXT_COLOR.g * (1 - ACTIVE_CLASS_FADE))
+  local fadedB = (classB * ACTIVE_CLASS_FADE) + (BASE_TEXT_COLOR.b * (1 - ACTIVE_CLASS_FADE))
+  if tabButtons[index].text then
+    tabButtons[index].text:SetTextColor(fadedR, fadedG, fadedB)
+  end
+  tabButtons[index]:SetBackdrop({
+    bgFile = nil,
+    edgeFile = 'Interface\\Buttons\\WHITE8x8',
+    tile = false,
+    edgeSize = 1,
+    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+  })
+  tabButtons[index]:SetBackdropBorderColor(fadedR, fadedG, fadedB, 1)
   activeTab = index
 
   -- Persist last opened settings tab per character
@@ -170,8 +221,22 @@ function TabManager.hideAllTabs()
     content:Hide()
   end
   for i, tabButton in ipairs(tabButtons) do
-    tabButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
-    tabButton:SetAlpha(0.8)
+    if tabButton.backgroundTexture then
+      tabButton.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
+    end
+    tabButton:SetAlpha(0.9)
+    tabButton:SetHeight(TAB_HEIGHT)
+    if tabButton.text then
+      tabButton.text:SetTextColor(BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b)
+    end
+    tabButton:SetBackdrop({
+      bgFile = nil,
+      edgeFile = 'Interface\\Buttons\\WHITE8x8',
+      tile = false,
+      edgeSize = 1,
+      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    })
+    tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
 end
 
@@ -186,10 +251,17 @@ function TabManager.resetTabState()
   end
   for i, tabButton in ipairs(tabButtons) do
     if tabButton then
-      tabButton:SetBackdropBorderColor(0.5, 0.5, 0.5)
-      tabButton:SetAlpha(0.8)
+      if tabButton.backgroundTexture then
+        tabButton.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
+      end
+      tabButton:SetAlpha(0.9)
       -- Ensure the button is fully opaque and visible
       tabButton:Show()
+      tabButton:SetHeight(TAB_HEIGHT)
+      if tabButton.text then
+        tabButton.text:SetTextColor(BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b)
+      end
+      tabButton:SetBackdrop(nil)
     end
   end
 end
