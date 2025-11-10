@@ -82,13 +82,13 @@ function InitializeStatisticsTab()
 
   -- Create scroll frame for statistics content
   local statsScrollFrame = CreateFrame('ScrollFrame', nil, statsFrame, 'UIPanelScrollFrameTemplate')
-  statsScrollFrame:SetSize(340, 460)
+  statsScrollFrame:SetSize(340, 360)
   statsScrollFrame:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -10)
   statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 10)
 
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(500, 1100) -- Increased height to accommodate proper bottom spacing for XP section
+  statsScrollChild:SetSize(500, 300) -- Increased height to accommodate proper bottom spacing for XP section
   statsScrollFrame:SetScrollChild(statsScrollChild)
 
   -- Current Character section (header)
@@ -114,11 +114,11 @@ function InitializeStatisticsTab()
   -- Header text
   local currentHeaderLabel = currentHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   currentHeaderLabel:SetPoint('LEFT', currentHeader, 'LEFT', 12, 0)
-  currentHeaderLabel:SetText('Current Character')
+  currentHeaderLabel:SetText('Ultra Status (BETA)')
 
   -- Current Character section (content)
   local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  currentContent:SetSize(450, 1 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  currentContent:SetSize(450, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
   currentContent:SetPoint('TOPLEFT', currentHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   currentContent:Show()
   currentContent:SetBackdrop({
@@ -137,10 +137,64 @@ function InitializeStatisticsTab()
   -- "Preset:" label and dynamic value
   local currentPresetLabel = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   currentPresetLabel:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-  currentPresetLabel:SetText('Preset:')
+  currentPresetLabel:SetText('')
+  currentPresetLabel:Hide()
   local currentPresetText = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  currentPresetText:SetPoint('TOPRIGHT', currentContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-  currentPresetText:SetText('Not Ultra')
+  currentPresetText:ClearAllPoints()
+  currentPresetText:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
+  currentPresetText:SetJustifyH('LEFT')
+  currentPresetText:SetText('')
+  currentPresetText:SetShadowOffset(1, -1)
+  currentPresetText:SetShadowColor(0, 0, 0, 0.8)
+
+  -- Legitimacy message below preset
+  local legitStatusIcon = currentContent:CreateTexture(nil, 'OVERLAY')
+  legitStatusIcon:SetSize(14, 14)
+  legitStatusIcon:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT - 2)
+  legitStatusIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
+
+  local legitStatusLine1 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  legitStatusLine1:SetPoint('LEFT', legitStatusIcon, 'RIGHT', 6, 0)
+  legitStatusLine1:SetShadowOffset(1, -1)
+  legitStatusLine1:SetShadowColor(0, 0, 0, 0.8)
+
+  local legitStatusLine2 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  legitStatusLine2:SetPoint('TOPLEFT', legitStatusLine1, 'BOTTOMLEFT', 0, -2)
+  legitStatusLine2:SetShadowOffset(1, -1)
+  legitStatusLine2:SetShadowColor(0, 0, 0, 0.8)
+
+  -- Static items verification line (hard-coded, no checks)
+  local legitStatusLine3 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  legitStatusLine3:SetPoint('TOPLEFT', legitStatusLine2, 'BOTTOMLEFT', 0, -2)
+  legitStatusLine3:SetText('No items were gained whilst the addon was inactive')
+  legitStatusLine3:SetShadowOffset(1, -1)
+  legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
+  legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
+  local function UpdateLegitStatusText()
+    local xpWithoutAddon = 1
+    if CharacterStats and CharacterStats.ReportXPWithoutAddon then
+      local reported = CharacterStats:ReportXPWithoutAddon()
+      if type(reported) == 'number' then
+        xpWithoutAddon = reported
+      end
+    end
+
+    if xpWithoutAddon == 0 then
+      legitStatusLine1:SetText('Verified Ultra status')
+      legitStatusLine2:SetText('No XP was gained while the addon was inactive')
+      legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
+      legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
+      legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
+      legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+    else
+      legitStatusLine1:SetText('Ultra status failed verification')
+      legitStatusLine2:SetText('XP was gained while the addon was inactive')
+      legitStatusLine1:SetTextColor(1.0, 0.35, 0.35)
+      legitStatusLine2:SetTextColor(0.7, 0.7, 0.7)
+      legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
+      legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
+    end
+  end
 
   -- Helper to update the current preset display
   local function UpdateCurrentPresetDisplay()
@@ -161,23 +215,37 @@ function InitializeStatisticsTab()
     local recOk = liteOk and allTrueForSettings(recommended)
     local extOk = recOk and allTrueForSettings(extreme)
 
+    local presetLevel = nil
     if extOk then
-      currentPresetText:SetText('Extreme')
-      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+      presetLevel = 'Extreme'
     elseif recOk then
-      currentPresetText:SetText('Recommended')
-      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+      presetLevel = 'Recommended'
     elseif liteOk then
-      currentPresetText:SetText('Lite')
-      currentPresetText:SetTextColor(0.2, 1.0, 0.2) -- green
+      presetLevel = 'Lite'
+    end
+
+    local xpWithoutAddon = 1
+    if CharacterStats and CharacterStats.ReportXPWithoutAddon then
+      local reported = CharacterStats:ReportXPWithoutAddon()
+      if type(reported) == 'number' then
+        xpWithoutAddon = reported
+      end
+    end
+
+    if presetLevel and xpWithoutAddon == 0 then
+      -- Only color the preset name in green; keep the rest at normal highlight color
+      local text = 'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
+      currentPresetText:SetText(text)
+      currentPresetText:SetTextColor(0.922, 0.871, 0.761)
     else
-      currentPresetText:SetText('Not Ultra')
-      currentPresetText:SetTextColor(1.0, 0.2, 0.2) -- red
+      currentPresetText:SetText('This character is not a legitimate Ultra.')
+      currentPresetText:SetTextColor(1.0, 0.35, 0.35) -- refined red
     end
   end
 
   -- Initialize the preset display once
   UpdateCurrentPresetDisplay()
+  UpdateLegitStatusText()
 
   -- Create modern WoW-style lowest health section (no accordion functionality)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -949,7 +1017,7 @@ function InitializeStatisticsTab()
 
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedContent:SetSize(450, 20 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
+  xpGainedContent:SetSize(450, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
   -- Position content directly under its header with consistent padding
   xpGainedContent:SetPoint('TOPLEFT', xpGainedHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
   xpGainedContent:Show() -- Show by default
