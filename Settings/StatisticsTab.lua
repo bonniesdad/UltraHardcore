@@ -1131,7 +1131,7 @@ function InitializeStatisticsTab()
 
         local text = xpGainedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
         text:SetPoint('TOPRIGHT', xpGainedContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-        -- this is fragile, but similar logis used below
+        -- this is fragile, but similar logic is used below
         local xpVariable = 'xpGainedWithoutOption' .. string.gsub(settingName, '^%l', string.upper)
         text:SetText(formatNumberWithCommas(CharacterStats:GetStat(xpVariable)))
 
