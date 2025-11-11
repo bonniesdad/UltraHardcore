@@ -504,7 +504,7 @@ local function CheckAddonEnabled()
 end
 
 -- Function to update all statistics
-local function UpdateStatistics()
+function UpdateStatistics()
   if not UltraHardcoreDB then
     LoadDBData()
   end
