@@ -92,7 +92,7 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
-    showMainStatisticsPanelMaxTunnelVisionOverlayShown = false,
+    showMainStatisticsPanelCloseEscapes = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
