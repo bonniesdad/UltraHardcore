@@ -13,6 +13,8 @@ PATCH_NOTES = {
       '',
       'UI IMPROVEMENTS:',
       '• Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"',
+      '• Added one time Resource Tracking Explainer',
+      '  • The addon will show a message on the screen explaining how to use the resource tracking feature when the minimap is hidden.',
       '',
       'BUG FIXES:',
       '• Fix: Route planner added to xp gained tracker',
