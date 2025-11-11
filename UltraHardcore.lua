@@ -89,7 +89,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
-    FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
+    -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
+    FullHealthReachedIndicator(
+      (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
+      self, event, unit
+    )
     -- Check for pet death/abandonment
     if unit == 'pet' then
       CheckAndAbandonPet()
