@@ -645,9 +645,6 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   end
 end)
 
--- Initial update
-UpdateStatistics()
-
 -- Slash command to reset statistics frame to its saved position
 local function ResetStatsFrameToSavedPosition()
   if not UltraHardcoreDB then
