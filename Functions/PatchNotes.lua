@@ -13,6 +13,7 @@ PATCH_NOTES = {
       '',
       'UI IMPROVEMENTS:',
       '• Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"',
+      '• Play a subtle audio cue upon reaching full health (if UHC Full Health Reached Indicator is enabled)',
       '',
       'BUG FIXES:',
       '• Fix: Route planner added to xp gained tracker',
