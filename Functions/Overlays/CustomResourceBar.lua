@@ -220,9 +220,48 @@ local function ShouldRepositionBuffBar()
   return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar
 end
 
+-- Helper function to check if buff bar should be repositioned
+local function ShouldHideBuffs()
+  return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.hideBuffsCompletely
+end
+
+-- Helper function to check if buff bar should be repositioned
+local function ShouldHideDebuffs()
+  return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.hideDebuffs
+end
+
+local function HideBuffs()
+  if BuffFrame then
+    BuffFrame:Hide()
+  end
+end
+
+local function HideDebuffs()
+  if BuffFrame then 
+    for i = 0, 40 do
+      local debuff = _G['DebuffButton' .. i]
+
+      if debuff ~= nil then
+        debuff:Hide()  
+      end
+
+    end
+  end
+end
+
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
+  if ShouldHideBuffs() then
+    -- If we're hding all buffs, return because we don't care about repositioning
+    HideBuffs()
+    return
+  end
+  if ShouldHideDebuffs() then 
+    -- If we're hiding debuffs, we might still be repositioning the buffs, so do not return
+    HideDebuffs()
+  end
   if not ShouldRepositionBuffBar() then return end
+
   if BuffFrame then
     local buffCount = 0
     local debuffCount = 0
@@ -288,7 +327,7 @@ resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
 resourceBar:RegisterEvent('PET_ATTACK_STOP')
 resourceBar:RegisterEvent('UNIT_AURA')
-resourceBar:RegisterEvent('ADDON_LOADED')
+resourceBar:RegisterEvent('PLAYER_LOGIN')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
 -- Hide the default combo points (Blizzard UI)
@@ -334,6 +373,10 @@ local function HandleBuffBarSettingChange()
   if BuffFrame and BuffFrame:IsVisible() then
     if ShouldRepositionBuffBar() then
       RepositionPlayerBuffBar()
+    elseif ShouldHideBuffs() then 
+      HideBuffs()
+    elseif ShouldHideDebuffs() then
+      HideDebuffs()
     end
     -- When buffBarOnResourceBar is false, do nothing - let other addons control the position
   end
@@ -347,7 +390,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     return
   end
 
-  if event == 'ADDON_LOADED' and unit == 'Blizzard_BuffFrame' then
+  if event == 'PLAYER_LOGIN' and unit == 'Blizzard_BuffFrame' then
     HookBuffFrame()
     HandleBuffBarSettingChange()
   end
