@@ -38,6 +38,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hideMinimap or false,
       GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
     )
+    ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(
       GLOBAL_SETTINGS.hideTargetFrame or false,
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
