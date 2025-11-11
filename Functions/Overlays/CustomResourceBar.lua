@@ -220,6 +220,12 @@ local function ShouldRepositionBuffBar()
   return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar
 end
 
+local DebuffFrame = CreateFrame('Frame', 'UHCDebuffFrame', UIParent)
+DebuffFrame:SetWidth(100)
+DebuffFrame:SetHeight(30)
+DebuffFrame:ClearAllPoints()
+DebuffFrame:SetPoint("TOP", resourceBar, "BOTTOM", 0, -5)
+
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
   if not ShouldRepositionBuffBar() then return end
@@ -230,6 +236,8 @@ local function CenterPlayerBuffBar()
     local xOffset = 0
     local yOffset = 5
     local buffRows = 1
+    local debuffWidth = 0
+    local debuffHeight = 0
 
     -- NOTE:  Buffs do not get put into "slots" sequentially.  My frost mage has arcane int and frost armor in slot 1 and 2
     -- but when a paladin gives me blessing of wisdom it goes into slot 18.  Other lua code I found via google used 40 slots
@@ -244,6 +252,30 @@ local function CenterPlayerBuffBar()
           -- Unfortunately this is going to move the debuffs up as well
           buffRows = buffRows + 1
         end
+      elseif aura and aura.isHarmful == true then 
+        debuffCount = debuffCount + 1
+      end
+    end
+
+    if debuffCount > 0 then
+      local debuffOffset = 0
+      for i = 1, debuffCount do
+        local debuff = _G['DebuffButton' .. i]
+        debuff:SetParent(DebuffFrame)
+        debuff:ClearAllPoints()
+        debuff:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", debuffOffset, 0)
+        if debuffWidth == 0 then debuffWidth = debuff:GetWidth() end
+        if debuffHeight == 0 then debuffHeight = debuff:GetHeight() end
+        debuffOffset = debuffOffset + debuffWidth + 5
+      end
+
+      if debuffCount > 0 and debuffWidth > 0 then
+        local newDebuffWidth = (debuffCount * debuffWidth) + (debuffCount * 5) - 5
+        DebuffFrame:SetScale(1.0)
+        DebuffFrame:SetWidth(newDebuffWidth)
+        DebuffFrame:ClearAllPoints()
+        local debuffAnchor = UnitExists('pet') and petResourceBar or resourceBar
+        DebuffFrame:SetPoint('TOP', debuffAnchor, 'BOTTOM', 0, -20)
       end
     end
 
