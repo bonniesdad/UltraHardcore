@@ -24,7 +24,7 @@ local STATISTIC_TOOLTIPS = {
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
-  closeEscapes = "Number of times you've seen the final tunnel vision phase (<20% health)",
+  closeEscapes = "Number of times your health has dropped below " .. closeEscapeHealthPercent .. "%",
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
@@ -179,7 +179,30 @@ function InitializeStatisticsTab()
       end
     end
 
-    if xpWithoutAddon == 0 then
+    -- Get total XP gained with addon
+    local xpWithAddon = 0
+    if CharacterStats and CharacterStats.GetStat then
+      xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
+    end
+
+    -- Check if character has any UHC settings enabled
+    local hasUHCSettings = false
+    local sections = GetPresetSections('simple', false)
+    for _, section in ipairs(sections) do
+      for _, settingName in ipairs(section.settings or {}) do
+        if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] then
+          hasUHCSettings = true
+          break
+        end
+      end
+      if hasUHCSettings then break end
+    end
+
+    -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
+    local playerLevel = UnitLevel('player') or 1
+    local isLevelOneWithNoXP = (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
+
+    if xpWithoutAddon == 0 or isLevelOneWithNoXP then
       legitStatusLine1:SetText('Verified Ultra status')
       legitStatusLine2:SetText('No XP was gained while the addon was inactive')
       legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
@@ -917,7 +940,7 @@ function InitializeStatisticsTab()
     label = 'Party Deaths Witnessed:',
     tooltipKey = 'partyDeathsWitnessed',
   }, {
-    key = 'maxTunnelVisionOverlayShown',
+    key = 'closeEscapes',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
   }, {

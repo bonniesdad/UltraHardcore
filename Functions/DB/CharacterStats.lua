@@ -53,7 +53,7 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
-    maxTunnelVisionOverlayShown = 0,
+    closeEscapes = 0,
     duelsTotal = 0,
     duelsWon = 0,
     duelsLost = 0,
@@ -308,6 +308,10 @@ end
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
 
+  if statsInitialized then
+    return UltraHardcoreDB.characterStats[characterGUID]
+  end
+
   -- Initialize character stats if they don't exist
   if not UltraHardcoreDB.characterStats then
     UltraHardcoreDB.characterStats = {}
@@ -318,18 +322,16 @@ function CharacterStats:GetCurrentCharacterStats()
   end
 
   -- Initialize new stats for existing characters (backward compatibility)
-  local stats = UltraHardcoreDB.characterStats[characterGUID]
-
   if not statsInitialized then
     for statName, _ in pairs(self.defaults) do
-      if stats[statName] == nil then
-        stats[statName] = self.defaults[statName]
+      if UltraHardcoreDB.characterStats[characterGUID][statName] == nil then
+        UltraHardcoreDB.characterStats[characterGUID][statName] = self.defaults[statName]
       end
     end
     statsInitialized = true
   end
 
-  return stats
+  return UltraHardcoreDB.characterStats[characterGUID]
 end
 
 -- Update a specific stat for the current character
