@@ -22,6 +22,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
+UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
@@ -177,5 +178,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'CHAT_MSG_SYSTEM' then
     DuelTracker(...)
+  elseif event == 'PLAYER_LOGOUT' then
+    -- Cleanup: ensure any hidden map indicators are restored when logging out/reloading
+    if RestorePlayerMapIndicators then
+      RestorePlayerMapIndicators()
+    end
   end
 end)
