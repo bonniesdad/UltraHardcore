@@ -171,42 +171,44 @@ function InitializeStatisticsTab()
   legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
   legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
   local function UpdateLegitStatusText()
-    local xpWithoutAddon = 0
-    local xpWithAddon = 0
-    
+    local xpWithoutAddon = 1
     if CharacterStats and CharacterStats.ReportXPWithoutAddon then
       local reported = CharacterStats:ReportXPWithoutAddon()
       if type(reported) == 'number' then
         xpWithoutAddon = reported
       end
     end
-    
+
+    -- Get total XP gained with addon
+    local xpWithAddon = 0
     if CharacterStats and CharacterStats.GetStat then
-      xpWithAddon = CharacterStats:GetStat('xpGWA') or 0
-    end
-    
-    local totalXP = xpWithAddon + xpWithoutAddon
-    local xpWithAddonPercent = 100
-    
-    if totalXP > 0 then
-      xpWithAddonPercent = (xpWithAddon / totalXP) * 100
+      xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
     end
 
-    -- Three tiers: 100% = perfect (green), 98-99.99% = tainted (yellow), <98% = failed (red)
-    if xpWithoutAddon == 0 then
+    -- Check if character has any UHC settings enabled
+    local hasUHCSettings = false
+    local sections = GetPresetSections('simple', false)
+    for _, section in ipairs(sections) do
+      for _, settingName in ipairs(section.settings or {}) do
+        if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] then
+          hasUHCSettings = true
+          break
+        end
+      end
+      if hasUHCSettings then break end
+    end
+
+    -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
+    local playerLevel = UnitLevel('player') or 1
+    local isLevelOneWithNoXP = (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
+
+    if xpWithoutAddon == 0 or isLevelOneWithNoXP then
       legitStatusLine1:SetText('Verified Ultra status')
       legitStatusLine2:SetText('No XP was gained while the addon was inactive')
       legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
       legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
       legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
       legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
-    elseif xpWithAddonPercent >= 98 then
-      legitStatusLine1:SetText('Tainted Ultra status')
-      legitStatusLine2:SetText('Small amount of XP gained while addon was inactive')
-      legitStatusLine1:SetTextColor(1.0, 0.82, 0.0)
-      legitStatusLine2:SetTextColor(0.9, 0.9, 0.7)
-      legitStatusIcon:SetVertexColor(1.0, 0.82, 0.0)
-      legitStatusLine3:SetTextColor(0.9, 0.9, 0.7)
     else
       legitStatusLine1:SetText('Ultra status failed verification')
       legitStatusLine2:SetText('XP was gained while the addon was inactive')
