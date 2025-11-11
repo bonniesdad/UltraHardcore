@@ -24,7 +24,7 @@ local STATISTIC_TOOLTIPS = {
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
-  closeEscapes = "Number of times you've seen the final tunnel vision phase (<20% health)",
+  closeEscapes = "Number of times your health has dropped below " .. closeEscapeHealthPercent .. "%",
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
@@ -938,7 +938,7 @@ function InitializeStatisticsTab()
     label = 'Party Deaths Witnessed:',
     tooltipKey = 'partyDeathsWitnessed',
   }, {
-    key = 'maxTunnelVisionOverlayShown',
+    key = 'closeEscapes',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
   }, {
