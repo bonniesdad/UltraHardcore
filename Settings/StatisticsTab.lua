@@ -171,14 +171,28 @@ function InitializeStatisticsTab()
   legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
   legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
   local function UpdateLegitStatusText()
-    local xpWithoutAddon = 1
+    local xpWithoutAddon = 0
+    local xpWithAddon = 0
+    
     if CharacterStats and CharacterStats.ReportXPWithoutAddon then
       local reported = CharacterStats:ReportXPWithoutAddon()
       if type(reported) == 'number' then
         xpWithoutAddon = reported
       end
     end
+    
+    if CharacterStats and CharacterStats.GetStat then
+      xpWithAddon = CharacterStats:GetStat('xpGWA') or 0
+    end
+    
+    local totalXP = xpWithAddon + xpWithoutAddon
+    local xpWithAddonPercent = 100
+    
+    if totalXP > 0 then
+      xpWithAddonPercent = (xpWithAddon / totalXP) * 100
+    end
 
+    -- Three tiers: 100% = perfect (green), 98-99.99% = tainted (yellow), <98% = failed (red)
     if xpWithoutAddon == 0 then
       legitStatusLine1:SetText('Verified Ultra status')
       legitStatusLine2:SetText('No XP was gained while the addon was inactive')
@@ -186,6 +200,13 @@ function InitializeStatisticsTab()
       legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
       legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
       legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+    elseif xpWithAddonPercent >= 98 then
+      legitStatusLine1:SetText('Tainted Ultra status')
+      legitStatusLine2:SetText('Small amount of XP gained while addon was inactive')
+      legitStatusLine1:SetTextColor(1.0, 0.82, 0.0)
+      legitStatusLine2:SetTextColor(0.9, 0.9, 0.7)
+      legitStatusIcon:SetVertexColor(1.0, 0.82, 0.0)
+      legitStatusLine3:SetTextColor(0.9, 0.9, 0.7)
     else
       legitStatusLine1:SetText('Ultra status failed verification')
       legitStatusLine2:SetText('XP was gained while the addon was inactive')
