@@ -31,6 +31,7 @@ local settingToXPVariable = {
   petsDiePermanently = 'xpGainedWithoutOptionPetsDiePermanently',
   routePlanner = 'xpGainedWithoutOptionRoutePlanner',
   showFullHealthIndicator = 'xpGainedWithoutOptionShowFullHealthIndicator',
+  showFullHealthIndicatorAudioCue = 'xpGainedWithoutOptionShowFullHealthIndicatorAudioCue',
   hideCustomResourceBar = 'xpGainedWithoutOptionHideCustomResourceBar',
   showIncomingDamageEffect = 'xpGainedWithoutOptionShowIncomingDamageEffect',
   showHealingIndicator = 'xpGainedWithoutOptionShowHealingIndicator',

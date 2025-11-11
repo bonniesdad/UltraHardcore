@@ -62,9 +62,13 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideCustomResourceBar',
   tooltip = 'Hide the custom resource bar',
 }, {
-  name = 'UHC Full Health Indicator',
+  name = 'UHC Full Health Indicator (Screen Glow)',
   dbSettingsValueName = 'showFullHealthIndicator',
   tooltip = 'The edges of the screen glow when you are at full health',
+}, {
+  name = 'UHC Full Health Indicator (Audio Cue)',
+  dbSettingsValueName = 'showFullHealthIndicatorAudioCue',
+  tooltip = 'An audio cue plays when you are at full health',
 }, {
   name = 'UHC Incoming Damage Effect',
   dbSettingsValueName = 'showIncomingDamageEffect',
