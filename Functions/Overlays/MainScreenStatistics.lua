@@ -228,16 +228,16 @@ highestHealCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 highestHealCritValue:SetText(formatNumberWithCommas(0))
 highestHealCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
--- Tunnel vision overlay count row
-local tunnelVisionLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
-tunnelVisionLabel:SetText('Close Escapes:')
-tunnelVisionLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+-- Close escape count row
+local closeEscapesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+closeEscapesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
+closeEscapesLabel:SetText('Close Escapes:')
+closeEscapesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local tunnelVisionValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
-tunnelVisionValue:SetText(formatNumberWithCommas(0))
-tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+local closeEscapesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+closeEscapesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
+closeEscapesValue:SetText(formatNumberWithCommas(0))
+closeEscapesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Duels Total value row
 local duelsTotalLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -408,9 +408,9 @@ local statsElements = { {
   value = highestHealCritValue,
   setting = 'showMainStatisticsPanelHighestHealCritValue',
 }, {
-  label = tunnelVisionLabel,
-  value = tunnelVisionValue,
-  setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown',
+  label = closeEscapesLabel,
+  value = closeEscapesValue,
+  setting = 'showMainStatisticsPanelCloseEscapes',
 }, {
   label = duelsTotalLabel,
   value = duelsTotalValue,
@@ -458,7 +458,7 @@ local function UpdateRowVisibility()
       isVisible = GLOBAL_SETTINGS[element.setting]
     else
       -- Apply default behavior based on the setting
-      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
+      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelCloseEscapes' then
         -- These default to true (show unless explicitly false)
         isVisible = true
       else
@@ -504,7 +504,7 @@ local function CheckAddonEnabled()
 end
 
 -- Function to update all statistics
-local function UpdateStatistics()
+function UpdateStatistics()
   if not UltraHardcoreDB then
     LoadDBData()
   end
@@ -580,9 +580,9 @@ local function UpdateStatistics()
   local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
   highestHealCritValue:SetText(formatNumberWithCommas(highestHealCrit))
 
-  -- Update tunnel vision overlay count
-  local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
-  tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
+  -- Update close escape count
+  local closeEscapes = CharacterStats:GetStat('closeEscapes') or 0
+  closeEscapesValue:SetText(formatNumberWithCommas(closeEscapes))
 
   -- Update Duels Total value
   local duelsTotal = CharacterStats:GetStat('duelsTotal') or 0
@@ -625,15 +625,14 @@ local function UpdateStatistics()
 end
 
 -- Register events to update statistics when they change
-statsFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
-statsFrame:RegisterEvent('ADDON_LOADED') -- Check setting when addon loads
+statsFrame:RegisterEvent('PLAYER_LOGIN') -- Player entity and world are ready. Addon database and C_ APIs are safe to access.
 statsFrame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' then
-    UpdateStatistics()
+  if event == 'PLAYER_LOGIN' then
     CheckAddonEnabled()
+    UpdateStatistics()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     -- Update lowest health when health changes
     UpdateStatistics()
@@ -643,9 +642,6 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Update XP when leveling up
     UpdateStatistics()
-  elseif event == 'ADDON_LOADED' then
-    -- Check setting when addon loads
-    CheckAddonEnabled()
   end
 end)
 
@@ -680,6 +676,3 @@ C_Timer.After(1, function()
   CheckAddonEnabled()
   ApplyStatsBackgroundOpacity()
 end)
-
--- Also check immediately
-CheckAddonEnabled()
