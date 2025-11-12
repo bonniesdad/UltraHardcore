@@ -22,6 +22,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
+UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
@@ -38,6 +39,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hideMinimap or false,
       GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
     )
+    ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(
       GLOBAL_SETTINGS.hideTargetFrame or false,
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
@@ -89,7 +91,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
-    FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
+    -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
+    FullHealthReachedIndicator(
+      (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
+      self, event, unit
+    )
     -- Check for pet death/abandonment
     if unit == 'pet' then
       CheckAndAbandonPet()
@@ -176,35 +182,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'CHAT_MSG_SYSTEM' then
     DuelTracker(...)
-  end
-end)
-
--- Utility: run a function once combat ends (or immediately if not in combat)
-local function RunWhenOutOfCombat(callback)
-  if not InCombatLockdown() then
-    callback()
-    return
-  end
-  local waitFrame = CreateFrame("Frame")
-  waitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-  waitFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    self:SetScript("OnEvent", nil)
-    callback()
-  end)
-end
-
-local f = CreateFrame("Frame")
-f:RegisterEvent("CVAR_UPDATE")
-f:SetScript("OnEvent", function(self, event, cvar, value)
-  if UltraHardcoreDB.disableNameplateHealth then
-    if cvar == "nameplateShowEnemies" or cvar == "nameplateShowFriends" or cvar == "nameplateShowAll" then
-      -- force them off again
-      RunWhenOutOfCombat(function()
-        SetCVar("nameplateShowEnemies", 0)
-        SetCVar("nameplateShowFriends", 0)
-        SetCVar("nameplateShowAll", 0)
-      end)
+  elseif event == 'PLAYER_LOGOUT' then
+    -- Cleanup: ensure any hidden map indicators are restored when logging out/reloading
+    if RestorePlayerMapIndicators then
+      RestorePlayerMapIndicators()
     end
   end
 end)

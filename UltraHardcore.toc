@@ -25,6 +25,7 @@ Functions/WelcomeMessage.lua
 Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
+Functions/ResourceTrackingExplainer.lua
 Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
@@ -43,6 +44,7 @@ Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
 Functions/ExpBar.lua
+Functions/TradeRestriction.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -61,6 +63,7 @@ Functions/Utils/Resource/GetCurrentResourceType.lua
 
 Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/FormatNumber.lua
+Functions/Utils/NormalizeName.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
@@ -77,6 +80,7 @@ Functions/CritTracker.lua
 Functions/KillTracker.lua
 Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
+Functions/VerifyParty.lua
 Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
 

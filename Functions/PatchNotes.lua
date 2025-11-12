@@ -2,14 +2,20 @@
 PATCH_NOTES = {
   {
     version = '1.2.9',
-    date = '2025-11-05',
+    date = '2025-11-14',
     notes = {
+      'NEW FEATURES:',
+      '• UHC Raid Frames',
+      '',
       'NEW STATISTICS:',
       '• Map key presses while map blocked',
       '  • Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.',
       '',
       'UI IMPROVEMENTS:',
-      '• ',
+      '• Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"',
+      '• Added an option to play a subtle audio cue upon reaching full health',
+      '• Added one time Resource Tracking Explainer',
+      '  • The addon will show a message on the screen explaining how to use the resource tracking feature when the minimap is hidden.',
       '',
       'BUG FIXES:',
       '• Fix: Route planner added to xp gained tracker',

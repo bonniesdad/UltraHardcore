@@ -14,8 +14,14 @@ function FullHealthReachedIndicator(enabled, self, event, unit)
     
     -- Check if we went from <100% to 100%
     if currentHealthPercent == 100 and lastHealthPercent < 100 then
-        ShowFullHealthOverlay()
+        if GLOBAL_SETTINGS.showFullHealthIndicator then
+            ShowFullHealthOverlay()
+        end
+
+        if GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue then
+            PlaySoundFile('Interface\\AddOns\\UltraHardcore\\Sounds\\full-health-indicator.mp3', 'Master')
+        end
     end
     
     lastHealthPercent = currentHealthPercent
-end 
+end

@@ -1,6 +1,15 @@
 -- 🟢 Character Stats Management
 local statsInitialized = false
 
+TotalXPTable = {
+  [1]=400, [2]=900, [3]=1400, [4]=2100, [5]=2800, [6]=3600, [7]=4500, [8]=5400, [9]=6500, [10] = 7600,
+  [11] = 8800, [12] = 10100, [13] = 11400, [14] = 12900, [15] = 14400, [16] = 16000, [17] = 17700, [18] = 19400, [19] = 21300, [20] = 23200,
+  [21] = 25200, [22] = 27300, [23] = 29400, [24] = 31700, [25] = 34000, [26] = 36400, [27] = 38900, [28] = 41400, [29] = 44300, [30] = 47400,
+  [31] = 50800, [32] = 54500, [33] = 58600, [34] = 62800, [35] = 67100, [36] = 71600, [37] = 76100, [38] = 80800, [39] = 85700, [40] = 90700,
+  [41] = 95800, [42] = 101000, [43] = 106300, [44] = 111800, [45] = 117500, [46] = 123200, [47] = 129100, [48] = 135100, [49] = 141200, [50] = 147500,
+  [51] = 153900, [52] = 160400, [53] = 167100, [54] = 173900, [55] = 180800, [56] = 187900, [57] = 195000, [58] = 202300, [59] = 209800, [60] = 217400
+}
+
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -30,8 +39,12 @@ local CharacterStats = {
     xpGainedWithoutOptionHideActionBars = 0,
     xpGainedWithoutOptionPetsDiePermanently = 0,
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
+    xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
     xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
+    xpGWA = 0, -- Used to track XP gained with the addon
+    xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing
+    xpTotal = 0,
     xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
     healthPotionsUsed = 0,
@@ -40,7 +53,7 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
-    maxTunnelVisionOverlayShown = 0,
+    closeEscapes = 0,
     duelsTotal = 0,
     duelsWon = 0,
     duelsLost = 0,
@@ -206,9 +219,98 @@ function CharacterStats:ResetWorldBossesSlain()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ReportXPWithoutAddon()
+  local stats = CharacterStats:GetCurrentCharacterStats()
+  local xpGainedWithoutAddon = stats.xpGWOA
+  if xpGainedWithoutAddon ~= nil then
+    return xpGainedWithoutAddon
+  else
+    print('Cannot load XP Gained without addon stat')
+    return false
+  end
+end
+
+function CharacterStats:CalculateTotalXPGained()
+    local stats = CharacterStats:GetCurrentCharacterStats()
+    local currentLevel = UnitLevel("player")
+    local totalXP = 0
+
+    for i, xp in ipairs(TotalXPTable) do
+      if i < currentLevel then
+        totalXP = totalXP + xp
+      end
+    end
+    local currentXP = UnitXP('player')
+    totalXP = totalXP + currentXP
+    CharacterStats:UpdateStat("xpTotal", totalXP)
+    if stats.xpGWA ~= nil and stats.xpGWA > 0 then
+      CharacterStats:UpdateStat("xpGWOA", totalXP - stats.xpGWA)
+    end
+    return totalXP
+end
+
+-- This will retroactively figure out the amount of XP gained _with_ the addon
+function CharacterStats:ResetXPGainedWithAddon(forceReset)
+  local stats = self:GetCurrentCharacterStats()
+
+  if stats.xpGWA == nil or forceReset ~= nil then
+    local lowestXP = 9999999 -- Start with a high number
+
+    for statName, _ in pairs(self.defaults) do
+      local xpForStat = stats[statName] 
+
+      -- Only use XP Gained Without stats for finding lowest XP value
+      local startIdx = string.find(statName, "xpGainedWithoutOption")
+
+      if startIdx == 1 then
+        -- xpGainedWithoutOption stats that have never get incremented seem to be nil in the stats for some characters
+        if xpForStat == nil then xpForStat = 0 end
+        if xpForStat < lowestXP then
+          lowestXP = xpForStat
+        end
+      end
+    end
+
+    if lowestXP < 9999999 then
+      -- This calculates XP gained in the current level + the previous levels
+      local totalXP = self.CalculateTotalXPGained()
+      -- This subtracts the lowest "xpGainedWithout" stat value from current XP to figure out
+      -- how much XP was gained with the addon.
+      local xpDiff = totalXP - lowestXP
+      local xpWithoutAddon = totalXP - xpDiff
+      --[[print('You have ' .. formatNumberWithCommas(totalXP) .. ' total XP. ') 
+      print(formatNumberWithCommas(xpDiff) .. ' gained with addon.') 
+      print(formatNumberWithCommas(xpWithoutAddon) .. ' gained without addon.  ') 
+      print('Validate: ' .. formatNumberWithCommas(xpWithoutAddon + xpDiff) .. ' should equal ' .. formatNumberWithCommas(totalXP))]]
+      CharacterStats:UpdateStat("xpGWA", xpDiff)
+      CharacterStats:UpdateStat("xpGWOA", xpWithoutAddon)
+    end
+  end
+end
+
+function CharacterStats:XPChecksum(playerXP, deficit, playerLevel)
+  local stats = self:GetCurrentCharacterStats()
+
+  if playerXP == nil then playerXP = stats.xpTotal end
+  if deficit == nil then deficit = stats.xpGWOA end
+  if playerLevel == nil then playerLevel = UnitLevel("player") end
+
+  local digits = getDigitsFromString(playerXP - deficit)
+  local checkTotal = 0 
+  for i, digit in ipairs(digits) do
+    checkTotal = checkTotal + (i * digit)
+  end
+
+  return string.format("%.2f", (checkTotal / playerLevel))
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
+
+  if statsInitialized then
+    return UltraHardcoreDB.characterStats[characterGUID]
+  end
 
   -- Initialize character stats if they don't exist
   if not UltraHardcoreDB.characterStats then
@@ -220,18 +322,16 @@ function CharacterStats:GetCurrentCharacterStats()
   end
 
   -- Initialize new stats for existing characters (backward compatibility)
-  local stats = UltraHardcoreDB.characterStats[characterGUID]
-
   if not statsInitialized then
     for statName, _ in pairs(self.defaults) do
-      if stats[statName] == nil then
-        stats[statName] = self.defaults[statName]
+      if UltraHardcoreDB.characterStats[characterGUID][statName] == nil then
+        UltraHardcoreDB.characterStats[characterGUID][statName] = self.defaults[statName]
       end
     end
     statsInitialized = true
   end
 
-  return stats
+  return UltraHardcoreDB.characterStats[characterGUID]
 end
 
 -- Update a specific stat for the current character
@@ -647,11 +747,6 @@ SlashCmdList['RESETWORLDBOSSES'] = function()
   CharacterStats:ResetWorldBossesSlain()
 end
 
-SLASH_RESETXP1 = '/resetxp'
-SlashCmdList['RESETXP'] = function()
-  CharacterStats:ResetXPWithoutAddon()
-end
-
 -- Register slash command to reset stats
 SLASH_RESETSTATS1 = '/resetstats'
 SlashCmdList['RESETSTATS'] = function()
@@ -687,6 +782,43 @@ SlashCmdList['SETLOWESTHEALTH'] = function(msg)
   CharacterStats:SetLowestHealth(msg)
 end
 
+-- We do not want a reset command for this in a release
+--[[SLASH_RESETXPGWA1 = '/resetxpgwa'
+SlashCmdList['RESETXPGWA'] = function()
+  CharacterStats:ResetXPGainedWithAddon(true)
+end
+
+SLASH_XPREPORT1 = '/uhcxp'
+SlashCmdList['XPREPORT'] = function()
+  local stats = CharacterStats:GetCurrentCharacterStats()
+  print('You have earned ' .. formatNumberWithCommas(stats.xpGWA) .. ' XP with the addon enabled and ' .. formatNumberWithCommas(stats.xpTotal - stats.xpGWA) .. ' without.')
+end]]
+
+SLASH_CHECKXPREPORT1 = '/uhccheckxp'
+SlashCmdList['CHECKXPREPORT'] = function(msg)
+  local playerXP = 0
+  local deficit = 0
+  local level = 0
+  if msg == nil or msg == '' then 
+    print('Check for a valid /uhcv message.  If the checksum from this command does not match theirs, it might be fake.')
+    print('Usage: /uhccheckxp total_xp xp_without_uhc player_level')
+  else
+    local results = {}
+    for part in string.gmatch(msg, "([^ ]+)") do
+        table.insert(results, part)
+    end
+    playerXP = results[1]
+    deficit = results[2]
+    level = results[3]
+
+    if playerXP ~= nil and deficit ~= nil and level ~= nil then
+      local checksum = CharacterStats:XPChecksum(playerXP, deficit, level)
+      print('Player checksum should be ' .. checksum)
+    else
+      print('Cannot check XP report, run /uhcxp by itself to see usage')
+    end
+  end
+end
 -- Slash command to post version to current chat
 SLASH_POSTVERSION1 = '/uhcversion'
 SLASH_POSTVERSION2 = '/uhcv'
@@ -695,6 +827,16 @@ SlashCmdList['POSTVERSION'] = function()
   local playerName = UnitName('player')
   local message = playerName .. ' is using UltraHardcore version ' .. version
 
+  local xpDeficit = CharacterStats:ReportXPWithoutAddon()
+
+  if xpDeficit ~= false then
+    local stats = CharacterStats:GetCurrentCharacterStats()
+    local playerXP = stats.xpTotal
+    message = message
+              .. ' [Total XP: ' .. formatNumberWithCommas(playerXP) .. ']' 
+              .. ' [XP w/o UHC: ' .. formatNumberWithCommas(xpDeficit) .. ']'
+              .. ' (Checksum: '.. CharacterStats:XPChecksum() .. ')'
+  end
   -- Determine the best chat channel to use
   local chatType = nil
   local chatTarget = nil
