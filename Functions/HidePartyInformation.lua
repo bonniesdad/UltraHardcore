@@ -16,8 +16,6 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE =
   }
 
 function SetPartyFramesInfo(hideGroupHealth)
-  ForcePartyFrames()
-
   if hideGroupHealth then
     for n = 1, 5 do
       SetPartyFrameInfo(n)
@@ -341,23 +339,6 @@ local function HookCompactRaidHealthHiding()
   hooksecurefunc('CompactUnitFrame_UpdateAll', hideFromUpdate)
 end
 
-function ForcePartyFrames()
-  if InCombatLockdown() then
-    -- If in combat, queue the CVar change for later
-    C_Timer.After(0.1, function()
-      if not InCombatLockdown() then
-        ForcePartyFrames()
-      end
-    end)
-  else
-    -- Only change the CVar if it's not already set to 0
-    local currentValue = GetCVar('useCompactPartyFrames')
-    if currentValue ~= '0' then
-      SetCVar('useCompactPartyFrames', 0)
-    end
-  end
-end
-
 -- Ensure that party frames are always configured
 local frame = CreateFrame('Frame')
 frame:RegisterEvent('CVAR_UPDATE')
@@ -381,7 +362,6 @@ frame:SetScript('OnEvent', function(self, event, arg1)
   if GLOBAL_SETTINGS.hideGroupHealth then
     -- Only apply changes when not in combat lockdown
     if not InCombatLockdown() then
-      ForcePartyFrames()
       -- Apply styling to all party frames
       for n = 1, 5 do
         SetPartyFrameInfo(n)
@@ -393,7 +373,6 @@ frame:SetScript('OnEvent', function(self, event, arg1)
       -- If in combat, defer the changes
       C_Timer.After(0.1, function()
         if not InCombatLockdown() and GLOBAL_SETTINGS.hideGroupHealth then
-          ForcePartyFrames()
           for n = 1, 5 do
             SetPartyFrameInfo(n)
           end

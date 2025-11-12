@@ -52,10 +52,6 @@ function TunnelVision(self, event, unit, showTunnelVision)
 
     -- Show overlays that should be active but aren't yet (health went down)
     if shouldShow19 and not wasShowing19 then
-      local currentMaxTunnelVisionOverlayShown =
-        CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
-      local newCount = currentMaxTunnelVisionOverlayShown + 1
-      CharacterStats:UpdateStat('maxTunnelVisionOverlayShown', newCount)
       ShowTunnelVision(19)
     end
     if shouldShow14 and not wasShowing14 then
