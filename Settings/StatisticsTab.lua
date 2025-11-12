@@ -338,7 +338,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING
   )
-  levelText:SetText(formatNumberWithCommas(1))
+  levelText:SetText(formatNumberWithCommas(UnitLevel("player")))
 
   -- Create radio button for showing level in main screen statistics
   local showStatsLevelRadio =
@@ -376,7 +376,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
   )
-  lowestHealthText:SetText(string.format('%.1f', lowestHealthScore or 100) .. '%')
+  lowestHealthText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealth') or 100))
 
   -- Create radio button for showing lowest health in main screen statistics
   local showStatsLowestHealthRadio =
@@ -403,7 +403,7 @@ function InitializeStatisticsTab()
     LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
-  lowestHealthThisLevelLabel:SetText('This Level (Beta):')
+  lowestHealthThisLevelLabel:SetText('This Level:')
   AddStatisticTooltip(lowestHealthThisLevelLabel, 'thisLevel')
 
   local lowestHealthThisLevelText =
@@ -415,7 +415,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
-  lowestHealthThisLevelText:SetText('100.0%')
+  lowestHealthThisLevelText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisLevel') or 100))
 
   -- Create radio button for showing this level health in main screen statistics
   local showStatsThisLevelRadio =
@@ -442,7 +442,7 @@ function InitializeStatisticsTab()
     LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
-  lowestHealthThisSessionLabel:SetText('This Session (Beta):')
+  lowestHealthThisSessionLabel:SetText('This Session:')
   AddStatisticTooltip(lowestHealthThisSessionLabel, 'thisSession')
 
   local lowestHealthThisSessionText =
@@ -454,7 +454,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
-  lowestHealthThisSessionText:SetText('100.0%')
+  lowestHealthThisSessionText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisSession') or 100))
 
   -- Create radio button for showing session health in main screen statistics
   local showStatsSessionHealthRadio =
@@ -492,7 +492,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
   )
-  petDeathsText:SetText(formatNumberWithCommas(0))
+  petDeathsText:SetText(formatNumberWithCommas(CharacterStats:GetStat('petDeaths')))
 
   -- Create radio button for showing pet deaths in main screen statistics
   local showStatsPetDeathsRadio =
@@ -578,7 +578,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING
   )
-  enemiesSlainText:SetText(formatNumberWithCommas(0))
+  enemiesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('enemiesSlain')))
 
   -- Create radio button for showing enemies slain in main screen statistics
   local showStatsEnemiesSlainRadio =
@@ -615,7 +615,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
   )
-  elitesSlainText:SetText(formatNumberWithCommas(0))
+  elitesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('elitesSlain')))
 
   -- Create radio button for showing elites slain in main screen statistics
   local showStatsElitesSlainRadio =
@@ -654,7 +654,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
-  rareElitesSlainText:SetText(formatNumberWithCommas(0))
+  rareElitesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('rareElitesSlain')))
 
   -- Create radio button for showing rare elites slain in main screen statistics
   local showStatsRareElitesSlainRadio =
@@ -693,7 +693,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
-  worldBossesSlainText:SetText(formatNumberWithCommas(0))
+  worldBossesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('worldBossesSlain')))
 
   -- Create radio button for showing world bosses slain in main screen statistics
   local showStatsWorldBossesSlainRadio =
@@ -732,7 +732,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
   )
-  dungeonBossesText:SetText(formatNumberWithCommas(0))
+  dungeonBossesText:SetText(formatNumberWithCommas(CharacterStats:GetStat('dungeonBossesKilled')))
 
   -- Create radio button for showing dungeon bosses slain in main screen statistics
   local showStatsDungeonBossesRadio =
@@ -771,7 +771,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
   )
-  dungeonsCompletedText:SetText(formatNumberWithCommas(0))
+  dungeonsCompletedText:SetText(formatNumberWithCommas(CharacterStats:GetStat('dungeonsCompleted')))
 
   -- Create radio button for showing dungeons completed in main screen statistics
   local showStatsDungeonsCompletedRadio =
@@ -808,7 +808,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
   )
-  highestCritText:SetText(formatNumberWithCommas(0))
+  highestCritText:SetText(formatNumberWithCommas(CharacterStats:GetStat('highestCritValue')))
 
   -- Create radio button for showing highest crit value in main screen statistics
   local showStatsHighestCritRadio =
@@ -847,7 +847,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
   )
-  highestHealCritText:SetText(formatNumberWithCommas(0))
+  highestHealCritText:SetText(formatNumberWithCommas(CharacterStats:GetStat('highestHealCritValue')))
 
   -- Create radio button for showing highest heal crit value in main screen statistics
   local showStatsHighestHealCritRadio =
@@ -986,7 +986,17 @@ function InitializeStatisticsTab()
 
     local text = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-    text:SetText(formatNumberWithCommas(0))
+    if stat.key == "duelsWinPercent" then
+      -- format percentage stats differently
+      local duelWinPercent = CharacterStats:GetStat(stat.key)
+      if duelWinPercent % 1 == 0 then
+        text:SetText(string.format('%d%%', duelWinPercent))
+      else
+        text:SetText(string.format('%.1f%%', duelWinPercent))
+      end
+    else
+      text:SetText(formatNumberWithCommas(CharacterStats:GetStat(stat.key)))
+    end
 
     -- Create radio button for this survival statistic
     local radio = CreateFrame('CheckButton', nil, survivalContent, 'UIRadioButtonTemplate')
@@ -1121,7 +1131,9 @@ function InitializeStatisticsTab()
 
         local text = xpGainedContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
         text:SetPoint('TOPRIGHT', xpGainedContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-        text:SetText(formatNumberWithCommas(0))
+        -- this is fragile, but similar logic is used below
+        local xpVariable = 'xpGainedWithoutOption' .. string.gsub(settingName, '^%l', string.upper)
+        text:SetText(formatNumberWithCommas(CharacterStats:GetStat(xpVariable)))
 
         xpBreakdownLabels[settingName] = label
         xpBreakdownTexts[settingName] = text
