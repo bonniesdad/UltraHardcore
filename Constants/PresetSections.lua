@@ -53,6 +53,8 @@ local PRESET_SECTIONS = { {
     'announcePartyDeathsOnGroupJoin',
     'announceDungeonsCompletedOnGroupJoin',
     'buffBarOnResourceBar',
+    'hideBuffsCompletely',
+    'hideDebuffs',
     'newHighCritAppreciationSoundbite',
     'playPartyDeathSoundbite',
     'playPlayerDeathSoundbite',
