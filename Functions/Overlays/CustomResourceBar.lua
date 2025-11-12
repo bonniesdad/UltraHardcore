@@ -278,13 +278,11 @@ local function CenterPlayerBuffBar()
         buffOffset = buffOffset + buffWidth
         if buffCount < buffsPerRow and i < buffCount then
           buffOffset = buffOffset + iconSpacing
-          print("Buff " .. i .. " offset is " .. buffOffset)
         end
 
         if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
           buffYOffset = buffYOffset + buffHeight + rowSpacing
           buffOffset = 0
-          print("Buff " .. i .. " y-offset is " .. buffYOffset)
         end
     end
 
@@ -348,7 +346,6 @@ local function CenterPlayerBuffBar()
 
       if buffRows > 1 then
         -- yOffset = ((buffRows - 1) * height) + ((buffRows - 1) * 5)
-        print("Buff frame height is now: " .. buffRows * (height + rowSpacing))
         UHCBuffFrame:SetHeight(buffRows * (height + rowSpacing))
       else
         UHCBuffFrame:SetHeight(height + rowSpacing)
