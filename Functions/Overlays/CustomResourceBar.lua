@@ -241,6 +241,11 @@ local function ShouldHideDebuffs()
   return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.hideDebuffs
 end
 
+-- Safer: avoid reparenting/reanchoring Blizzard debuff buttons (can cause anchor loops)
+local function ShouldRepositionDebuffs()
+  return false
+end
+
 local function HideBuffs()
   if BuffFrame then
     BuffFrame:Hide()
@@ -325,8 +330,8 @@ local function CenterPlayerBuffBar()
         end
     end
 
-    -- Move debuff buttons into our custom frame
-    if debuffCount > 0 then
+    -- Move debuff buttons into our custom frame (disabled to avoid anchor family loops)
+    if ShouldRepositionDebuffs() and debuffCount > 0 then
       local debuffOffset = 0
       for i = 1, debuffCount do
         local debuff = _G['DebuffButton' .. i]
