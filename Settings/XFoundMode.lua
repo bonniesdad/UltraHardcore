@@ -13,53 +13,24 @@ function InitializeXFoundModeTab()
   -- Check if tabContents[4] exists
   if not tabContents or not tabContents[4] then return end
 
-  -- If placeholder is enabled, show a simple message and skip building pages
-    if not XFoundModeManager.parentFrame then
-      XFoundModeManager.parentFrame = tabContents[4]
-    end
-
-    if not XFoundModeManager.placeholder then
-      local placeholder = CreateFrame('Frame', nil, XFoundModeManager.parentFrame)
-      placeholder:SetAllPoints(XFoundModeManager.parentFrame)
-      placeholder:Hide()
-
-      local message = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
-      message:SetPoint('CENTER', placeholder, 'CENTER', 0, 10)
-      message:SetText('Coming In Phase 2!')
-
-      local subText = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-      subText:SetPoint('TOP', message, 'BOTTOM', 0, -16)
-      subText:SetWidth(460)
-      subText:SetJustifyH('CENTER')
-      subText:SetNonSpaceWrap(true)
-      subText:SetText("Guild and Group found are nearly done.\nWe're working on the anti cheat system before releasing it to the public.")
-
-      local subText2 = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-      subText2:SetPoint('TOP', subText, 'BOTTOM', 0, -8)
-      subText2:SetWidth(460)
-      subText2:SetJustifyH('CENTER')
-      subText2:SetNonSpaceWrap(true)
-      subText2:SetText("Seriously, why y'all cheating? It gives me a whole lot more work to do!")
-
-      XFoundModeManager.placeholder = placeholder
-    end
-
-    XFoundModeManager:HideAllPages()
-    XFoundModeManager.placeholder:Show()
-    XFoundModeManager.currentPage = 'placeholder'
-end
-
-  -- Initialize the manager if not already done
---[[
+  -- Ensure parent frame is set
   if not XFoundModeManager.parentFrame then
     XFoundModeManager.parentFrame = tabContents[4]
+  end
 
-    -- Create all pages only once
-    if XFoundModePages then
-      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(tabContents[4])
-      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(tabContents[4])
-      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(tabContents[4])
-      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(tabContents[4])
+  -- Lazily create pages once
+  if XFoundModePages then
+    if not XFoundModeManager.pages.intro then
+      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.status then
+      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.guildConfirm then
+      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.groupConfirm then
+      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
     end
   end
 
@@ -79,9 +50,7 @@ end
     XFoundModeManager:ShowStatusPage()
   end
 end
-]]
 
---[[
 -- Show Intro Page (for level 1 players)
 function XFoundModeManager:ShowIntroPage()
   self:HideAllPages()
@@ -121,7 +90,7 @@ function XFoundModeManager:ShowGroupConfirmPage()
     self.currentPage = 'groupConfirm'
   end
 end
-]]
+
 
 -- Hide all pages
 function XFoundModeManager:HideAllPages()

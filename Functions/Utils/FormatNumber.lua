@@ -24,3 +24,12 @@ function formatNumberWithCommas(number)
 
   return formatted
 end
+
+function getDigitsFromString(num)
+    local num_str = tostring(num)
+    local digits = {}
+    for i = 1, #num_str do
+        table.insert(digits, tonumber(num_str:sub(i, i)))
+    end
+    return digits
+end
