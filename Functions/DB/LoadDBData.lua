@@ -50,6 +50,7 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
+    showTargetDebuffs = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
@@ -91,12 +92,14 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
-    showMainStatisticsPanelMaxTunnelVisionOverlayShown = false,
+    showMainStatisticsPanelCloseEscapes = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelXpGWA = false,
+    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Initialize settings for current character if they don't exist
