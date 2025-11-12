@@ -62,9 +62,13 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideCustomResourceBar',
   tooltip = 'Hide the custom resource bar',
 }, {
-  name = 'UHC Full Health Indicator',
+  name = 'UHC Full Health Indicator (Screen Glow)',
   dbSettingsValueName = 'showFullHealthIndicator',
   tooltip = 'The edges of the screen glow when you are at full health',
+}, {
+  name = 'UHC Full Health Indicator (Audio Cue)',
+  dbSettingsValueName = 'showFullHealthIndicatorAudioCue',
+  tooltip = 'An audio cue plays when you are at full health',
 }, {
   name = 'UHC Incoming Damage Effect',
   dbSettingsValueName = 'showIncomingDamageEffect',
@@ -89,6 +93,10 @@ local settingsCheckboxOptions = { {
   name = 'Completely Remove Target Frame',
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
+}, {
+  name = 'Show Target Debuffs',
+  dbSettingsValueName = 'showTargetDebuffs',
+  tooltip = 'Show debuffs on the target frame.',
 }, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
@@ -118,6 +126,14 @@ local settingsCheckboxOptions = { {
   name = 'Buff Bar on Resource Bar',
   dbSettingsValueName = 'buffBarOnResourceBar',
   tooltip = 'Position player buff bar on top of the custom resource bar',
+}, {
+  name = 'Hide Buffs & Debuffs',
+  dbSettingsValueName = 'hideBuffsCompletely',
+  tooltip = 'Hides buffs and debuffs completely',
+}, {
+  name = 'Hide Debuffs',
+  dbSettingsValueName = 'hideDebuffs',
+  tooltip = 'Hides debuff icons only',
 }, {
   name = 'Highest Crit Appreciation Soundbite',
   dbSettingsValueName = 'newHighCritAppreciationSoundbite',
@@ -202,6 +218,8 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
   buffBarOnResourceBar = false,
+  hideBuffsCompletely = false,
+  hideDebuffs = false,
   playPartyDeathSoundbite = false,
   playPlayerDeathSoundbite = false,
   spookyTunnelVision = false,
@@ -242,6 +260,8 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
   buffBarOnResourceBar = false,
+  hideBuffsCompletely = false,
+  hideDebuffs = false,
   playPartyDeathSoundbite = false,
   playPlayerDeathSoundbite = false,
   spookyTunnelVision = false,
@@ -282,6 +302,8 @@ local presets = { {
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
   buffBarOnResourceBar = false,
+  hideBuffsCompletely = false,
+  hideDebuffs = false,
   playPartyDeathSoundbite = false,
   playPlayerDeathSoundbite = false,
   spookyTunnelVision = false,
@@ -437,6 +459,7 @@ function InitializeSettingsOptionsTab()
     elseif i == 3 then
       presetText:SetText('Extreme')
     end
+    presetText:SetTextColor(0.922, 0.871, 0.761)
 
     button:SetScript('OnClick', function()
       applyPreset(i)
@@ -667,7 +690,7 @@ function InitializeSettingsOptionsTab()
       local sectionHeader = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
       sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', 4, 0)
       sectionHeader:SetText(section.title)
-      sectionHeader:SetTextColor(1, 1, 0.5)
+      sectionHeader:SetTextColor(0.922, 0.871, 0.761)
 
       local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
       local headerCountText = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -675,6 +698,10 @@ function InitializeSettingsOptionsTab()
       headerCountText:SetPoint('RIGHT', headerIcon, 'LEFT', -6, 0)
       headerIcon:SetSize(16, 16)
       headerIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
+      -- Hide count for sections below the Optional features note (sections after Extreme)
+      if sectionIndex > 3 then
+        headerCountText:Hide()
+      end
 
       sectionChildren[sectionIndex] = {}
       sectionChildSettingNames[sectionIndex] = {}
@@ -850,6 +877,39 @@ function InitializeSettingsOptionsTab()
       prevSectionFrame = sectionFrame
       lastSectionFrame = sectionFrame
       table.insert(sectionFrames, sectionFrame)
+      -- Insert an informational note after the Extreme section
+      if sectionIndex == 3 then
+        local infoFrame = CreateFrame('Frame', nil, scrollChild)
+        infoFrame:SetWidth(420)
+        infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
+        infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
+        infoFrame:SetHeight(64)
+
+        -- Divider line above the note
+        local divider = infoFrame:CreateTexture(nil, 'ARTWORK')
+        divider:SetTexture('Interface\\Buttons\\WHITE8X8')
+        divider:SetVertexColor(0.6, 0.6, 0.6, 0.6)
+        divider:SetPoint('TOPLEFT', infoFrame, 'TOPLEFT', 0, -2)
+        divider:SetPoint('TOPRIGHT', infoFrame, 'TOPRIGHT', 0, -2)
+        divider:SetHeight(1)
+
+        -- Small title
+        local titleText = infoFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
+        titleText:SetPoint('TOPLEFT', divider, 'BOTTOMLEFT', 10, -12)
+        titleText:SetText('Optional features')
+
+        -- Body text under the title
+        local bodyText = infoFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+        bodyText:SetPoint('TOPLEFT', titleText, 'BOTTOMLEFT', 0, -2)
+        bodyText:SetPoint('RIGHT', infoFrame, 'RIGHT', -10, 0)
+        bodyText:SetJustifyH('LEFT')
+        bodyText:SetJustifyV('TOP')
+        bodyText:SetText('Everything below is optional and not part of the core Ultra experience. Use these tweaks if they suit your playstyle.')
+
+        -- Ensure subsequent sections anchor below this note
+        prevSectionFrame = infoFrame
+        lastSectionFrame = infoFrame
+      end
     end
 
     -- Expose a global to refresh all section counts after bulk changes
@@ -963,7 +1023,7 @@ function InitializeSettingsOptionsTab()
   local colorHeaderText = colorHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   colorHeaderText:SetPoint('LEFT', colorHeaderButton, 'LEFT', 4, 0)
   colorHeaderText:SetText('Ultra UI Settings')
-  colorHeaderText:SetTextColor(1, 1, 0.5)
+  colorHeaderText:SetTextColor(0.922, 0.871, 0.761)
   local colorHeaderIcon = colorHeaderButton:CreateTexture(nil, 'ARTWORK')
   colorHeaderIcon:SetPoint('RIGHT', colorHeaderButton, 'RIGHT', -6, 0)
   colorHeaderIcon:SetSize(16, 16)
@@ -976,7 +1036,7 @@ function InitializeSettingsOptionsTab()
   local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   resourceSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
   resourceSubHeader:SetText('Resource Bar Colours')
-  resourceSubHeader:SetTextColor(1, 0.85, 0.4)
+  resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local COLOR_ROWS_TOP_OFFSET = HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP
 
@@ -1272,7 +1332,7 @@ function InitializeSettingsOptionsTab()
   local statsSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   statsSubHeader:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, -(COLOR_ROWS_TOP_OFFSET + (#colorRows * ROW_HEIGHT) + SUBHEADER_GAP))
   statsSubHeader:SetText('Statistics Background')
-  statsSubHeader:SetTextColor(1, 0.85, 0.4)
+  statsSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
   opacityRow:SetSize(380, 24)
@@ -1318,7 +1378,7 @@ function InitializeSettingsOptionsTab()
   local clockSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   clockSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
   clockSubHeader:SetText('Minimap Clock Scale')
-  clockSubHeader:SetTextColor(1, 0.85, 0.4)
+  clockSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(380, 24)

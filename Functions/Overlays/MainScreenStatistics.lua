@@ -228,16 +228,16 @@ highestHealCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 highestHealCritValue:SetText(formatNumberWithCommas(0))
 highestHealCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
--- Tunnel vision overlay count row
-local tunnelVisionLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
-tunnelVisionLabel:SetText('Close Escapes:')
-tunnelVisionLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+-- Close escape count row
+local closeEscapesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+closeEscapesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
+closeEscapesLabel:SetText('Close Escapes:')
+closeEscapesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
-local tunnelVisionValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-tunnelVisionValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
-tunnelVisionValue:SetText(formatNumberWithCommas(0))
-tunnelVisionValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+local closeEscapesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+closeEscapesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
+closeEscapesValue:SetText(formatNumberWithCommas(0))
+closeEscapesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- Duels Total value row
 local duelsTotalLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -304,6 +304,30 @@ local blockedMapOpensValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFo
 blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 blockedMapOpensValue:SetText(formatNumberWithCommas(0))
 blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+
+-- XP Gained With Addon
+local xpGWALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+xpGWALabel:SetText('XP w Addon:')
+xpGWALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local xpGWAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWAValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+xpGWAValue:SetText(formatNumberWithCommas(0))
+xpGWAValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+
+-- XP Gained Without Addon
+local xpGWOALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWOALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+xpGWOALabel:SetText('XP w/o Addon:')
+xpGWOALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local xpGWOAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+xpGWOAValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+xpGWOAValue:SetText(formatNumberWithCommas(0))
+xpGWOAValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 
 -- Store all statistics elements for easy management
@@ -384,9 +408,9 @@ local statsElements = { {
   value = highestHealCritValue,
   setting = 'showMainStatisticsPanelHighestHealCritValue',
 }, {
-  label = tunnelVisionLabel,
-  value = tunnelVisionValue,
-  setting = 'showMainStatisticsPanelMaxTunnelVisionOverlayShown',
+  label = closeEscapesLabel,
+  value = closeEscapesValue,
+  setting = 'showMainStatisticsPanelCloseEscapes',
 }, {
   label = duelsTotalLabel,
   value = duelsTotalValue,
@@ -408,6 +432,14 @@ local statsElements = { {
   value = playerJumpsValue,
   setting = 'showMainStatisticsPanelPlayerJumps',
 }, {
+  label = xpGWALabel,
+  value = xpGWAValue,
+  setting = 'showMainStatisticsPanelXpGWA',
+}, {
+  label = xpGWOALabel,
+  value = xpGWOAValue,
+  setting = 'showMainStatisticsPanelXpGWOA',
+}, {
   label = blockedMapOpensLabel,
   value = blockedMapOpensValue,
   setting = 'showMainStatisticsPanelMapKeyPressesWhileMapBlocked',
@@ -426,7 +458,7 @@ local function UpdateRowVisibility()
       isVisible = GLOBAL_SETTINGS[element.setting]
     else
       -- Apply default behavior based on the setting
-      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
+      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelCloseEscapes' then
         -- These default to true (show unless explicitly false)
         isVisible = true
       else
@@ -472,7 +504,7 @@ local function CheckAddonEnabled()
 end
 
 -- Function to update all statistics
-local function UpdateStatistics()
+function UpdateStatistics()
   if not UltraHardcoreDB then
     LoadDBData()
   end
@@ -548,9 +580,9 @@ local function UpdateStatistics()
   local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
   highestHealCritValue:SetText(formatNumberWithCommas(highestHealCrit))
 
-  -- Update tunnel vision overlay count
-  local tunnelVisionOverlay = CharacterStats:GetStat('maxTunnelVisionOverlayShown') or 0
-  tunnelVisionValue:SetText(formatNumberWithCommas(tunnelVisionOverlay))
+  -- Update close escape count
+  local closeEscapes = CharacterStats:GetStat('closeEscapes') or 0
+  closeEscapesValue:SetText(formatNumberWithCommas(closeEscapes))
 
   -- Update Duels Total value
   local duelsTotal = CharacterStats:GetStat('duelsTotal') or 0
@@ -576,6 +608,14 @@ local function UpdateStatistics()
   local playerJumps = CharacterStats:GetStat('playerJumps') or 0
   playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
 
+  -- Update XP gained with addon
+  local xpGWA = CharacterStats:GetStat('xpGWA') or 0
+  xpGWAValue:SetText(formatNumberWithCommas(xpGWA))
+
+  -- Update XP gained without addon
+  local xpGWOA = CharacterStats:GetStat('xpGWOA') or 0
+  xpGWOAValue:SetText(formatNumberWithCommas(xpGWOA))
+
   -- Update Blocked Map Opens value
   local blockedMapOpens = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
   blockedMapOpensValue:SetText(formatNumberWithCommas(blockedMapOpens))
@@ -585,15 +625,14 @@ local function UpdateStatistics()
 end
 
 -- Register events to update statistics when they change
-statsFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
-statsFrame:RegisterEvent('ADDON_LOADED') -- Check setting when addon loads
+statsFrame:RegisterEvent('PLAYER_LOGIN') -- Player entity and world are ready. Addon database and C_ APIs are safe to access.
 statsFrame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' then
-    UpdateStatistics()
+  if event == 'PLAYER_LOGIN' then
     CheckAddonEnabled()
+    UpdateStatistics()
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     -- Update lowest health when health changes
     UpdateStatistics()
@@ -603,31 +642,34 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Update XP when leveling up
     UpdateStatistics()
-  elseif event == 'ADDON_LOADED' then
-    -- Check setting when addon loads
-    CheckAddonEnabled()
   end
 end)
 
--- Create a timer to periodically check for settings changes
-local settingsCheckTimer = C_Timer.NewTicker(1, function()
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showOnScreenStatistics then
-    statsFrame:Show()
-    UpdateRowVisibility()
-    ApplyStatsBackgroundOpacity()
+-- Slash command to reset statistics frame to its saved position
+local function ResetStatsFrameToSavedPosition()
+  if not UltraHardcoreDB then
+    LoadDBData()
+  end
+  statsFrame:ClearAllPoints()
+  local pos = UltraHardcoreDB and UltraHardcoreDB.statsFramePosition or nil
+  if pos then
+    local point = pos.point or 'TOPLEFT'
+    local relPoint = pos.relPoint or pos.relativePoint or 'TOPLEFT'
+    local x = pos.x or pos.xOfs or 130
+    local y = pos.y or pos.yOfs or -10
+    statsFrame:SetPoint(point, UIParent, relPoint, x, y)
   else
-    statsFrame:Hide()
+    statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
   end
-end)
+  print('UltraHardcore: Statistics panel moved to saved position')
+end
 
--- Initial update
-UpdateStatistics()
+SLASH_UHCSTATSRESET1 = '/uhcstatsreset'
+SLASH_UHCSTATSRESET2 = '/uhcsr'
+SlashCmdList['UHCSTATSRESET'] = ResetStatsFrameToSavedPosition
 
 -- Initial check with delay to ensure GLOBAL_SETTINGS is loaded
 C_Timer.After(1, function()
   CheckAddonEnabled()
   ApplyStatsBackgroundOpacity()
 end)
-
--- Also check immediately
-CheckAddonEnabled()
