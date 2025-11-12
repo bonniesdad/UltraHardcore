@@ -804,7 +804,8 @@ partyHealthFrame:RegisterEvent('ADDON_LOADED')
 partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
   if event == 'UNIT_HEALTH_FREQUENT' or event == 'UNIT_HEALTH' then
     -- Raid member health updates
-    if unit and unit:match('^raid%d+$') then
+    local raidFrameInParty = GetCVar('useCompactPartyFrames')
+    if unit and (unit:match('^raid%d+$') or raidFrameInParty) then
       if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
         UpdateRaidHealthIndicatorForUnit(unit)
       end
