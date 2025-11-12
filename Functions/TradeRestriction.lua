@@ -73,7 +73,7 @@ end
 -- Trade overlay to block interaction while GF checks run
 local tradeOverlay = nil
 
-local function F()
+local function EnsureTradeOverlay()
   if tradeOverlay and tradeOverlay:GetParent() == TradeFrame then return tradeOverlay end
   if not TradeFrame then return nil end
   tradeOverlay = CreateFrame('Frame', 'UHCTradeOverlay', TradeFrame)
