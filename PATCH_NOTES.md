@@ -5,6 +5,7 @@
 ### New Features
 
 - UHC Raid Frames
+- Added a new command for verification of party members
 
 ### New Statistics
 
@@ -13,8 +14,11 @@
 
 ### UI Improvements
 
-N/A
-
+- Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"
+- Added one time Resource Tracking Explainer
+  - The addon will show a message on the screen explaining how to use the resource tracking feature when the minimap is hidden.
+  - Added the "/uhcverify" command to verify party members
+  
 ### Bug Fixes
 
 - Route planner added to xp gained tracker

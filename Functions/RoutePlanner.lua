@@ -11,6 +11,14 @@ function SetRoutePlanner(routePlanner)
     else
       MakeMapUnusable()
     end
+  else
+    -- When disabling Route Planner, restore any map indicator changes
+    if MakeMapUsable then
+      MakeMapUsable()
+    end
+    if RestorePlayerMapIndicators then
+      RestorePlayerMapIndicators()
+    end
   end
 end
 
