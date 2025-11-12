@@ -39,6 +39,7 @@ local CharacterStats = {
     xpGainedWithoutOptionHideActionBars = 0,
     xpGainedWithoutOptionPetsDiePermanently = 0,
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
+    xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
     xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
     xpGWA = 0, -- Used to track XP gained with the addon
