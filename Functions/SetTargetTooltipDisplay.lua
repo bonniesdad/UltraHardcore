@@ -14,24 +14,49 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
 
       -- Hide health bar
       GameTooltipStatusBar:Hide()
+      local levelLineFound = false
+      for i = 2, self:NumLines() do
+        if levelLineFound then break end
+        
+        local line = _G['GameTooltipTextLeft' .. i]
+        if line then
+           -- Cache the original font size
+          if not line._defaultFontHeight then
+            line._defaultFontHeight = math.ceil(select(2, line:GetFont()))
+          end
 
-      -- Delay the level line removal to ensure tooltip is fully built (this makes it so it runs last and retains information each time you hover)
-      C_Timer.After(0.0, function()
-        for i = 2, self:NumLines() do
-          local line = _G['GameTooltipTextLeft' .. i]
-          if line then
-            local text = line:GetText()
-            if text then
-              if text:match(LEVEL) and not UnitIsPlayer(unit) then
-                line:SetText(nil)
-                break -- Stop after removing the level line
+          local text = line:GetText()
+          if text then
+            if text:match(LEVEL) and not UnitIsPlayer(unit) then
+              -- Cache original height if not already cached
+              if not line._defaultHeight then
+                line._defaultHeight = line:GetHeight()
               end
+              -- Collapse the line frame immediately to eliminate gap
+              line:SetHeight(0)
+              line:SetAlpha(0)
+              levelLineFound = true
+              C_Timer.After(0, function()
+                line:SetText(nil)
+                -- Restore height after text is removed (tooltip will recalculate)
+                if line._defaultHeight then
+                  line:SetHeight(line._defaultHeight)
+                end
+              end)
+            else -- ensure we reset it for the subsequent lines
+              if line._defaultFontHeight then
+                line:SetTextHeight(line._defaultFontHeight)
+              end
+              if line._defaultHeight then
+                line:SetHeight(line._defaultHeight)
+              end
+              line:SetAlpha(1)
             end
           end
         end
-        -- Refresh tooltip to remove empty line
-        self:Show()
-      end)
+      end
+      -- Refresh tooltip to remove empty line
+      self:Show()
     end)
   end
 end
