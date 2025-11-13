@@ -323,6 +323,15 @@ local function CreateStatusPage(parentFrame)
     
     -- Show/hide supplemental sections to reduce empty space
     local isGroup = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
+    -- Reposition back button specifically for Group Found choice page
+    if backButton and backButton.ClearAllPoints and backButton.SetPoint then
+      backButton:ClearAllPoints()
+      if isGroup then
+        backButton:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, -106) -- move down by ~60 from default 14
+      else
+        backButton:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 14)
+      end
+    end
     if isGroup then
       -- Hide all supplemental sections in Group Found for now
       guildStatusText:Hide()
@@ -383,7 +392,7 @@ local function CreateStatusPage(parentFrame)
         lockNote:SetTextColor(1, 0.8, 0.2)
         -- Position next to buttons for level 1
         lockNote:ClearAllPoints()
-        lockNote:SetPoint('LEFT', saveNamesButton, 'RIGHT', 10, 0)
+        lockNote:SetPoint('LEFT', saveNamesButton, 'RIGHT', 10, -10) -- move note down by 60 only on Group choice page
         lockNote:SetJustifyH('LEFT')
         saveNamesButton:Show()
         if autofillButton then autofillButton:Show() end
@@ -408,6 +417,9 @@ local function CreateStatusPage(parentFrame)
     
     -- Adjust panel size based on mode to reduce empty space
     local desiredHeight = 500
+    if isGroup then
+      desiredHeight = 420
+    end
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and playerLevel > 1 and not isGroup then
       desiredHeight = 420
     end
@@ -419,7 +431,7 @@ local function CreateStatusPage(parentFrame)
     -- Center panel with mode-specific vertical offset (move down by 30 for Group Found)
     if statusFrame.ClearAllPoints and statusFrame.SetPoint then
       statusFrame:ClearAllPoints()
-      local yOffset = (isGroup and -40) or 0
+      local yOffset = ((isGroup and 40) or 0) - 40
       statusFrame:SetPoint('CENTER', statusPage, 'CENTER', 0, yOffset)
     end
   end
