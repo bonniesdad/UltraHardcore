@@ -1,7 +1,7 @@
 -- 🟢 Character Stats Management
 local statsInitialized = false
 
-TotalXPTable = {
+local TotalXPTable = {
   [1]=400, [2]=900, [3]=1400, [4]=2100, [5]=2800, [6]=3600, [7]=4500, [8]=5400, [9]=6500, [10] = 7600,
   [11] = 8800, [12] = 10100, [13] = 11400, [14] = 12900, [15] = 14400, [16] = 16000, [17] = 17700, [18] = 19400, [19] = 21300, [20] = 23200,
   [21] = 25200, [22] = 27300, [23] = 29400, [24] = 31700, [25] = 34000, [26] = 36400, [27] = 38900, [28] = 41400, [29] = 44300, [30] = 47400,
@@ -249,41 +249,97 @@ function CharacterStats:CalculateTotalXPGained()
     return totalXP
 end
 
--- This will retroactively figure out the amount of XP gained _with_ the addon
-function CharacterStats:ResetXPGainedWithAddon(forceReset)
-  local stats = self:GetCurrentCharacterStats()
+function CharacterStats:ShouldRecalculateXPGainedWithAddon(stats)
+  local playerLevel = UnitLevel("player")
+  if stats.xpGWA == nil and stats.xpGWOA == nil then
+    return true
+  elseif stats.xpGWA == 0 and stats.xpGWOA == 0 and stats.xpTotal > 0 then
+    return true
+  else
+    return false
+  end
+end
 
-  if stats.xpGWA == nil or forceReset ~= nil then
-    local lowestXP = 9999999 -- Start with a high number
+function CharacterStats:GetHighestNonHealthStat(stats)
+  local highestXp = 0
+  for statName, _ in pairs(self.defaults) do
+    local xpForStat = stats[statName] 
+    if statName ~= "xpTotal" and statName ~= "xpGWA" and statName ~= "xpGWOA" and statName ~= "playerJumps" then
+      local startIdx = string.find(statName, "lowestHealth")
 
-    for statName, _ in pairs(self.defaults) do
-      local xpForStat = stats[statName] 
-
-      -- Only use XP Gained Without stats for finding lowest XP value
-      local startIdx = string.find(statName, "xpGainedWithoutOption")
-
-      if startIdx == 1 then
-        -- xpGainedWithoutOption stats that have never get incremented seem to be nil in the stats for some characters
+      if startIdx == nil then
         if xpForStat == nil then xpForStat = 0 end
-        if xpForStat < lowestXP then
-          lowestXP = xpForStat
+        if xpForStat > highestXp then
+          highestXp = xpForStat
         end
       end
     end
+  end
+  return highestXp
+end
 
-    if lowestXP < 9999999 then
-      -- This calculates XP gained in the current level + the previous levels
-      local totalXP = self.CalculateTotalXPGained()
-      -- This subtracts the lowest "xpGainedWithout" stat value from current XP to figure out
-      -- how much XP was gained with the addon.
-      local xpDiff = totalXP - lowestXP
-      local xpWithoutAddon = totalXP - xpDiff
-      --[[print('You have ' .. formatNumberWithCommas(totalXP) .. ' total XP. ') 
-      print(formatNumberWithCommas(xpDiff) .. ' gained with addon.') 
-      print(formatNumberWithCommas(xpWithoutAddon) .. ' gained without addon.  ') 
-      print('Validate: ' .. formatNumberWithCommas(xpWithoutAddon + xpDiff) .. ' should equal ' .. formatNumberWithCommas(totalXP))]]
+
+function CharacterStats:GetHighestXpGainedStat(stats)
+  local highestXp = 0
+  for statName, _ in pairs(self.defaults) do
+    local xpForStat = stats[statName] 
+    local startIdx = string.find(statName, "xpGainedWithoutOption")
+
+    if startIdx == 1 then
+      if xpForStat == nil then xpForStat = 0 end
+      if xpForStat > highestXp then
+        highestXp = xpForStat
+      end
+    end
+  end
+  return highestXp
+end
+
+function CharacterStats:GetLowestXpGainedStat(stats) 
+  local lowestXP = 999999999
+  for statName, _ in pairs(self.defaults) do
+    local xpForStat = stats[statName] 
+
+    -- Only use XP Gained Without stats for finding lowest XP value
+    local startIdx = string.find(statName, "xpGainedWithoutOption")
+
+    if startIdx == 1 then
+      -- xpGainedWithoutOption stats that have never get incremented seem to be nil in the stats for some characters
+      if xpForStat == nil then xpForStat = 0 end
+      if xpForStat < lowestXP then
+        lowestXP = xpForStat
+      end
+    end
+  end
+  return lowestXP
+end
+
+-- This will retroactively figure out the amount of XP gained _with_ the addon
+function CharacterStats:ResetXPGainedWithAddon(playerLevel, forceReset)
+  local stats = self:GetCurrentCharacterStats()
+  local xpDiff = 0
+  local xpWithoutAddon = 0
+  local totalXP = 0
+
+  if forceReset ~= nil or self:ShouldRecalculateXPGainedWithAddon(stats) then
+    local lowestXP = self:GetLowestXpGainedStat(stats) or nil
+    local highestXP = self:GetHighestXpGainedStat(stats) or nil
+
+    if lowestXP < 99999999 then
+      totalXP = self.CalculateTotalXPGained()
+      local anyStat = self:GetHighestNonHealthStat(stats)
+
+      if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
+        -- This player looks to have just turned ultra on so all their XP is without addon
+        xpDiff = 0
+      else
+        xpDiff = totalXP - lowestXP
+      end
+      xpWithoutAddon = totalXP - xpDiff
+
       CharacterStats:UpdateStat("xpGWA", xpDiff)
       CharacterStats:UpdateStat("xpGWOA", xpWithoutAddon)
+      CharacterStats:UpdateStat("xpTotal", totalXP)
     end
   end
 end
@@ -680,6 +736,9 @@ end
 -- Export the CharacterStats object
 _G.CharacterStats = CharacterStats
 
+-- Export TotalXPTable so TrackXPPerSetting can use it during level ups
+_G.TotalXPTable = TotalXPTable
+
 -- Register slash commands for individual stat resets
 SLASH_RESETLOWESTHEALTH1 = '/resetlowesthealth'
 SlashCmdList['RESETLOWESTHEALTH'] = function()
@@ -783,16 +842,21 @@ SlashCmdList['SETLOWESTHEALTH'] = function(msg)
 end
 
 -- We do not want a reset command for this in a release
---[[SLASH_RESETXPGWA1 = '/resetxpgwa'
-SlashCmdList['RESETXPGWA'] = function()
+SLASH_DEVRESETXP1 = '/uhcresettracking'
+SlashCmdList['DEVRESETXP'] = function()
+  CharacterStats:UpdateStat("xpTotal", nil)
+  CharacterStats:UpdateStat("xpGWA", nil)
+  CharacterStats:UpdateStat("xpGWOA", nil)
   CharacterStats:ResetXPGainedWithAddon(true)
 end
 
-SLASH_XPREPORT1 = '/uhcxp'
-SlashCmdList['XPREPORT'] = function()
+SLASH_XPGWAREPORT1 = '/uhcxpreport'
+SlashCmdList['XPGWAREPORT'] = function() 
   local stats = CharacterStats:GetCurrentCharacterStats()
-  print('You have earned ' .. formatNumberWithCommas(stats.xpGWA) .. ' XP with the addon enabled and ' .. formatNumberWithCommas(stats.xpTotal - stats.xpGWA) .. ' without.')
-end]]
+  print("Total XP: " .. tostring(stats.xpTotal))
+  print("XP Gained With Addon: " .. tostring(stats.xpGWA))
+  print("XP Gained Without Addon: " .. tostring(stats.xpGWOA))
+end
 
 SLASH_CHECKXPREPORT1 = '/uhccheckxp'
 SlashCmdList['CHECKXPREPORT'] = function(msg)
