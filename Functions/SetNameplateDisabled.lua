@@ -23,6 +23,23 @@ local nameplateMonitorFrame = nil
 local nameplateDisabled = false
 local nameplateFallbackFrame = nil
 
+-- Utility: run a function once combat ends (or immediately if not in combat)
+local function RunWhenOutOfCombat(callback)
+  if not InCombatLockdown() then
+    callback()
+    return
+  end
+  local waitFrame = CreateFrame("Frame")
+  waitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+  waitFrame:SetScript("OnEvent", function(self)
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+    self:SetScript("OnEvent", nil)
+    callback()
+  end)
+end
+
+
+
 -- Safe SetCVar wrapper that checks for protected state
 local function SafeSetCVar(cvar, value)
   if InCombatLockdown() then
@@ -171,14 +188,26 @@ local function StartNameplateMonitoring()
   end
 
   nameplateMonitorFrame = CreateFrame('Frame')
-  nameplateMonitorFrame:SetScript('OnUpdate', function(self, elapsed)
+  nameplateMonitorFrame:RegisterEvent("CVAR_UPDATE")
+  nameplateMonitorFrame:SetScript("OnEvent", function(self, event, cvar, value)
+    -- We only check these three because they have keybinds that can be pressed on accident
+    if cvar == "nameplateShowEnemies" or cvar == "nameplateShowFriends" or cvar == "nameplateShowAll" then
+        -- force them off again
+        RunWhenOutOfCombat(function()
+          SetCVar("nameplateShowEnemies", 0)
+          SetCVar("nameplateShowFriends", 0)
+          SetCVar("nameplateShowAll", 0)
+        end)
+    end
+  end)
+  --[[nameplateMonitorFrame:SetScript('OnUpdate', function(self, elapsed)
     -- Check every 0.5 seconds to avoid performance issues
     self.timer = (self.timer or 0) + elapsed
     if self.timer >= 0.5 then
       self.timer = 0
       CheckNameplateCVars()
     end
-  end)
+  end)]]
 end
 
 -- Stop monitoring nameplate CVars
