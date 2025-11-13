@@ -38,18 +38,19 @@ function LoadDBData()
     petsDiePermanently = false,
     hideActionBars = false,
     tunnelVisionMaxStrata = false,
-    rejectBuffsFromOthers = false,
     routePlanner = false,
     -- Experimental Preset Settings
     hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
+    hideCustomResourceBar = false,
     showIncomingDamageEffect = false,
     showHealingIndicator = false,
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
+    showTargetDebuffs = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
@@ -58,9 +59,9 @@ function LoadDBData()
     announceLevelUpToGuild = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,
-    announcePartyDeathsOnGroupJoin = true,
-    announceDungeonsCompletedOnGroupJoin = true,
-    newHighCritAppreciationSoundbite = true,
+    announcePartyDeathsOnGroupJoin = false,
+    announceDungeonsCompletedOnGroupJoin = false,
+    newHighCritAppreciationSoundbite = false,
     buffBarOnResourceBar = false,
     playPartyDeathSoundbite = false,
     playPlayerDeathSoundbite = false,
@@ -69,7 +70,7 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     -- Group Found teammate names (locked in at level 2)
-    groupFoundNames = {},
+    -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
     showMainStatisticsPanelLevel = true,
     showMainStatisticsPanelLowestHealth = true,
@@ -91,12 +92,14 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
-    showMainStatisticsPanelMaxTunnelVisionOverlayShown = false,
+    showMainStatisticsPanelCloseEscapes = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelXpGWA = false,
+    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Initialize settings for current character if they don't exist
@@ -107,10 +110,6 @@ function LoadDBData()
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
 
-  -- Ensure new keys exist for existing characters
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupFoundNames == nil then
-    GLOBAL_SETTINGS.groupFoundNames = {}
-  end
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
   if UltraHardcoreDB.GLOBAL_SETTINGS and not UltraHardcoreDB.characterSettings[characterGUID] then

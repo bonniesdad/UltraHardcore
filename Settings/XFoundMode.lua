@@ -7,21 +7,30 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
+
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
   -- Check if tabContents[4] exists
   if not tabContents or not tabContents[4] then return end
 
-  -- Initialize the manager if not already done
+  -- Ensure parent frame is set
   if not XFoundModeManager.parentFrame then
     XFoundModeManager.parentFrame = tabContents[4]
+  end
 
-    -- Create all pages only once
-    if XFoundModePages then
-      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(tabContents[4])
-      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(tabContents[4])
-      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(tabContents[4])
-      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(tabContents[4])
+  -- Lazily create pages once
+  if XFoundModePages then
+    if not XFoundModeManager.pages.intro then
+      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.status then
+      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.guildConfirm then
+      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.groupConfirm then
+      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
     end
   end
 
@@ -81,6 +90,7 @@ function XFoundModeManager:ShowGroupConfirmPage()
     self.currentPage = 'groupConfirm'
   end
 end
+
 
 -- Hide all pages
 function XFoundModeManager:HideAllPages()
