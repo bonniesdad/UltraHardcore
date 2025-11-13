@@ -203,7 +203,7 @@ function HideMinimap(showClockEvenWhenMapHidden)
       Minimap:SetParent(UIParent)
 
       Minimap:ClearAllPoints()
-      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, -24)
+      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
       Minimap:SetScale(8.0)
       -- Minimap:SetAlpha(1)
 
