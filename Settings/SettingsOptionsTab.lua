@@ -1046,7 +1046,7 @@ function InitializeSettingsOptionsTab()
     row:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 20, -(COLOR_ROWS_TOP_OFFSET + ((rowIndex - 1) * ROW_HEIGHT)))
 
     local LABEL_WIDTH = 140
-    local SWATCH_WIDTH = 24
+    local SWATCH_WIDTH = 54
     local GAP = 12
 
     local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -1104,6 +1104,19 @@ function InitializeSettingsOptionsTab()
     resetButton:SetPoint('LEFT', pickButton, 'RIGHT', 6, 0)
     resetButton:SetText('Reset')
 
+    local classButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    classButton:SetSize(96, 20)
+    classButton:SetPoint('LEFT', resetButton, 'RIGHT', 6, 0)
+    classButton:SetText('Class Colour')
+    classButton:SetScript('OnClick', function()
+      local _, englishClass = UnitClass('player')
+      local classColor = RAID_CLASS_COLORS[englishClass]
+      if classColor then
+        tempSettings.resourceBarColors[powerKey] = { classColor.r, classColor.g, classColor.b }
+        setSwatchColor(classColor.r, classColor.g, classColor.b)
+      end
+    end)
+    
     pickButton:SetScript('OnClick', function()
       local r, g, b = getCurrentColor()
       local function onColorPicked()
