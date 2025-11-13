@@ -14,7 +14,7 @@ local function CreateStatusPage(parentFrame)
   -- Status Frame
   local statusFrame = CreateFrame('Frame', nil, statusPage, 'BackdropTemplate')
   statusFrame:SetSize(450, 500)
-  statusFrame:SetPoint('TOP', statusPage, 'TOP', 0, -45)
+  statusFrame:SetPoint('CENTER', statusPage, 'CENTER', 0, 0)
 
   statusFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -39,10 +39,12 @@ local function CreateStatusPage(parentFrame)
   if titleText.SetDrawLayer then
     titleText:SetDrawLayer('OVERLAY', 1)
   end
+  -- Hide title on this view
+  if titleText.Hide then titleText:Hide() end
 
   -- Current Mode Display
   local modeLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  modeLabel:SetPoint('TOPLEFT', statusFrame, 'TOPLEFT', 20, -48)
+  modeLabel:SetPoint('TOPLEFT', statusFrame, 'TOPLEFT', 20, -20)
   modeLabel:SetText('Current Mode:')
   modeLabel:SetTextColor(1, 1, 1)
 
@@ -58,21 +60,60 @@ local function CreateStatusPage(parentFrame)
 
   -- Restrictions List
   local restrictionsLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  restrictionsLabel:SetPoint('TOPLEFT', modeLabel, 'BOTTOMLEFT', 0, -10)
+  restrictionsLabel:SetPoint('TOPLEFT', modeLabel, 'BOTTOMLEFT', 0, -20)
   restrictionsLabel:SetText('Current Restrictions:')
   restrictionsLabel:SetTextColor(1, 1, 1)
 
   local restrictionsText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  restrictionsText:SetPoint('TOPLEFT', restrictionsLabel, 'BOTTOMLEFT', 0, -6)
+  restrictionsText:SetPoint('TOPLEFT', restrictionsLabel, 'BOTTOMLEFT', 0, -16)
   restrictionsText:SetWidth(400)
   restrictionsText:SetText('No restrictions active. You can trade freely with all players.')
   restrictionsText:SetJustifyH('LEFT')
   restrictionsText:SetNonSpaceWrap(true)
   restrictionsText:SetTextColor(0.8, 0.8, 0.8)
+  
+  -- What still works (shown when not in Group Found to reduce empty space)
+  local whatWorksLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  whatWorksLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -20)
+  whatWorksLabel:SetText('What still works:')
+  whatWorksLabel:SetTextColor(0.8, 1, 0.8)
+  whatWorksLabel:Hide()
+  
+  local whatWorksText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  whatWorksText:SetPoint('TOPLEFT', whatWorksLabel, 'BOTTOMLEFT', 0, -16)
+  whatWorksText:SetWidth(400)
+  whatWorksText:SetJustifyH('LEFT')
+  whatWorksText:SetNonSpaceWrap(true)
+  whatWorksText:SetTextColor(0.75, 0.9, 0.75)
+  whatWorksText:Hide()
+  
+  -- Guild status line (only meaningful for Guild Found)
+  local guildStatusText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  -- Anchor directly below restrictions (whatWorks section is removed visually)
+  guildStatusText:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -20)
+  guildStatusText:SetWidth(400)
+  guildStatusText:SetJustifyH('LEFT')
+  guildStatusText:Hide()
+  
+  -- Stats block
+  local statsLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  statsLabel:SetPoint('TOPLEFT', guildStatusText, 'BOTTOMLEFT', 0, -20)
+  statsLabel:SetText('Stats:')
+  statsLabel:SetTextColor(1, 1, 1)
+  statsLabel:Hide()
+  
+  local statsText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  statsText:SetPoint('TOPLEFT', statsLabel, 'BOTTOMLEFT', 0, -16)
+  statsText:SetWidth(400)
+  statsText:SetJustifyH('LEFT')
+  statsText:SetNonSpaceWrap(true)
+  statsText:SetTextColor(0.8, 0.8, 0.8)
+  statsText:Hide()
 
   -- Group Found Teammate Inputs (Only meaningful when Group Found is active)
   local groupSectionLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  groupSectionLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -10)
+  -- Default anchor below stats; will be re-anchored dynamically when Group Found is active
+  groupSectionLabel:SetPoint('TOPLEFT', statsText, 'BOTTOMLEFT', 0, -22)
   groupSectionLabel:SetText('Group Found Teammates: (Do not include yourself)')
   groupSectionLabel:SetTextColor(1, 1, 1)
 
@@ -168,8 +209,8 @@ local function CreateStatusPage(parentFrame)
 
   local warningText = warningPanel:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
   warningText:ClearAllPoints()
-  warningText:SetPoint('LEFT', warningIcon, 'RIGHT', 10, 0)
-  warningText:SetPoint('RIGHT', warningPanel, 'RIGHT', -12, 0)
+  warningText:SetPoint('LEFT', warningIcon, 'RIGHT', 16, 0)
+  warningText:SetPoint('RIGHT', warningPanel, 'RIGHT', -18, 0)
   warningText:SetWidth(380)
   warningText:SetText(
     'Note: X Found modes can only be selected at level 1. Your current mode is locked.'
@@ -180,6 +221,18 @@ local function CreateStatusPage(parentFrame)
   if warningText.SetDrawLayer then
     warningText:SetDrawLayer('OVERLAY', 2)
   end
+  
+  -- Simple note used for post-level-1 (no alert box)
+  local lockedNote = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  lockedNote:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 16)
+  lockedNote:SetWidth(420)
+  lockedNote:SetJustifyH('CENTER')
+  lockedNote:SetNonSpaceWrap(true)
+  lockedNote:SetText(
+    'Note: X Found modes can only be selected at level 1. Your current mode is locked.'
+  )
+  lockedNote:SetTextColor(0.9, 0.9, 0.9)
+  lockedNote:Hide()
   -- Back button click handler
   backButton:SetScript('OnClick', function()
     if XFoundModeManager and XFoundModeManager.ShowIntroPage then
@@ -200,14 +253,15 @@ local function CreateStatusPage(parentFrame)
       if warningPanel and warningPanel.SetBackdropBorderColor then
         warningPanel:SetBackdropBorderColor(1, 0.9, 0.3, 1)
       end
+      if warningPanel and warningPanel.Show then warningPanel:Show() end
+      if lockedNote and lockedNote.Hide then lockedNote:Hide() end
     else
       backButton:Hide()
-      warningText:SetText(
-        'Note: X Found modes can only be selected at level 1. Your current mode is locked.'
-      )
-      warningText:SetTextColor(1, 0.6, 0.4) -- Warm orange-red for higher levels
-      if warningPanel and warningPanel.SetBackdropBorderColor then
-        warningPanel:SetBackdropBorderColor(1, 0.5, 0.3, 1)
+      if warningPanel and warningPanel.Hide then warningPanel:Hide() end
+      if lockedNote and lockedNote.Show then
+        lockedNote:SetText('Note: X Found modes can only be selected at level 1. Your current mode is locked.')
+        lockedNote:SetTextColor(0.9, 0.9, 0.9)
+        lockedNote:Show()
       end
     end
 
@@ -216,6 +270,9 @@ local function CreateStatusPage(parentFrame)
     local currentIcon = 'Interface\\Icons\\INV_Misc_QuestionMark'
     local restrictions = 'No restrictions active. You can trade freely with all players.'
     local stats = 'Mode activated: Never\nTrades completed: 0\nRestrictions triggered: 0'
+    local whatWorks = 'All normal gameplay functions are available.'
+    local showGuildStatus = false
+    local guildStatusLine = ''
 
     -- Check if guild found is enabled
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound then
@@ -229,6 +286,15 @@ local function CreateStatusPage(parentFrame)
         ) or 0) .. '\nRestrictions triggered: ' .. (CharacterStats and CharacterStats:GetStat(
           'guildRestrictionsTriggered'
         ) or 0)
+      whatWorks =
+        '• Trading with guild members\n• Quest rewards and vendors\n• Crafting your own items\n• Partying with anyone (trade rules still apply)'
+      showGuildStatus = true
+      local gName = GetGuildInfo and GetGuildInfo('player')
+      if gName then
+        guildStatusLine = 'Current Guild: |cff00ff00' .. gName .. '|r'
+      else
+        guildStatusLine = '|cffff5555You are not in a guild.|r Join a guild to trade.'
+      end
       -- Check if group found is enabled
     elseif GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound then
       currentMode = 'Group Found'
@@ -241,6 +307,8 @@ local function CreateStatusPage(parentFrame)
         ) or 0) .. '\nRestrictions triggered: ' .. (CharacterStats and CharacterStats:GetStat(
           'groupRestrictionsTriggered'
         ) or 0)
+      whatWorks =
+        '• Trading with selected teammates\n• Quest rewards and vendors\n• Crafting your own items\n• Partying with anyone (trade rules still apply)'
     end
 
     -- Update display
@@ -252,17 +320,44 @@ local function CreateStatusPage(parentFrame)
     end
     statusIcon:SetTexture(currentIcon)
     restrictionsText:SetText(restrictions)
+    
+    -- Show/hide supplemental sections to reduce empty space
+    local isGroup = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
+    if isGroup then
+      -- Hide all supplemental sections in Group Found for now
+      guildStatusText:Hide()
+      whatWorksLabel:Hide()
+      whatWorksText:Hide()
+      statsLabel:Hide()
+      statsText:Hide()
+      -- Ensure group section anchors directly under restrictions
+      groupSectionLabel:ClearAllPoints()
+      groupSectionLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -20)
+    else
+      -- Show supplemental sections
+      -- Remove "What still works" section entirely
+      whatWorksLabel:Hide()
+      whatWorksText:Hide()
+      if showGuildStatus then
+        guildStatusText:SetText(guildStatusLine)
+        guildStatusText:Show()
+      else
+        guildStatusText:Hide()
+      end
+      statsLabel:Show()
+      statsText:Show()
+      statsText:SetText(stats)
+      -- Keep group section below the stats (even though hidden)
+      groupSectionLabel:ClearAllPoints()
+      groupSectionLabel:SetPoint('TOPLEFT', statsText, 'BOTTOMLEFT', 0, -22)
+    end
 
     -- Group Found UI state
-    local isGroup = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
     if isGroup then
       groupSectionLabel:Show()
       for i = 1, 10 do
         editBoxes[i]:Show()
       end
-      saveNamesButton:Show()
-      if autofillButton then autofillButton:Show() end
-      if autofillDesc then autofillDesc:Show() end
       lockNote:Show()
 
       -- Prefill from saved settings
@@ -286,9 +381,19 @@ local function CreateStatusPage(parentFrame)
       if canEdit then
         lockNote:SetText('Editable at level 1. Locked from level 2.')
         lockNote:SetTextColor(1, 0.8, 0.2)
+        -- Position next to buttons for level 1
+        lockNote:ClearAllPoints()
+        lockNote:SetPoint('LEFT', saveNamesButton, 'RIGHT', 10, 0)
+        lockNote:SetJustifyH('LEFT')
+        saveNamesButton:Show()
+        if autofillButton then autofillButton:Show() end
+        if autofillDesc then autofillDesc:Show() end
       else
-        lockNote:SetText('Names locked. Changes disabled from level 2.')
-        lockNote:SetTextColor(1, 0.4, 0.4)
+        -- Hide the red lock message entirely when above level 1
+        lockNote:Hide()
+        saveNamesButton:Hide()
+        if autofillButton then autofillButton:Hide() end
+        if autofillDesc then autofillDesc:Hide() end
       end
     else
       groupSectionLabel:Hide()
@@ -299,6 +404,23 @@ local function CreateStatusPage(parentFrame)
       if autofillButton then autofillButton:Hide() end
       if autofillDesc then autofillDesc:Hide() end
       lockNote:Hide()
+    end
+    
+    -- Adjust panel size based on mode to reduce empty space
+    local desiredHeight = 500
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and playerLevel > 1 and not isGroup then
+      desiredHeight = 420
+    end
+    if statusFrame.GetHeight and statusFrame.SetHeight then
+      if math.floor(statusFrame:GetHeight() + 0.5) ~= desiredHeight then
+        statusFrame:SetHeight(desiredHeight)
+      end
+    end
+    -- Center panel with mode-specific vertical offset (move down by 30 for Group Found)
+    if statusFrame.ClearAllPoints and statusFrame.SetPoint then
+      statusFrame:ClearAllPoints()
+      local yOffset = (isGroup and -40) or 0
+      statusFrame:SetPoint('CENTER', statusPage, 'CENTER', 0, yOffset)
     end
   end
 
