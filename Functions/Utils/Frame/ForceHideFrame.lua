@@ -16,10 +16,7 @@ function ForceHideFrame(frame)
         eventFrame:SetScript("OnEvent", function(self, event)
             if event == "PLAYER_REGEN_ENABLED" then
                 -- Combat ended, now safe to hide
-                if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] then
-                    frame.Show = function() end -- Prevent others from showing the frame
-                    frame:Hide()
-                end
+                ForceHideFrame(frame)
                 self:UnregisterAllEvents()
             end
         end)
@@ -31,8 +28,20 @@ function ForceHideFrame(frame)
         ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] = frame.Show
     end
 
-    frame.Show = function() end -- Prevent others from showing the frame
-    frame:Hide()
+    -- Use pcall to safely attempt hiding protected frames
+    local success, err = pcall(function()
+        frame.Show = function() end -- Prevent others from showing the frame
+        frame:Hide()
+    end)
+    
+    -- If the operation failed (protected frame in protected context), defer it
+    if not success then
+        C_Timer.After(0.5, function()
+            if not InCombatLockdown() then
+                ForceHideFrame(frame)
+            end
+        end)
+    end
 end
 
 ---Restores and shows a previously hidden frame
@@ -50,10 +59,7 @@ function RestoreAndShowFrame(frame)
         eventFrame:SetScript("OnEvent", function(self, event)
             if event == "PLAYER_REGEN_ENABLED" then
                 -- Combat ended, now safe to show
-                if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] then
-                    frame.Show = ORIGINAL_FRAME_SHOW_FUNCTIONS[frame]
-                    frame:Show()
-                end
+                RestoreAndShowFrame(frame)
                 self:UnregisterAllEvents()
             end
         end)
@@ -61,7 +67,18 @@ function RestoreAndShowFrame(frame)
     end
 
     if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] then
-        frame.Show = ORIGINAL_FRAME_SHOW_FUNCTIONS[frame]
-        frame:Show()
+        local success, err = pcall(function()
+            frame.Show = ORIGINAL_FRAME_SHOW_FUNCTIONS[frame]
+            frame:Show()
+        end)
+        
+        -- If the operation failed, defer it
+        if not success then
+            C_Timer.After(0.5, function()
+                if not InCombatLockdown() then
+                    RestoreAndShowFrame(frame)
+                end
+            end)
+        end
     end
 end

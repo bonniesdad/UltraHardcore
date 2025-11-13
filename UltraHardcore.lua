@@ -22,6 +22,7 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
+UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
@@ -38,6 +39,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hideMinimap or false,
       GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
     )
+    ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(
       GLOBAL_SETTINGS.hideTargetFrame or false,
       GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
@@ -47,6 +49,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     -- Only update group indicators when not in combat lockdown
     if not InCombatLockdown() then
@@ -68,10 +71,31 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         InitializeGroupButtons()
       end
     end
+    -- Initialize XP Bars at the top of the screen if enabled
+    -- Both bars can be active independently
+    if GLOBAL_SETTINGS.showExpBar then
+      -- Show custom UHC XP bar
+      InitializeExpBar()
+    else
+      -- Hide custom UHC XP bar if not enabled
+      HideExpBar()
+    end
+
+    if GLOBAL_SETTINGS.hideDefaultExpBar then
+      -- Hide default WoW XP bar when setting is enabled
+      HideDefaultExpBar()
+    else
+      -- Show default WoW XP bar by default
+      ShowDefaultExpBar()
+    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
-    FullHealthReachedIndicator(GLOBAL_SETTINGS.showFullHealthIndicator, self, event, unit)
+    -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
+    FullHealthReachedIndicator(
+      (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
+      self, event, unit
+    )
     -- Check for pet death/abandonment
     if unit == 'pet' then
       CheckAndAbandonPet()
@@ -81,9 +105,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if unit == 'player' then
       if GLOBAL_SETTINGS.routePlanner then
         SetRoutePlanner(GLOBAL_SETTINGS.routePlanner)
-      end
-      if _G.RejectBuffsFromOthers then
-        _G.RejectBuffsFromOthers(event, unit)
       end
     end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
@@ -118,10 +139,16 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'MIRROR_TIMER_STOP' then
     -- Stop breath monitoring when surfacing
     local timerName = ...
-    if timerName == 'BREATH' then
+    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
       OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
+    -- Hide player cast bar if setting is enabled
+    local unit = ...
+    if unit == 'player' then
+      HidePlayerCastBar()
+    end
+    
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
     if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then
@@ -155,33 +182,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'CHAT_MSG_SYSTEM' then
     DuelTracker(...)
-  end
-end)
-
--- Utility: run a function once combat ends (or immediately if not in combat)
-local function RunWhenOutOfCombat(callback)
-  if not InCombatLockdown() then
-    callback()
-    return
-  end
-  local waitFrame = CreateFrame("Frame")
-  waitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-  waitFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    self:SetScript("OnEvent", nil)
-    callback()
-  end)
-end
-
-local f = CreateFrame("Frame")
-f:RegisterEvent("CVAR_UPDATE")
-f:SetScript("OnEvent", function(self, event, cvar, value)
-    if cvar == "nameplateShowEnemies" or cvar == "nameplateShowFriends" or cvar == "nameplateShowAll" then
-        -- force them off again
-        RunWhenOutOfCombat(function()
-          SetCVar("nameplateShowEnemies", 0)
-          SetCVar("nameplateShowFriends", 0)
-          SetCVar("nameplateShowAll", 0)
-        end)
+  elseif event == 'PLAYER_LOGOUT' then
+    -- Cleanup: ensure any hidden map indicators are restored when logging out/reloading
+    if RestorePlayerMapIndicators then
+      RestorePlayerMapIndicators()
     end
+  end
 end)

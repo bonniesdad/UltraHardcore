@@ -32,7 +32,6 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 end
 
 function HideActionBars()
-  CancelBuff('Cozy Fire')
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
     ForceHideFrame(frame)
   end
@@ -64,9 +63,6 @@ end
 
 function OnPlayerUpdateRestingEvent(self)
   SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
-  if IsResting() then
-    PikabooResting()
-  end
 end
 
 function OnPlayerLevelUpEvent(self, event, newLevel)
@@ -87,10 +83,27 @@ local f = CreateFrame('Frame')
 f:RegisterEvent('UNIT_AURA')
 f:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
 f:RegisterEvent('PLAYER_REGEN_ENABLED') -- leaving combat
+f:RegisterEvent('PLAYER_CONTROL_LOST') -- starting taxi/control loss
+f:RegisterEvent('PLAYER_CONTROL_GAINED') -- ending taxi/control gain
+f:RegisterEvent('PLAYER_ENTERING_WORLD') -- ensure state correct on reload/login
 f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
+    -- Defer action bar visibility changes when entering/leaving combat to avoid protected frame errors
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0.5, function()
+        SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+      end)
+    end
+  elseif event == 'PLAYER_ENTERING_WORLD' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_CONTROL_LOST' then
+    -- We need a slight delay after getting on a taxi before UnitOnTaxi will return true
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0.2, function()
+        SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+      end)
+    end
   end
 end)
