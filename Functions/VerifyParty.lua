@@ -1,3 +1,12 @@
+--[[
+  I think it is best we postpone this feature for now until we have figured out a good way of tracking things.
+  I would want to hold off on auto-verification when party party members until we have fully fletched out everything related to guild found and group found.
+
+  I think the verification could be very useful, but I don't want to push a feature that doesn't rely on code that is already in the addon.
+  
+  2025-11-14 - Ptchblvck
+
+
 -- Addon communication prefix for UHC verification
 local ADDON_PREFIX = 'UHC_VERIFY'
 
@@ -36,7 +45,7 @@ local function GetCurrentPartyMembers()
       end
     end
   elseif IsInGroup() then
-    --[[ Because GetNumGroupMembers() includes the player as well, party units are party1-party4 (not including yourself) ]]--
+    -- Because GetNumGroupMembers() includes the player as well, party units are party1-party4 (not including yourself)
     local numMembers = GetNumGroupMembers()
     for i = 1, numMembers - 1 do  -- -1 because the count includes yourself but units don't
       local unit = 'party' .. i
@@ -358,8 +367,8 @@ verifyFrame:SetScript('OnEvent', function(self, event, prefix, message, channel,
   end
   
   if event == 'GROUP_ROSTER_UPDATE' then
-    --[[ Check for new party members when roster changes  
-         I had to add a small delay, because sometimes unit info isn't populated immediately ]]--
+    Check for new party members when roster changes  
+         I had to add a small delay, because sometimes unit info isn't populated immediately
     C_Timer.After(0.5, function()
       CheckForNewPartyMembers()
     end)
@@ -389,6 +398,10 @@ verifyFrame:SetScript('OnEvent', function(self, event, prefix, message, channel,
   end
 end)
 
+
 -- Register slash command for party verification
 SLASH_UHCVERIFY1 = '/uhcverify'
 SlashCmdList['UHCVERIFY'] = VerifyUhcPartyMembers
+
+]]
+--
