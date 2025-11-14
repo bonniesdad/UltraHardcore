@@ -93,7 +93,7 @@ local function EnsureTradeOverlay()
   -- status text
   local text = tradeOverlay:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
   text:SetPoint('CENTER')
-  text:SetText('Validating Guild Found...')
+  text:SetText('Validating Guild Found and Status...')
   tradeOverlay.text = text
 
   return tradeOverlay
@@ -112,15 +112,144 @@ local function HideTradeOverlay()
   end
 end
 
-local function SendGuildFoundPing(targetName)
-  if not targetName then return end
-  if C_ChatInfo and C_ChatInfo.SendAddonMessage then
-    C_ChatInfo.SendAddonMessage(ADDON_PREFIX_GF, 'PING', 'WHISPER', targetName)
+local currentTradeValidation = nil
+
+local function PrintRestrictionMessage(message)
+  if not message then return end
+  print('|cffff0000[ULTRA]|r|cffffff00 ' .. message .. '|r')
+end
+
+local function ResetTradeValidation()
+  currentTradeValidation = nil
+  HideTradeOverlay()
+end
+
+local function NormalizeTradeTarget(name)
+  return NormalizeName(name or '')
+end
+
+local function IsCurrentTradeTarget(name)
+  if not currentTradeValidation then return false end
+  return NormalizeTradeTarget(name) == currentTradeValidation.target
+end
+
+local function BuildOverlayMessage()
+  if not currentTradeValidation then return nil end
+  local pending = {}
+  if not currentTradeValidation.gfVerified then
+    table.insert(pending, 'Guild Found handshake')
+  end
+  if not currentTradeValidation.tamperVerified then
+    table.insert(pending, 'tamper status')
+  end
+  if #pending == 0 then
+    return nil
+  end
+  return 'Validating ' .. table.concat(pending, ' and ') .. '...'
+end
+
+local function UpdateTradeOverlayStatus()
+  local message = BuildOverlayMessage()
+  if message then
+    ShowTradeOverlay(message)
+  else
+    HideTradeOverlay()
   end
 end
 
-if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
-  C_ChatInfo.RegisterAddonMessagePrefix(ADDON_PREFIX_GF)
+local function EnsureTradeValidationState(targetName, requiresGuildVerification)
+  currentTradeValidation = {
+    target = NormalizeTradeTarget(targetName),
+    gfVerified = not requiresGuildVerification,
+    tamperVerified = false,
+    cancelled = false,
+  }
+  UpdateTradeOverlayStatus()
+  return currentTradeValidation
+end
+
+local function CompleteTradeValidationIfReady()
+  if
+    currentTradeValidation
+    and currentTradeValidation.gfVerified
+    and currentTradeValidation.tamperVerified
+  then
+    currentTradeValidation.ready = true
+    HideTradeOverlay()
+  end
+end
+
+local function CancelTradeForReason(message)
+  if currentTradeValidation and currentTradeValidation.cancelled then
+    return
+  end
+  if message then
+    PrintRestrictionMessage(message)
+  end
+  CancelTrade()
+  if currentTradeValidation then
+    currentTradeValidation.cancelled = true
+  end
+  ResetTradeValidation()
+end
+
+local function MarkGuildVerificationComplete(name)
+  if not IsCurrentTradeTarget(name) or not currentTradeValidation then
+    return
+  end
+  currentTradeValidation.gfVerified = true
+  UpdateTradeOverlayStatus()
+  CompleteTradeValidationIfReady()
+end
+
+local function StartTamperVerification(targetName)
+  if not PlayerComm or not PlayerComm.RequestTamperStatus then
+    CancelTradeForReason(
+      'Trade with ' .. targetName .. ' cancelled - tamper verification unavailable.'
+    )
+    return
+  end
+
+  local requestAccepted = PlayerComm:RequestTamperStatus(targetName, function(isTampered, playerName, success)
+    if not IsCurrentTradeTarget(playerName) or not currentTradeValidation then
+      return
+    end
+
+    if not success then
+      CancelTradeForReason(
+        'Trade with ' .. targetName .. ' cancelled - tamper status verification timed out.'
+      )
+      return
+    end
+
+    if isTampered then
+      CancelTradeForReason(
+        'Trade with ' .. targetName .. ' cancelled - player failed tamper verification.'
+      )
+      return
+    end
+
+    currentTradeValidation.tamperVerified = true
+    UpdateTradeOverlayStatus()
+    CompleteTradeValidationIfReady()
+  end)
+
+  if not requestAccepted then
+    CancelTradeForReason(
+      'Trade with ' .. targetName .. ' cancelled - unable to request tamper verification.'
+    )
+    return
+  end
+
+  UpdateTradeOverlayStatus()
+end
+
+local function SendGuildFoundPing(targetName)
+  if not targetName then return false end
+  if PlayerComm and PlayerComm.SendGuildFoundHandshake then
+    return PlayerComm:SendGuildFoundHandshake('PING', targetName)
+  end
+  return false
 end
 
 local frame = CreateFrame('Frame')
@@ -129,7 +258,6 @@ frame:RegisterEvent('TRADE_SHOW')
 frame:RegisterEvent('TRADE_CLOSED')
 frame:RegisterEvent('AUCTION_HOUSE_SHOW')
 frame:RegisterEvent('MAIL_INBOX_UPDATE')
-frame:RegisterEvent('CHAT_MSG_ADDON')
 
 frame:SetScript('OnEvent', function(self, event, ...)
   local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
@@ -172,6 +300,8 @@ frame:SetScript('OnEvent', function(self, event, ...)
       end
     end
   elseif event == 'TRADE_SHOW' then
+    ResetTradeValidation()
+
     -- Get the trade target name using the correct Classic WoW API
     local targetName = GetUnitName('npc', true)
     if not targetName then
@@ -179,44 +309,48 @@ frame:SetScript('OnEvent', function(self, event, ...)
     end
 
     if inGuildFound then
-      print('|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' in Guild Found mode.|r')
-      -- First, enforce guild membership
+      PrintRestrictionMessage('Trade with ' .. targetName .. ' in Guild Found mode.')
       if not IsAllowedByGuildList(targetName) then
-        print(
-          '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' cancelled - not in my guild.|r'
-        )
-        CancelTrade()
+        CancelTradeForReason('Trade with ' .. targetName .. ' cancelled - not in my guild.')
         return
       end
-
-      -- If already verified via addon handshake, allow
-      if IsPartnerVerifiedGF(targetName) then
-        HideTradeOverlay()
-        return
-      end
-
-      -- Temporarily overlay to block interaction while we verify (up to 1s)
-      ShowTradeOverlay('Validating Guild Found...')
-
-      -- Start handshake and cancel if no ACK within timeout
-      SendGuildFoundPing(targetName)
-      local nameForTimer = targetName
-      C_Timer.After(1, function()
-        if not IsPartnerVerifiedGF(nameForTimer) then
-          print(
-            '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. nameForTimer .. ' cancelled - other player not using Guild Found.|r'
-          )
-          CancelTrade()
-        end
-      end)
-      return
     elseif inGroupFound then
       local allowed = IsAllowedByGroupList(targetName)
       if not allowed then
-        print(
-          '|cffff0000[ULTRA]|r|cffffff00 Trade with ' .. targetName .. ' cancelled - not on my Group Found list.|r'
+        CancelTradeForReason(
+          'Trade with ' .. targetName .. ' cancelled - not on my Group Found list.'
         )
-        CancelTrade()
+        return
+      end
+    end
+
+    EnsureTradeValidationState(targetName, inGuildFound)
+    StartTamperVerification(targetName)
+
+    if inGuildFound then
+      if IsPartnerVerifiedGF(targetName) then
+        MarkGuildVerificationComplete(targetName)
+      else
+        UpdateTradeOverlayStatus()
+        local pingSent = SendGuildFoundPing(targetName)
+        if not pingSent then
+          CancelTradeForReason(
+            'Trade with ' .. targetName .. ' cancelled - unable to initiate Guild Found verification.'
+          )
+          return
+        end
+        local normalizedName = NormalizeTradeTarget(targetName)
+        C_Timer.After(1, function()
+          if
+            currentTradeValidation
+            and currentTradeValidation.target == normalizedName
+            and not currentTradeValidation.gfVerified
+          then
+            CancelTradeForReason(
+              'Trade with ' .. targetName .. ' cancelled - other player not using Guild Found.'
+            )
+          end
+        end)
       end
     end
   elseif event == 'AUCTION_HOUSE_SHOW' then
@@ -229,27 +363,45 @@ frame:SetScript('OnEvent', function(self, event, ...)
         CloseAuctionHouse()
       end
     end)
-  elseif event == 'CHAT_MSG_ADDON' then
-    local prefix, msg, channel, sender = ...
-    if prefix ~= ADDON_PREFIX_GF then return end
-    if not sender or sender == '' then return end
-
-    -- Only care about Guild Found mode handshakes
-    if msg == 'PING' then
-      -- Respond only if we are in Guild Found mode
-      if inGuildFound and C_ChatInfo and C_ChatInfo.SendAddonMessage then
-        C_ChatInfo.SendAddonMessage(ADDON_PREFIX_GF, 'ACK', 'WHISPER', sender)
-        -- Their PING implies they are in GF; mark them as verified
-        MarkPartnerVerifiedGF(sender)
-        HideTradeOverlay()
-      end
-    elseif msg == 'ACK' then
-      -- They acknowledged our ping; mark verified
-      MarkPartnerVerifiedGF(sender)
-      HideTradeOverlay()
-    end
   elseif event == 'TRADE_CLOSED' then
     -- Ensure buttons are restored if trade ends while blocked
-    HideTradeOverlay()
+    ResetTradeValidation()
   end
 end)
+
+local function HandleGuildFoundHandshake(payload)
+  if not payload or not payload.action or not payload.sender then
+    return
+  end
+
+  local sender = payload.sender
+  local action = payload.action
+  local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
+
+  if action == 'PING' then
+    if inGuildFound and PlayerComm and PlayerComm.SendGuildFoundHandshake then
+      PlayerComm:SendGuildFoundHandshake('ACK', sender)
+      MarkPartnerVerifiedGF(sender)
+      MarkGuildVerificationComplete(sender)
+    end
+  elseif action == 'ACK' then
+    MarkPartnerVerifiedGF(sender)
+    MarkGuildVerificationComplete(sender)
+  end
+end
+
+local function RegisterGuildFoundHandlerWithRetry(attempt)
+  if PlayerComm and PlayerComm.RegisterGuildFoundHandler then
+    PlayerComm:RegisterGuildFoundHandler(HandleGuildFoundHandshake)
+    return
+  end
+
+  local nextAttempt = (attempt or 0) + 1
+  if nextAttempt <= 5 then
+    C_Timer.After(1, function()
+      RegisterGuildFoundHandlerWithRetry(nextAttempt)
+    end)
+  end
+end
+
+RegisterGuildFoundHandlerWithRetry(0)
