@@ -235,7 +235,9 @@ end
 function AddonXPTracking:GetXP(levelUp) 
   if levelUp then
     local newLevel = UnitLevel("player")
-    return AddonXPTracking:XPForLevel(newLevel)
+    local levelXP = AddonXPTracking:XPForLevel(newLevel)
+    self:XPTrackingDebug("Leveling up, reporting XP as" .. levelXP)
+    return levelXP
   else
     return UnitXP("player")
   end
@@ -243,11 +245,22 @@ end
 
 function AddonXPTracking:NewLastXPValue(levelUp, currentXp)
   if levelUp then
+    self:XPTrackingDebug("New XP value is 0 due to level up")
     return 0
   else
     return currentXp
   end
 end
+
+function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime) 
+  if levelUp then
+    self:XPTrackingDebug("Falsifying last update timestamp to ensure extra level up XP is counted")
+    return (currentTime - 1)
+  else
+    return currentTime
+  end
+end
+
 
 -- We do not want a reset command for this in a release
 SLASH_DEVRESETXP1 = '/uhcresettracking'
