@@ -37,6 +37,7 @@ function AddonXPTracking:XPTrackingDebug(msg)
 end 
 
 function AddonXPTracking:CalculateTotalXPGained()
+    self:XPTrackingDebug("Calculating Total XP for " .. redTextColour .. UnitGUID("player") .. "|r")
     local stats = self:Stats()
     local currentLevel = UnitLevel("player")
     local totalXP = 0
@@ -233,19 +234,24 @@ function AddonXPTracking:XPForLevel(level)
 end
 
 function AddonXPTracking:GetXP(levelUp) 
+  if levelUp == nil then levelUp = false end
+
   if levelUp then
     local newLevel = UnitLevel("player")
     local levelXP = AddonXPTracking:XPForLevel(newLevel)
-    self:XPTrackingDebug("Leveling up, reporting XP as" .. levelXP)
+    self:XPTrackingDebug("Leveling up, reporting XP as " .. levelXP)
     return levelXP
   else
+    self:XPTrackingDebug("GetXP=" .. UnitXP("player"))
     return UnitXP("player")
   end
 end
 
 function AddonXPTracking:NewLastXPValue(levelUp, currentXp)
+  if levelUp == nil then levelUp = false end
+
   if levelUp then
-    self:XPTrackingDebug("New XP value is 0 due to level up")
+    self:XPTrackingDebug("New XP value is 0 due to level up.  XP was " .. currentXp)
     return 0
   else
     return currentXp
@@ -253,9 +259,12 @@ function AddonXPTracking:NewLastXPValue(levelUp, currentXp)
 end
 
 function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime) 
+  if levelUp == nil then levelUp = false end
+
   if levelUp then
-    self:XPTrackingDebug("Falsifying last update timestamp to ensure extra level up XP is counted")
-    return (currentTime - 1)
+    local newTime = currentTime - 1
+    self:XPTrackingDebug("Falsifying last update timestamp from " .. currentTime .. " to " .. newTime)
+    return newTime
   else
     return currentTime
   end
