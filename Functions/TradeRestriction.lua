@@ -139,7 +139,7 @@ local function BuildOverlayMessage()
   if not currentTradeValidation.gfVerified then
     table.insert(pending, 'Guild Found handshake')
   end
-  if not currentTradeValidation.tamperVerified then
+  if currentTradeValidation.requiresTamper and not currentTradeValidation.tamperVerified then
     table.insert(pending, 'tamper status')
   end
   if #pending == 0 then
@@ -157,11 +157,12 @@ local function UpdateTradeOverlayStatus()
   end
 end
 
-local function EnsureTradeValidationState(targetName, requiresGuildVerification)
+local function EnsureTradeValidationState(targetName, requiresGuildVerification, requiresTamperVerification)
   currentTradeValidation = {
     target = NormalizeTradeTarget(targetName),
     gfVerified = not requiresGuildVerification,
-    tamperVerified = false,
+    tamperVerified = not requiresTamperVerification,
+    requiresTamper = not not requiresTamperVerification,
     cancelled = false,
   }
   UpdateTradeOverlayStatus()
@@ -169,11 +170,15 @@ local function EnsureTradeValidationState(targetName, requiresGuildVerification)
 end
 
 local function CompleteTradeValidationIfReady()
-  if
-    currentTradeValidation
-    and currentTradeValidation.gfVerified
-    and currentTradeValidation.tamperVerified
-  then
+  if not currentTradeValidation then
+    return
+  end
+
+  local tamperSatisfied = currentTradeValidation.requiresTamper
+      and currentTradeValidation.tamperVerified
+    or not currentTradeValidation.requiresTamper
+
+  if currentTradeValidation.gfVerified and tamperSatisfied then
     currentTradeValidation.ready = true
     HideTradeOverlay()
   end
@@ -203,6 +208,10 @@ local function MarkGuildVerificationComplete(name)
 end
 
 local function StartTamperVerification(targetName)
+  if not currentTradeValidation or not currentTradeValidation.requiresTamper then
+    return
+  end
+
   if not PlayerComm or not PlayerComm.RequestTamperStatus then
     CancelTradeForReason(
       'Trade with ' .. targetName .. ' cancelled - tamper verification unavailable.'
@@ -324,7 +333,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
       end
     end
 
-    EnsureTradeValidationState(targetName, inGuildFound)
+    EnsureTradeValidationState(targetName, inGuildFound, inGuildFound or inGroupFound)
     StartTamperVerification(targetName)
 
     if inGuildFound then
