@@ -69,9 +69,11 @@ local function UpdateXPTracking(levelUp)
       
       -- For boolean settings, if they're false, we're gaining XP "without" that option
       if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
-        local currentXPForSetting = CharacterStats:GetStat(xpVariable) or 0
-        local newXPForSetting = currentXPForSetting + xpGained
-        CharacterStats:UpdateStat(xpVariable, newXPForSetting)
+        if AddonXPTracking:ShouldStoreStat(xpVariable) then 
+          local currentXPForSetting = CharacterStats:GetStat(xpVariable) or 0
+          local newXPForSetting = currentXPForSetting + xpGained
+          CharacterStats:UpdateStat(xpVariable, newXPForSetting)
+        end
       end
     end
     

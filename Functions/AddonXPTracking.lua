@@ -202,11 +202,11 @@ function AddonXPTracking:Initialize(lastXPValue)
 end
 
 function AddonXPTracking:ShouldStoreStat(xpVariable)
-  return xpVariable == "xpGWOA"
+  return xpVariable ~= "xpGWOA"
 end
 
 function AddonXPTracking:ShouldTrackStat(xpVariable)
-  if xpVariable == "xpGWA" or xpVariable == "xpTotal" then
+  if xpVariable == "xpGWA" or xpVariable == "xpTotal" or xpVariable == "xpGWOA" then
     return true
   else
     return false
