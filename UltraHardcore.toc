@@ -45,6 +45,7 @@ Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
 Functions/ExpBar.lua
 Functions/TradeRestriction.lua
+Functions/AddonXPTracking.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
