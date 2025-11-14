@@ -120,5 +120,10 @@ Settings/XFoundMode/StatusPage.lua
 Settings/XFoundMode/GuildConfirmPage.lua
 Settings/XFoundMode/GroupConfirmPage.lua
 
+## SavedVariables
+GuildAH/GuildAH.lua
+GuildAH/GuildAHComms.lua
+GuildAH/GuildAHTab.lua
+
 ## Constants
 Constants/PresetSections.lua
