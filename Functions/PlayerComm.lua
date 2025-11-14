@@ -13,12 +13,24 @@ local COMM_PREFIX = "UHC"
 
 -- Storage for player tamper status (cache)
 local playerTamperStatus = {}
+local guildFoundHandlers = {}
 
 -- Request timeout (seconds)
 local REQUEST_TIMEOUT = 1.0
 
 -- Pending requests (requestId -> {callback, timestamp, playerName, messageType})
 local pendingRequests = {}
+
+local function NotifyGuildFoundHandlers(payload)
+  for _, handler in ipairs(guildFoundHandlers) do
+    if type(handler) == "function" then
+      local ok, err = pcall(handler, payload)
+      if not ok then
+        -- Swallow handler errors to avoid breaking comms
+      end
+    end
+  end
+end
 
 -- Generate unique request ID
 local function GenerateRequestId()
@@ -223,12 +235,45 @@ end
 function PlayerComm:ClearCachedStatus(playerName)
   if playerName then
     playerTamperStatus[playerName] = nil
+  elseif data.messageType == "GF_HANDSHAKE" then
+    data.sender = sender
+    NotifyGuildFoundHandlers(data)
   end
 end
 
 -- Clear all cached statuses
 function PlayerComm:ClearAllCachedStatuses()
   playerTamperStatus = {}
+end
+
+-- Send Guild Found handshake payloads (PING/ACK)
+function PlayerComm:SendGuildFoundHandshake(action, targetName)
+  if not action or not targetName then
+    return false
+  end
+
+  local normalizedTarget = Ambiguate(targetName, "none")
+  local message = {
+    messageType = "GF_HANDSHAKE",
+    action = action,
+  }
+
+  local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
+  if not success or not serialized then
+    return false
+  end
+
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", normalizedTarget, "NORMAL")
+  return true
+end
+
+-- Register a handler for Guild Found handshake payloads
+function PlayerComm:RegisterGuildFoundHandler(handler)
+  if type(handler) ~= "function" then
+    return false
+  end
+  table.insert(guildFoundHandlers, handler)
+  return true
 end
 
 -- Register for communication
