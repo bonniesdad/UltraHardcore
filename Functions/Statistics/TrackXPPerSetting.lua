@@ -78,7 +78,7 @@ local function UpdateXPTracking(levelUp)
     end
     
     lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
-    lastXPUpdate = currentTime
+    lastXPUpdate = AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
 end
 
