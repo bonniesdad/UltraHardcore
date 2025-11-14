@@ -84,7 +84,6 @@ Functions/CritTracker.lua
 Functions/KillTracker.lua
 Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
-Functions/VerifyParty.lua
 Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
 Functions/PlayerComm.lua
