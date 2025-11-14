@@ -506,17 +506,16 @@ end
 
   widgets._refreshAll = function()
     -- Update class selection label
-    if widgets.classSel and Challenges.GetState then
-      local db = Challenges.GetState()
-      local sel = (db and db.rules and db.rules.classRule) or "NONE"
-      local name = sel
-      if Challenges.GetAvailableClassRules and sel ~= "NONE" then
-        local rules = Challenges.GetAvailableClassRules()
-        if rules[sel] and rules[sel].name then name = rules[sel].name end
-      end
-      if sel == "NONE" then name = "None" end
-      widgets.classSel:SetText("Selected: "..name)
-    end
+if widgets.classSel and Challenges.GetClassRuleSelection then
+  local sel = Challenges.GetClassRuleSelection()
+  local name = "None"
+  if Challenges.GetAvailableClassRules and sel ~= "NONE" then
+    local rules = Challenges.GetAvailableClassRules()
+    if rules[sel] and rules[sel].name then name = rules[sel].name end
+  end
+  widgets.classSel:SetText("Selected: " .. name)
+end
+
 
     -- Refresh your existing Presets UI
     if RefreshState then RefreshState() end

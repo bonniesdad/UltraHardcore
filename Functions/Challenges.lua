@@ -27,15 +27,24 @@ end
 local CALLBACKS = {}
 
 -- ===== Class rules micro-registry (UI helpers) =====
-local _UHC_CLASS_RULES = _UHC_CLASS_RULES or {}  -- key -> { name=..., desc=... }
+local _UHC_CLASS_RULES = _UHC_CLASS_RULES or {}  -- key -> { name, desc, icon }
 
 function Challenges.RegisterClassRule(key, data)
-  -- data = { name=..., desc=... }
-  _UHC_CLASS_RULES[key] = { name = data.name or key, desc = data.desc or "" }
+  -- data = { name=..., desc=..., icon=... }
+  _UHC_CLASS_RULES[key] = {
+    name = (data and data.name) or key,
+    desc = (data and data.desc) or "",
+    icon = data and data.icon or nil,
+  }
 end
 
 function Challenges.GetAvailableClassRules()
-  return _UHC_CLASS_RULES  -- { key -> {name,desc} }
+  return _UHC_CLASS_RULES  -- { key -> {name, desc, icon} }
+end
+
+function Challenges.GetClassRuleSelection()
+  local s = (type(ensureStorage) == "function") and ensureStorage() or nil
+  return (s and s.rules and s.rules.classRule) or "NONE"
 end
 
 function Challenges.SetClassRule(key)
