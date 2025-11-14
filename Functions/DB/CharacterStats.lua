@@ -325,7 +325,7 @@ function CharacterStats:ResetXPGainedWithAddon(playerLevel, forceReset)
     local lowestXP = self:GetLowestXpGainedStat(stats) or nil
     local highestXP = self:GetHighestXpGainedStat(stats) or nil
 
-    if lowestXP < 99999999 then
+    if lowestXP ~= nil and lowestXP < 99999999 and highestXP ~= nil then
       totalXP = self.CalculateTotalXPGained()
       local anyStat = self:GetHighestNonHealthStat(stats)
 
@@ -342,22 +342,6 @@ function CharacterStats:ResetXPGainedWithAddon(playerLevel, forceReset)
       CharacterStats:UpdateStat("xpTotal", totalXP)
     end
   end
-end
-
-function CharacterStats:XPChecksum(playerXP, deficit, playerLevel)
-  local stats = self:GetCurrentCharacterStats()
-
-  if playerXP == nil then playerXP = stats.xpTotal end
-  if deficit == nil then deficit = stats.xpGWOA end
-  if playerLevel == nil then playerLevel = UnitLevel("player") end
-
-  local digits = getDigitsFromString(playerXP - deficit)
-  local checkTotal = 0 
-  for i, digit in ipairs(digits) do
-    checkTotal = checkTotal + (i * digit)
-  end
-
-  return string.format("%.2f", (checkTotal / playerLevel))
 end
 
 -- Get the current character's stats
@@ -858,31 +842,6 @@ SlashCmdList['XPGWAREPORT'] = function()
   print("XP Gained Without Addon: " .. tostring(stats.xpGWOA))
 end
 
-SLASH_CHECKXPREPORT1 = '/uhccheckxp'
-SlashCmdList['CHECKXPREPORT'] = function(msg)
-  local playerXP = 0
-  local deficit = 0
-  local level = 0
-  if msg == nil or msg == '' then 
-    print('Check for a valid /uhcv message.  If the checksum from this command does not match theirs, it might be fake.')
-    print('Usage: /uhccheckxp total_xp xp_without_uhc player_level')
-  else
-    local results = {}
-    for part in string.gmatch(msg, "([^ ]+)") do
-        table.insert(results, part)
-    end
-    playerXP = results[1]
-    deficit = results[2]
-    level = results[3]
-
-    if playerXP ~= nil and deficit ~= nil and level ~= nil then
-      local checksum = CharacterStats:XPChecksum(playerXP, deficit, level)
-      print('Player checksum should be ' .. checksum)
-    else
-      print('Cannot check XP report, run /uhcxp by itself to see usage')
-    end
-  end
-end
 -- Slash command to post version to current chat
 SLASH_POSTVERSION1 = '/uhcversion'
 SLASH_POSTVERSION2 = '/uhcv'
@@ -891,16 +850,6 @@ SlashCmdList['POSTVERSION'] = function()
   local playerName = UnitName('player')
   local message = playerName .. ' is using UltraHardcore version ' .. version
 
-  local xpDeficit = CharacterStats:ReportXPWithoutAddon()
-
-  if xpDeficit ~= false then
-    local stats = CharacterStats:GetCurrentCharacterStats()
-    local playerXP = stats.xpTotal
-    message = message
-              .. ' [Total XP: ' .. formatNumberWithCommas(playerXP) .. ']' 
-              .. ' [XP w/o UHC: ' .. formatNumberWithCommas(xpDeficit) .. ']'
-              .. ' (Checksum: '.. CharacterStats:XPChecksum() .. ')'
-  end
   -- Determine the best chat channel to use
   local chatType = nil
   local chatTarget = nil
