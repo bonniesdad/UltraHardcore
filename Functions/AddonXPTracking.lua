@@ -10,7 +10,7 @@ local AddonXPTracking = {
     [51] = 153900, [52] = 160400, [53] = 167100, [54] = 173900, [55] = 180800, [56] = 187900, [57] = 195000, [58] = 202300, [59] = 209800, [60] = 217400
   },
   highXpMark = 999999999,
-  DEBUGXP = true,
+  DEBUGXP = false,
   trackingInitialized = false
 }
 
