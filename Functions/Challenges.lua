@@ -26,6 +26,27 @@ end
 -- Simple callback bus for the UI (must exist before any _emit calls)
 local CALLBACKS = {}
 
+-- ===== Class rules micro-registry (UI helpers) =====
+local _UHC_CLASS_RULES = _UHC_CLASS_RULES or {}  -- key -> { name=..., desc=... }
+
+function Challenges.RegisterClassRule(key, data)
+  -- data = { name=..., desc=... }
+  _UHC_CLASS_RULES[key] = { name = data.name or key, desc = data.desc or "" }
+end
+
+function Challenges.GetAvailableClassRules()
+  return _UHC_CLASS_RULES  -- { key -> {name,desc} }
+end
+
+function Challenges.SetClassRule(key)
+  local db = Challenges.GetState and Challenges.GetState() or nil
+  if not db then return false, "DB not ready." end
+  if db.locked then return false, "Challenges are locked." end
+  db.rules = db.rules or {}
+  db.rules.classRule = key or "NONE"
+  return true
+end
+
 function Challenges.On(eventName, fn)
   if type(fn) ~= "function" then return end
   CALLBACKS[eventName] = CALLBACKS[eventName] or {}
