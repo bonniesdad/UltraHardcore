@@ -1,3 +1,5 @@
+local statsInitialized = false
+
 -- 🟢 Character Stats Management
 local CharacterStats = {
   -- Default values for new characters
