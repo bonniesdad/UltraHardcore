@@ -15,57 +15,30 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
       -- Hide health bar
       GameTooltipStatusBar:Hide()
 
-      local originalAlpha = self:GetAlpha()
-      self:SetAlpha(0)
-
+      -- Check if unit is tapped by another player and in combat, modify first line (name) color
+      if UnitIsTapDenied(unit) then
+        local nameLine = _G['GameTooltipTextLeft1']
+        if nameLine then
+          nameLine:SetTextColor(0.5, 0.5, 0.5) -- Gray color
+        end
+      end
+      
       -- Delay the level line removal to ensure tooltip is fully built (this makes it so it runs last and retains information each time you hover)
       C_Timer.After(0.0, function()
-        if not self:IsShown() then
-          self:SetAlpha(originalAlpha or 1)
-          return
-        end
-
-        local removedLine = false
-
-        if not UnitIsPlayer(unit) then
-          for i = 2, self:NumLines() do
-            local line = _G['GameTooltipTextLeft' .. i]
-            if line then
-              local text = line:GetText()
-              if text and text:match(LEVEL) then
+        for i = 2, self:NumLines() do
+          local line = _G['GameTooltipTextLeft' .. i]
+          if line then
+            local text = line:GetText()
+            if text then
+              if text:match(LEVEL) and not UnitIsPlayer(unit) then
                 line:SetText(nil)
-                removedLine = true
                 break -- Stop after removing the level line
               end
-              -- Collapse the line frame immediately to eliminate gap
-              line:SetHeight(0)
-              line:SetAlpha(0)
-              levelLineFound = true
-              C_Timer.After(0, function()
-                line:SetText(nil)
-                -- Restore height after text is removed (tooltip will recalculate)
-                if line._defaultHeight then
-                  line:SetHeight(line._defaultHeight)
-                end
-              end)
-            else -- ensure we reset it for the subsequent lines
-              if line._defaultFontHeight then
-                line:SetTextHeight(line._defaultFontHeight)
-              end
-              if line._defaultHeight then
-                line:SetHeight(line._defaultHeight)
-              end
-              line:SetAlpha(1)
             end
           end
         end
-
-        if removedLine then
-          -- Refresh tooltip to remove empty line
-          self:Show()
-        end
-
-        self:SetAlpha(originalAlpha or 1)
+        -- Refresh tooltip to remove empty line
+        self:Show()
       end)
     end)
   end
