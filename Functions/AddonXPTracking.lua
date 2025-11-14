@@ -214,6 +214,10 @@ function AddonXPTracking:ShouldTrackStat(xpVariable)
   end
 end
 
+function AddonXPTracking:TotalXP()
+  return self:Stats().xpTotal
+end
+
 function AddonXPTracking:WithAddon()
   return self:Stats().xpGWA
 end
@@ -283,11 +287,10 @@ end
 
 SLASH_XPGWAREPORT1 = '/uhcxpreport'
 SlashCmdList['XPGWAREPORT'] = function() 
-  local stats = AddonXPTracking:Stats()
   local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
-  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(stats.xpTotal))
-  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(stats.xpGWA) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(stats.xpGWOA) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
+  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
   print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
 end
 
