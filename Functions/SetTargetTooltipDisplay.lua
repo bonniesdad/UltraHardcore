@@ -15,31 +15,27 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
       -- Hide health bar
       GameTooltipStatusBar:Hide()
 
-      -- Check if unit is tapped by another player and in combat, modify first line (name) color
-      if UnitIsTapDenied(unit) then
-        local nameLine = _G['GameTooltipTextLeft1']
-        if nameLine then
-          nameLine:SetTextColor(0.5, 0.5, 0.5) -- Gray color
-        end
-      end
-      
-      local levelLineFound = false
-      for i = 2, self:NumLines() do
-        if levelLineFound then break end
-        
-        local line = _G['GameTooltipTextLeft' .. i]
-        if line then
-           -- Cache the original font size
-          if not line._defaultFontHeight then
-            line._defaultFontHeight = math.ceil(select(2, line:GetFont()))
-          end
+      local originalAlpha = self:GetAlpha()
+      self:SetAlpha(0)
 
-          local text = line:GetText()
-          if text then
-            if text:match(LEVEL) and not UnitIsPlayer(unit) then
-              -- Cache original height if not already cached
-              if not line._defaultHeight then
-                line._defaultHeight = line:GetHeight()
+      -- Delay the level line removal to ensure tooltip is fully built (this makes it so it runs last and retains information each time you hover)
+      C_Timer.After(0.0, function()
+        if not self:IsShown() then
+          self:SetAlpha(originalAlpha or 1)
+          return
+        end
+
+        local removedLine = false
+
+        if not UnitIsPlayer(unit) then
+          for i = 2, self:NumLines() do
+            local line = _G['GameTooltipTextLeft' .. i]
+            if line then
+              local text = line:GetText()
+              if text and text:match(LEVEL) then
+                line:SetText(nil)
+                removedLine = true
+                break -- Stop after removing the level line
               end
               -- Collapse the line frame immediately to eliminate gap
               line:SetHeight(0)
@@ -63,9 +59,14 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
             end
           end
         end
-      end
-      -- Refresh tooltip to remove empty line
-      self:Show()
+
+        if removedLine then
+          -- Refresh tooltip to remove empty line
+          self:Show()
+        end
+
+        self:SetAlpha(originalAlpha or 1)
+      end)
     end)
   end
 end
