@@ -42,7 +42,9 @@ function RestorePlayerMapIndicators()
 
   -- Minimap: restore default player arrow texture
   if Minimap and Minimap.SetPlayerTexture then
-    Minimap:SetPlayerTexture('Interface\\Minimap\\MinimapArrow')
+    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideMinimap then
+      Minimap:SetPlayerTexture('Interface\\Minimap\\MinimapArrow')
+    end
   end
 
   -- World Map: restore group/player pins behavior
