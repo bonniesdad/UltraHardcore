@@ -103,12 +103,18 @@ _G.GetXPGainedForSetting = GetXPGainedForSetting
 -- Register events for XP tracking
 local xpTrackingFrame = CreateFrame("Frame")
 xpTrackingFrame:RegisterEvent("PLAYER_XP_UPDATE")
+xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 xpTrackingFrame:RegisterEvent("PLAYER_LEVEL_UP")
 xpTrackingFrame:RegisterEvent("PLAYER_LOGIN")
 xpTrackingFrame:RegisterEvent("ADDON_LOADED")
 
 xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_XP_UPDATE" then
+  if event == "PLAYER_REGEN_ENABLED" then
+    AddonXPTracking:XPTrackingDebug("PLAYER_REGEN_ENABLED event fired")
+    C_Timer.After(2.0, function() 
+      UpdateXPTracking(false)
+    end)
+  elseif event == "PLAYER_XP_UPDATE" then
     AddonXPTracking:XPTrackingDebug("PLAYER_XP_UPDATE event fired")
     UpdateXPTracking(false)
   elseif event == "PLAYER_LEVEL_UP" then
@@ -116,6 +122,7 @@ xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
     UpdateXPTracking(true)
   elseif event == "PLAYER_LOGIN" then
     InitializeXPTracking()
+    AddonXPTracking:XPReport()
   elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking 
