@@ -150,7 +150,7 @@ function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
   local xpWithoutAddon = 0
   local totalXP = 0
 
-  if forceReset ~= nil or self:ShouldRecalculateXPGainedWithAddon() then
+--  if forceReset ~= nil or self:ShouldRecalculateXPGainedWithAddon() then
     local lowestXP = self:GetLowestXpGainedStat() or nil
     local highestXP = self:GetHighestXpGainedStat() or nil
 
@@ -171,7 +171,7 @@ function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
       self:UpdateStat("xpGWOA", xpWithoutAddon)
       self:UpdateStat("xpTotal", totalXP)
     end
-  end
+  -- end
 end
 
 function AddonXPTracking:InitializeXpGainedWithAddon(lastXPValue)
@@ -189,7 +189,9 @@ function AddonXPTracking:InitializeXpGainedWithAddon(lastXPValue)
     self:UpdateStat("xpTotal", 0)
     self:UpdateStat("xpGWA", 0)
     self:UpdateStat("xpGWOA", 0)
-  elseif self:ShouldRecalculateXPGainedWithAddon() == true then
+  --[[elseif self:ShouldRecalculateXPGainedWithAddon() == true then
+    self:ResetXPGainedWithAddon(true)]]
+  else 
     self:ResetXPGainedWithAddon(true)
   end
   return true
