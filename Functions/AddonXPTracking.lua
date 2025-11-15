@@ -33,7 +33,7 @@ end
 
 function AddonXPTracking:XPTrackingDebug(msg)
   if self.DEBUGXP ~= true then return end
-  print(msgPrefix .. "(" .. yellowTextColour .. "AddonXPTracking DEBUG|r:" .. greenTextColour .. GetTime() .. "|r) " .. msg)
+  print(msgPrefix .. "(" .. yellowTextColour .. "AddonXPTracking DEBUG|r) " ..  msg)
 end 
 
 function AddonXPTracking:CalculateTotalXPGained()
@@ -54,7 +54,7 @@ function AddonXPTracking:CalculateTotalXPGained()
     if stats.xpGWA ~= nil and stats.xpGWA > 0 then
       local xpGWOA = totalXP - stats.xpGWA
       self:UpdateStat("xpGWOA", xpGWOA)
-      self:XPTrackingDebug("XP Gained without Addon is now " .. xpGWOA)
+      self:XPTrackingDebug("XP Gained without Addon is " .. xpGWOA)
     end
     return totalXP
 end
@@ -174,6 +174,19 @@ function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
   -- end
 end
 
+function AddonXPTracking:ForceSave()
+  local stats = self:Stats()
+  local totalXP = self:CalculateTotalXPGained()
+
+  self:UpdateStat("xpTotal", totalXP)
+  self.UpdateStat("xpGWA", stats.xpGWA)
+  self.UpdateStat("xpGWOA", totalXP - stats.xpGWA)
+  AddonXPTracking:XPTrackingDebug("Exiting game, setting XP values: " .. totalXP 
+                                  .. " - " .. stats.xpGWA
+                                  .. " = " .. stats.xpGWOA
+                                )
+end
+
 function AddonXPTracking:InitializeXpGainedWithAddon(lastXPValue)
   local playerLevel = UnitLevel("player")
   if lastXPValue == 0 and playerLevel > 1 then
@@ -189,9 +202,7 @@ function AddonXPTracking:InitializeXpGainedWithAddon(lastXPValue)
     self:UpdateStat("xpTotal", 0)
     self:UpdateStat("xpGWA", 0)
     self:UpdateStat("xpGWOA", 0)
-  --[[elseif self:ShouldRecalculateXPGainedWithAddon() == true then
-    self:ResetXPGainedWithAddon(true)]]
-  else 
+  elseif self:ShouldRecalculateXPGainedWithAddon() == true then
     self:ResetXPGainedWithAddon(true)
   end
   return true
@@ -276,6 +287,14 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
 end
 
+function AddonXPTracking:XPReport()
+  local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
+  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
+  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
+end 
+
 
 -- We do not want a reset command for this in a release
 SLASH_DEVRESETXP1 = '/uhcresettracking'
@@ -287,13 +306,28 @@ SlashCmdList['DEVRESETXP'] = function()
   print(msgPrefix .. yellowTextColour ..  "ADDON XP RESET.|r Please do " .. redTextColour .. "/reload|r now")
 end
 
+SLASH_XPFORLEVEL1 = '/uhcxpforlevel'
+SlashCmdList['XPFORLEVEL'] = function(msg)
+  local totalXP = 0
+  for i, xp in ipairs(AddonXPTracking.TotalXPTable) do
+    if i < tonumber(msg) then
+      totalXP = totalXP + xp
+    end
+  end
+  print("A level " .. greenTextColour .. msg 
+        .. "|r character has at least " 
+        .. redTextColour .. formatNumberWithCommas(totalXP) 
+        .. "|r XP")
+end
+
+SLASH_FORCESAVE1 = '/uhcforcesave'
+SlashCmdList['FORCESAVE'] = function()
+  AddonXPTracking:ForceSave()
+end
+
 SLASH_XPGWAREPORT1 = '/uhcxpreport'
 SlashCmdList['XPGWAREPORT'] = function() 
-  local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
-  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
-  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
+  AddonXPTracking:XPReport()
 end
 
 _G.AddonXPTracking = AddonXPTracking
