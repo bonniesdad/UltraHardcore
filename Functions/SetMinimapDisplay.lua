@@ -253,8 +253,6 @@ function HideMinimap(showClockEvenWhenMapHidden)
       Minimap:Show()
       Minimap:SetZoom(0)
 
-      -- Prevent zooming when showing our tracking
-      Minimap:EnableMouseWheel(false)
 
       -- Cancel any existing 'hide' timer
       if minimapHideTimer then
