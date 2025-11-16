@@ -24,6 +24,22 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
 UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
 
+MINIMAP_FLAG_CLOCK  = 0x01 -- 0001
+MINIMAP_FLAG_MAIL = 0x02 -- 0010
+miniMapMask = 0x0
+
+function HasFlag(mask, flag)
+  return bit.band(mask, flag) ~= 0
+end
+
+function AddFlag(mask, flag)
+  return bit.bor(mask, flag)
+end
+
+function RemoveFlag(mask, flag)
+  return bit.band(mask, bit.bnot(flag))
+end
+
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
@@ -35,9 +51,15 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hidePlayerFrame or false,
       GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
     )
+    if GLOBAL_SETTINGS.showClockEvenWhenMapHidden then
+      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_CLOCK)
+    end
+    if GLOBAL_SETTINGS.showMailEvenWhenMapHidden then
+      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_MAIL)
+    end
     SetMinimapDisplay(
       GLOBAL_SETTINGS.hideMinimap or false,
-      GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
+      miniMapMask
     )
     ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(
