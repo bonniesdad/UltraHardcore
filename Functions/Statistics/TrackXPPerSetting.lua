@@ -55,12 +55,27 @@ end
 -- Function to update XP tracking for each setting
 local function UpdateXPTracking(levelUp)
   if levelUp == nil then levelUp = false end
-
+ 
   local currentXP = AddonXPTracking:GetXP(levelUp)
   local currentTime = GetTime()
+
+  -- This checks for XP drift and tries to correct it outside of a level up event
+  if levelUp == false and UnitLevel("player") > 1 and AddonXPTracking:ValidateTotalStoredXP() == false then
+    local xpDiff = AddonXPTracking:FixAddonXPDrift(UnitLevel("player"))
+    if lastXPValue > currentXP then
+      lastXPValue = 0
+    end
+  end
+
   AddonXPTracking:XPTrackingDebug("XP Check " .. lastXPValue .. " vs " .. currentXP)
+
   -- Only update if XP has increased and enough time has passed (prevent spam)
-  if currentXP > lastXPValue and (currentTime - lastXPUpdate) > 1 then
+  -- TIME CONDITIONAL HAS BEEN REMOVED!
+  -- After reimplementing this so stats are updated directly, I don't think we care
+  -- about calling this a lot.  I tested the performance and even with a level up and the
+  -- two XP update events that follow, this executes in under a millisecond for all 3 events.
+  -- I did these tests with my wow settings cranked up and with my laptop in eco mode (i.e run as slow as possible)
+  if currentXP > lastXPValue then
     local xpGained = currentXP - lastXPValue
     AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed. XP gained = " .. xpGained)
     local statsChanged = 0 
@@ -94,7 +109,7 @@ local function UpdateXPTracking(levelUp)
       -- Call SaveDBData once at the end
       SaveDBData('characterStats', UltraHardcoreDB.characterStats)
     end
-    
+
     lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
     lastXPUpdate = AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
@@ -109,7 +124,6 @@ local function GetXPGainedForSetting(settingName)
   end
   return 0
 end
-
 
 -- Export functions globally
 _G.UpdateXPTracking = UpdateXPTracking
@@ -128,10 +142,10 @@ xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
   if event == "PLAYER_REGEN_ENABLED" then
     AddonXPTracking:XPTrackingDebug("PLAYER_REGEN_ENABLED event fired")
     C_Timer.After(3.0, function() 
-      UpdateXPTracking(false)
       if AddonXPTracking:ValidateTotalStoredXP() ~= true then
         AddonXPTracking:PrintXPVerificationWarning()
       end
+      UpdateXPTracking(false)
     end)
   elseif event == "PLAYER_XP_UPDATE" then
     AddonXPTracking:XPTrackingDebug("PLAYER_XP_UPDATE event fired")
@@ -141,7 +155,9 @@ xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
     UpdateXPTracking(true)
   elseif event == "PLAYER_LOGIN" then
     InitializeXPTracking()
-    AddonXPTracking:XPReport()
+    if UnitLevel("player") > 1 then 
+      AddonXPTracking:XPReport()
+    end
   elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking 
