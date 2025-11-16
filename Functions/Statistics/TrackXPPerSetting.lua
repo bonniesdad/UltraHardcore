@@ -63,7 +63,9 @@ local function UpdateXPTracking(levelUp)
   if currentXP > lastXPValue and (currentTime - lastXPUpdate) > 1 then
     local xpGained = currentXP - lastXPValue
     AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed XP gained = " .. xpGained)
-    
+    local statsChanged = 0 
+    local stats = CharacterStats:GetCurrentCharacterStats()
+
     -- Update XP tracking for each setting that is currently disabled
     for settingName, xpVariable in pairs(settingToXPVariable) do
       -- Check if this setting is currently disabled (meaning we're gaining XP "without" it)
@@ -72,11 +74,25 @@ local function UpdateXPTracking(levelUp)
       -- For boolean settings, if they're false, we're gaining XP "without" that option
       if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
         if AddonXPTracking:ShouldStoreStat(xpVariable) then 
+          --[[ Original Code
           local currentXPForSetting = CharacterStats:GetStat(xpVariable) or 0
           local newXPForSetting = currentXPForSetting + xpGained
-          CharacterStats:UpdateStat(xpVariable, newXPForSetting)
+          CharacterStats:UpdateStat(xpVariable, newXPForSetting) 
+          ]]
+
+          -- Access character stats directly from our local variable to minimize calls
+          local currentXPForSetting = stats[xpVariable]
+          local newXPForSetting = currentXPForSetting + xpGained
+          stats[xpVariable] = newXPForSetting
+          statsChanged = statsChanged + 1
         end
       end
+    end
+
+    if statsChanged > 0 then
+      -- Instead of repeatedly calling UpdateStat in the loop above (which resaves CharacterStats over and over)
+      -- Call SaveDBData once at the end
+      SaveDBData('characterStats', UltraHardcoreDB.characterStats)
     end
     
     lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
