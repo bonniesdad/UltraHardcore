@@ -58,11 +58,11 @@ local function UpdateXPTracking(levelUp)
 
   local currentXP = AddonXPTracking:GetXP(levelUp)
   local currentTime = GetTime()
-  
+  AddonXPTracking:XPTrackingDebug("XP Check " .. lastXPValue .. " vs " .. currentXP)
   -- Only update if XP has increased and enough time has passed (prevent spam)
   if currentXP > lastXPValue and (currentTime - lastXPUpdate) > 1 then
     local xpGained = currentXP - lastXPValue
-    AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed XP gained = " .. xpGained)
+    AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed. XP gained = " .. xpGained)
     local statsChanged = 0 
     local stats = CharacterStats:GetCurrentCharacterStats()
 
@@ -81,7 +81,7 @@ local function UpdateXPTracking(levelUp)
           ]]
 
           -- Access character stats directly from our local variable to minimize calls
-          local currentXPForSetting = stats[xpVariable]
+          local currentXPForSetting = stats[xpVariable] or 0
           local newXPForSetting = currentXPForSetting + xpGained
           stats[xpVariable] = newXPForSetting
           statsChanged = statsChanged + 1
@@ -127,8 +127,11 @@ xpTrackingFrame:RegisterEvent("ADDON_LOADED")
 xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
   if event == "PLAYER_REGEN_ENABLED" then
     AddonXPTracking:XPTrackingDebug("PLAYER_REGEN_ENABLED event fired")
-    C_Timer.After(2.0, function() 
+    C_Timer.After(3.0, function() 
       UpdateXPTracking(false)
+      if AddonXPTracking:ValidateTotalStoredXP() ~= true then
+        AddonXPTracking:PrintXPVerificationWarning()
+      end
     end)
   elseif event == "PLAYER_XP_UPDATE" then
     AddonXPTracking:XPTrackingDebug("PLAYER_XP_UPDATE event fired")
