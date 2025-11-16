@@ -248,11 +248,9 @@ function HideMinimap(showClockEvenWhenMapHidden)
         end
       end
 
-
       -- Show only the minimap (keep cluster elements hidden)
       Minimap:Show()
       Minimap:SetZoom(0)
-
 
       -- Cancel any existing 'hide' timer
       if minimapHideTimer then
