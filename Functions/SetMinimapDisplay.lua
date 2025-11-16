@@ -207,6 +207,9 @@ function HideMinimap(showClockEvenWhenMapHidden)
       Minimap:SetScale(8.0)
       -- Minimap:SetAlpha(1)
 
+      -- Prevent zooming when showing our tracking
+      Minimap:EnableMouseWheel(false)
+
       -- Ensure we don't alter the minimap mask; rely on the game's default circular mask
 
       -- Hide extra minimap adornments while revealing
@@ -245,9 +248,13 @@ function HideMinimap(showClockEvenWhenMapHidden)
         end
       end
 
+
       -- Show only the minimap (keep cluster elements hidden)
       Minimap:Show()
       Minimap:SetZoom(0)
+
+      -- Prevent zooming when showing our tracking
+      Minimap:EnableMouseWheel(false)
 
       -- Cancel any existing 'hide' timer
       if minimapHideTimer then
