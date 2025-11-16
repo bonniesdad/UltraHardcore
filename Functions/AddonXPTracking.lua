@@ -36,9 +36,8 @@ function AddonXPTracking:XPTrackingDebug(msg)
   print(msgPrefix .. "(" .. yellowTextColour .. "AddonXPTracking DEBUG|r) " ..  msg)
 end 
 
-function AddonXPTracking:CalculateTotalXPGained()
-    self:XPTrackingDebug("Calculating Total XP for " .. redTextColour .. UnitGUID("player") .. "|r")
-    local stats = self:Stats()
+-- This function adds XP from the level up table and current xp
+function AddonXPTracking:GetTotalXP()
     local currentLevel = UnitLevel("player")
     local totalXP = 0
 
@@ -48,7 +47,13 @@ function AddonXPTracking:CalculateTotalXPGained()
       end
     end
     local currentXP = UnitXP('player')
-    totalXP = totalXP + currentXP
+    return totalXP + currentXP
+end
+
+function AddonXPTracking:CalculateTotalXPGained()
+    self:XPTrackingDebug("Calculating Total XP for " .. redTextColour .. UnitGUID("player") .. "|r")
+    local stats = self:Stats()
+    local totalXP = self:GetTotalXP()
     self:XPTrackingDebug("Total XP is " .. totalXP)
     self:UpdateStat("xpTotal", totalXP)
     if stats.xpGWA ~= nil and stats.xpGWA > 0 then
@@ -181,7 +186,7 @@ function AddonXPTracking:ForceSave()
   self:UpdateStat("xpTotal", totalXP)
   self.UpdateStat("xpGWA", stats.xpGWA)
   self.UpdateStat("xpGWOA", totalXP - stats.xpGWA)
-  AddonXPTracking:XPTrackingDebug("Exiting game, setting XP values: " .. totalXP 
+  AddonXPTracking:XPTrackingDebug("Setting XP values: " .. totalXP 
                                   .. " - " .. stats.xpGWA
                                   .. " = " .. stats.xpGWOA
                                 )
@@ -227,6 +232,7 @@ function AddonXPTracking:ShouldTrackStat(xpVariable)
   end
 end
 
+-- This function returns the storged total XP value from CharacterStats
 function AddonXPTracking:TotalXP()
   return self:Stats().xpTotal
 end
@@ -259,7 +265,6 @@ function AddonXPTracking:GetXP(levelUp)
     self:XPTrackingDebug("Leveling up, reporting XP as " .. levelXP)
     return levelXP
   else
-    self:XPTrackingDebug("GetXP=" .. UnitXP("player"))
     return UnitXP("player")
   end
 end
@@ -279,7 +284,7 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   if levelUp == nil then levelUp = false end
 
   if levelUp then
-    local newTime = currentTime - 1
+    local newTime = currentTime - 2
     self:XPTrackingDebug("Falsifying last update timestamp from " .. currentTime .. " to " .. newTime)
     return newTime
   else
@@ -287,12 +292,26 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
 end
 
+function AddonXPTracking:ValidateTotalStoredXP()
+  return self:GetTotalXP() == self:TotalXP()
+end
+
+function AddonXPTracking:PrintXPVerificationWarning()
+    print(msgPrefix .. redTextColour .. "WARNING!|r Detected a " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r XP difference!")
+    print(msgPrefix .. "Do not log out, /reload or change UHC settings until you gain XP again or you will gain unverified XP.")
+end
+
 function AddonXPTracking:XPReport()
   local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
-  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
-  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
+
+  if AddonXPTracking:ValidateTotalStoredXP() == true then
+    print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
+    print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
+    print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
+    print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
+  else
+    AddonXPTracking:PrintXPVerificationWarning()
+  end
 end 
 
 
