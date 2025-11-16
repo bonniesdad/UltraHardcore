@@ -36,18 +36,22 @@ function AddonXPTracking:XPTrackingDebug(msg)
   print(msgPrefix .. "(" .. yellowTextColour .. "AddonXPTracking DEBUG|r) " ..  msg)
 end 
 
+function AddonXPTracking:GetMinXPForLevel(currentLevel)
+  local totalXP = 0
+
+  for i, xp in ipairs(self.TotalXPTable) do
+    if i < currentLevel then
+      totalXP = totalXP + xp
+    end
+  end
+  return totalXP
+end
+
 -- This function adds XP from the level up table and current xp
 function AddonXPTracking:GetTotalXP()
     local currentLevel = UnitLevel("player")
-    local totalXP = 0
-
-    for i, xp in ipairs(self.TotalXPTable) do
-      if i < currentLevel then
-        totalXP = totalXP + xp
-      end
-    end
     local currentXP = UnitXP('player')
-    return totalXP + currentXP
+    return self:GetMinXPForLevel(currentLevel) + currentXP
 end
 
 function AddonXPTracking:CalculateTotalXPGained()
@@ -101,7 +105,6 @@ function AddonXPTracking:GetHighestNonHealthStat()
   self:XPTrackingDebug("Highest non-health XP stat is " .. highestXPStatName .. "=" .. highestXp)
   return highestXp
 end
-
 
 function AddonXPTracking:GetHighestXpGainedStat()
   local stats = self:Stats()
@@ -292,24 +295,53 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
 end
 
+function AddonXPTracking:IsAddonXPValid(currentLevel) 
+  local stats = self:Stats()
+  local xpForLevel = self:GetMinXPForLevel(currentLevel)
+  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel
+end
+
+function AddonXPTracking:FixAddonXPDrift(currentLevel)
+  local stats = self:Stats()
+  local xpForLevel = self:GetMinXPForLevel(currentLevel)
+  if stats.xpGWA + stats.xpGWOA < xpForLevel then
+    local diff = xpForLevel - stats.xpGWA
+
+    stats.xpGWA = stats.xpGWA + diff
+    if stats.xpTotal < xpForLevel then
+      stats.xpTotal = stats.xpTotal + diff
+    end
+    if stats.xpGWOA > 0 and stats.xpGWOA >= diff then
+      stats.xpGWOA = stats.xpGWOA - diff
+    end
+
+    self:XPTrackingDebug("Correcting a " .. yellowTextColour ..  diff .. "|r XP drift "
+    .. redTextColour .. "Do a " 
+    .. greenTextColour .. "/reload "
+    .. redTextColour .. "ASAP to prevent unverified XP!|r")
+    return diff
+  end
+  return -1
+end
+
 function AddonXPTracking:ValidateTotalStoredXP()
   return self:GetTotalXP() == self:TotalXP()
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
+    local totalXP = self:GetTotalXP()
+    local storedTotalXP = self:TotalXP()
     print(msgPrefix .. redTextColour .. "WARNING!|r Detected " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r missing XP!")
-    print(msgPrefix .. "Do not log out, /reload or change UHC settings until you gain XP again or it will be unverified.")
 end
 
 function AddonXPTracking:XPReport()
   local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
 
-  if AddonXPTracking:ValidateTotalStoredXP() == true then
-    print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
-    print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
-    print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
-    print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
-  else
+  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
+  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
+  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
+  if AddonXPTracking:ValidateTotalStoredXP() ~= true then
     AddonXPTracking:PrintXPVerificationWarning()
   end
 end 
