@@ -297,8 +297,8 @@ function AddonXPTracking:ValidateTotalStoredXP()
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
-    print(msgPrefix .. redTextColour .. "WARNING!|r Detected a " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r XP difference!")
-    print(msgPrefix .. "Do not log out, /reload or change UHC settings until you gain XP again or you will gain unverified XP.")
+    print(msgPrefix .. redTextColour .. "WARNING!|r Detected " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r missing XP!")
+    print(msgPrefix .. "Do not log out, /reload or change UHC settings until you gain XP again or it will be unverified.")
 end
 
 function AddonXPTracking:XPReport()
