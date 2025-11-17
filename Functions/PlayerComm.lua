@@ -201,12 +201,10 @@ local function OnCommReceived(prefix, message, distribution, sender)
         end
       end
     end
+  elseif data.messageType == "GF_HANDSHAKE" then
+    data.sender = sender
+    NotifyGuildFoundHandlers(data)
   end
-  
-  -- Extend here for other message types
-  -- if data.messageType == "OTHER_TYPE" then
-  --   -- Handle other message types
-  -- end
 end
 
 -- Get cached tamper status for a player
@@ -235,9 +233,6 @@ end
 function PlayerComm:ClearCachedStatus(playerName)
   if playerName then
     playerTamperStatus[playerName] = nil
-  elseif data.messageType == "GF_HANDSHAKE" then
-    data.sender = sender
-    NotifyGuildFoundHandlers(data)
   end
 end
 
