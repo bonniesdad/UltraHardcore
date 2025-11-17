@@ -149,11 +149,23 @@ local function OnCommReceived(prefix, message, distribution, sender)
     return -- Invalid or corrupted message
   end
   
-  if not data or type(data) ~= "table" or not data.type then
+  if not data or type(data) ~= "table" then
     return -- Invalid or corrupted message
   end
   
-  -- Handle tamper status requests
+  -- Handle Guild Found handshake messages (these don't have a "type" field)
+  if data.messageType == "GF_HANDSHAKE" then
+    -- Add sender to payload and notify handlers
+    data.sender = sender
+    NotifyGuildFoundHandlers(data)
+    return
+  end
+  
+  -- Handle tamper status requests (these require a "type" field)
+  if not data.type then
+    return -- Invalid or corrupted message
+  end
+  
   if data.messageType == "TAMPER_STATUS" then
     -- Handle request (someone asking for our tamper status)
     if data.type == "REQUEST" and data.requestId then
