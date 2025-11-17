@@ -160,6 +160,31 @@ end
 -- WARRIOR: Two-Handed Only
 -- -------------------------
 if PLAYER_CLASS == "WARRIOR" then
+  local function invLink(slot) return GetInventoryItemLink("player", slot) end -- 16 MH, 17 OH, 5 Chest
+  local function classSub(link)
+    if not link then return nil, nil end
+    local classID, subClassID = select(10, GetItemInfoInstant(link))
+    return classID, subClassID
+  end
+  local function equipLoc(link)
+    return select(9, GetItemInfo(link or "")) -- "INVTYPE_2HWEAPON", etc.
+  end
+  local function isSword(link)
+    if not link then return false end
+    local classID, subClassID = classSub(link)
+    return classID == LE_ITEM_CLASS_WEAPON and (subClassID == LE_ITEM_WEAPON_SWORD1H or subClassID == LE_ITEM_WEAPON_SWORD2H)
+  end
+  local function isStaff(link)
+    if not link then return false end
+    local classID, subClassID = classSub(link)
+    return classID == LE_ITEM_CLASS_WEAPON and subClassID == LE_ITEM_WEAPON_STAFF
+  end
+  local function isCloth(link)
+    if not link then return false end
+    local classID, subClassID = classSub(link)
+    return classID == LE_ITEM_CLASS_ARMOR and subClassID == LE_ITEM_ARMOR_CLOTH
+  end
+  -- 2H Only
   C.Register({
     id = "class_warrior_2h_only",
     name = "Two-Handed Only",
@@ -181,6 +206,100 @@ if PLAYER_CLASS == "WARRIOR" then
     name = "Two-Handed Only",
     desc = "Must equip a two-handed weapon; no offhand/shield.",
     icon = "Interface\\Icons\\inv_axe_04",
+  })
+
+  -- Swordmaster
+  C.Register({
+    id = "class_warrior_swordmaster",
+    name = "Swordmaster",
+    description = "May equip only swords (1H or 2H). Shields and non-sword weapons are forbidden.",
+    icon = "Interface\\Icons\\inv_sword_27",
+    events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
+    onEvent = function(self)
+      local mh, oh = invLink(16), invLink(17)
+      -- main-hand must be a sword
+      if mh and not isSword(mh) then
+        return C.Fail(self.id, "Main hand is not a sword")
+      end
+      -- offhand: must be empty or a sword (no shields / other weapons)
+      if oh and not isSword(oh) then
+        return C.Fail(self.id, "Offhand is not a sword")
+      end
+    end,
+  })
+  C.RegisterPreset("Class: Warrior (Swordmaster)", { "class_warrior_swordmaster" })
+  Challenges.RegisterClassRule("class_warrior_swordmaster", {
+    name = "Swordmaster",
+    desc = "Only swords (1H/2H). No shields or other weapons.",
+    icon = "Interface\\Icons\\inv_sword_27",
+  })
+
+  --Monk
+  C.Register({
+    id = "class_warrior_monk",
+    name = "Monk",
+    description = "May only wear cloth armor and may only use a staff (2H). Offhand must be empty.",
+    icon = "Interface\\Icons\\inv_staff_08",
+    events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
+    onEvent = function(self)
+      -- armor slots to enforce cloth (ignore jewelry)
+      local armorSlots = {1,3,5,6,7,8,9,10,15} -- Head, Shoulder, Chest, Waist, Legs, Feet, Wrist, Hands, Back
+      for _, slot in ipairs(armorSlots) do
+        local link = invLink(slot)
+        if link then
+          if not isCloth(link) then
+            return C.Fail(self.id, "Non-cloth armor equipped")
+          end
+        end
+      end
+      -- weapon rule: staff in main hand, 2H, offhand empty
+      local mh, oh = invLink(16), invLink(17)
+      if not mh or not isStaff(mh) then
+        return C.Fail(self.id, "Main hand is not a staff")
+      end
+      if equipLoc(mh) ~= "INVTYPE_2HWEAPON" then
+        return C.Fail(self.id, "Staff must be two-handed")
+      end
+      if oh then
+        return C.Fail(self.id, "Offhand must be empty")
+      end
+    end,
+  })
+  C.RegisterPreset("Class: Warrior (Monk)", { "class_warrior_monk" })
+  Challenges.RegisterClassRule("class_warrior_monk", {
+    name = "Monk",
+    desc = "Cloth armor only. Two-handed staff only. Offhand empty.",
+    icon = "Interface\\Icons\\inv_staff_08",
+  })
+
+-- Barbarian
+  C.Register({
+    id = "class_warrior_barbarian",
+    name = "Barbarian",
+    description = "May not equip a chest piece and may only use swords.",
+    icon = "Interface\\Icons\\ability_warrior_battleshout",
+    events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
+    onEvent = function(self)
+      -- no chest piece
+      local chest = invLink(5)
+      if chest then
+        return C.Fail(self.id, "Chest piece equipped")
+      end
+      -- swords only (same as Swordmaster)
+      local mh, oh = invLink(16), invLink(17)
+      if mh and not isSword(mh) then
+        return C.Fail(self.id, "Main hand is not a sword")
+      end
+      if oh and not isSword(oh) then
+        return C.Fail(self.id, "Offhand is not a sword")
+      end
+    end,
+  })
+  C.RegisterPreset("Class: Warrior (Barbarian)", { "class_warrior_barbarian" })
+  Challenges.RegisterClassRule("class_warrior_barbarian", {
+    name = "Barbarian",
+    desc = "No chest piece. Only swords (1H/2H).",
+    icon = "Interface\\Icons\\ability_warrior_battleshout",
   })
 end
 

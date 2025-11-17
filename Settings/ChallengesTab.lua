@@ -192,11 +192,9 @@ local function RefreshClassState()
 end
 
 function InitializeChallengesTab()
-  -- Use your existing tab content frame (update index if needed)
   if not _G.tabContents or not _G.tabContents[6] then return end
   local content = _G.tabContents[6]
 
-  -- If already built, just refresh and show the current subtab
   if content._uhc_chal_initialized then
     if widgets._refreshAll then widgets._refreshAll() end
     if widgets._showSub then widgets._showSub(widgets.subIndex or 1) end
@@ -205,6 +203,90 @@ function InitializeChallengesTab()
   content._uhc_chal_initialized = true
 
   widgets.root = content
+
+-- Rebuild any subtab lists that exist
+local function RebuildAllLists()
+  -- --- Presets ---
+  if widgets.presetInner then
+    -- nuke children
+    for _, child in ipairs({ widgets.presetInner:GetChildren() }) do
+      child:Hide(); child:SetParent(nil)
+    end
+    -- re-populate with your existing renderer
+    if PopulateRows then
+      PopulateRows(widgets.presetInner)
+    end
+    -- height estimate
+    local rowCount = widgets.presetInner._rowCount or (widgets.presetInner.rows and #widgets.presetInner.rows) or 12
+    widgets.presetInner:SetHeight(math.max(220, rowCount * 36 + 8))
+  end
+
+  -- --- Class ---
+  if widgets.classInner then
+    -- nuke children
+    for _, child in ipairs({ widgets.classInner:GetChildren() }) do
+      child:Hide(); child:SetParent(nil)
+    end
+
+    -- collect class items
+    local items, sel = {}, (Challenges.GetClassRuleSelection and Challenges.GetClassRuleSelection()) or "NONE"
+    if Challenges.GetAvailableClassRules then
+      for key, def in pairs(Challenges.GetAvailableClassRules()) do
+        items[#items+1] = {
+          id   = key,
+          name = def.name or key,
+          desc = def.desc or "",
+          icon = def.icon or "Interface\\Icons\\inv_misc_questionmark",
+          selected = (sel == key),
+        }
+      end
+      table.sort(items, function(a,b) return (a.name or "") < (b.name or "") end)
+    end
+
+    -- small row factory that matches your Presets look
+    local ROW_H, rows = 36, {}
+    local function ensureRow(i)
+      local r = rows[i]
+      if r then return r end
+      r = CreateFrame("Button", nil, widgets.classInner, "BackdropTemplate")
+      r:SetSize(1, ROW_H)
+      r:SetBackdrop({ bgFile="Interface/Buttons/WHITE8x8" })
+      r:SetBackdropColor(0,0,0, (i%2==0) and 0.04 or 0.02)
+
+      r.icon = r:CreateTexture(nil, "ARTWORK"); r.icon:SetSize(24,24); r.icon:SetPoint("LEFT", r, "LEFT", 6, 0)
+      r.name = r:CreateFontString(nil, "OVERLAY", "GameFontHighlight");    r.name:SetPoint("LEFT", r.icon, "RIGHT", 8, 6)
+      r.desc = r:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall"); r.desc:SetPoint("LEFT", r.icon, "RIGHT", 8, -10); r.desc:SetWidth(360); r.desc:SetJustifyH("LEFT")
+      r.pick = CreateFrame("Button", nil, r, "UIPanelButtonTemplate");     r.pick:SetSize(100,22); r.pick:SetPoint("RIGHT", r, "RIGHT", -8, 0)
+      rows[i] = r
+      return r
+    end
+
+    for i, it in ipairs(items) do
+      local r = ensureRow(i)
+      r:ClearAllPoints()
+      r:SetPoint("TOPLEFT", widgets.classInner, "TOPLEFT", 4, - (i-1) * ROW_H)
+
+      r.icon:SetTexture(it.icon)
+      r.name:SetText(it.name); r.desc:SetText(it.desc or "")
+
+      r.pick:SetText(it.selected and "Selected" or "Select")
+      r.pick:SetEnabled(not it.selected)
+      r.pick:SetScript("OnClick", function()
+        if Challenges.SetClassRule then
+          local ok, err = Challenges.SetClassRule(it.id)
+          if not ok and err then
+            if UIErrorsFrame then UIErrorsFrame:AddMessage(err, 1, .2, 0) else print(err) end
+          end
+        end
+        if widgets._refreshAll then widgets._refreshAll() end
+      end)
+
+      r:Show()
+    end
+
+    widgets.classInner:SetHeight(math.max(220, #items * ROW_H + 8))
+  end
+end
 
   ------------------------------------------------------------
   -- Sub-tab strip (Presets | Class | Custom)
@@ -255,222 +337,151 @@ function InitializeChallengesTab()
   widgets.panels[3] = makePanel()  -- Custom
 
   local built = { false, false, false }
+  local buildPresetsUI, buildClassUI, buildCustomUI
 
   ------------------------------------------------------------
-  -- Presets panel = your CURRENT UI (moved here)
+  -- Presets panel
   ------------------------------------------------------------
-  local function buildPresetsUI(parent)
-    if built[1] then return end
-    built[1] = true
+local function _buildPresetsUI(parent)
+  if built[1] then return end
+  built[1] = true
 
-    -- Title
-    local title = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    title:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
-    title:SetText("Presets")
+  -- Title
+  local title = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+  title:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
+  title:SetText("Presets")
 
-    -- Lock status
-    if not widgets.lockStatus then
-      widgets.lockStatus = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-      widgets.lockStatus:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-      widgets.lockStatus:SetText("")
-    else
-      widgets.lockStatus:SetParent(parent)
-      widgets.lockStatus:ClearAllPoints()
-      widgets.lockStatus:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-      widgets.lockStatus:Show()
-    end
+  -- Lock status
+  if not widgets.lockStatus then
+    widgets.lockStatus = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+  end
+  widgets.lockStatus:SetParent(parent)
+  widgets.lockStatus:ClearAllPoints()
+  widgets.lockStatus:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
+  widgets.lockStatus:Show()
 
-    -- Lock button
-    if not widgets.lockButton then
-      widgets.lockButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
-      widgets.lockButton:SetSize(160, 22)
-      widgets.lockButton:SetPoint("LEFT", widgets.lockStatus, "RIGHT", 8, 0)
-      widgets.lockButton:SetText("Lock selection now")
-      widgets.lockButton:SetScript("OnClick", function()
-        if Challenges.LockSelection then
-          Challenges.LockSelection("User confirmed")
-        end
-        if widgets._refreshAll then widgets._refreshAll() end
-      end)
-    else
-      widgets.lockButton:SetParent(parent)
-      widgets.lockButton:ClearAllPoints()
-      widgets.lockButton:SetPoint("LEFT", widgets.lockStatus, "RIGHT", 8, 0)
-      widgets.lockButton:Show()
-    end
+  -- Lock button
+  if not widgets.lockButton then
+    widgets.lockButton = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    widgets.lockButton:SetSize(160, 22)
+    widgets.lockButton:SetText("Lock selection now")
+    widgets.lockButton:SetScript("OnClick", function()
+      if Challenges.LockSelection then Challenges.LockSelection("User confirmed") end
+      if widgets._refreshAll then widgets._refreshAll() end
+    end)
+  end
+  widgets.lockButton:SetParent(parent)
+  widgets.lockButton:ClearAllPoints()
+  widgets.lockButton:SetPoint("LEFT", widgets.lockStatus, "RIGHT", 8, 0)
+  widgets.lockButton:Show()
 
-    -- Divider
-    local yAnchor = widgets.lockStatus
-    if CreateDivider then
-      local div = CreateDivider(parent)
-      div:SetPoint("TOPLEFT", widgets.lockStatus, "BOTTOMLEFT", 0, -8)
-      yAnchor = div
-    end
-
-    -- "Available Challenges" header
-    local listHdr = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    listHdr:SetPoint("TOPLEFT", yAnchor, "BOTTOMLEFT", 0, -10)
-    listHdr:SetText("Available Challenges")
-
-    -- Rows container
-    if not widgets.rowsContainer then
-      widgets.rowsContainer = CreateFrame("Frame", nil, parent)
-    end
-    widgets.rowsContainer:SetParent(parent)
-    widgets.rowsContainer:ClearAllPoints()
-    widgets.rowsContainer:SetPoint("TOPLEFT",  listHdr, "BOTTOMLEFT", 0, -6)
-    widgets.rowsContainer:SetPoint("RIGHT",    parent, "RIGHT", -8, 0)
-    widgets.rowsContainer:SetHeight(200)
-    widgets.rowsContainer:Show()
-
-    -- Populate using your existing function
-    if PopulateRows then
-      PopulateRows(widgets.rowsContainer)
-    end
+  -- Divider
+  local yAnchor = widgets.lockStatus
+  if CreateDivider then
+    local div = CreateDivider(parent)
+    div:SetPoint("TOPLEFT", widgets.lockStatus, "BOTTOMLEFT", 0, -8)
+    yAnchor = div
   end
 
-  -- Populate rows using the same Presets UI, but with a filter
-local function PopulateRowsFiltered(container, fn)
-  ClearRows()
-  local defs = {}
-  for _, def in pairs(Challenges.GetAll()) do
-    if fn(def) then
-      table.insert(defs, def)
-    end
-  end
-  table.sort(defs, sortDefsByName)
+  -- Header
+  local listHdr = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  listHdr:SetPoint("TOPLEFT", yAnchor, "BOTTOMLEFT", 0, -10)
+  listHdr:SetText("Available Challenges")
 
-  for i, def in ipairs(defs) do
-    local row = CreateChallengeRow(container, def, i)
-    table.insert(widgets.rows, row)
+  -- ===== ScrollFrame =====
+  local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+  scroll:SetPoint("TOPLEFT",  listHdr, "BOTTOMLEFT", 0, -6)
+  scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -24, 8) -- leave room for scrollbar
+  scroll:EnableMouseWheel(true)
+  widgets.presetScroll = scroll
+
+  local inner = CreateFrame("Frame", nil, scroll)
+  inner:SetPoint("TOPLEFT")
+  inner:SetSize(520, 1)
+  scroll:SetScrollChild(inner)
+  widgets.presetInner = inner
+
+  if PopulateRows then
+    PopulateRows(inner)
   end
 
-  local total = 0
-  for _, r in ipairs(widgets.rows) do total = total + r:GetHeight() + 6 end
-  container:SetHeight(math.max(160, total))
+  -- ---- Auto-size the inner height so the scrollbar knows what to scroll ----
+  local function countChildren(f)
+    local n = 0
+    for _ in pairs({ f:GetChildren() }) do n = n + 1 end
+    return n
+  end
+
+  local function estimateContentHeight(f)
+    local ROW_H = 36
+    local n = f._rowCount or (f.rows and #f.rows) or countChildren(f)
+    local h = (n > 0) and (n * ROW_H + 8) or 200
+    return math.max(200, h)
+  end
+
+  inner:SetHeight(estimateContentHeight(inner))
+
+  -- Smooth mouse wheel scroll
+  scroll:SetScript("OnMouseWheel", function(self, delta)
+    local current = self:GetVerticalScroll()
+    local step = 32
+    self:SetVerticalScroll( math.max(0, current - delta * step) )
+  end)
 end
+buildPresetsUI = _buildPresetsUI
 
-  ------------------------------------------------------------
-  -- Class panel (class-specific challenge buttons)
-  ------------------------------------------------------------
-  -- Preset-style row factory
-local function CreatePresetStyleRow(parent, i)
-  local row = CreateFrame("Frame", nil, parent, "BackdropTemplate")
-  row:SetSize(540, 44)
-  row:SetBackdrop({ bgFile = "Interface/Buttons/WHITE8x8" })
-  row:SetBackdropColor(0, 0, 0, (i % 2 == 0) and 0.06 or 0.03)
-
-  row.icon = row:CreateTexture(nil, "ARTWORK")
-  row.icon:SetSize(28, 28)
-  row.icon:SetPoint("LEFT", row, "LEFT", 6, 0)
-
-  row.title = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-  row.title:SetPoint("TOPLEFT", row.icon, "RIGHT", 8, -2)
-
-  row.desc = row:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall")
-  row.desc:SetPoint("TOPLEFT", row.title, "BOTTOMLEFT", 0, -2)
-  row.desc:SetWidth(360)
-  row.desc:SetJustifyH("LEFT")
-
-  row.select = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-  row.select:SetSize(100, 22)
-  row.select:SetPoint("RIGHT", row, "RIGHT", -8, 0)
-  row.select:SetText("Select")
-
-  return row
-end
-
-local function buildClassUI(parent)
+--------------------------
+----- Class Panel --------
+--------------------------
+local function _buildClassUI(parent)
   if built[2] then return end
   built[2] = true
 
-  local hdr = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+  local hdr = parent:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
   hdr:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 0)
   hdr:SetText("Class Challenges")
 
-  -- Container under the header — no backdrop so it matches Presets
-  local list = CreateFrame("Frame", nil, parent)
-  list:SetPoint("TOPLEFT", hdr, "BOTTOMLEFT", 0, -8)
-  list:SetPoint("RIGHT", parent, "RIGHT", -8, 0)
-  list:SetHeight(220)
-
-  -- Build defs from the class rule registry
-  local defs = {}
+  -- Collect class rules (name/desc/icon/selected)
+  local items = {}
   if Challenges.GetAvailableClassRules then
-    for key, data in pairs(Challenges.GetAvailableClassRules()) do
-      defs[#defs+1] = {
-        id = key,
-        name = (data and data.name) or key,
-        description = (data and data.desc) or "",
-        icon = (data and data.icon) or "Interface\\Icons\\inv_misc_questionmark",
+    for key, def in pairs(Challenges.GetAvailableClassRules()) do
+      items[#items+1] = {
+        id   = key,
+        name = def.name or key,
+        desc = def.desc or "",
+        icon = def.icon or "Interface\\Icons\\inv_misc_questionmark",
+        selected = (Challenges.GetClassRuleSelection and Challenges.GetClassRuleSelection() == key) or false,
       }
     end
-    table.sort(defs, function(a,b)
-      local an = (a.name or a.id or ""):lower()
-      local bn = (b.name or b.id or ""):lower()
-      return an < bn
-    end)
+    table.sort(items, function(a,b) return a.name < b.name end)
   end
 
-  -- Empty-state message
-  if #defs == 0 then
-    local msg = parent:CreateFontString(nil, "OVERLAY", "GameFontDisable")
-    msg:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, 4)
-    msg:SetText("No class-specific challenges available for this class.")
-    return
+  -- Rows container
+  if type(PopulateRows) == "function" then
+    if not widgets.classRows then widgets.classRows = CreateFrame("Frame", nil, parent) end
+    widgets.classRows:SetParent(parent)
+    widgets.classRows:ClearAllPoints()
+    widgets.classRows:SetPoint("TOPLEFT",  hdr, "BOTTOMLEFT", 0, -10)
+    widgets.classRows:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -8, 8)
+    widgets.classRows:Show()
   end
 
-  -- Build rows using the SAME row factory as Presets
-  widgets.classRows = widgets.classRows or {}
-
-  -- We temporarily reuse CreateChallengeRow’s layout logic, which anchors
-  -- to the previous element in widgets.rows; to avoid mixing arrays,
-  -- we proxy widgets.rows while building then restore it.
-  local old = widgets.rows
-  widgets.rows = widgets.classRows
-
-  for i, def in ipairs(defs) do
-    local row = CreateChallengeRow(list, def, i)
-
-    -- Override the default checkbox behavior: class rules are single-select
-    row.check:SetScript("OnClick", function(self)
-      if not Challenges.CanModifySelection() then
-        self:SetChecked((Challenges.GetState().rules or {}).classRule == def.id)
-        if UIErrorsFrame then
-          UIErrorsFrame:AddMessage("Challenge selection is locked at level 2.", 1, 0.2, 0)
-        end
-        return
-      end
-      if self:GetChecked() then
-        Challenges.SetClassRule(def.id)
-      else
-        Challenges.SetClassRule("NONE")
-      end
-      if widgets._refreshAll then widgets._refreshAll() end
-    end)
-
-    -- We don’t show status for class rules; make sure it’s blank
-    if row.status then row.status:SetText("") end
-
-    -- Ensure the icon uses the provided path/fileID
-    row.icon:SetTexture(def.icon)
-
-    widgets.classRows[i] = row
-  end
-
-  -- Restore the original preset rows table
-  widgets.rows = old
-
-  -- Compute list height like PopulateRows does
-  local total = 0
-  for _, r in ipairs(widgets.classRows) do total = total + r:GetHeight() + 6 end
-  list:SetHeight(math.max(160, total))
+    -- Scroll area
+local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+scroll:SetPoint("TOPLEFT",  hdr, "BOTTOMLEFT", 0, -10)
+scroll:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", -24, 8)
+local inner = CreateFrame("Frame", nil, scroll)
+inner:SetSize(520, 1)
+scroll:SetScrollChild(inner)
+widgets.classScroll = scroll
+widgets.classInner  = inner
 end
+buildClassUI = _buildClassUI
 
   ------------------------------------------------------------
-  -- Custom panel (DIY/created challenges) – placeholder
+  -- Custom panel (DIY/created challenges)
   ------------------------------------------------------------
-  local function buildCustomUI(parent)
+  local function _buildCustomUI(parent)
     if built[3] then return end
     built[3] = true
 
@@ -482,13 +493,14 @@ end
     sub:SetPoint("TOPLEFT", hdr, "BOTTOMLEFT", 0, -6)
     sub:SetText("(Coming soon) Define your own rules here.")
   end
+  buildCustomUI = _buildCustomUI
 
   ------------------------------------------------------------
   -- Sub-tab switching + refresh glue
   ------------------------------------------------------------
-  local function highlight(which)
-    for i, b in ipairs(widgets.subButtons) do
-      if i == which then b:LockHighlight() else b:UnlockHighlight() end
+  local function highlight(i)
+    for idx, b in ipairs(widgets.subButtons) do
+      if idx == i then b:LockHighlight() else b:UnlockHighlight() end
     end
   end
 
@@ -496,32 +508,39 @@ end
     for idx, p in ipairs(widgets.panels) do
       if idx == i then p:Show() else p:Hide() end
     end
-    highlight(i)
-    if i == 1 then buildPresetsUI(widgets.panels[1])
-    elseif i == 2 then buildClassUI(widgets.panels[2])
-    else buildCustomUI(widgets.panels[3]) end
+  
+    if i == 1 then
+      buildPresetsUI(widgets.panels[1])
+    elseif i == 2 then
+      buildClassUI(widgets.panels[2])
+    else
+      buildCustomUI(widgets.panels[3])
+    end
+  
+    -- one call refreshes whatever panels exist
+    RebuildAllLists()
+  
     if widgets._refreshAll then widgets._refreshAll() end
     widgets.subIndex = i
-  end
+  end  
 
+  -- 9) Refresher --------------------------------------------------------------
   widgets._refreshAll = function()
-    -- Update class selection label
-if widgets.classSel and Challenges.GetClassRuleSelection then
-  local sel = Challenges.GetClassRuleSelection()
-  local name = "None"
-  if Challenges.GetAvailableClassRules and sel ~= "NONE" then
-    local rules = Challenges.GetAvailableClassRules()
-    if rules[sel] and rules[sel].name then name = rules[sel].name end
-  end
-  widgets.classSel:SetText("Selected: " .. name)
-end
-
-
-    -- Refresh your existing Presets UI
+    -- update Class "Selected:" text
+    if widgets.classSel and Challenges.GetClassRuleSelection then
+      local sel = Challenges.GetClassRuleSelection()
+      local name = "None"
+      if sel ~= "NONE" and Challenges.GetAvailableClassRules then
+        local defs = Challenges.GetAvailableClassRules()
+        if defs[sel] and defs[sel].name then name = defs[sel].name end
+      end
+      widgets.classSel:SetText("Selected: " .. name)
+    end
+  
+    -- repopulate whichever lists exist
+    RebuildAllLists()
+  
+    -- keep your existing Presets state sync
     if RefreshState then RefreshState() end
-  end
-
-  -- show default sub-tab on first open
-  widgets._showSub(widgets.subIndex or 1)
-  RefreshClassState()
+  end  
 end
