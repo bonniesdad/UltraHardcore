@@ -16,6 +16,7 @@ Libs/AceComm-3.0/AceComm-3.0.lua
 Libs/AceSerializer-3.0/AceSerializer-3.0.lua
 
 ## Functions
+Functions/PlayerComm.lua
 Functions/SetPlayerFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
 Functions/SetTargetFrameDisplay.lua
@@ -88,7 +89,6 @@ Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
 Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
-Functions/PlayerComm.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
