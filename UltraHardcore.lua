@@ -35,9 +35,15 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hidePlayerFrame or false,
       GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
     )
+    if GLOBAL_SETTINGS.showClockEvenWhenMapHidden then
+      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_CLOCK)
+    end
+    if GLOBAL_SETTINGS.showMailEvenWhenMapHidden then
+      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_MAIL)
+    end
     SetMinimapDisplay(
       GLOBAL_SETTINGS.hideMinimap or false,
-      GLOBAL_SETTINGS.showClockEvenWhenMapHidden or false
+      miniMapMask
     )
     ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(

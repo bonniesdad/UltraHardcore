@@ -111,9 +111,13 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideUIErrors',
   tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
 }, {
-  name = 'Show Clock Even When Map is Hidden',
+  name = 'Show Clock When Minimap is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
+}, {
+  name = 'Show Mail Indicator When Minimap is Hidden',
+  dbSettingsValueName = 'showMailEvenWhenMapHidden',
+  tooltip = 'If Hide Minimap is enabled, keep the mail indicator on display instead of hiding it',
 }, {
   name = 'Announce Party Deaths on Group Join',
   dbSettingsValueName = 'announcePartyDeathsOnGroupJoin',
@@ -214,6 +218,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
+  showMailEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
@@ -256,6 +261,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
+  showMailEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
@@ -298,6 +304,7 @@ local presets = { {
   announceLevelUpToGuild = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
+  showMailEvenWhenMapHidden = false,
   announcePartyDeathsOnGroupJoin = false,
   announceDungeonsCompletedOnGroupJoin = false,
   newHighCritAppreciationSoundbite = false,
@@ -1431,6 +1438,48 @@ function InitializeSettingsOptionsTab()
     local steps = math.floor(val + 0.5)
     minimapClockScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapClockScale = steps / 10
+  end)
+    -- Minimap mail Scale subheader
+  local mailSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  mailSubHeader:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', -14, -12)
+  mailSubHeader:SetText('Minimap Mail Scale')
+  mailSubHeader:SetTextColor(0.922, 0.871, 0.761)
+
+  local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleRow)
+  minimapMailScaleRow:SetSize(380, 24)
+  minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+
+  local minimapMailScaleLabel = minimapMailScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapMailScaleLabel:SetPoint('LEFT', minimapMailScaleRow, 'LEFT', 0, 0)
+  minimapMailScaleLabel:SetWidth(LABEL_WIDTH2)
+  minimapMailScaleLabel:SetJustifyH('LEFT')
+  minimapMailScaleLabel:SetText('Minimap Mail Scale')
+
+  if tempSettings.minimapMailScale == nil then
+    tempSettings.minimapMailScale = GLOBAL_SETTINGS.minimapMailScale or 1.0
+  end
+
+  local minimapMailScalePercentText = minimapMailScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapMailScalePercentText:SetPoint('LEFT', minimapMailScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
+  minimapMailScalePercentText:SetWidth(40)
+  minimapMailScalePercentText:SetJustifyH('LEFT')
+  minimapMailScalePercentText:SetText(tostring(math.floor((tempSettings.minimapMailScale or 1.0) * 100)) .. '%')
+
+  local minimapMailScaleSlider = CreateFrame('Slider', nil, minimapMailScaleRow, 'OptionsSliderTemplate')
+  minimapMailScaleSlider:SetPoint('LEFT', minimapMailScalePercentText, 'RIGHT', 10, 0)
+  minimapMailScaleSlider:SetSize(180, 16)
+  minimapMailScaleSlider:SetMinMaxValues(10, 20)
+  minimapMailScaleSlider:SetValueStep(1)
+  minimapMailScaleSlider:SetObeyStepOnDrag(true)
+  minimapMailScaleSlider:SetValue(math.floor(((tempSettings.minimapMailScale or 1.0) * 10) + 0.5))
+  if minimapMailScaleSlider.Low then minimapMailScaleSlider.Low:SetText('100%') end
+  if minimapMailScaleSlider.High then minimapMailScaleSlider.High:SetText('200%') end
+  if minimapMailScaleSlider.Text then minimapMailScaleSlider.Text:SetText('') end
+
+  minimapMailScaleSlider:SetScript('OnValueChanged', function(self, val)
+    local steps = math.floor(val + 0.5)
+    minimapMailScalePercentText:SetText((steps * 10) .. '%')
+    tempSettings.minimapMailScale = steps / 10
   end)
 
   -- Expanded height now includes resource subheader + color rows + other subheaders + two rows
