@@ -51,6 +51,7 @@ local PRESET_SECTIONS = { {
     'announceLevelUpToGuild',
     'hideUIErrors',
     'showClockEvenWhenMapHidden',
+    'showMailEvenWhenMapHidden',
     'announcePartyDeathsOnGroupJoin',
     'announceDungeonsCompletedOnGroupJoin',
     'buffBarOnResourceBar',
