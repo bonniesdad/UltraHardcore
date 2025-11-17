@@ -344,10 +344,13 @@ function AddonXPTracking:XPReport()
   if AddonXPTracking:ValidateTotalStoredXP() ~= true then
     AddonXPTracking:PrintXPVerificationWarning()
   end
+
+  -- REMOVE BEFORE RELEASE
+  print(msgPrefix .. "If your XP was invalidated from the Nov 12th beta, run " .. redTextColour .. "/uhcresettracking|r to correct this")
 end 
 
 
--- We do not want a reset command for this in a release
+-- REMOVE BEFORE RELEASE
 SLASH_DEVRESETXP1 = '/uhcresettracking'
 SlashCmdList['DEVRESETXP'] = function()
   AddonXPTracking:UpdateStat("xpTotal", nil)
