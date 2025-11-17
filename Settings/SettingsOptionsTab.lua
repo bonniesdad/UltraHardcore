@@ -107,6 +107,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
 }, {
+  name = 'Auto Join UHC Channel',
+  dbSettingsValueName = 'autoJoinUHCChannel',
+  tooltip = 'Automatically join the Ultra Hardcore chat channel on login',
+}, {
   name = 'Hide UI Error Messages',
   dbSettingsValueName = 'hideUIErrors',
   tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
@@ -216,6 +220,7 @@ local presets = { {
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
+  autoJoinUHCChannel = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   showMailEvenWhenMapHidden = false,
@@ -259,6 +264,7 @@ local presets = { {
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
+  autoJoinUHCChannel = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   showMailEvenWhenMapHidden = false,
@@ -302,6 +308,7 @@ local presets = { {
   -- Misc Settings
   showOnScreenStatistics = true,
   announceLevelUpToGuild = true,
+  autoJoinUHCChannel = true,
   hideUIErrors = false,
   showClockEvenWhenMapHidden = false,
   showMailEvenWhenMapHidden = false,
@@ -764,6 +771,16 @@ function InitializeSettingsOptionsTab()
             if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
               if _G.UltraHardcoreHandleBuffBarSettingChange then
                 _G.UltraHardcoreHandleBuffBarSettingChange()
+              end
+            end
+
+            if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
+              if self:GetChecked() then
+                if JoinUHCChannel then
+                  JoinUHCChannel(true)
+                end
+              else
+                LeaveChannelByName('uhc')
               end
             end
 
