@@ -309,7 +309,7 @@ blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 -- XP Gained With Addon
 local xpGWALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 xpGWALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
-xpGWALabel:SetText('XP w Addon:')
+xpGWALabel:SetText('Verified XP:')
 xpGWALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local xpGWAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -321,7 +321,7 @@ xpGWAValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 -- XP Gained Without Addon
 local xpGWOALabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 xpGWOALabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
-xpGWOALabel:SetText('XP w/o Addon:')
+xpGWOALabel:SetText('Unverified XP:')
 xpGWOALabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local xpGWOAValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')

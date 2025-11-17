@@ -986,11 +986,11 @@ function InitializeStatisticsTab()
     tooltipKey = 'playerJumps',
   }, {
     key = 'xpGWA',
-    label = 'XP With Addon:',
+    label = 'Verified XP:',
     tooltipKey = 'xpGWA',
   }, {
     key = 'xpGWOA',
-    label = 'XP Without Addon:',
+    label = 'Unverified XP:',
     tooltipKey = 'xpGWOA',
   }, {
     key = 'mapKeyPressesWhileMapBlocked',
