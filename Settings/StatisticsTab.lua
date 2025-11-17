@@ -166,11 +166,20 @@ function InitializeStatisticsTab()
   -- Static items verification line (hard-coded, no checks)
   local legitStatusLine3 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   legitStatusLine3:SetPoint('TOPLEFT', legitStatusLine2, 'BOTTOMLEFT', 0, -2)
-  legitStatusLine3:SetText('No items were gained whilst the addon was inactive')
   legitStatusLine3:SetShadowOffset(1, -1)
   legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
-  legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
+
   local function UpdateLegitStatusText()
+    local isTampered = false
+    if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
+      local success, result = pcall(function()
+        return PlayerStateSnapshot:IsTampered()
+      end)
+      if success then
+        isTampered = result
+      end
+    end
+
     local xpWithoutAddon = 1
     if CharacterStats and CharacterStats.ReportXPWithoutAddon then
       local reported = CharacterStats:ReportXPWithoutAddon()
@@ -201,21 +210,33 @@ function InitializeStatisticsTab()
     -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
     local playerLevel = UnitLevel('player') or 1
     local isLevelOneWithNoXP = (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
+    local passedXPCheck = (xpWithoutAddon == 0 or isLevelOneWithNoXP)
+    local passedTamperCheck = not isTampered
+    local overallPass = passedXPCheck and passedTamperCheck
 
-    if xpWithoutAddon == 0 or isLevelOneWithNoXP then
+    legitStatusLine2:SetText('No XP was gained while the addon was inactive')
+    legitStatusLine3:SetText('No character changes have been identified since the last session')
+    legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
+    legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+
+    if overallPass then
       legitStatusLine1:SetText('Verified Ultra status')
-      legitStatusLine2:SetText('No XP was gained while the addon was inactive')
       legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
-      legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
       legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
-      legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
     else
       legitStatusLine1:SetText('Ultra status failed verification')
-      legitStatusLine2:SetText('XP was gained while the addon was inactive')
       legitStatusLine1:SetTextColor(1.0, 0.35, 0.35)
-      legitStatusLine2:SetTextColor(0.7, 0.7, 0.7)
       legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
-      legitStatusLine3:SetTextColor(0.7, 0.7, 0.7)
+    end
+
+    if not passedXPCheck then
+      legitStatusLine2:SetText('XP was gained while the addon was inactive')
+      legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
+    end
+
+    if not passedTamperCheck then
+      legitStatusLine3:SetText('Character changes have been identified since the last session')
+      legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
     end
   end
 
