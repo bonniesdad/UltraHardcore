@@ -111,11 +111,11 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideUIErrors',
   tooltip = 'Hide error messages that appear on screen (like "Target is too far away")',
 }, {
-  name = 'Show Clock When MiniMap is Hidden',
+  name = 'Show Clock When Minimap is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
 }, {
-  name = 'Show Mail Indicator When MiniMap is Hidden',
+  name = 'Show Mail Indicator When Minimap is Hidden',
   dbSettingsValueName = 'showMailEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the mail indicator on display instead of hiding it',
 }, {
@@ -1439,7 +1439,7 @@ function InitializeSettingsOptionsTab()
     minimapClockScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapClockScale = steps / 10
   end)
-    -- Minimap Clock Scale subheader
+    -- Minimap mail Scale subheader
   local mailSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   mailSubHeader:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', -14, -12)
   mailSubHeader:SetText('Minimap Mail Scale')
