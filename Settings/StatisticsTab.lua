@@ -214,13 +214,14 @@ function InitializeStatisticsTab()
     local passedTamperCheck = not isTampered
     local overallPass = passedXPCheck and passedTamperCheck
 
+    legitStatusLine2:SetText('No XP was gained while the addon was inactive')
+    legitStatusLine3:SetText('No character changes have been identified since the last session')
+    legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
+    legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+
     if overallPass then
       legitStatusLine1:SetText('Verified Ultra status')
-      legitStatusLine2:SetText('No XP was gained while the addon was inactive')
-      legitStatusLine3:SetText('No items were gained whilst the addon was inactive')
       legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
-      legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
-      legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
       legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
     else
       legitStatusLine1:SetText('Ultra status failed verification')
@@ -234,7 +235,7 @@ function InitializeStatisticsTab()
     end
 
     if not passedTamperCheck then
-      legitStatusLine3:SetText('Items were gained whilst the addon was inactive')
+      legitStatusLine3:SetText('Character changes have been identified since the last session')
       legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
     end
   end

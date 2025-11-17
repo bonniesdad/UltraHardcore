@@ -2,6 +2,7 @@
 -- Captures and stores player information to detect cheating by turning addon off/on
 
 local PlayerStateSnapshot = {}
+local bankIsOpen = false
 
 -- Equipment slot IDs (0-19)
 local EQUIPMENT_SLOTS = {
@@ -35,8 +36,6 @@ local function GetEquippedItems()
     local itemId = GetInventoryItemID('player', slotId)
     if itemId then
       equippedItems[slotId] = itemId
-    else
-      equippedItems[slotId] = nil
     end
   end
   
@@ -57,16 +56,12 @@ local function GetInventoryItems()
         local itemId = C_Container.GetContainerItemID(bagId, slotId)
         if itemId then
           bagSlots[slotId] = itemId
-        else
-          bagSlots[slotId] = nil
         end
       end
     end
     
     if next(bagSlots) then -- Only store if bag has items
       inventoryItems[bagId] = bagSlots
-    else
-      inventoryItems[bagId] = nil
     end
   end
   
@@ -83,15 +78,11 @@ local function GetBankItems()
     local itemId = C_Container.GetContainerItemID(-1, slotId)
     if itemId then
       mainBankSlots[slotId] = itemId
-    else
-      mainBankSlots[slotId] = nil
     end
   end
   
   if next(mainBankSlots) then
     bankItems[-1] = mainBankSlots
-  else
-    bankItems[-1] = nil
   end
   
   -- Bank bags (bags 5-11 in Classic)
@@ -104,16 +95,12 @@ local function GetBankItems()
         local itemId = C_Container.GetContainerItemID(bagId, slotId)
         if itemId then
           bagSlots[slotId] = itemId
-        else
-          bagSlots[slotId] = nil
         end
       end
     end
     
     if next(bagSlots) then
       bankItems[bagId] = bagSlots
-    else
-      bankItems[bagId] = nil
     end
   end
   
@@ -210,12 +197,58 @@ local function VerifyStateHash(state)
   return state.hash == expectedHash
 end
 
+local function CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, previousCounts)
+  local ids = {}
+  
+  if inventoryItems then
+    for _, bagSlots in pairs(inventoryItems) do
+      for _, itemId in pairs(bagSlots) do
+        if itemId then
+          ids[itemId] = true
+        end
+      end
+    end
+  end
+  
+  if bankItems then
+    for _, bagSlots in pairs(bankItems) do
+      for _, itemId in pairs(bagSlots) do
+        if itemId then
+          ids[itemId] = true
+        end
+      end
+    end
+  end
+  
+  if equippedItems then
+    for _, itemId in pairs(equippedItems) do
+      if itemId then
+        ids[itemId] = true
+      end
+    end
+  end
+  
+  if previousCounts then
+    for itemId in pairs(previousCounts) do
+      if itemId then
+        ids[itemId] = true
+      end
+    end
+  end
+  
+  return ids
+end
+
 -- Capture complete player state snapshot
 function PlayerStateSnapshot:CapturePlayerState()
   local characterGUID = UnitGUID('player')
   
   if not characterGUID then
     return nil -- Player GUID not available yet
+  end
+
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
   end
   
   -- Initialize player state database if it doesn't exist
@@ -228,35 +261,55 @@ function PlayerStateSnapshot:CapturePlayerState()
   local existingTamperHash = existingState.tamperHash
   local existingTamperTimestamp = existingState.tamperTimestamp
   
-  -- Capture all state information
-  local state = {
-    timestamp = time(),
-    equippedItems = GetEquippedItems(),
-    inventoryItems = GetInventoryItems(),
-    bankItems = GetBankItems(),
-    currency = GetCurrencyInfo(),
-    levelInfo = GetLevelAndExperience(),
-    location = GetPlayerLocation(),
-  }
+  local equippedItems = GetEquippedItems()
+  local inventoryItems = GetInventoryItems()
+  local bankItems = bankIsOpen and GetBankItems() or existingState.bankItems
+  local previousItemCounts = existingState.itemCounts
+  local trackedItemIds = CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, previousItemCounts)
+  
+  -- Capture remaining state information
+  local timestamp = time()
+  local currency = GetCurrencyInfo()
+  local levelInfo = GetLevelAndExperience()
+  local location = GetPlayerLocation()
+  
+  existingState.timestamp = timestamp
+  existingState.equippedItems = equippedItems
+  existingState.inventoryItems = inventoryItems
+  existingState.bankItems = bankItems
+  existingState.itemCounts = {}
+  
+  if trackedItemIds then
+    for itemId in pairs(trackedItemIds) do
+      if itemId then
+        local totalCount = GetItemCount(itemId, true) or 0
+        existingState.itemCounts[itemId] = totalCount
+      end
+    end
+  end
+  
+  existingState.currency = currency
+  existingState.levelInfo = levelInfo
+  existingState.location = location
   
   -- Generate and store hash for integrity checking
-  state.hash = GenerateStateHash(state)
+  existingState.hash = GenerateStateHash(existingState)
   
   -- Preserve tamper flags (don't overwrite persistent tamper detection)
   if existingTamperHash then
-    state.tamperHash = existingTamperHash
+    existingState.tamperHash = existingTamperHash
   end
   if existingTamperTimestamp then
-    state.tamperTimestamp = existingTamperTimestamp
+    existingState.tamperTimestamp = existingTamperTimestamp
   end
   
   -- Store the state
-  UltraHardcoreDB.playerState[characterGUID] = state
+  UltraHardcoreDB.playerState[characterGUID] = existingState
   
   -- Save to database
   SaveDBData('playerState', UltraHardcoreDB.playerState)
   
-  return state
+  return existingState
 end
 
 -- Build item count map from bags and bank (items can move between them)
@@ -288,7 +341,20 @@ local function BuildItemCountMap(inventoryItems, bankItems)
   return itemCounts
 end
 
--- Compare two states and return true if anything changed
+local function BuildStoredItemCounts(state)
+  local counts = BuildItemCountMap(state.inventoryItems, state.bankItems)
+  
+  if state.equippedItems then
+    for _, itemId in pairs(state.equippedItems) do
+      if itemId then
+        counts[itemId] = (counts[itemId] or 0) + 1
+      end
+    end
+  end
+  
+  return counts
+end
+
 local function CompareStates(oldState, newState)
   if not oldState or not newState then
     return true
@@ -304,11 +370,9 @@ local function CompareStates(oldState, newState)
   end
   
   -- Compare items by count (allowing movement between bags and bank)
-  -- Build item count maps from both bags and bank combined
   local oldItemCounts = BuildItemCountMap(oldState.inventoryItems, oldState.bankItems)
   local newItemCounts = BuildItemCountMap(newState.inventoryItems, newState.bankItems)
   
-  -- Get all unique item IDs
   local allItemIds = {}
   for itemId in pairs(oldItemCounts) do
     allItemIds[itemId] = true
@@ -317,32 +381,43 @@ local function CompareStates(oldState, newState)
     allItemIds[itemId] = true
   end
   
-  -- Compare counts
   for itemId in pairs(allItemIds) do
     local oldCount = oldItemCounts[itemId] or 0
     local newCount = newItemCounts[itemId] or 0
-    if oldCount ~= newCount then
-      return true -- Item count changed (item added or removed)
+    if newCount > oldCount then
+      return true -- New stack appeared
     end
   end
   
-  -- Compare currency
-  local oldMoney = oldState.currency and oldState.currency.money or 0
-  local newMoney = newState.currency and newState.currency.money or 0
-  if oldMoney ~= newMoney then
-    return true -- Money changed
-  end
-  
-  -- Compare level (shouldn't change during a session, but good to check)
-  local oldLevel = oldState.levelInfo and oldState.levelInfo.level or 0
-  local newLevel = newState.levelInfo and newState.levelInfo.level or 0
-  if oldLevel ~= newLevel then
-    return true -- Level changed
-  end
-  
-  return false -- No changes detected
+  return false
 end
 
+local function GatherObservedItemIds()
+  local ids = {}
+  local inventoryItems = GetInventoryItems()
+  if inventoryItems then
+    for _, bagSlots in pairs(inventoryItems) do
+      for _, itemId in pairs(bagSlots) do
+        if itemId then
+          ids[itemId] = true
+        end
+      end
+    end
+  end
+  
+  local equippedItems = GetEquippedItems()
+  if equippedItems then
+    for _, itemId in pairs(equippedItems) do
+      if itemId then
+        ids[itemId] = true
+      end
+    end
+  end
+  
+  return ids
+end
+
+-- Compare two states and return true if anything changed
 -- Check if player state has changed since last snapshot
 function PlayerStateSnapshot:HasPlayerStateChanged()
   local characterGUID = UnitGUID('player')
@@ -382,18 +457,44 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
     return false -- No previous state to compare against
   end
   
-  -- Get current state
-  local currentState = {
-    equippedItems = GetEquippedItems(),
-    inventoryItems = GetInventoryItems(),
-    bankItems = GetBankItems(),
-    currency = GetCurrencyInfo(),
-    levelInfo = GetLevelAndExperience(),
-    location = GetPlayerLocation(),
-  }
+  local storedItemCounts = lastState.itemCounts
+  if storedItemCounts and next(storedItemCounts) then
+    local observedIds = GatherObservedItemIds()
+    
+    for itemId in pairs(observedIds) do
+      if itemId and storedItemCounts[itemId] == nil then
+        return true -- brand new item detected
+      end
+    end
+  else
+    local currentState = {
+      equippedItems = GetEquippedItems(),
+      inventoryItems = GetInventoryItems(),
+      bankItems = bankIsOpen and GetBankItems() or lastState.bankItems,
+    }
+    
+    if CompareStates(lastState, currentState) then
+      return true
+    end
+  end
   
-  -- Compare states
-  return CompareStates(lastState, currentState)
+  -- Compare currency
+  local oldMoney = lastState.currency and lastState.currency.money or 0
+  local newMoney = GetMoney()
+  if oldMoney ~= newMoney then
+    return true
+  end
+  
+  -- Compare XP/level
+  local oldLevel = lastState.levelInfo and lastState.levelInfo.level or 0
+  local oldXP = lastState.levelInfo and lastState.levelInfo.currentXP or 0
+  local newLevel = UnitLevel('player')
+  local newXP = UnitXP('player')
+  if oldLevel ~= newLevel or oldXP ~= newXP then
+    return true
+  end
+  
+  return false
 end
 
 -- Verify integrity of stored state (returns true if valid, false if tampered)
@@ -626,35 +727,50 @@ end
 
 -- Event frame for automatic state capture
 local eventFrame = CreateFrame('Frame')
-local lastCaptureTime = 0
-local CAPTURE_THROTTLE = 2.0 -- Minimum seconds between captures (prevents spam)
 
--- Throttled capture function
-local function ThrottledCapture()
-  local currentTime = GetTime()
-  if currentTime - lastCaptureTime >= CAPTURE_THROTTLE then
-    PlayerStateSnapshot:CapturePlayerState()
-    lastCaptureTime = currentTime
-  end
-end
-
--- Event handler
-local function OnStateChangeEvent(self, event, ...)
-  -- Only capture if player GUID is available
+local function CaptureOnEvent()
   if not UnitGUID('player') then
     return
   end
   
-  ThrottledCapture()
+  PlayerStateSnapshot:CapturePlayerState()
+end
+
+-- Event handler
+local function OnStateChangeEvent(self, event, ...)
+  if event == 'BANKFRAME_OPENED' then
+    bankIsOpen = true
+    CaptureOnEvent()
+    return
+  elseif event == 'BANKFRAME_CLOSED' then
+    bankIsOpen = false
+    return
+  elseif event == 'PLAYERBANKSLOTS_CHANGED' or event == 'PLAYERBANKBAGSLOTS_CHANGED' then
+    bankIsOpen = true
+  elseif event == 'PLAYER_ENTERING_WORLD' then
+    if not UltraHardcoreDB then
+      UltraHardcoreDB = {}
+    end
+  end
+  
+  CaptureOnEvent()
 end
 
 -- Register events for state changes
 eventFrame:RegisterEvent('BAG_UPDATE') -- Triggered when bag contents change
+eventFrame:RegisterEvent('BAG_UPDATE_DELAYED')
 eventFrame:RegisterEvent('BANKFRAME_OPENED') -- Triggered when bank is opened
+eventFrame:RegisterEvent('BANKFRAME_CLOSED')
+eventFrame:RegisterEvent('PLAYERBANKSLOTS_CHANGED')
+eventFrame:RegisterEvent('PLAYERBANKBAGSLOTS_CHANGED')
 eventFrame:RegisterEvent('PLAYER_MONEY') -- Triggered when money changes
 eventFrame:RegisterEvent('PLAYER_XP_UPDATE') -- Triggered when XP changes
 eventFrame:RegisterEvent('PLAYER_LEVEL_UP') -- Triggered when player levels up
 eventFrame:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
+eventFrame:RegisterEvent('ZONE_CHANGED')
+eventFrame:RegisterEvent('ZONE_CHANGED_INDOORS')
+eventFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
+eventFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 -- Set event handler
 eventFrame:SetScript('OnEvent', function(self, event, ...)
@@ -775,17 +891,15 @@ initFrame:SetScript('OnEvent', function(self, event, addonName)
   end
 end)
 
--- Login/Logout event frame
+-- Login event frame
 local loginLogoutFrame = CreateFrame('Frame')
 loginLogoutFrame:RegisterEvent('PLAYER_LOGIN')
-loginLogoutFrame:RegisterEvent('PLAYER_LOGOUT')
 loginLogoutFrame:SetScript('OnEvent', function(self, event)
   if event == 'PLAYER_LOGIN' then
     -- Check for changes on login (tampering detection)
     PlayerStateSnapshot:OnLogin()
-  elseif event == 'PLAYER_LOGOUT' then
-    -- Capture final state before logout
-    PlayerStateSnapshot:OnLogout()
+    -- Capture a fresh snapshot immediately after login baseline
+    PlayerStateSnapshot:CapturePlayerState()
   end
 end)
 
