@@ -349,7 +349,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
           return
         end
         local normalizedName = NormalizeTradeTarget(targetName)
-        C_Timer.After(1, function()
+        C_Timer.After(REQUEST_TIMEOUT, function()
           if
             currentTradeValidation
             and currentTradeValidation.target == normalizedName

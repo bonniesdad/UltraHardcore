@@ -3,6 +3,8 @@
 -- Uses AceComm and AceSerializer for secure communication
 -- Can be extended for various communication needs
 
+REQUEST_TIMEOUT = 5.0
+
 local AceComm = LibStub("AceComm-3.0")
 local AceSerializer = LibStub("AceSerializer-3.0")
 
@@ -16,7 +18,6 @@ local playerTamperStatus = {}
 local guildFoundHandlers = {}
 
 -- Request timeout (seconds)
-local REQUEST_TIMEOUT = 1.0
 
 -- Pending requests (requestId -> {callback, timestamp, playerName, messageType})
 local pendingRequests = {}
