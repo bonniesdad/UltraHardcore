@@ -49,6 +49,7 @@ local PRESET_SECTIONS = { {
   settings = {
     'showOnScreenStatistics',
     'announceLevelUpToGuild',
+    'autoJoinUHCChannel',
     'hideUIErrors',
     'showClockEvenWhenMapHidden',
     'showMailEvenWhenMapHidden',
