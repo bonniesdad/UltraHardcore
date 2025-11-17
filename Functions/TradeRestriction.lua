@@ -137,15 +137,17 @@ local function BuildOverlayMessage()
   if not currentTradeValidation then return nil end
   local pending = {}
   if not currentTradeValidation.gfVerified then
-    table.insert(pending, 'Guild Found handshake')
+    table.insert(pending, 'Guild Found Handshake')
   end
   if currentTradeValidation.requiresTamper and not currentTradeValidation.tamperVerified then
-    table.insert(pending, 'tamper status')
+    table.insert(pending, 'Tamper Status')
   end
   if #pending == 0 then
     return nil
   end
-  return 'Validating ' .. table.concat(pending, ' and ') .. '...'
+
+  local message = 'Validating:\n' .. table.concat(pending, '\n')
+  return message
 end
 
 local function UpdateTradeOverlayStatus()
