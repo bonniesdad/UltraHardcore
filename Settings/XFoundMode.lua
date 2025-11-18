@@ -7,6 +7,47 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
+-- Shared helper to activate Guild Found mode from UI or slash commands
+function ActivateGuildFoundMode(options)
+  if not GLOBAL_SETTINGS then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Settings not loaded. Try again in a moment.')
+    end
+    return false
+  end
+
+  if GLOBAL_SETTINGS.guildSelfFound then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Guild Found mode is already active on this character.')
+    end
+    return false
+  end
+
+  GLOBAL_SETTINGS.guildSelfFound = true
+  GLOBAL_SETTINGS.groupSelfFound = false
+
+  if SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+
+  if not (options and options.silent) then
+    print('|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.')
+  end
+
+  if XFoundModeManager and XFoundModeManager.ShowStatusPage then
+    XFoundModeManager:ShowStatusPage()
+  end
+
+  if XFoundModeManager
+      and XFoundModeManager.pages
+      and XFoundModeManager.pages.status
+      and XFoundModeManager.pages.status.UpdateStatus then
+    XFoundModeManager.pages.status:UpdateStatus()
+  end
+
+  return true
+end
+
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
@@ -105,4 +146,26 @@ end
 -- Cleanup function to hide all pages when leaving the tab
 function XFoundModeManager:Cleanup()
   self:HideAllPages()
+end
+
+-- Slash command to activate Guild Found mode (even post level 1)
+SLASH_GUILDFOUNDMODE1 = '/guildfound'
+SLASH_GUILDFOUNDMODE2 = '/joinguildfound'
+
+SlashCmdList['GUILDFOUNDMODE'] = function(msg)
+  local raw = msg or ''
+  raw = string.gsub(raw, '^%s+', '')
+  raw = string.gsub(raw, '%s+$', '')
+  raw = string.lower(raw)
+
+  if raw ~= 'confirm' then
+    print('|cffffd000[ULTRA]|r Type "/guildfound confirm" to permanently lock this character into Guild Found mode.')
+    print('|cffffd000[ULTRA]|r This restricts trading and mail to guild members and blocks auction house usage. This cannot be undone.')
+    return
+  end
+
+  local activated = ActivateGuildFoundMode and ActivateGuildFoundMode()
+  if activated and UnitLevel and UnitLevel('player') > 1 then
+    print('|cffffd000[ULTRA]|r Guild Found mode enabled after level 1. Restrictions are now active immediately.')
+  end
 end
