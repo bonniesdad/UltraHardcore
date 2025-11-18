@@ -1752,7 +1752,7 @@ function InitializeSettingsOptionsTab()
 
   -- Expanded height now includes resource subheader + color rows + other subheaders + two rows
   local colorExpandedHeight =
-    HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP + (#colorRows * ROW_HEIGHT) + 12 + 18 + 8 + 24 + 12 + 18 + 8 + 24 + 8
+    HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP + (#colorRows * ROW_HEIGHT) + 12 + 18 + 8 + 24 + 12 + 18 + 8 + 24 + 8 + 24 + 12
   local colorCollapsedHeight = HEADER_HEIGHT
   -- Initial collapsed state (default collapsed) using unified key
   local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
@@ -1773,6 +1773,8 @@ function InitializeSettingsOptionsTab()
   opacityRow:SetShown(not colorCollapsed)
   clockSubHeader:SetShown(not colorCollapsed)
   minimapClockScaleRow:SetShown(not colorCollapsed)
+  mailSubHeader:SetShown(not colorCollapsed)
+  minimapMailScaleRow:SetShown(not colorCollapsed)
   colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
   colorHeaderButton:SetScript('OnClick', function()
     colorCollapsed = not colorCollapsed
@@ -1787,6 +1789,8 @@ function InitializeSettingsOptionsTab()
     opacityRow:SetShown(not colorCollapsed)
     clockSubHeader:SetShown(not colorCollapsed)
     minimapClockScaleRow:SetShown(not colorCollapsed)
+    mailSubHeader:SetShown(not colorCollapsed)
+    minimapMailScaleRow:SetShown(not colorCollapsed)
     colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
     GLOBAL_SETTINGS.collapsedSettingsSections.uiColour = colorCollapsed
     if SaveCharacterSettings then
