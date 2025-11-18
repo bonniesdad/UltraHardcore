@@ -1,6 +1,23 @@
 -- 🟢 X Found Mode - Status Page
 -- Shows the player's current X Found status for non-level 1 players
 
+local function GetXFoundPlayerContext()
+  local playerLevel = UnitLevel('player') or 1
+  local hasSelfFoundBuff = HasSelfFoundBuff and HasSelfFoundBuff()
+  local treatAsLevelOne
+  if XFoundMode_ShouldTreatPlayerAsLevelOne then
+    treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne()
+  else
+    treatAsLevelOne = (playerLevel == 1) or hasSelfFoundBuff
+  end
+  return playerLevel, treatAsLevelOne, hasSelfFoundBuff
+end
+
+local function PlayerCanEditGroupFoundFields()
+  local _, treatAsLevelOne = GetXFoundPlayerContext()
+  return treatAsLevelOne
+end
+
 local function CreateStatusPage(parentFrame)
   local statusPage = CreateFrame('Frame', nil, parentFrame)
   statusPage:SetAllPoints(parentFrame)
@@ -242,13 +259,17 @@ local function CreateStatusPage(parentFrame)
 
   -- Update function
   local function UpdateStatus()
-    -- Get current player level
-    local playerLevel = UnitLevel('player')
+    -- Get current player level and eligibility
+    local playerLevel, treatAsLevelOne, hasSelfFoundBuff = GetXFoundPlayerContext()
 
     -- Show/hide back button based on player level
-    if playerLevel == 1 then
+    if treatAsLevelOne then
       backButton:Show()
-      warningText:SetText('Note: You can still change your X Found mode selection at level 1.')
+      if hasSelfFoundBuff and playerLevel > 1 then
+        warningText:SetText('Self Found buff detected: You can still change your X Found mode selection.')
+      else
+        warningText:SetText('Note: You can still change your X Found mode selection at level 1.')
+      end
       warningText:SetTextColor(1, 0.95, 0.4) -- Bright yellow for level 1
       if warningPanel and warningPanel.SetBackdropBorderColor then
         warningPanel:SetBackdropBorderColor(1, 0.9, 0.3, 1)
@@ -259,7 +280,7 @@ local function CreateStatusPage(parentFrame)
       backButton:Hide()
       if warningPanel and warningPanel.Hide then warningPanel:Hide() end
       if lockedNote and lockedNote.Show then
-        lockedNote:SetText('Note: X Found modes can only be selected at level 1. Your current mode is locked.')
+        lockedNote:SetText('Note: X Found modes can only be selected at level 1 or while the Self Found buff is active. Your current mode is locked.')
         lockedNote:SetTextColor(0.9, 0.9, 0.9)
         lockedNote:Show()
       end
@@ -377,7 +398,7 @@ local function CreateStatusPage(parentFrame)
       end
 
       -- Enable or lock based on level
-      local canEdit = playerLevel == 1
+      local canEdit = treatAsLevelOne
       for i = 1, 10 do
         if canEdit then
           editBoxes[i]:Enable()
@@ -388,7 +409,11 @@ local function CreateStatusPage(parentFrame)
       saveNamesButton:SetEnabled(canEdit)
       if autofillButton then autofillButton:SetEnabled(canEdit) end
       if canEdit then
-        lockNote:SetText('Editable at level 1. Locked from level 2.')
+        if hasSelfFoundBuff and playerLevel > 1 then
+          lockNote:SetText('Editable while the Self Found buff is active.')
+        else
+          lockNote:SetText('Editable at level 1. Locked from level 2.')
+        end
         lockNote:SetTextColor(1, 0.8, 0.2)
         -- Position next to buttons for level 1
         lockNote:ClearAllPoints()
@@ -420,7 +445,7 @@ local function CreateStatusPage(parentFrame)
     if isGroup then
       desiredHeight = 420
     end
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and playerLevel > 1 and not isGroup then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and not treatAsLevelOne and not isGroup then
       desiredHeight = 420
     end
     if statusFrame.GetHeight and statusFrame.SetHeight then
@@ -443,6 +468,7 @@ local function CreateStatusPage(parentFrame)
   local levelEventFrame = CreateFrame('Frame', nil, statusPage)
   levelEventFrame:RegisterEvent('PLAYER_LEVEL_UP')
   levelEventFrame:RegisterEvent('UNIT_LEVEL')
+  levelEventFrame:RegisterEvent('UNIT_AURA')
   levelEventFrame:SetScript('OnEvent', function(_, event, arg1)
     if event == 'PLAYER_LEVEL_UP' then
       if XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
@@ -452,13 +478,17 @@ local function CreateStatusPage(parentFrame)
       if arg1 == 'player' and XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
         statusPage:UpdateStatus()
       end
+    elseif event == 'UNIT_AURA' then
+      if arg1 == 'player' and XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
+        statusPage:UpdateStatus()
+      end
     end
   end)
 
   -- Save handler
   saveNamesButton:SetScript('OnClick', function()
     if not GLOBAL_SETTINGS then return end
-    if UnitLevel('player') ~= 1 then return end
+    if not PlayerCanEditGroupFoundFields() then return end
     local names = {}
     for i = 1, 10 do
       local raw = editBoxes[i]:GetText() or ''
@@ -524,7 +554,7 @@ local function CreateStatusPage(parentFrame)
     GameTooltip:Hide()
   end)
   autofillButton:SetScript('OnClick', function()
-    if UnitLevel('player') ~= 1 then return end
+    if not PlayerCanEditGroupFoundFields() then return end
     local groupNames = GetCurrentGroupMemberNames()
     if not groupNames or #groupNames == 0 then
       print('|cffffd000[ULTRA]|r No party/raid members found to add.')

@@ -7,6 +7,20 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
+-- Determine if the player should be treated as level 1 for X Found interactions
+function XFoundMode_ShouldTreatPlayerAsLevelOne()
+  local playerLevel = UnitLevel('player') or 1
+  if playerLevel == 1 then
+    return true
+  end
+
+  if HasSelfFoundBuff and HasSelfFoundBuff() then
+    return true
+  end
+
+  return false
+end
+
 -- Shared helper to activate Guild Found mode from UI or slash commands
 function ActivateGuildFoundMode(options)
   if not GLOBAL_SETTINGS then
@@ -79,11 +93,11 @@ function InitializeXFoundModeTab()
   XFoundModeManager:HideAllPages()
 
   -- Show appropriate page based on player level and mode selection status
-  local playerLevel = UnitLevel('player')
+  local treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne and XFoundMode_ShouldTreatPlayerAsLevelOne()
   local hasSelectedMode =
     (GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound)
 
-  if playerLevel == 1 and not hasSelectedMode then
+  if treatAsLevelOne and not hasSelectedMode then
     -- Level 1 and no mode selected - show intro page
     XFoundModeManager:ShowIntroPage()
   else
