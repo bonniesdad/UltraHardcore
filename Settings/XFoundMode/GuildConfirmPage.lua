@@ -100,23 +100,21 @@ local function CreateGuildConfirmPage(parentFrame)
   
   -- Button click handlers
   confirmButton:SetScript('OnClick', function()
-    -- Enable Guild Found mode and disable Group Found mode
-    if GLOBAL_SETTINGS then
-      GLOBAL_SETTINGS.guildSelfFound = true
-      GLOBAL_SETTINGS.groupSelfFound = false -- Ensure only one mode is active
-    end
-    
-    -- Save settings
-    if SaveCharacterSettings then
-      SaveCharacterSettings(GLOBAL_SETTINGS)
-    end
-    
-    -- Show success message
-    print('|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.')
-    
-    -- Return to status page
-    if XFoundModeManager and XFoundModeManager.ShowStatusPage then
-      XFoundModeManager:ShowStatusPage()
+    if ActivateGuildFoundMode then
+      ActivateGuildFoundMode()
+    else
+      -- Fallback in case helper is unavailable
+      if GLOBAL_SETTINGS then
+        GLOBAL_SETTINGS.guildSelfFound = true
+        GLOBAL_SETTINGS.groupSelfFound = false
+      end
+      if SaveCharacterSettings then
+        SaveCharacterSettings(GLOBAL_SETTINGS)
+      end
+      print('|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.')
+      if XFoundModeManager and XFoundModeManager.ShowStatusPage then
+        XFoundModeManager:ShowStatusPage()
+      end
     end
   end)
   
