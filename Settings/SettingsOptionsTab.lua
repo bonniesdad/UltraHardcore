@@ -571,8 +571,87 @@ function InitializeSettingsOptionsTab()
     if _G.__UHC_RecalcContentHeight then _G.__UHC_RecalcContentHeight() end
   end
 
+  -- Expand all sections when search is active so all matches are visible
+  _G.UHC_ExpandAllSettingsSections = function()
+    local childrenBySection = _G.__UHC_SectionChildren
+    local framesBySection = _G.__UHC_SectionFrames
+    local collapsedBySection = _G.__UHC_SectionCollapsed
+    local headerIcons = _G.__UHC_SectionHeaderIcons
+    local expandedHeights = _G.__UHC_SectionExpandedHeights
+    if not childrenBySection or not framesBySection or not collapsedBySection then return end
+    for idx, frame in ipairs(framesBySection) do
+      collapsedBySection[idx] = false
+      if headerIcons and headerIcons[idx] then
+        headerIcons[idx]:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
+      end
+      local kids = childrenBySection[idx]
+      if kids then
+        for _, child in ipairs(kids) do
+          child:SetShown(true)
+        end
+      end
+      if expandedHeights and expandedHeights[idx] then
+        frame:SetHeight(expandedHeights[idx])
+      end
+    end
+    if _G.__UHC_RecalcContentHeight then _G.__UHC_RecalcContentHeight() end
+    _G.__UHC_SearchMode = true
+  end
+
+  -- Restore sections to their default (persisted) collapsed/open state when search clears
+  _G.UHC_RestoreSettingsSectionDefaults = function()
+    local childrenBySection = _G.__UHC_SectionChildren
+    local framesBySection = _G.__UHC_SectionFrames
+    local collapsedBySection = _G.__UHC_SectionCollapsed
+    local headerIcons = _G.__UHC_SectionHeaderIcons
+    local expandedHeights = _G.__UHC_SectionExpandedHeights
+    local collapsedHeights = _G.__UHC_SectionCollapsedHeights
+    local titles = _G.__UHC_SectionTitles
+    if not childrenBySection or not framesBySection or not collapsedBySection then return end
+    local presetStates = (GLOBAL_SETTINGS and GLOBAL_SETTINGS.collapsedSettingsSections and GLOBAL_SETTINGS.collapsedSettingsSections.presetSection) or {}
+    for idx, frame in ipairs(framesBySection) do
+      local title = titles and titles[idx]
+      local isCollapsed = nil
+      if title and presetStates then isCollapsed = presetStates[title] end
+      if isCollapsed == nil then
+        isCollapsed = idx > 3
+      end
+      collapsedBySection[idx] = isCollapsed
+      if headerIcons and headerIcons[idx] then
+        headerIcons[idx]:SetTexture(isCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up')
+      end
+      local kids = childrenBySection[idx]
+      if kids then
+        for _, child in ipairs(kids) do
+          child:SetShown(not isCollapsed)
+        end
+      end
+      if isCollapsed then
+        if collapsedHeights and collapsedHeights[idx] then
+          frame:SetHeight(collapsedHeights[idx])
+        end
+      else
+        if expandedHeights and expandedHeights[idx] then
+          frame:SetHeight(expandedHeights[idx])
+        end
+      end
+    end
+    if _G.__UHC_RecalcContentHeight then _G.__UHC_RecalcContentHeight() end
+    _G.__UHC_SearchMode = false
+  end
+
   searchBox:SetScript('OnTextChanged', function(self)
     local txt = self:GetText() or ''
+    local wasSearching = _G.__UHC_SearchMode
+    if txt ~= '' then
+      if not wasSearching and _G.UHC_ExpandAllSettingsSections then
+        _G.UHC_ExpandAllSettingsSections()
+      end
+    else
+      if wasSearching and _G.UHC_RestoreSettingsSectionDefaults then
+        _G.UHC_RestoreSettingsSectionDefaults()
+      end
+    end
     if txt == '' then searchPlaceholder:Show() else searchPlaceholder:Hide() end
     if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter(txt) end
   end)
@@ -585,11 +664,13 @@ function InitializeSettingsOptionsTab()
   searchBox:SetScript('OnEscapePressed', function(self)
     self:SetText('')
     self:ClearFocus()
+    if _G.UHC_RestoreSettingsSectionDefaults then _G.UHC_RestoreSettingsSectionDefaults() end
     if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter('') end
   end)
 
   clearSearchButton:SetScript('OnClick', function()
     searchBox:SetText('')
+    if _G.UHC_RestoreSettingsSectionDefaults then _G.UHC_RestoreSettingsSectionDefaults() end
     if _G.UHC_ApplySettingsSearchFilter then _G.UHC_ApplySettingsSearchFilter('') end
   end)
 
@@ -637,6 +718,10 @@ function InitializeSettingsOptionsTab()
     local sectionCollapsed = {}
     local sectionChildSettingNames = {}
     local sectionCountTexts = {}
+    local sectionHeaderIcons = {}
+    local sectionExpandedHeights = {}
+    local sectionCollapsedHeights = {}
+    local sectionTitles = {}
 
     -- Expose layout numbers and section arrays for the search filter
     _G.__UHC_SECTION_HEADER_HEIGHT = HEADER_HEIGHT
@@ -670,6 +755,7 @@ function InitializeSettingsOptionsTab()
 
     local presetSections = GetPresetSections('simple', true) -- Include Misc section
     for sectionIndex, section in ipairs(presetSections) do
+      sectionTitles[sectionIndex] = section.title
       -- Container for the whole section so collapsing reflows subsequent sections
       local sectionFrame = CreateFrame('Frame', nil, scrollChild)
       sectionFrame:SetWidth(420)
@@ -712,6 +798,7 @@ function InitializeSettingsOptionsTab()
       headerCountText:SetPoint('RIGHT', headerIcon, 'LEFT', -6, 0)
       headerIcon:SetSize(16, 16)
       headerIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
+      sectionHeaderIcons[sectionIndex] = headerIcon
       -- Hide count for sections below the Optional features note (sections after Extreme)
       if sectionIndex > 3 then
         headerCountText:Hide()
@@ -861,6 +948,8 @@ function InitializeSettingsOptionsTab()
 
       local expandedHeight = HEADER_HEIGHT + HEADER_CONTENT_GAP + (numRows * ROW_HEIGHT) + 5
       local collapsedHeight = HEADER_HEIGHT
+      sectionExpandedHeights[sectionIndex] = expandedHeight
+      sectionCollapsedHeights[sectionIndex] = collapsedHeight
 
       -- Determine initial collapsed state (persisted or default collapsed for sections after Ultra)
       local presetStates = GLOBAL_SETTINGS.collapsedSettingsSections.presetSection
@@ -947,6 +1036,10 @@ function InitializeSettingsOptionsTab()
     _G.__UHC_SectionChildren = sectionChildren
     _G.__UHC_SectionFrames = sectionFrames
     _G.__UHC_SectionCollapsed = sectionCollapsed
+    _G.__UHC_SectionHeaderIcons = sectionHeaderIcons
+    _G.__UHC_SectionExpandedHeights = sectionExpandedHeights
+    _G.__UHC_SectionCollapsedHeights = sectionCollapsedHeights
+    _G.__UHC_SectionTitles = sectionTitles
   end
 
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
