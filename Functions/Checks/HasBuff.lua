@@ -11,6 +11,10 @@ end
 
 
 function HasCozyFire()
-    return hasBuffWithSpellIdOrName("player", 7353, "Cozy Fire")
+  return hasBuffWithSpellIdOrName("player", 7353, "Cozy Fire")
+end
+
+function HasSelfFoundBuff()
+  return hasBuffWithSpellIdOrName("player", 431567, nil)
 end
 
