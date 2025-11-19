@@ -58,6 +58,8 @@ local PRESET_SECTIONS = { {
     'playPlayerDeathSoundbite',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
+    'showDruidFormResourceBar',
+    'druidFormBarAnchorToResourceBar',
   },
 }, {
   title = 'XP Bar:',
