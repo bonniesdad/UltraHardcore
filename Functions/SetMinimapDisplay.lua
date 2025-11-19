@@ -129,6 +129,15 @@ local function LoadMailPosition()
   MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale or 1.0)
 end
 
+-- Take the given frame and disable the mouse and hide for all children
+local function DisableMouseAndHideChildren(f)
+  for _, child in ipairs({ f:GetChildren() }) do
+    if child and child.EnableMouse then child:EnableMouse(false) end
+    if child and child.EnableMouseWheel then child:EnableMouseWheel(false) end
+    if child then child:Hide() end
+  end
+end
+
 function HideMinimap(miniMapMask)
   -- Ensure no temporary reveal leftovers are active
   ResetMinimapRevealState()
@@ -145,69 +154,54 @@ function HideMinimap(miniMapMask)
   MinimapCluster:Hide()
 
   if HasFlag(miniMapMask, MINIMAP_FLAG_CLOCK) then
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("PLAYER_LOGIN")
-    f:SetScript("OnEvent", function(slef, event, ...)
-      if event == "PLAYER_LOGIN" then
+    if not TimeManagerClockButton then
+      print("TimeManagerClockButton not found!")
+      return
+    end
+    -- Load the saved position for the clock
+    LoadClockPosition()
+    TimeManagerClockButton:Show()
 
-        -- Safety check in case TimeManager didn't load
-        if not TimeManagerClockButton then
-          print("TimeManagerClockButton not found!")
-          return
-        end
-        -- Load the saved position for the clock
-        LoadClockPosition()
-        TimeManagerClockButton:Show()
-
-        --Make the clock movable and save the position
-        TimeManagerClockButton:SetMovable(true)
-        TimeManagerClockButton:EnableMouse(true)
-        TimeManagerClockButton:RegisterForDrag("LeftButton")
-        TimeManagerClockButton:SetScript("OnDragStart", function(self)
-          self:StartMoving()
-        end)
-        TimeManagerClockButton:SetScript("OnDragStop", function(self)
-          self:StopMovingOrSizing()
-          local point, _, relPoint, x, y = self:GetPoint()
-          UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
-          SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
-        end)
-      end
+    --Make the clock movable and save the position
+    TimeManagerClockButton:SetMovable(true)
+    TimeManagerClockButton:EnableMouse(true)
+    TimeManagerClockButton:RegisterForDrag("LeftButton")
+    TimeManagerClockButton:SetScript("OnDragStart", function(self)
+      self:StartMoving()
+    end)
+    TimeManagerClockButton:SetScript("OnDragStop", function(self)
+      self:StopMovingOrSizing()
+      local point, _, relPoint, x, y = self:GetPoint()
+      UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
+      SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
     end)
   end
 
   if HasFlag(miniMapMask, MINIMAP_FLAG_MAIL) then
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("PLAYER_LOGIN")
-    f:SetScript("OnEvent", function(slef, event, ...)
-      if event == "PLAYER_LOGIN" then
+    if not MiniMapMailFrame then
+      print("MiniMapMailFrame not found!")
+      return
+    end
 
-        if not MiniMapMailFrame then
-          print("MiniMapMailFrame not found!")
-          return
-        end
+    MiniMapMailFrame:SetParent(UIParent)
+    MiniMapMailFrame:ClearAllPoints()
+    MiniMapMailFrame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -20, -20)
+    -- Load the saved position for the MiniMapMailFrame
+    LoadMailPosition()
+    MiniMapMailFrame:Show()
 
-        MiniMapMailFrame:SetParent(UIParent)
-        MiniMapMailFrame:ClearAllPoints()
-        MiniMapMailFrame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", -20, -20)
-        -- Load the saved position for the MiniMapMailFrame
-        LoadMailPosition()
-        MiniMapMailFrame:Show()
-
-        --Make the clock movable and save the position
-        MiniMapMailFrame:SetMovable(true)
-        MiniMapMailFrame:EnableMouse(true)
-        MiniMapMailFrame:RegisterForDrag("LeftButton")
-        MiniMapMailFrame:SetScript("OnDragStart", function(self)
-          self:StartMoving()
-        end)
-        MiniMapMailFrame:SetScript("OnDragStop", function(self)
-          self:StopMovingOrSizing()
-          local point, _, relPoint, x, y = self:GetPoint()
-          UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
-          SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
-        end)
-      end
+    --Make the clock movable and save the position
+    MiniMapMailFrame:SetMovable(true)
+    MiniMapMailFrame:EnableMouse(true)
+    MiniMapMailFrame:RegisterForDrag("LeftButton")
+    MiniMapMailFrame:SetScript("OnDragStart", function(self)
+      self:StartMoving()
+    end)
+    MiniMapMailFrame:SetScript("OnDragStop", function(self)
+      self:StopMovingOrSizing()
+      local point, _, relPoint, x, y = self:GetPoint()
+      UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
+      SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
     end)
   end
 
@@ -240,6 +234,8 @@ function HideMinimap(miniMapMask)
       SetCVar("RotateMinimap", true)
       -- Allow clicks through minimap while this is up
       Minimap:EnableMouse(false)
+      -- Prevent zooming when showing our tracking
+      Minimap:EnableMouseWheel(false)
 
       -- Capture original state so we can restore it cleanly
       minimapRevealState.active = true
@@ -261,10 +257,8 @@ function HideMinimap(miniMapMask)
       Minimap:SetScale(8.0)
       -- Minimap:SetAlpha(1)
 
-      -- Prevent zooming when showing our tracking
-      Minimap:EnableMouseWheel(false)
-
-      -- Ensure we don't alter the minimap mask; rely on the game's default circular mask
+      -- This should hide and disable the mouse for all child frames, like QuestieFrameXXX
+      DisableMouseAndHideChildren(Minimap)
 
       -- Hide extra minimap adornments while revealing
       minimapRevealState.toggledFrames = {}
@@ -386,7 +380,7 @@ end
 local function ResetMailPosition()
   -- Safety check in case TimeManager didn't load
   if not MiniMapMailFrame then
-    print("TimeManagerClockButton not found!")
+    print("MiniMapMailFrame not found!")
     return
   end
 

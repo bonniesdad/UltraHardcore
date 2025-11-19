@@ -23,10 +23,14 @@ UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
 UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
 UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
 UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
+UltraHardcore:RegisterEvent('PLAYER_LOGIN')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_ENTERING_WORLD' or event == 'ADDON_LOADED' then
+  -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but those are too soon
+  -- for all the UI frames to be ready.  Switched to PLAYER_LOGIN which is after all
+  -- UI elements are ready.
+  if event == 'PLAYER_LOGIN' then
     LoadDBData()
     HidePlayerMapIndicators()
     ShowWelcomeMessage()
