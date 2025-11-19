@@ -44,6 +44,8 @@ function LoadDBData()
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,
+    showDruidFormResourceBar = true,
+    druidFormBarAnchorToResourceBar = false,
     showIncomingDamageEffect = false,
     showHealingIndicator = false,
     setFirstPersonCamera = false,

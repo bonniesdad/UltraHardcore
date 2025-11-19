@@ -36,6 +36,8 @@ local PRESET_SECTIONS = { {
     'showFullHealthIndicator',
     'showFullHealthIndicatorAudioCue',
     'hideCustomResourceBar',
+    'showDruidFormResourceBar',
+    'druidFormBarAnchorToResourceBar',
     'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',

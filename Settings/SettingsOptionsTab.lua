@@ -63,6 +63,14 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideCustomResourceBar',
   tooltip = 'Hide the custom resource bar',
 }, {
+  name = 'UHC Show Druid Manabar',
+  dbSettingsValueName = 'showDruidFormResourceBar',
+  tooltip = 'Show a separate resource bar when shapeshifted as a druid',
+}, {
+  name = 'UHC Anchor Druid Manabar(shifted) to Resourcebar',
+  dbSettingsValueName = 'druidFormBarAnchorToResourceBar',
+  tooltip = 'Anchor the druid form resource bar to the main resource bar instead of free positioning',
+}, {
   name = 'UHC Full Health Indicator (Screen Glow)',
   dbSettingsValueName = 'showFullHealthIndicator',
   tooltip = 'The edges of the screen glow when you are at full health',
