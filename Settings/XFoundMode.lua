@@ -62,6 +62,60 @@ function ActivateGuildFoundMode(options)
   return true
 end
 
+-- Shared helper to leave any active X Found mode (only while eligible)
+function LeaveXFoundModes(options)
+  if not GLOBAL_SETTINGS then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Settings not loaded. Try again in a moment.')
+    end
+    return false
+  end
+
+  local treatAsLevelOne = false
+  if XFoundMode_ShouldTreatPlayerAsLevelOne then
+    treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne()
+  end
+
+  if not treatAsLevelOne then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r You can only leave Guild/Group Found while level 1 or under the Self Found buff.')
+    end
+    return false
+  end
+
+  local hadActiveMode = (GLOBAL_SETTINGS.guildSelfFound or GLOBAL_SETTINGS.groupSelfFound) and true or false
+  if not hadActiveMode then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r No X Found mode is currently active on this character.')
+    end
+    return false
+  end
+
+  GLOBAL_SETTINGS.guildSelfFound = false
+  GLOBAL_SETTINGS.groupSelfFound = false
+
+  if SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+
+  if not (options and options.silent) then
+    print('|cff00ff00X Found restrictions cleared.|r You may choose a new mode while you remain eligible.')
+  end
+
+  if XFoundModeManager and XFoundModeManager.ShowStatusPage then
+    XFoundModeManager:ShowStatusPage()
+  end
+
+  if XFoundModeManager
+      and XFoundModeManager.pages
+      and XFoundModeManager.pages.status
+      and XFoundModeManager.pages.status.UpdateStatus then
+    XFoundModeManager.pages.status:UpdateStatus()
+  end
+
+  return true
+end
+
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
@@ -181,5 +235,17 @@ SlashCmdList['GUILDFOUNDMODE'] = function(msg)
   local activated = ActivateGuildFoundMode and ActivateGuildFoundMode()
   if activated and UnitLevel and UnitLevel('player') > 1 then
     print('|cffffd000[ULTRA]|r Guild Found mode enabled after level 1. Restrictions are now active immediately.')
+  end
+end
+
+-- Slash command to leave any X Found mode (while eligible)
+SLASH_LEAVEFOUNDMODE1 = '/leavefound'
+SLASH_LEAVEFOUNDMODE2 = '/exitfound'
+
+SlashCmdList['LEAVEFOUNDMODE'] = function()
+  if not LeaveXFoundModes or not LeaveXFoundModes() then
+    if LeaveXFoundModes == nil then
+      print('|cffffd000[ULTRA]|r Leave handler not available right now. Try again in a moment.')
+    end
   end
 end
