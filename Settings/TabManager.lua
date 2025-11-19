@@ -3,7 +3,7 @@
 
 local TabManager = {}
 
-local NUM_TABS = 6
+local NUM_TABS = 7
 local TAB_WIDTH = 92
 local TAB_HEIGHT = 32
 local TAB_SPACING = 2
@@ -151,7 +151,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
   tabButtons[5] = createTabButton('Info', 5, settingsFrame)
   tabButtons[6] = createTabButton('Challenges', 6, settingsFrame)
-  tabButtons[6] = createTabButton('Commands', 7, settingsFrame)
+  tabButtons[7] = createTabButton('Commands', 7, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
@@ -160,7 +160,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
   tabContents[6] = createTabContent(6, settingsFrame) -- Challenges tab
-  tabContents[6] = createTabContent(7, settingsFrame) -- Commands tab
+  tabContents[7] = createTabContent(7, settingsFrame) -- Commands tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
   TabManager.resizeForTabs()
@@ -276,7 +276,7 @@ function TabManager.switchToTab(index)
   end
 
   -- Initialize Commands tab if it's being shown
-  if index == 6 and InitializeCommandsTab then
+  if index == 7 and InitializeCommandsTab then
     InitializeCommandsTab()
   end
 end
