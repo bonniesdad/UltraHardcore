@@ -337,6 +337,12 @@ local function UpdateDruidFormResourceBar()
   end
 end
 
+-- Backwards-compat: called on shapeshift or display power changes for druids
+-- Keeps the druid form mana bar synchronized with current form changes.
+local function UpdateDruidShiftResourcePoints()
+  UpdateDruidFormResourceBar()
+end
+
 -- Function to hide combo points for non-users
 local function HideComboPointsForNonUsers()
   comboFrame:SetShown(CanGainComboPoints())
