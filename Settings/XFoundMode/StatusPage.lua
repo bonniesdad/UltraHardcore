@@ -239,6 +239,35 @@ local function CreateStatusPage(parentFrame)
     warningText:SetDrawLayer('OVERLAY', 2)
   end
   
+  local leaveModeButton = CreateFrame('Button', nil, statusFrame, 'UIPanelButtonTemplate')
+  leaveModeButton:SetSize(210, 26)
+  leaveModeButton:SetPoint('BOTTOM', backButton, 'TOP', 0, 8)
+  leaveModeButton:SetText('Leave Guild/Group Found')
+  leaveModeButton:Hide()
+  leaveModeButton:SetFrameLevel(statusFrame:GetFrameLevel() + 2)
+  local leaveBtnFS = leaveModeButton.GetFontString and leaveModeButton:GetFontString()
+  if leaveBtnFS then
+    leaveBtnFS:SetTextColor(1, 0.4, 0.4)
+  end
+  leaveModeButton:SetScript('OnClick', function()
+    if LeaveXFoundModes then
+      LeaveXFoundModes()
+    else
+      print('|cffffd000[ULTRA]|r Leave handler not available right now.')
+    end
+  end)
+
+  local function UpdateWarningAnchors(showLeaveButton)
+    if not warningPanel then return end
+    warningPanel:ClearAllPoints()
+    if showLeaveButton then
+      warningPanel:SetPoint('BOTTOM', leaveModeButton, 'TOP', 0, 12)
+    else
+      warningPanel:SetPoint('BOTTOM', backButton, 'TOP', 15)
+    end
+  end
+  UpdateWarningAnchors(false)
+
   -- Simple note used for post-level-1 (no alert box)
   local lockedNote = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   lockedNote:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 16)
@@ -261,6 +290,7 @@ local function CreateStatusPage(parentFrame)
   local function UpdateStatus()
     -- Get current player level and eligibility
     local playerLevel, treatAsLevelOne, hasSelfFoundBuff = GetXFoundPlayerContext()
+    local hasActiveXFoundMode = (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.guildSelfFound or GLOBAL_SETTINGS.groupSelfFound)) or false
 
     -- Show/hide back button based on player level
     if treatAsLevelOne then
@@ -285,6 +315,16 @@ local function CreateStatusPage(parentFrame)
         lockedNote:Show()
       end
     end
+
+    local canLeaveFoundMode = treatAsLevelOne and hasActiveXFoundMode
+    if leaveModeButton then
+      if canLeaveFoundMode then
+        leaveModeButton:Show()
+      else
+        leaveModeButton:Hide()
+      end
+    end
+    UpdateWarningAnchors(canLeaveFoundMode)
 
     -- Get current X Found mode from settings
     local currentMode = 'None Selected'
@@ -352,6 +392,10 @@ local function CreateStatusPage(parentFrame)
       else
         backButton:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 14)
       end
+    end
+    if leaveModeButton and leaveModeButton:IsShown() then
+      leaveModeButton:ClearAllPoints()
+      leaveModeButton:SetPoint('BOTTOM', backButton, 'TOP', 0, 8)
     end
     if isGroup then
       -- Hide all supplemental sections in Group Found for now
