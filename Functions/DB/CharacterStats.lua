@@ -1,6 +1,6 @@
--- 🟢 Character Stats Management
 local statsInitialized = false
 
+-- 🟢 Character Stats Management
 local CharacterStats = {
   -- Default values for new characters
   defaults = {
@@ -30,8 +30,12 @@ local CharacterStats = {
     xpGainedWithoutOptionHideActionBars = 0,
     xpGainedWithoutOptionPetsDiePermanently = 0,
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
+    xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
     xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
+    xpGWA = 0, -- Used to track XP gained with the addon
+    xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing
+    xpTotal = 0,
     xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
     healthPotionsUsed = 0,
@@ -40,7 +44,7 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
-    maxTunnelVisionOverlayShown = 0,
+    closeEscapes = 0,
     duelsTotal = 0,
     duelsWon = 0,
     duelsLost = 0,
@@ -206,9 +210,18 @@ function CharacterStats:ResetWorldBossesSlain()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+-- Deprecated: This function will be removed on a future release
+function CharacterStats:ReportXPWithoutAddon()
+  return AddonXPTracking:WithoutAddon()
+end
+
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
+
+  if statsInitialized then
+    return UltraHardcoreDB.characterStats[characterGUID]
+  end
 
   -- Initialize character stats if they don't exist
   if not UltraHardcoreDB.characterStats then
@@ -220,18 +233,16 @@ function CharacterStats:GetCurrentCharacterStats()
   end
 
   -- Initialize new stats for existing characters (backward compatibility)
-  local stats = UltraHardcoreDB.characterStats[characterGUID]
-
   if not statsInitialized then
     for statName, _ in pairs(self.defaults) do
-      if stats[statName] == nil then
-        stats[statName] = self.defaults[statName]
+      if UltraHardcoreDB.characterStats[characterGUID][statName] == nil then
+        UltraHardcoreDB.characterStats[characterGUID][statName] = self.defaults[statName]
       end
     end
     statsInitialized = true
   end
 
-  return stats
+  return UltraHardcoreDB.characterStats[characterGUID]
 end
 
 -- Update a specific stat for the current character
@@ -645,11 +656,6 @@ end
 SLASH_RESETWORLDBOSSES1 = '/resetworldbosses'
 SlashCmdList['RESETWORLDBOSSES'] = function()
   CharacterStats:ResetWorldBossesSlain()
-end
-
-SLASH_RESETXP1 = '/resetxp'
-SlashCmdList['RESETXP'] = function()
-  CharacterStats:ResetXPWithoutAddon()
 end
 
 -- Register slash command to reset stats

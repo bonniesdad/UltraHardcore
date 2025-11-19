@@ -7,59 +7,85 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
+-- Determine if the player should be treated as level 1 for X Found interactions
+function XFoundMode_ShouldTreatPlayerAsLevelOne()
+  local playerLevel = UnitLevel('player') or 1
+  if playerLevel == 1 then
+    return true
+  end
+
+  if HasSelfFoundBuff and HasSelfFoundBuff() then
+    return true
+  end
+
+  return false
+end
+
+-- Shared helper to activate Guild Found mode from UI or slash commands
+function ActivateGuildFoundMode(options)
+  if not GLOBAL_SETTINGS then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Settings not loaded. Try again in a moment.')
+    end
+    return false
+  end
+
+  if GLOBAL_SETTINGS.guildSelfFound then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Guild Found mode is already active on this character.')
+    end
+    return false
+  end
+
+  GLOBAL_SETTINGS.guildSelfFound = true
+  GLOBAL_SETTINGS.groupSelfFound = false
+
+  if SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+
+  if not (options and options.silent) then
+    print('|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.')
+  end
+
+  if XFoundModeManager and XFoundModeManager.ShowStatusPage then
+    XFoundModeManager:ShowStatusPage()
+  end
+
+  if XFoundModeManager
+      and XFoundModeManager.pages
+      and XFoundModeManager.pages.status
+      and XFoundModeManager.pages.status.UpdateStatus then
+    XFoundModeManager.pages.status:UpdateStatus()
+  end
+
+  return true
+end
+
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
   -- Check if tabContents[4] exists
   if not tabContents or not tabContents[4] then return end
 
-  -- If placeholder is enabled, show a simple message and skip building pages
-    if not XFoundModeManager.parentFrame then
-      XFoundModeManager.parentFrame = tabContents[4]
-    end
-
-    if not XFoundModeManager.placeholder then
-      local placeholder = CreateFrame('Frame', nil, XFoundModeManager.parentFrame)
-      placeholder:SetAllPoints(XFoundModeManager.parentFrame)
-      placeholder:Hide()
-
-      local message = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
-      message:SetPoint('CENTER', placeholder, 'CENTER', 0, 10)
-      message:SetText('Coming In Phase 2!')
-
-      local subText = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-      subText:SetPoint('TOP', message, 'BOTTOM', 0, -16)
-      subText:SetWidth(460)
-      subText:SetJustifyH('CENTER')
-      subText:SetNonSpaceWrap(true)
-      subText:SetText("Guild and Group found are nearly done.\nWe're working on the anti cheat system before releasing it to the public.")
-
-      local subText2 = placeholder:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-      subText2:SetPoint('TOP', subText, 'BOTTOM', 0, -8)
-      subText2:SetWidth(460)
-      subText2:SetJustifyH('CENTER')
-      subText2:SetNonSpaceWrap(true)
-      subText2:SetText("Seriously, why y'all cheating? It gives me a whole lot more work to do!")
-
-      XFoundModeManager.placeholder = placeholder
-    end
-
-    XFoundModeManager:HideAllPages()
-    XFoundModeManager.placeholder:Show()
-    XFoundModeManager.currentPage = 'placeholder'
-end
-
-  -- Initialize the manager if not already done
---[[
+  -- Ensure parent frame is set
   if not XFoundModeManager.parentFrame then
     XFoundModeManager.parentFrame = tabContents[4]
+  end
 
-    -- Create all pages only once
-    if XFoundModePages then
-      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(tabContents[4])
-      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(tabContents[4])
-      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(tabContents[4])
-      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(tabContents[4])
+  -- Lazily create pages once
+  if XFoundModePages then
+    if not XFoundModeManager.pages.intro then
+      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.status then
+      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.guildConfirm then
+      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
+    end
+    if not XFoundModeManager.pages.groupConfirm then
+      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
     end
   end
 
@@ -67,11 +93,11 @@ end
   XFoundModeManager:HideAllPages()
 
   -- Show appropriate page based on player level and mode selection status
-  local playerLevel = UnitLevel('player')
+  local treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne and XFoundMode_ShouldTreatPlayerAsLevelOne()
   local hasSelectedMode =
     (GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound)
 
-  if playerLevel == 1 and not hasSelectedMode then
+  if treatAsLevelOne and not hasSelectedMode then
     -- Level 1 and no mode selected - show intro page
     XFoundModeManager:ShowIntroPage()
   else
@@ -79,9 +105,7 @@ end
     XFoundModeManager:ShowStatusPage()
   end
 end
-]]
 
---[[
 -- Show Intro Page (for level 1 players)
 function XFoundModeManager:ShowIntroPage()
   self:HideAllPages()
@@ -121,7 +145,7 @@ function XFoundModeManager:ShowGroupConfirmPage()
     self.currentPage = 'groupConfirm'
   end
 end
-]]
+
 
 -- Hide all pages
 function XFoundModeManager:HideAllPages()
@@ -136,4 +160,26 @@ end
 -- Cleanup function to hide all pages when leaving the tab
 function XFoundModeManager:Cleanup()
   self:HideAllPages()
+end
+
+-- Slash command to activate Guild Found mode (even post level 1)
+SLASH_GUILDFOUNDMODE1 = '/guildfound'
+SLASH_GUILDFOUNDMODE2 = '/joinguildfound'
+
+SlashCmdList['GUILDFOUNDMODE'] = function(msg)
+  local raw = msg or ''
+  raw = string.gsub(raw, '^%s+', '')
+  raw = string.gsub(raw, '%s+$', '')
+  raw = string.lower(raw)
+
+  if raw ~= 'confirm' then
+    print('|cffffd000[ULTRA]|r Type "/guildfound confirm" to permanently lock this character into Guild Found mode.')
+    print('|cffffd000[ULTRA]|r This restricts trading and mail to guild members and blocks auction house usage. This cannot be undone.')
+    return
+  end
+
+  local activated = ActivateGuildFoundMode and ActivateGuildFoundMode()
+  if activated and UnitLevel and UnitLevel('player') > 1 then
+    print('|cffffd000[ULTRA]|r Guild Found mode enabled after level 1. Restrictions are now active immediately.')
+  end
 end

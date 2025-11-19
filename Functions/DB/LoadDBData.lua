@@ -54,11 +54,15 @@ function LoadDBData()
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
+    minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,
     minimapClockScale = 1.0,
+    minimapMailScale = 1.0,
     announceLevelUpToGuild = true,
+    autoJoinUHCChannel = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,
+    showMailEvenWhenMapHidden = false,
     announcePartyDeathsOnGroupJoin = false,
     announceDungeonsCompletedOnGroupJoin = false,
     newHighCritAppreciationSoundbite = false,
@@ -92,13 +96,23 @@ function LoadDBData()
     showMainStatisticsPanelTargetDummiesUsed = false,
     showMainStatisticsPanelGrenadesUsed = false,
     showMainStatisticsPanelPartyMemberDeaths = false,
-    showMainStatisticsPanelMaxTunnelVisionOverlayShown = false,
+    showMainStatisticsPanelCloseEscapes = false,
     showMainStatisticsPanelDuelsTotal = false,
     showMainStatisticsPanelDuelsWon = false,
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelXpGWA = false,
+    showMainStatisticsPanelXpGWOA = false,
   }
+
+  -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
+  if UltraHardcoreDB.GLOBAL_SETTINGS then
+    if not UltraHardcoreDB.characterSettings[characterGUID] then
+      UltraHardcoreDB.characterSettings[characterGUID] = UltraHardcoreDB.GLOBAL_SETTINGS
+    end
+    UltraHardcoreDB.GLOBAL_SETTINGS = nil
+  end
 
   -- Initialize settings for current character if they don't exist
   if not UltraHardcoreDB.characterSettings[characterGUID] then
@@ -108,12 +122,7 @@ function LoadDBData()
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
 
-
-  -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
-  if UltraHardcoreDB.GLOBAL_SETTINGS and not UltraHardcoreDB.characterSettings[characterGUID] then
-    UltraHardcoreDB.characterSettings[characterGUID] = UltraHardcoreDB.GLOBAL_SETTINGS
-    GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
-    -- Clear old global settings after migration
-    UltraHardcoreDB.GLOBAL_SETTINGS = nil
+  if GLOBAL_SETTINGS.autoJoinUHCChannel == nil then
+    GLOBAL_SETTINGS.autoJoinUHCChannel = true
   end
 end

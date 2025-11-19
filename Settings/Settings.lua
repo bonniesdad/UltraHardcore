@@ -16,7 +16,7 @@ local function shouldRadioBeChecked(settingName, settings)
   if settings[settingName] ~= nil then
     return settings[settingName]
   else
-    if settingName == 'showMainStatisticsPanelLevel' or settingName == 'showMainStatisticsPanelLowestHealth' or settingName == 'showMainStatisticsPanelEnemiesSlain' or settingName == 'showMainStatisticsPanelDungeonsCompleted' or settingName == 'showMainStatisticsPanelHighestCritValue' or settingName == 'showMainStatisticsPanelMaxTunnelVisionOverlayShown' then
+    if settingName == 'showMainStatisticsPanelLevel' or settingName == 'showMainStatisticsPanelLowestHealth' or settingName == 'showMainStatisticsPanelEnemiesSlain' or settingName == 'showMainStatisticsPanelDungeonsCompleted' or settingName == 'showMainStatisticsPanelHighestCritValue' or settingName == 'showMainStatisticsPanelCloseEscapes' then
       return true
     else
       return false
@@ -124,8 +124,8 @@ titleBarBackground:SetAllPoints()
 titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header.png')
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
-settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
-settingsTitleLabel:SetText('Ultrahardcore')
+settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
+settingsTitleLabel:SetText('Ultra Hardcore')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
 dividerFrame:SetSize(570, 24)
@@ -142,7 +142,7 @@ local function initializeTabs()
   end
 end
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
-closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 0)
+closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 4)
 closeButton:SetSize(12, 12)
 closeButton:SetScript('OnClick', function()
   if TabManager then
