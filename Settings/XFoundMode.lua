@@ -7,6 +7,23 @@ XFoundModeManager = {
   parentFrame = nil,
 }
 
+-- Feature flag helper: when false, Guild Found UI is hidden behind "Coming in phase 2"
+local function IsGuildFoundUIEnabled()
+  return _G.UHC_ENABLE_GUILD_FOUND_UI == true or IsUltraGuildMember()
+end
+
+-- Simple placeholder page used when a section is hidden for phase 2
+local function CreatePhase2PlaceholderPage(parentFrame)
+  local page = CreateFrame('Frame', nil, parentFrame)
+  page:SetAllPoints(parentFrame)
+  page:Hide()
+  local text = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
+  text:SetPoint('CENTER')
+  text:SetText('Coming soon')
+  text:SetTextColor(1, 0.95, 0.5)
+  return page
+end
+
 -- Determine if the player should be treated as level 1 for X Found interactions
 function XFoundMode_ShouldTreatPlayerAsLevelOne()
   local playerLevel = UnitLevel('player') or 1
@@ -45,23 +62,77 @@ function ActivateGuildFoundMode(options)
   end
 
   if not (options and options.silent) then
-    print('|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.')
+    print(
+      '|cff00ff00Guild Found mode activated!|r Trading is now restricted to guild members only.'
+    )
   end
 
   if XFoundModeManager and XFoundModeManager.ShowStatusPage then
     XFoundModeManager:ShowStatusPage()
   end
 
-  if XFoundModeManager
-      and XFoundModeManager.pages
-      and XFoundModeManager.pages.status
-      and XFoundModeManager.pages.status.UpdateStatus then
+  if XFoundModeManager and XFoundModeManager.pages and XFoundModeManager.pages.status and XFoundModeManager.pages.status.UpdateStatus then
     XFoundModeManager.pages.status:UpdateStatus()
   end
 
   return true
 end
 
+-- Shared helper to leave any active X Found mode (only while eligible)
+function LeaveXFoundModes(options)
+  if not GLOBAL_SETTINGS then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r Settings not loaded. Try again in a moment.')
+    end
+    return false
+  end
+
+  local treatAsLevelOne = false
+  if XFoundMode_ShouldTreatPlayerAsLevelOne then
+    treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne()
+  end
+
+  if not treatAsLevelOne then
+    if not (options and options.silent) then
+      print(
+        '|cffffd000[ULTRA]|r You can only leave Guild/Group Found while level 1 or under the Self Found buff.'
+      )
+    end
+    return false
+  end
+
+  local hadActiveMode =
+    (GLOBAL_SETTINGS.guildSelfFound or GLOBAL_SETTINGS.groupSelfFound) and true or false
+  if not hadActiveMode then
+    if not (options and options.silent) then
+      print('|cffffd000[ULTRA]|r No X Found mode is currently active on this character.')
+    end
+    return false
+  end
+
+  GLOBAL_SETTINGS.guildSelfFound = false
+  GLOBAL_SETTINGS.groupSelfFound = false
+
+  if SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+
+  if not (options and options.silent) then
+    print(
+      '|cff00ff00X Found restrictions cleared.|r You may choose a new mode while you remain eligible.'
+    )
+  end
+
+  if XFoundModeManager and XFoundModeManager.ShowStatusPage then
+    XFoundModeManager:ShowStatusPage()
+  end
+
+  if XFoundModeManager and XFoundModeManager.pages and XFoundModeManager.pages.status and XFoundModeManager.pages.status.UpdateStatus then
+    XFoundModeManager.pages.status:UpdateStatus()
+  end
+
+  return true
+end
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
@@ -73,19 +144,35 @@ function InitializeXFoundModeTab()
     XFoundModeManager.parentFrame = tabContents[4]
   end
 
+  -- If the X Found UI is disabled, show only the placeholder and return
+  if not IsGuildFoundUIEnabled() then
+    if not XFoundModeManager.pages.phase2 then
+      XFoundModeManager.pages.phase2 = CreatePhase2PlaceholderPage(XFoundModeManager.parentFrame)
+    end
+    XFoundModeManager:HideAllPages()
+    if XFoundModeManager.pages.phase2 then
+      XFoundModeManager.pages.phase2:Show()
+      XFoundModeManager.currentPage = 'phase2'
+    end
+    return
+  end
+
   -- Lazily create pages once
   if XFoundModePages then
     if not XFoundModeManager.pages.intro then
       XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(XFoundModeManager.parentFrame)
     end
     if not XFoundModeManager.pages.status then
-      XFoundModeManager.pages.status = XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
+      XFoundModeManager.pages.status =
+        XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
     end
     if not XFoundModeManager.pages.guildConfirm then
-      XFoundModeManager.pages.guildConfirm = XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
+      XFoundModeManager.pages.guildConfirm =
+        XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
     end
     if not XFoundModeManager.pages.groupConfirm then
-      XFoundModeManager.pages.groupConfirm = XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
+      XFoundModeManager.pages.groupConfirm =
+        XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
     end
   end
 
@@ -93,11 +180,15 @@ function InitializeXFoundModeTab()
   XFoundModeManager:HideAllPages()
 
   -- Show appropriate page based on player level and mode selection status
-  local treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne and XFoundMode_ShouldTreatPlayerAsLevelOne()
+  local treatAsLevelOne =
+    XFoundMode_ShouldTreatPlayerAsLevelOne and XFoundMode_ShouldTreatPlayerAsLevelOne()
   local hasSelectedMode =
     (GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound)
 
-  if treatAsLevelOne and not hasSelectedMode then
+  -- Ultra guild members should always see the full Guild Found display
+  if IsUltraGuildMember and IsUltraGuildMember() then
+    XFoundModeManager:ShowStatusPage()
+  elseif treatAsLevelOne and not hasSelectedMode then
     -- Level 1 and no mode selected - show intro page
     XFoundModeManager:ShowIntroPage()
   else
@@ -108,6 +199,11 @@ end
 
 -- Show Intro Page (for level 1 players)
 function XFoundModeManager:ShowIntroPage()
+  -- Ultra guild members should always see the status (Guild Found) page
+  if IsUltraGuildMember and IsUltraGuildMember() then
+    self:ShowStatusPage()
+    return
+  end
   self:HideAllPages()
   if self.pages.intro then
     self.pages.intro:Show()
@@ -131,6 +227,16 @@ end
 -- Show Guild Confirmation Page
 function XFoundModeManager:ShowGuildConfirmPage()
   self:HideAllPages()
+  if not IsGuildFoundUIEnabled() then
+    if not self.pages.phase2 then
+      self.pages.phase2 = CreatePhase2PlaceholderPage(self.parentFrame)
+    end
+    if self.pages.phase2 then
+      self.pages.phase2:Show()
+      self.currentPage = 'phase2'
+    end
+    return
+  end
   if self.pages.guildConfirm then
     self.pages.guildConfirm:Show()
     self.currentPage = 'guildConfirm'
@@ -145,7 +251,6 @@ function XFoundModeManager:ShowGroupConfirmPage()
     self.currentPage = 'groupConfirm'
   end
 end
-
 
 -- Hide all pages
 function XFoundModeManager:HideAllPages()
@@ -173,13 +278,31 @@ SlashCmdList['GUILDFOUNDMODE'] = function(msg)
   raw = string.lower(raw)
 
   if raw ~= 'confirm' then
-    print('|cffffd000[ULTRA]|r Type "/guildfound confirm" to permanently lock this character into Guild Found mode.')
-    print('|cffffd000[ULTRA]|r This restricts trading and mail to guild members and blocks auction house usage. This cannot be undone.')
+    print(
+      '|cffffd000[ULTRA]|r Type "/guildfound confirm" to permanently lock this character into Guild Found mode.'
+    )
+    print(
+      '|cffffd000[ULTRA]|r This restricts trading and mail to guild members and blocks auction house usage. This cannot be undone.'
+    )
     return
   end
 
   local activated = ActivateGuildFoundMode and ActivateGuildFoundMode()
   if activated and UnitLevel and UnitLevel('player') > 1 then
-    print('|cffffd000[ULTRA]|r Guild Found mode enabled after level 1. Restrictions are now active immediately.')
+    print(
+      '|cffffd000[ULTRA]|r Guild Found mode enabled after level 1. Restrictions are now active immediately.'
+    )
+  end
+end
+
+-- Slash command to leave any X Found mode (while eligible)
+SLASH_LEAVEFOUNDMODE1 = '/leavefound'
+SLASH_LEAVEFOUNDMODE2 = '/exitfound'
+
+SlashCmdList['LEAVEFOUNDMODE'] = function()
+  if not LeaveXFoundModes or not LeaveXFoundModes() then
+    if LeaveXFoundModes == nil then
+      print('|cffffd000[ULTRA]|r Leave handler not available right now. Try again in a moment.')
+    end
   end
 end

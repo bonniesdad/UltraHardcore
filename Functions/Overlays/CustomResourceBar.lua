@@ -351,13 +351,13 @@ local UHCBuffFrame = CreateFrame('Frame', 'UHCBuffFrame', UIParent)
 UHCBuffFrame:SetWidth(100)
 UHCBuffFrame:SetHeight(32)
 UHCBuffFrame:ClearAllPoints()
-UHCBuffFrame:SetPoint("BOTTOM", resourceBar, "TOP", 0, 5)
+UHCBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
 
 local DebuffFrame = CreateFrame('Frame', 'UHCDebuffFrame', UIParent)
 DebuffFrame:SetWidth(100)
 DebuffFrame:SetHeight(32)
 DebuffFrame:ClearAllPoints()
-DebuffFrame:SetPoint("TOP", resourceBar, "BOTTOM", 0, -5)
+DebuffFrame:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 
 -- Helper function to check if buff bar should be repositioned
 local function ShouldHideBuffs()
@@ -381,14 +381,13 @@ local function HideBuffs()
 end
 
 local function HideDebuffs()
-  if BuffFrame then 
+  if BuffFrame then
     for i = 0, 40 do
       local debuff = _G['DebuffButton' .. i]
 
       if debuff ~= nil then
-        debuff:Hide()  
+        debuff:Hide()
       end
-
     end
   end
 end
@@ -400,7 +399,7 @@ local function CenterPlayerBuffBar()
     HideBuffs()
     return
   end
-  if ShouldHideDebuffs() then 
+  if ShouldHideDebuffs() then
     -- If we're hiding debuffs, we might still be repositioning the buffs, so do not return
     HideDebuffs()
   end
@@ -430,7 +429,7 @@ local function CenterPlayerBuffBar()
         if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
           buffRows = buffRows + 1
         end
-      elseif aura and aura.isHarmful == true then 
+      elseif aura and aura.isHarmful == true then
         debuffCount = debuffCount + 1
       end
     end
@@ -439,23 +438,27 @@ local function CenterPlayerBuffBar()
     local buffOffset = 0
     local buffYOffset = 0
     for i = 1, buffCount do
-        local buff = _G['BuffButton' .. i]
-        buff:SetParent(UHCBuffFrame)
-        buff:ClearAllPoints()
-        buff:SetPoint("BOTTOMLEFT", UHCBuffFrame, "BOTTOMLEFT", buffOffset, buffYOffset)
+      local buff = _G['BuffButton' .. i]
+      buff:SetParent(UHCBuffFrame)
+      buff:ClearAllPoints()
+      buff:SetPoint('BOTTOMLEFT', UHCBuffFrame, 'BOTTOMLEFT', buffOffset, buffYOffset)
 
-        if buffWidth == 0 then buffWidth = buff:GetWidth() end
-        if buffHeight == 0 then buffHeight = buff:GetHeight() end
+      if buffWidth == 0 then
+        buffWidth = buff:GetWidth()
+      end
+      if buffHeight == 0 then
+        buffHeight = buff:GetHeight()
+      end
 
-        buffOffset = buffOffset + buffWidth
-        if buffCount < buffsPerRow and i < buffCount then
-          buffOffset = buffOffset + iconSpacing
-        end
+      buffOffset = buffOffset + buffWidth
+      if buffCount < buffsPerRow and i < buffCount then
+        buffOffset = buffOffset + iconSpacing
+      end
 
-        if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
-          buffYOffset = buffYOffset + buffHeight + rowSpacing
-          buffOffset = 0
-        end
+      if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
+        buffYOffset = buffYOffset + buffHeight + rowSpacing
+        buffOffset = 0
+      end
     end
 
     -- Move debuff buttons into our custom frame (disabled to avoid anchor family loops)
@@ -466,10 +469,14 @@ local function CenterPlayerBuffBar()
         local debuffBorder = _G['DebuffButton' .. i .. 'Border']
         debuff:SetParent(DebuffFrame)
         debuff:ClearAllPoints()
-        debuff:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", debuffOffset, 0)
+        debuff:SetPoint('TOPLEFT', DebuffFrame, 'TOPLEFT', debuffOffset, 0)
 
-        if debuffWidth == 0 then debuffWidth = debuffBorder:GetWidth() end
-        if debuffHeight == 0 then debuffHeight = debuffBorder:GetHeight() end
+        if debuffWidth == 0 then
+          debuffWidth = debuffBorder:GetWidth()
+        end
+        if debuffHeight == 0 then
+          debuffHeight = debuffBorder:GetHeight()
+        end
         debuffOffset = debuffOffset + debuffWidth
         if i < debuffCount then
           debuffOffset = debuffOffset + iconSpacing
@@ -497,15 +504,15 @@ local function CenterPlayerBuffBar()
       -- This makes centering the two bars very difficult.  Try resizing buff icons to match the icon+border size of debuffs.
       if debuffWidth > 0 and debuffHeight > 0 then
         for i = 1, buffCount do
-          _G['BuffButton'..i]:SetWidth(debuffWidth)
+          _G['BuffButton' .. i]:SetWidth(debuffWidth)
           width = debuffWidth
-          _G['BuffButton'..i]:SetHeight(debuffHeight)
+          _G['BuffButton' .. i]:SetHeight(debuffHeight)
           height = debuffHeight
         end
       end
 
       -- buffCount + width is the total width of all buff icons
-      -- (buffCount - 1) * iconSpacing is the spacing between each icon 
+      -- (buffCount - 1) * iconSpacing is the spacing between each icon
       -- iconSpacing pixels is subtracted to account for spacing in front of the first icon
       if buffCount < buffsPerRow then
         newWidth = (buffCount * width) + ((buffCount - 1) * iconSpacing)
@@ -524,7 +531,9 @@ local function CenterPlayerBuffBar()
       end
 
       local anchor = CanGainComboPoints() and comboFrame or resourceBar
-      if CanGainComboPoints() then yOffset = 5 end
+      if CanGainComboPoints() then
+        yOffset = 5
+      end
 
       UHCBuffFrame:ClearAllPoints()
       UHCBuffFrame:SetPoint('BOTTOM', anchor, 'TOP', 0, yOffset)
@@ -535,6 +544,7 @@ end
 -- Event Handling
 resourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
+resourceBar:RegisterEvent('UNIT_DISPLAYPOWER')
 resourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
@@ -591,7 +601,7 @@ local function HandleBuffBarSettingChange()
   if BuffFrame and BuffFrame:IsVisible() then
     if ShouldRepositionBuffBar() then
       RepositionPlayerBuffBar()
-    elseif ShouldHideBuffs() then 
+    elseif ShouldHideBuffs() then
       HideBuffs()
     elseif ShouldHideDebuffs() then
       HideDebuffs()
@@ -636,12 +646,18 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     elseif unit == 'pet' then
       UpdatePetResourcePoints()
     end
+  elseif event == 'UNIT_DISPLAYPOWER' then
+    if unit == 'player' then
+      UpdateResourcePoints()
+      UpdateDruidShiftResourcePoints()
+    end
   elseif event == 'UPDATE_SHAPESHIFT_FORM' then
     -- Update resource bar and combo points when shapeshifting
     UpdateResourcePoints()
     UpdateDruidFormResourceBar()
     HideComboPointsForNonUsers()
     UpdateComboPoints()
+    UpdateDruidShiftResourcePoints()
   elseif event == 'UNIT_PET' then
     -- Pet summoned or dismissed
     UpdatePetResourcePoints()
