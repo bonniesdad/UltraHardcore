@@ -219,6 +219,7 @@ local function CancelTradeForReason(message)
   if currentTradeValidation and currentTradeValidation.cancelled then return end
   if message then
     PrintRestrictionMessage(message)
+    SendChatMessage(message, 'EMOTE')
   end
   CancelTrade()
   if currentTradeValidation then
