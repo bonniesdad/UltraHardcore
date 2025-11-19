@@ -168,56 +168,86 @@ petResourceBar:SetScript('OnDragStop', function(self)
   SaveResourceBarPosition()
 end)
 
--- Create druid shapeshift mana bar (shows player's mana while in cat/bear)
-local druidShiftResourceBar =
-  CreateFrame('StatusBar', 'UltraHardcoreDruidShiftResourceBar', UIParent)
-if not druidShiftResourceBar then
-  print('UltraHardcore: Failed to create druid shapeshift resource bar')
+-- Create druid form resource bar (for shapeshifted druids)
+local druidFormResourceBar = CreateFrame('StatusBar', 'UltraHardcoreDruidFormResourceBar', UIParent)
+if not druidFormResourceBar then
+  print('UltraHardcore: Failed to create druid form resource bar')
   return
 end
 
--- Match pet bar size/position
-druidShiftResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
-druidShiftResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
-druidShiftResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
-druidShiftResourceBar:Hide()
-
--- Border for druid shapeshift bar (matches pet border)
-local druidShiftBorder = druidShiftResourceBar:CreateTexture(nil, 'OVERLAY')
-if not druidShiftBorder then
-  print('UltraHardcore: Failed to create druid shapeshift bar border')
+druidFormResourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
+druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 20)
+druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
+druidFormResourceBar:Hide() -- Initially hidden
+-- Add a border around the druid form resource bar
+local druidFormBorder = druidFormResourceBar:CreateTexture(nil, 'OVERLAY')
+if not druidFormBorder then
+  print('UltraHardcore: Failed to create druid form resource bar border')
   return
 end
-druidShiftBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
-druidShiftBorder:SetPoint('CENTER', druidShiftResourceBar, 'CENTER', 0, 0)
-druidShiftBorder:SetSize(171, 50)
 
--- Make the druid shapeshift bar draggable (moves main bar)
-druidShiftResourceBar:SetMovable(true)
-druidShiftResourceBar:EnableMouse(true)
-druidShiftResourceBar:RegisterForDrag('LeftButton')
-druidShiftResourceBar:SetScript('OnDragStart', function(self)
-  resourceBar:StartMoving()
-end)
-druidShiftResourceBar:SetScript('OnDragStop', function(self)
-  resourceBar:StopMovingOrSizing()
-  SaveResourceBarPosition()
-end)
+druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
+druidFormBorder:SetPoint('CENTER', druidFormResourceBar, 'CENTER', 0, 0)
+druidFormBorder:SetSize(300, 64)
 
--- Helper to determine if druid mana bar should show (cat/bear only)
-local druidShiftBarTestMode = false
-local function ShouldShowDruidShiftBar()
-  local _, playerClass = UnitClass('player')
-  if playerClass ~= 'DRUID' then
-    return false
+-- Position persistence functions for druid form resource bar
+local function SaveDruidFormResourceBarPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
   end
-  if druidShiftBarTestMode then
-    return true
-  end
-  local form = GetShapeshiftFormID()
-  -- Cat (1), Bear (5), Dire Bear (8) show; all other forms do not
-  return form == 1 or form == 5 or form == 8
+
+  local point, relativeTo, relativePoint, xOfs, yOfs = druidFormResourceBar:GetPoint()
+  UltraHardcoreDB.druidFormResourceBarPosition = {
+    point = point,
+    relativeTo = 'UIParent',
+    relativePoint = relativePoint,
+    xOfs = xOfs,
+    yOfs = yOfs,
+  }
+
+  SaveDBData('druidFormResourceBarPosition', UltraHardcoreDB.druidFormResourceBarPosition)
 end
+
+local function LoadDruidFormResourceBarPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local pos = UltraHardcoreDB.druidFormResourceBarPosition
+  druidFormResourceBar:ClearAllPoints()
+
+  if not pos then
+    -- Set default position (above the main resource bar)
+    druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
+    SaveDruidFormResourceBarPosition()
+    print('UltraHardcore: Druid form resource bar position initialized to default')
+  else
+    -- Allow anchoring to main resource bar if setting is enabled
+    local anchorTo = 'UIParent'
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+      anchorTo = 'UltraHardcoreResourceBar'
+    end
+
+    if anchorTo == 'UIParent' then
+      druidFormResourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+    else
+      -- Anchor to resource bar with a default offset
+      druidFormResourceBar:SetPoint('CENTER', resourceBar, 'BOTTOM', 0, -15)
+    end
+  end
+end
+
+-- Make the druid form resource bar draggable with position saving
+druidFormResourceBar:SetMovable(true)
+druidFormResourceBar:EnableMouse(true)
+druidFormResourceBar:RegisterForDrag('LeftButton')
+druidFormResourceBar:SetScript('OnDragStart', function(self)
+  self:StartMoving()
+end)
+druidFormResourceBar:SetScript('OnDragStop', function(self)
+  self:StopMovingOrSizing()
+  SaveDruidFormResourceBarPosition()
+end)
 
 -- Unified function to update resource points
 local function UpdateResourcePoints()
@@ -261,23 +291,49 @@ local function UpdatePetResourcePoints()
   end
 end
 
--- Function to update the druid shapeshift mana bar (player mana while in cat/bear)
-local function UpdateDruidShiftResourcePoints()
-  if not ShouldShowDruidShiftBar() then
-    druidShiftResourceBar:Hide()
+-- Helper function to check if player is a druid
+local function IsDruid()
+  local _, classFilename = UnitClass('player')
+  return classFilename == 'DRUID'
+end
+
+-- Helper function to check if player is shapeshifted
+local function IsShapeshifted()
+  local shapeShiftForm = GetShapeshiftForm()
+  return shapeShiftForm and shapeShiftForm > 0
+end
+
+-- Function to update druid form resource bar
+local function UpdateDruidFormResourceBar()
+  if not IsDruid() then
+    druidFormResourceBar:Hide()
     return
   end
 
-  local manaValue = UnitPower('player', Enum.PowerType.MANA)
-  local manaMax = UnitPowerMax('player', Enum.PowerType.MANA)
-  if manaMax and manaMax > 0 then
-    druidShiftResourceBar:SetMinMaxValues(0, manaMax)
-    druidShiftResourceBar:SetValue(manaValue or 0)
-    local mr, mg, mb = GetPowerTypeColor('MANA')
-    druidShiftResourceBar:SetStatusBarColor(mr, mg, mb)
-    druidShiftResourceBar:Show()
+  if not IsShapeshifted() then
+    druidFormResourceBar:Hide()
+    return
+  end
+
+  -- Check if the druid form resource bar is enabled in settings
+  if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.showDruidFormResourceBar then
+    druidFormResourceBar:Hide()
+    return
+  end
+
+  -- For druids in form, show mana on the druid form bar (not the form resource)
+  -- Mana is Enum.PowerType.Mana (which is typically index 0)
+  local manaValue = UnitPower('player', Enum.PowerType.Mana)
+  local manaMaxValue = UnitPowerMax('player', Enum.PowerType.Mana)
+
+  druidFormResourceBar:SetMinMaxValues(0, manaMaxValue)
+  druidFormResourceBar:SetValue(manaValue)
+  druidFormResourceBar:SetStatusBarColor(GetPowerTypeColor('MANA'))
+
+  if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
+    druidFormResourceBar:Hide()
   else
-    druidShiftResourceBar:Hide()
+    druidFormResourceBar:Show()
   end
 end
 
@@ -496,6 +552,11 @@ resourceBar:RegisterEvent('UNIT_AURA')
 resourceBar:RegisterEvent('PLAYER_LOGIN')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
+-- Register druid form resource bar for events
+druidFormResourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
+druidFormResourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
+druidFormResourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
+
 -- Hide the default combo points (Blizzard UI)
 if ComboFrame then
   ComboFrame:Hide()
@@ -553,7 +614,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     resourceBar:Hide()
     comboFrame:Hide()
     petResourceBar:Hide()
-    druidShiftResourceBar:Hide()
+    druidFormResourceBar:Hide()
     return
   end
 
@@ -570,16 +631,17 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     HideComboPointsForNonUsers()
     UpdateResourcePoints()
     UpdatePetResourcePoints()
-    UpdateDruidShiftResourcePoints()
+    UpdateDruidFormResourceBar()
     HandleBuffBarSettingChange()
     -- Load saved position after database is available
     C_Timer.After(0.1, function()
       LoadResourceBarPosition()
+      LoadDruidFormResourceBarPosition()
     end)
   elseif event == 'UNIT_POWER_FREQUENT' then
     if unit == 'player' then
       UpdateResourcePoints()
-      UpdateDruidShiftResourcePoints()
+      UpdateDruidFormResourceBar()
     elseif unit == 'pet' then
       UpdatePetResourcePoints()
     end
@@ -591,6 +653,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'UPDATE_SHAPESHIFT_FORM' then
     -- Update resource bar and combo points when shapeshifting
     UpdateResourcePoints()
+    UpdateDruidFormResourceBar()
     HideComboPointsForNonUsers()
     UpdateComboPoints()
     UpdateDruidShiftResourcePoints()
@@ -602,6 +665,20 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     UpdatePetResourcePoints()
   elseif unit == 'player' and event == 'UNIT_AURA' then
     CenterPlayerBuffBar()
+  end
+end)
+
+-- Event handler for druid form resource bar
+druidFormResourceBar:SetScript('OnEvent', function(self, event, unit)
+  if event == 'PLAYER_ENTERING_WORLD' then
+    UpdateDruidFormResourceBar()
+    C_Timer.After(0.1, function()
+      LoadDruidFormResourceBarPosition()
+    end)
+  elseif event == 'UNIT_POWER_FREQUENT' and unit == 'player' then
+    UpdateDruidFormResourceBar()
+  elseif event == 'UPDATE_SHAPESHIFT_FORM' then
+    UpdateDruidFormResourceBar()
   end
 end)
 
@@ -619,7 +696,23 @@ local function ResetResourceBarPosition()
   print('UltraHardcore: Resource bar position reset to default')
 end
 
+-- Reset druid form resource bar position function
+local function ResetDruidFormResourceBarPosition()
+  -- Clear existing points first
+  druidFormResourceBar:ClearAllPoints()
+  -- Reset to default position (above main resource bar)
+  druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
+  -- Save the reset position
+  SaveDruidFormResourceBarPosition()
+  print('UltraHardcore: Druid form resource bar position reset to default')
+end
+
 -- Slash command to reset resource bar position
 SLASH_RESETRESOURCEBAR1 = '/resetresourcebar'
 SLASH_RESETRESOURCEBAR2 = '/rrb'
 SlashCmdList['RESETRESOURCEBAR'] = ResetResourceBarPosition
+
+-- Slash command to reset druid form resource bar position
+SLASH_RESETDRUIDFORMRESOURCEBAR1 = '/resetdruidformresourcebar'
+SLASH_RESETDRUIDFORMRESOURCEBAR2 = '/rrdb'
+SlashCmdList['RESETDRUIDFORMRESOURCEBAR'] = ResetDruidFormResourceBarPosition

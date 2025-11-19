@@ -21,6 +21,27 @@ local function CreatePhase2PlaceholderPage(parentFrame)
   text:SetPoint('CENTER')
   text:SetText('Coming soon')
   text:SetTextColor(1, 0.95, 0.5)
+  local betaText = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  betaText:SetPoint('TOP', text, 'BOTTOM', 0, -12)
+  betaText:SetText(
+    'Guild Found is being BETA tested on the EU server Soulseeker \nThe guild is on Horde and is called <U L T R A>.'
+  )
+  local betaText2 = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  betaText2:SetPoint('TOP', betaText, 'BOTTOM', 0, -12)
+  betaText2:SetText('Contact Bonnies Dad if you would like to join the BETA test.')
+  if UHC_CreateDiscordInviteButton then
+    UHC_CreateDiscordInviteButton(
+    page,
+      'TOP',
+      betaText2,
+      'BOTTOM',
+      0,
+      -12,
+      220,
+      24,
+      'Discord Invite Link'
+    )
+  end
   return page
 end
 
