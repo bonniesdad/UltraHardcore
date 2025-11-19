@@ -1,39 +1,53 @@
 # Patch Notes
 
-## Version 1.2.9 - 2025-11-14
+## Version 1.2.9 - 2025-11-19
 
 ### New Features
 
+- Guild Found beta test
+  - Guild Found is being BETA tested on the EU server Soulseeker
 - UHC Raid Frames
-- Added a new command for verification of party members
+  - Raid frames are now displayed when the player is in a raid.
+  - Party can be converted to raid frames and dragged around the screen.
+  - Early development stage, expect minor bugs.
 
 ### New Statistics
 
 - Map attempts blocked
   - A statistic for the amount of times the player attempts to open the map and routep lanner blocks it
+- Map key presses while map blocked
+  - Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.
 
 ### UI Improvements
 
+- UI Overhaul
+  - Big improvements to the UHC settings menu.
+- Added a new setting to show the druid mana bar when shapeshifted as a druid
+- Added a new setting to anchor the druid mana bar to the resource bar when shapeshifted as a druid
+  - This setting is in the Misc section of the settings menu.
+  - This setting is disabled by default.
+  - This setting is only available for druids.
 - Reset on screen statistics command: "/uhcrs" or "/uhcstatsreset"
+- Added an option to play a subtle audio cue upon reaching full health
 - Added one time Resource Tracking Explainer
   - The addon will show a message on the screen explaining how to use the resource tracking feature when the minimap is hidden.
+- Stop the preselected difficulties from overriding the misc settings
+- Added setting tab to show all the available commands to the user
   - Added the "/uhcverify" command to verify party members
-  
+
 ### Bug Fixes
 
 - Route planner added to xp gained tracker
 
 ### Other
 
-- Don't send the join party message on non-Hardcore servers  
+- Don't send the join party message on non-Hardcore servers
 
 ## Version 1.2.8 - 2025-11-04
 
 ### New Features
 
-
 ### New Statistics
-
 
 ### UI Improvements
 
@@ -52,6 +66,7 @@
 ## Version 1.2.7 - 2025-11-03
 
 ### New Features
+
 - Reject buffs from others (experimental option)
   - When enabled, the addon will reject buffs from other players.
 - Route planner now hides player position markers on the map.
