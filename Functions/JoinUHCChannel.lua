@@ -1,4 +1,8 @@
-function JoinUHCChannel()
+function JoinUHCChannel(force)
+  if not force and GLOBAL_SETTINGS and GLOBAL_SETTINGS.autoJoinUHCChannel == false then
+    return
+  end
+
   local channelName = 'uhc'
   -- Wait a moment on login
   C_Timer.After(0.5, function()

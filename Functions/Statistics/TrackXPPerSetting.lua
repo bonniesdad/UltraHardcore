@@ -9,6 +9,7 @@ local settingToXPVariable = {
   -- Total XP, not tied to settings
   xpGWA = 'xpGWA',
   xpGWOA = 'xpGWOA',
+  xpTotal = 'xpTotal', -- DO NOT REMOVE THIS IT IS IMPORTANT FOR XP TRACKING!
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
@@ -41,27 +42,6 @@ local settingToXPVariable = {
 local sessionStartXP = nil
 local lastXPUpdate = nil
 local lastXPValue = nil
-local xpTrackingInitialized = false
-
-local function InitializeXpGainedWithAddon(playerLevel, lastXPValue, stats)
-  if lastXPValue == 0 and playerLevel > 1 then
-    -- This shouldn't happen but just in case, don't run until later
-    return false
-  end
-
-  CharacterStats:UpdateStat("xpTotal", CharacterStats:CalculateTotalXPGained())
-
-  local shouldRecalculate = CharacterStats:ShouldRecalculateXPGainedWithAddon(stats)
-
-  if playerLevel == 1 and lastXPValue == 0 then
-    CharacterStats:UpdateStat("xpTotal", 0)
-    CharacterStats:UpdateStat("xpGWA", 0)
-    CharacterStats:UpdateStat("xpGWOA", 0)
-  elseif shouldRecalculate  == true then
-    CharacterStats:ResetXPGainedWithAddon(playerLevel, true)
-  end
-  return true
-end
 
 -- Function to initialize XP tracking
 local function InitializeXPTracking()
@@ -69,64 +49,71 @@ local function InitializeXPTracking()
   -- Start tracking from current XP for this session
   lastXPValue = UnitXP("player")
   lastXPUpdate = GetTime()
-
-  -- This code only needs to run once either on login or reload
-  if xpTrackingInitialized ~= true then
-    local stats = CharacterStats:GetCurrentCharacterStats()
-    InitializeXpGainedWithAddon(playerLevel, lastXPValue, stats)
-    xpTrackingInitialized = true
-  end
+  AddonXPTracking:Initialize(lastXPValue)
 end
 
 -- Function to update XP tracking for each setting
 local function UpdateXPTracking(levelUp)
   if levelUp == nil then levelUp = false end
-
-  local currentXP = 0
+ 
+  local currentXP = AddonXPTracking:GetXP(levelUp)
   local currentTime = GetTime()
 
-  if levelUp then
-    -- The game does not report the correct XP amount on level up, so we calculate it
-    local newLevel = UnitLevel("player")
-    local xpThisLevel = TotalXPTable[newLevel]
-    currentXP = xpThisLevel
-  else
-    currentXP = UnitXP("player")
+  -- This checks for XP drift and tries to correct it outside of a level up event
+  if levelUp == false and UnitLevel("player") > 1 and AddonXPTracking:ValidateTotalStoredXP() == false then
+    local xpDiff = AddonXPTracking:FixAddonXPDrift(UnitLevel("player"))
+    if lastXPValue > currentXP then
+      lastXPValue = 0
+    end
   end
 
-  
+  AddonXPTracking:XPTrackingDebug("XP Check " .. lastXPValue .. " vs " .. currentXP)
+
   -- Only update if XP has increased and enough time has passed (prevent spam)
-  if currentXP > lastXPValue and (currentTime - lastXPUpdate) > 1 then
+  -- TIME CONDITIONAL HAS BEEN REMOVED!
+  -- After reimplementing this so stats are updated directly, I don't think we care
+  -- about calling this a lot.  I tested the performance and even with a level up and the
+  -- two XP update events that follow, this executes in under a millisecond for all 3 events.
+  -- I did these tests with my wow settings cranked up and with my laptop in eco mode (i.e run as slow as possible)
+  if currentXP > lastXPValue then
     local xpGained = currentXP - lastXPValue
-    
+    AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed. XP gained = " .. xpGained)
+    local statsChanged = 0 
+    local stats = CharacterStats:GetCurrentCharacterStats()
+
     -- Update XP tracking for each setting that is currently disabled
     for settingName, xpVariable in pairs(settingToXPVariable) do
       -- Check if this setting is currently disabled (meaning we're gaining XP "without" it)
       local isSettingEnabled = GLOBAL_SETTINGS[settingName]
-      
+       
       -- For boolean settings, if they're false, we're gaining XP "without" that option
-      if not isSettingEnabled or xpVariable == "xpGWA" or xpVariable == "xpGWOA" or xpVariable == "xpTotal" then
-        -- We do not want to track xpGWOA while the addon is running even though the setting is always false
-        if xpVariable ~= "xpGWOA" then 
+      if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
+        if AddonXPTracking:ShouldStoreStat(xpVariable) then 
+          --[[ Original Code
           local currentXPForSetting = CharacterStats:GetStat(xpVariable) or 0
           local newXPForSetting = currentXPForSetting + xpGained
-          CharacterStats:UpdateStat(xpVariable, newXPForSetting)
+          CharacterStats:UpdateStat(xpVariable, newXPForSetting) 
+          ]]
+
+          -- Access character stats directly from our local variable to minimize calls
+          local currentXPForSetting = stats[xpVariable] or 0
+          local newXPForSetting = currentXPForSetting + xpGained
+          stats[xpVariable] = newXPForSetting
+          statsChanged = statsChanged + 1
         end
       end
     end
-    
-    if levelUp then
-      -- We just leveled up so our UnitXP is going to be only the amount in excess of the level up threshhold
-      -- Leveling up means our UnitXP is effectively 0, so set that value
-      --
-      -- Do not reset the time because UpdateXPTracking is going to fire again immediately
-      -- after PLAYER_LEVEL_UP and we want to count that XP
-      lastXPValue = 0
-    else
-      lastXPValue = currentXP
-      lastXPUpdate = currentTime
+
+    if statsChanged > 0 then
+      -- Instead of repeatedly calling UpdateStat in the loop above (which resaves CharacterStats over and over)
+      -- Call SaveDBData once at the end
+      SaveDBData('characterStats', UltraHardcoreDB.characterStats)
     end
+
+    lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
+    lastXPUpdate = AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
+
 end
 
 -- Function to get XP gained for a specific setting
@@ -138,7 +125,6 @@ local function GetXPGainedForSetting(settingName)
   return 0
 end
 
-
 -- Export functions globally
 _G.UpdateXPTracking = UpdateXPTracking
 _G.InitializeXPTracking = InitializeXPTracking
@@ -147,21 +133,31 @@ _G.GetXPGainedForSetting = GetXPGainedForSetting
 -- Register events for XP tracking
 local xpTrackingFrame = CreateFrame("Frame")
 xpTrackingFrame:RegisterEvent("PLAYER_XP_UPDATE")
+xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 xpTrackingFrame:RegisterEvent("PLAYER_LEVEL_UP")
 xpTrackingFrame:RegisterEvent("PLAYER_LOGIN")
 xpTrackingFrame:RegisterEvent("ADDON_LOADED")
 
 xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_XP_UPDATE" then
+  if event == "PLAYER_REGEN_ENABLED" then
+    AddonXPTracking:XPTrackingDebug("PLAYER_REGEN_ENABLED event fired")
+    C_Timer.After(3.0, function() 
+      if AddonXPTracking:ValidateTotalStoredXP() ~= true then
+        AddonXPTracking:PrintXPVerificationWarning()
+      end
+      UpdateXPTracking(false)
+    end)
+  elseif event == "PLAYER_XP_UPDATE" then
+    AddonXPTracking:XPTrackingDebug("PLAYER_XP_UPDATE event fired")
     UpdateXPTracking(false)
   elseif event == "PLAYER_LEVEL_UP" then
-    -- Reset tracking when leveling up
+    AddonXPTracking:XPTrackingDebug("PLAYER_LEVEL_UP event fired")
     UpdateXPTracking(true)
-    lastXPValue = 0
-    lastXPUpdate = lastXPUpdate - 1
-    --InitializeXPTracking()
   elseif event == "PLAYER_LOGIN" then
     InitializeXPTracking()
+    if UnitLevel("player") > 1 then 
+      AddonXPTracking:XPReport()
+    end
   elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking 

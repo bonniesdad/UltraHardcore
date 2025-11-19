@@ -3,19 +3,27 @@
 
 local TabManager = {}
 
-local NUM_TABS = 5
-local TAB_WIDTH = 105
-local TAB_HEIGHT = 35
-local TAB_SPACING = 5
+local NUM_TABS = 6
+local TAB_WIDTH = 92
+local TAB_HEIGHT = 32
+local TAB_SPACING = 2
 
-local BASE_TEXT_COLOR = { r = 0.922, g = 0.871, b = 0.761 }
+local BASE_TEXT_COLOR = {
+  r = 0.922,
+  g = 0.871,
+  b = 0.761,
+}
 local ACTIVE_CLASS_FADE = 0.75
 
 local function getPlayerClassColor()
   local _, playerClass = UnitClass('player')
-  if not playerClass then return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b end
+  if not playerClass then
+    return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b
+  end
   local r, g, b = GetClassColor(playerClass)
-  if not r then return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b end
+  if not r then
+    return BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b
+  end
   return r, g, b
 end
 
@@ -41,7 +49,12 @@ local function createTabButton(text, index, parentFrame)
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 1,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   button:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
@@ -85,8 +98,9 @@ function TabManager.initializeTabs(settingsFrame)
   tabButtons[1] = createTabButton('Statistics', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
   tabButtons[3] = createTabButton('Achievements', 3, settingsFrame)
-  tabButtons[4] = createTabButton('X Found Mode', 4, settingsFrame)
+  tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
   tabButtons[5] = createTabButton('Info', 5, settingsFrame)
+  tabButtons[6] = createTabButton('Commands', 6, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
@@ -94,6 +108,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame) -- Achievements tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
+  tabContents[6] = createTabContent(6, settingsFrame) -- Commands tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
 end
@@ -120,7 +135,12 @@ function TabManager.switchToTab(index)
       edgeFile = 'Interface\\Buttons\\WHITE8x8',
       tile = false,
       edgeSize = 1,
-      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
     })
     tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
@@ -144,7 +164,12 @@ function TabManager.switchToTab(index)
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 1,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   tabButtons[index]:SetBackdropBorderColor(fadedR, fadedG, fadedB, 1)
   activeTab = index
@@ -185,6 +210,11 @@ function TabManager.switchToTab(index)
   -- Initialize Settings Options tab if it's being shown
   if index == 2 and InitializeSettingsOptionsTab then
     InitializeSettingsOptionsTab()
+  end
+
+  -- Initialize Commands tab if it's being shown
+  if index == 6 and InitializeCommandsTab then
+    InitializeCommandsTab()
   end
 end
 
@@ -234,7 +264,12 @@ function TabManager.hideAllTabs()
       edgeFile = 'Interface\\Buttons\\WHITE8x8',
       tile = false,
       edgeSize = 1,
-      insets = { left = 0, right = 0, top = 0, bottom = 0 },
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
     })
     tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
