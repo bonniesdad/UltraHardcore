@@ -27,9 +27,8 @@ UltraHardcore:RegisterEvent('PLAYER_LOGIN')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
-  -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but those are too soon
-  -- for all the UI frames to be ready.  Switched to PLAYER_LOGIN which is after all
-  -- UI elements are ready.
+  -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but these are before all the UI elements are available.  
+  -- Switched to PLAYER_LOGIN which happens after ADDON_LOADED and all UI elements are available
   if event == 'PLAYER_LOGIN' then
     LoadDBData()
     HidePlayerMapIndicators()
