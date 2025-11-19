@@ -366,9 +366,25 @@ local function _buildPresetsUI(parent)
     widgets.lockButton:SetSize(160, 22)
     widgets.lockButton:SetText("Lock selection now")
     widgets.lockButton:SetScript("OnClick", function()
-      if Challenges.LockSelection then Challenges.LockSelection("User confirmed") end
+      if Challenges.TryLock then
+        local ok, fails = Challenges.TryLock("User confirmed")
+        if not ok then
+          -- show a concise toast with first reason, then list all in chat for clarity
+          local first = fails and fails[1]
+          local msg = first and (first.name..": "..(first.reason or "Not compliant")) or "Selection not compliant."
+          if UIErrorsFrame then UIErrorsFrame:AddMessage(msg, 1, .2, 0) else print(msg) end
+          print("|cffff5555UHC: Please comply with selected challenges before locking:|r")
+          for _, f in ipairs(fails) do
+            print(("- %s: %s"):format(f.name or f.id, f.reason or "Not compliant"))
+          end
+          return
+        end
+      else
+        -- Fallback to old behavior
+        if Challenges.LockSelection then Challenges.LockSelection("User confirmed") end
+      end
       if widgets._refreshAll then widgets._refreshAll() end
-    end)
+    end)    
   end
   widgets.lockButton:SetParent(parent)
   widgets.lockButton:ClearAllPoints()

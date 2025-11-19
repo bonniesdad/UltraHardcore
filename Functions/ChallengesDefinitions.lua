@@ -160,7 +160,6 @@ end
 -- WARRIOR: Two-Handed Only
 -- -------------------------
 if PLAYER_CLASS == "WARRIOR" then
-  local function invLink(slot) return GetInventoryItemLink("player", slot) end -- 16 MH, 17 OH, 5 Chest
   local function classSub(link)
     if not link then return nil, nil end
     local classID, subClassID = select(10, GetItemInfoInstant(link))
@@ -184,6 +183,7 @@ if PLAYER_CLASS == "WARRIOR" then
     local classID, subClassID = classSub(link)
     return classID == LE_ITEM_CLASS_ARMOR and subClassID == LE_ITEM_ARMOR_CLOTH
   end
+
   -- 2H Only
   C.Register({
     id = "class_warrior_2h_only",
@@ -199,6 +199,13 @@ if PLAYER_CLASS == "WARRIOR" then
       if equipLoc(mh) ~= "INVTYPE_2HWEAPON" then
         return C.Fail(self.id, "Main hand is not two-handed")
       end
+    end,
+    validate = function(self)
+      local mh, oh = invLink(16), invLink(17)
+      if oh then return false, "Offhand/shield equipped" end
+      if not mh then return false, "No main-hand weapon" end
+      if equipLoc(mh) ~= "INVTYPE_2HWEAPON" then return false, "Main hand is not two-handed" end
+      return true
     end,
   })
   C.RegisterPreset("Class: Warrior (2H Only)", { "class_warrior_2h_only" })
@@ -217,14 +224,18 @@ if PLAYER_CLASS == "WARRIOR" then
     events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
     onEvent = function(self)
       local mh, oh = invLink(16), invLink(17)
-      -- main-hand must be a sword
       if mh and not isSword(mh) then
         return C.Fail(self.id, "Main hand is not a sword")
       end
-      -- offhand: must be empty or a sword (no shields / other weapons)
       if oh and not isSword(oh) then
         return C.Fail(self.id, "Offhand is not a sword")
       end
+    end,
+    validate = function(self)
+      local mh, oh = invLink(16), invLink(17)
+      if mh and not isSword(mh) then return false, "Main hand is not a sword" end
+      if oh and not isSword(oh) then return false, "Offhand is not a sword" end
+      return true
     end,
   })
   C.RegisterPreset("Class: Warrior (Swordmaster)", { "class_warrior_swordmaster" })
@@ -234,7 +245,7 @@ if PLAYER_CLASS == "WARRIOR" then
     icon = "Interface\\Icons\\inv_sword_27",
   })
 
-  --Monk
+  -- Monk
   C.Register({
     id = "class_warrior_monk",
     name = "Monk",
@@ -242,17 +253,13 @@ if PLAYER_CLASS == "WARRIOR" then
     icon = "Interface\\Icons\\inv_staff_08",
     events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
     onEvent = function(self)
-      -- armor slots to enforce cloth (ignore jewelry)
-      local armorSlots = {1,3,5,6,7,8,9,10,15} -- Head, Shoulder, Chest, Waist, Legs, Feet, Wrist, Hands, Back
+      local armorSlots = {1,3,5,6,7,8,9,10,15}
       for _, slot in ipairs(armorSlots) do
         local link = invLink(slot)
-        if link then
-          if not isCloth(link) then
-            return C.Fail(self.id, "Non-cloth armor equipped")
-          end
+        if link and not isCloth(link) then
+          return C.Fail(self.id, "Non-cloth armor equipped")
         end
       end
-      -- weapon rule: staff in main hand, 2H, offhand empty
       local mh, oh = invLink(16), invLink(17)
       if not mh or not isStaff(mh) then
         return C.Fail(self.id, "Main hand is not a staff")
@@ -264,6 +271,18 @@ if PLAYER_CLASS == "WARRIOR" then
         return C.Fail(self.id, "Offhand must be empty")
       end
     end,
+    validate = function(self)
+      local armorSlots = {1,3,5,6,7,8,9,10,15}
+      for _, slot in ipairs(armorSlots) do
+        local link = invLink(slot)
+        if link and not isCloth(link) then return false, "Non-cloth armor equipped" end
+      end
+      local mh, oh = invLink(16), invLink(17)
+      if not mh or not isStaff(mh) then return false, "Main hand is not a staff" end
+      if equipLoc(mh) ~= "INVTYPE_2HWEAPON" then return false, "Staff must be two-handed" end
+      if oh then return false, "Offhand must be empty" end
+      return true
+    end,
   })
   C.RegisterPreset("Class: Warrior (Monk)", { "class_warrior_monk" })
   Challenges.RegisterClassRule("class_warrior_monk", {
@@ -272,7 +291,7 @@ if PLAYER_CLASS == "WARRIOR" then
     icon = "Interface\\Icons\\inv_staff_08",
   })
 
--- Barbarian
+  -- Barbarian
   C.Register({
     id = "class_warrior_barbarian",
     name = "Barbarian",
@@ -280,12 +299,9 @@ if PLAYER_CLASS == "WARRIOR" then
     icon = "Interface\\Icons\\ability_warrior_battleshout",
     events = { "PLAYER_LOGIN", "PLAYER_EQUIPMENT_CHANGED" },
     onEvent = function(self)
-      -- no chest piece
-      local chest = invLink(5)
-      if chest then
+      if invLink(5) then
         return C.Fail(self.id, "Chest piece equipped")
       end
-      -- swords only (same as Swordmaster)
       local mh, oh = invLink(16), invLink(17)
       if mh and not isSword(mh) then
         return C.Fail(self.id, "Main hand is not a sword")
@@ -293,6 +309,13 @@ if PLAYER_CLASS == "WARRIOR" then
       if oh and not isSword(oh) then
         return C.Fail(self.id, "Offhand is not a sword")
       end
+    end,
+    validate = function(self)
+      if invLink(5) then return false, "Chest piece equipped" end
+      local mh, oh = invLink(16), invLink(17)
+      if mh and not isSword(mh) then return false, "Main hand is not a sword" end
+      if oh and not isSword(oh) then return false, "Offhand is not a sword" end
+      return true
     end,
   })
   C.RegisterPreset("Class: Warrior (Barbarian)", { "class_warrior_barbarian" })
@@ -317,6 +340,12 @@ if PLAYER_CLASS == "HUNTER" then
       if UnitExists("pet") then
         return C.Fail(self.id, "Pet is active")
       end
+    end,
+    validate = function(self)
+      if UnitExists("pet") then
+        return false, "Pet is active"
+      end
+      return true
     end,
   })
   C.RegisterPreset("Class: Hunter (No Pet)", { "class_hunter_no_pet" })
@@ -343,6 +372,12 @@ if PLAYER_CLASS == "ROGUE" then
       if mh and not isDagger(mh) then return C.Fail(self.id, "Main hand is not a dagger") end
       if oh and not isDagger(oh) then return C.Fail(self.id, "Offhand is not a dagger") end
     end,
+      validate = function(self)
+        local mh, oh = invLink(16), invLink(17)
+        if mh and not isDagger(mh) then return false, "Main hand is not a dagger" end
+        if oh and not isDagger(oh) then return false, "Offhand is not a dagger" end
+        return true
+    end,
   })
   C.RegisterPreset("Class: Rogue (Daggers)", { "class_rogue_daggers_only" })
   Challenges.RegisterClassRule("class_rogue_daggers_only", {
@@ -357,6 +392,7 @@ end
 -- -----------------------------------------------
 local function registerNoWandFor(classToken, prettyName, icon)
   if PLAYER_CLASS ~= classToken then return end
+
   C.Register({
     id = "class_"..string.lower(classToken).."_no_wand",
     name = "No Wands",
@@ -378,6 +414,16 @@ local function registerNoWandFor(classToken, prettyName, icon)
           end
         end
       end
+    end,
+    validate = function(self)
+      local r = GetInventoryItemLink("player", 18)
+      if r then
+        local classID, subClassID = select(10, GetItemInfoInstant(r))
+        if classID == LE_ITEM_CLASS_WEAPON and subClassID == LE_ITEM_WEAPON_WAND then
+          return false, "Wand equipped"
+        end
+      end
+      return true
     end,
   })
 
