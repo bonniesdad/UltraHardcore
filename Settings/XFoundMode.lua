@@ -185,7 +185,10 @@ function InitializeXFoundModeTab()
   local hasSelectedMode =
     (GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound)
 
-  if treatAsLevelOne and not hasSelectedMode then
+  -- Ultra guild members should always see the full Guild Found display
+  if IsUltraGuildMember and IsUltraGuildMember() then
+    XFoundModeManager:ShowStatusPage()
+  elseif treatAsLevelOne and not hasSelectedMode then
     -- Level 1 and no mode selected - show intro page
     XFoundModeManager:ShowIntroPage()
   else
@@ -196,6 +199,11 @@ end
 
 -- Show Intro Page (for level 1 players)
 function XFoundModeManager:ShowIntroPage()
+  -- Ultra guild members should always see the status (Guild Found) page
+  if IsUltraGuildMember and IsUltraGuildMember() then
+    self:ShowStatusPage()
+    return
+  end
   self:HideAllPages()
   if self.pages.intro then
     self.pages.intro:Show()
