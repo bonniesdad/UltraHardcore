@@ -168,6 +168,67 @@ petResourceBar:SetScript('OnDragStop', function(self)
   SaveResourceBarPosition()
 end)
 
+-- Create druid form resource bar (for shapeshifted druids)
+local druidFormResourceBar = CreateFrame('StatusBar', 'UltraHardcoreDruidFormResourceBar', UIParent)
+if not druidFormResourceBar then
+  print('UltraHardcore: Failed to create druid form resource bar')
+  return
+end
+druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
+druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
+druidFormResourceBar:Hide() -- Initially hidden
+-- Add a border around the druid form resource bar
+local druidFormBorder = druidFormResourceBar:CreateTexture(nil, 'OVERLAY')
+if not druidFormBorder then
+  print('UltraHardcore: Failed to create druid form resource bar border')
+  return
+end
+druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
+druidFormBorder:SetPoint('CENTER', druidFormResourceBar, 'CENTER', 0, 0)
+druidFormBorder:SetSize(171, 50)
+
+-- Position persistence functions for druid form resource bar
+local function SaveDruidFormResourceBarPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local point, relativeTo, relativePoint, xOfs, yOfs = druidFormResourceBar:GetPoint()
+  UltraHardcoreDB.druidFormResourceBarPosition = {
+    point = point,
+    relativeTo = 'UIParent',
+    relativePoint = relativePoint,
+    xOfs = xOfs,
+    yOfs = yOfs,
+  }
+
+  SaveDBData('druidFormResourceBarPosition', UltraHardcoreDB.druidFormResourceBarPosition)
+end
+
+local function LoadDruidFormResourceBarPosition()
+  if not UltraHardcoreDB then
+    UltraHardcoreDB = {}
+  end
+
+  local pos = UltraHardcoreDB.druidFormResourceBarPosition
+  druidFormResourceBar:ClearAllPoints()
+  -- Always anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+end
+
+-- Make the druid form resource bar draggable with position saving
+druidFormResourceBar:SetMovable(true)
+druidFormResourceBar:EnableMouse(true)
+druidFormResourceBar:RegisterForDrag('LeftButton')
+druidFormResourceBar:SetScript('OnDragStart', function(self)
+  resourceBar:StartMoving()
+end)
+druidFormResourceBar:SetScript('OnDragStop', function(self)
+  resourceBar:StopMovingOrSizing()
+  SaveResourceBarPosition()
+end)
+
 -- Unified function to update resource points
 local function UpdateResourcePoints()
   local powerType = GetCurrentResourceType()
@@ -210,6 +271,58 @@ local function UpdatePetResourcePoints()
   end
 end
 
+-- Helper function to check if player is a druid
+local function IsDruid()
+  local _, classFilename = UnitClass('player')
+  return classFilename == 'DRUID'
+end
+
+-- Helper function to check if player is shapeshifted
+local function IsShapeshifted()
+  local shapeShiftForm = GetShapeshiftForm()
+  return shapeShiftForm and shapeShiftForm > 0
+end
+
+-- Function to update druid form resource bar
+local function UpdateDruidFormResourceBar()
+  if not IsDruid() then
+    druidFormResourceBar:Hide()
+    return
+  end
+
+  if not IsShapeshifted() then
+    druidFormResourceBar:Hide()
+    return
+  end
+
+  -- Check if the druid form resource bar is enabled in settings
+  if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.showDruidFormResourceBar then
+    druidFormResourceBar:Hide()
+    return
+  end
+
+  -- For druids in form, show mana on the druid form bar (not the form resource)
+  -- Mana is Enum.PowerType.Mana (which is typically index 0)
+  local manaValue = UnitPower('player', Enum.PowerType.Mana)
+  local manaMaxValue = UnitPowerMax('player', Enum.PowerType.Mana)
+
+  druidFormResourceBar:SetMinMaxValues(0, manaMaxValue)
+  druidFormResourceBar:SetValue(manaValue)
+  druidFormResourceBar:SetStatusBarColor(GetPowerTypeColor('MANA'))
+
+  if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
+    druidFormResourceBar:Hide()
+  else
+    druidFormResourceBar:Show()
+  end
+end
+
+-- Backwards-compat: called on shapeshift or display power changes for druids
+-- Keeps the druid form mana bar synchronized with current form changes.
+local function UpdateDruidShiftResourcePoints()
+  UpdateDruidFormResourceBar()
+end
+
 -- Function to hide combo points for non-users
 local function HideComboPointsForNonUsers()
   comboFrame:SetShown(CanGainComboPoints())
@@ -223,13 +336,13 @@ local UHCBuffFrame = CreateFrame('Frame', 'UHCBuffFrame', UIParent)
 UHCBuffFrame:SetWidth(100)
 UHCBuffFrame:SetHeight(32)
 UHCBuffFrame:ClearAllPoints()
-UHCBuffFrame:SetPoint("BOTTOM", resourceBar, "TOP", 0, 5)
+UHCBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
 
 local DebuffFrame = CreateFrame('Frame', 'UHCDebuffFrame', UIParent)
 DebuffFrame:SetWidth(100)
 DebuffFrame:SetHeight(32)
 DebuffFrame:ClearAllPoints()
-DebuffFrame:SetPoint("TOP", resourceBar, "BOTTOM", 0, -5)
+DebuffFrame:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 
 -- Helper function to check if buff bar should be repositioned
 local function ShouldHideBuffs()
@@ -253,14 +366,13 @@ local function HideBuffs()
 end
 
 local function HideDebuffs()
-  if BuffFrame then 
+  if BuffFrame then
     for i = 0, 40 do
       local debuff = _G['DebuffButton' .. i]
 
       if debuff ~= nil then
-        debuff:Hide()  
+        debuff:Hide()
       end
-
     end
   end
 end
@@ -272,7 +384,7 @@ local function CenterPlayerBuffBar()
     HideBuffs()
     return
   end
-  if ShouldHideDebuffs() then 
+  if ShouldHideDebuffs() then
     -- If we're hiding debuffs, we might still be repositioning the buffs, so do not return
     HideDebuffs()
   end
@@ -302,7 +414,7 @@ local function CenterPlayerBuffBar()
         if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
           buffRows = buffRows + 1
         end
-      elseif aura and aura.isHarmful == true then 
+      elseif aura and aura.isHarmful == true then
         debuffCount = debuffCount + 1
       end
     end
@@ -311,23 +423,27 @@ local function CenterPlayerBuffBar()
     local buffOffset = 0
     local buffYOffset = 0
     for i = 1, buffCount do
-        local buff = _G['BuffButton' .. i]
-        buff:SetParent(UHCBuffFrame)
-        buff:ClearAllPoints()
-        buff:SetPoint("BOTTOMLEFT", UHCBuffFrame, "BOTTOMLEFT", buffOffset, buffYOffset)
+      local buff = _G['BuffButton' .. i]
+      buff:SetParent(UHCBuffFrame)
+      buff:ClearAllPoints()
+      buff:SetPoint('BOTTOMLEFT', UHCBuffFrame, 'BOTTOMLEFT', buffOffset, buffYOffset)
 
-        if buffWidth == 0 then buffWidth = buff:GetWidth() end
-        if buffHeight == 0 then buffHeight = buff:GetHeight() end
+      if buffWidth == 0 then
+        buffWidth = buff:GetWidth()
+      end
+      if buffHeight == 0 then
+        buffHeight = buff:GetHeight()
+      end
 
-        buffOffset = buffOffset + buffWidth
-        if buffCount < buffsPerRow and i < buffCount then
-          buffOffset = buffOffset + iconSpacing
-        end
+      buffOffset = buffOffset + buffWidth
+      if buffCount < buffsPerRow and i < buffCount then
+        buffOffset = buffOffset + iconSpacing
+      end
 
-        if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
-          buffYOffset = buffYOffset + buffHeight + rowSpacing
-          buffOffset = 0
-        end
+      if buffCount > buffsPerRow and buffCount % buffsPerRow == 0 then
+        buffYOffset = buffYOffset + buffHeight + rowSpacing
+        buffOffset = 0
+      end
     end
 
     -- Move debuff buttons into our custom frame (disabled to avoid anchor family loops)
@@ -338,10 +454,14 @@ local function CenterPlayerBuffBar()
         local debuffBorder = _G['DebuffButton' .. i .. 'Border']
         debuff:SetParent(DebuffFrame)
         debuff:ClearAllPoints()
-        debuff:SetPoint("TOPLEFT", DebuffFrame, "TOPLEFT", debuffOffset, 0)
+        debuff:SetPoint('TOPLEFT', DebuffFrame, 'TOPLEFT', debuffOffset, 0)
 
-        if debuffWidth == 0 then debuffWidth = debuffBorder:GetWidth() end
-        if debuffHeight == 0 then debuffHeight = debuffBorder:GetHeight() end
+        if debuffWidth == 0 then
+          debuffWidth = debuffBorder:GetWidth()
+        end
+        if debuffHeight == 0 then
+          debuffHeight = debuffBorder:GetHeight()
+        end
         debuffOffset = debuffOffset + debuffWidth
         if i < debuffCount then
           debuffOffset = debuffOffset + iconSpacing
@@ -369,15 +489,15 @@ local function CenterPlayerBuffBar()
       -- This makes centering the two bars very difficult.  Try resizing buff icons to match the icon+border size of debuffs.
       if debuffWidth > 0 and debuffHeight > 0 then
         for i = 1, buffCount do
-          _G['BuffButton'..i]:SetWidth(debuffWidth)
+          _G['BuffButton' .. i]:SetWidth(debuffWidth)
           width = debuffWidth
-          _G['BuffButton'..i]:SetHeight(debuffHeight)
+          _G['BuffButton' .. i]:SetHeight(debuffHeight)
           height = debuffHeight
         end
       end
 
       -- buffCount + width is the total width of all buff icons
-      -- (buffCount - 1) * iconSpacing is the spacing between each icon 
+      -- (buffCount - 1) * iconSpacing is the spacing between each icon
       -- iconSpacing pixels is subtracted to account for spacing in front of the first icon
       if buffCount < buffsPerRow then
         newWidth = (buffCount * width) + ((buffCount - 1) * iconSpacing)
@@ -396,7 +516,9 @@ local function CenterPlayerBuffBar()
       end
 
       local anchor = CanGainComboPoints() and comboFrame or resourceBar
-      if CanGainComboPoints() then yOffset = 5 end
+      if CanGainComboPoints() then
+        yOffset = 5
+      end
 
       UHCBuffFrame:ClearAllPoints()
       UHCBuffFrame:SetPoint('BOTTOM', anchor, 'TOP', 0, yOffset)
@@ -407,6 +529,7 @@ end
 -- Event Handling
 resourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 resourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
+resourceBar:RegisterEvent('UNIT_DISPLAYPOWER')
 resourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
@@ -414,6 +537,11 @@ resourceBar:RegisterEvent('PET_ATTACK_STOP')
 resourceBar:RegisterEvent('UNIT_AURA')
 resourceBar:RegisterEvent('PLAYER_LOGIN')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
+
+-- Register druid form resource bar for events
+druidFormResourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
+druidFormResourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
+druidFormResourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 
 -- Hide the default combo points (Blizzard UI)
 if ComboFrame then
@@ -458,7 +586,7 @@ local function HandleBuffBarSettingChange()
   if BuffFrame and BuffFrame:IsVisible() then
     if ShouldRepositionBuffBar() then
       RepositionPlayerBuffBar()
-    elseif ShouldHideBuffs() then 
+    elseif ShouldHideBuffs() then
       HideBuffs()
     elseif ShouldHideDebuffs() then
       HideDebuffs()
@@ -472,6 +600,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     resourceBar:Hide()
     comboFrame:Hide()
     petResourceBar:Hide()
+    druidFormResourceBar:Hide()
     return
   end
 
@@ -488,22 +617,32 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     HideComboPointsForNonUsers()
     UpdateResourcePoints()
     UpdatePetResourcePoints()
+    UpdateDruidFormResourceBar()
     HandleBuffBarSettingChange()
     -- Load saved position after database is available
     C_Timer.After(0.1, function()
       LoadResourceBarPosition()
+      LoadDruidFormResourceBarPosition()
     end)
   elseif event == 'UNIT_POWER_FREQUENT' then
     if unit == 'player' then
       UpdateResourcePoints()
+      UpdateDruidFormResourceBar()
     elseif unit == 'pet' then
       UpdatePetResourcePoints()
+    end
+  elseif event == 'UNIT_DISPLAYPOWER' then
+    if unit == 'player' then
+      UpdateResourcePoints()
+      UpdateDruidShiftResourcePoints()
     end
   elseif event == 'UPDATE_SHAPESHIFT_FORM' then
     -- Update resource bar and combo points when shapeshifting
     UpdateResourcePoints()
+    UpdateDruidFormResourceBar()
     HideComboPointsForNonUsers()
     UpdateComboPoints()
+    UpdateDruidShiftResourcePoints()
   elseif event == 'UNIT_PET' then
     -- Pet summoned or dismissed
     UpdatePetResourcePoints()
@@ -512,6 +651,20 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     UpdatePetResourcePoints()
   elseif unit == 'player' and event == 'UNIT_AURA' then
     CenterPlayerBuffBar()
+  end
+end)
+
+-- Event handler for druid form resource bar
+druidFormResourceBar:SetScript('OnEvent', function(self, event, unit)
+  if event == 'PLAYER_ENTERING_WORLD' then
+    UpdateDruidFormResourceBar()
+    C_Timer.After(0.1, function()
+      LoadDruidFormResourceBarPosition()
+    end)
+  elseif event == 'UNIT_POWER_FREQUENT' and unit == 'player' then
+    UpdateDruidFormResourceBar()
+  elseif event == 'UPDATE_SHAPESHIFT_FORM' then
+    UpdateDruidFormResourceBar()
   end
 end)
 
@@ -529,7 +682,20 @@ local function ResetResourceBarPosition()
   print('UltraHardcore: Resource bar position reset to default')
 end
 
+-- Reset druid form resource bar position function
+local function ResetDruidFormResourceBarPosition()
+  -- Clear existing points first
+  druidFormResourceBar:ClearAllPoints()
+  -- Anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+end
+
 -- Slash command to reset resource bar position
 SLASH_RESETRESOURCEBAR1 = '/resetresourcebar'
 SLASH_RESETRESOURCEBAR2 = '/rrb'
 SlashCmdList['RESETRESOURCEBAR'] = ResetResourceBarPosition
+
+-- Slash command to reset druid form resource bar position
+SLASH_RESETDRUIDFORMRESOURCEBAR1 = '/resetdruidformresourcebar'
+SLASH_RESETDRUIDFORMRESOURCEBAR2 = '/rrdb'
+SlashCmdList['RESETDRUIDFORMRESOURCEBAR'] = ResetDruidFormResourceBarPosition
