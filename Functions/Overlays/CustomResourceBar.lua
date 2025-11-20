@@ -535,6 +535,9 @@ resourceBar:RegisterEvent('UNIT_PET')
 resourceBar:RegisterEvent('PET_ATTACK_START')
 resourceBar:RegisterEvent('PET_ATTACK_STOP')
 resourceBar:RegisterEvent('UNIT_AURA')
+resourceBar:RegisterEvent('GROUP_ROSTER_UPDATE')
+resourceBar:RegisterEvent('GROUP_JOINED')
+resourceBar:RegisterEvent('GROUP_LEFT')
 resourceBar:RegisterEvent('PLAYER_LOGIN')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
@@ -649,7 +652,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
     -- Update pet resource when pet starts/stops attacking
     UpdatePetResourcePoints()
-  elseif unit == 'player' and event == 'UNIT_AURA' then
+  elseif unit == 'player' and event == 'UNIT_AURA' or event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'GROUP_LEFT' then
     CenterPlayerBuffBar()
   end
 end)
