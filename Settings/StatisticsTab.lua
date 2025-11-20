@@ -24,7 +24,7 @@ local STATISTIC_TOOLTIPS = {
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
-  closeEscapes = "Number of times your health has dropped below " .. closeEscapeHealthPercent .. "%",
+  closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
@@ -91,211 +91,265 @@ function InitializeStatisticsTab()
   statsScrollChild:SetSize(500, 300) -- Increased height to accommodate proper bottom spacing for XP section
   statsScrollFrame:SetScrollChild(statsScrollChild)
 
+  -- Ultra guild membership and local updaters for the Ultra Status section
+  local isUltraMember = IsUltraGuildMember and IsUltraGuildMember()
+  local UpdateCurrentPresetDisplay
+  local UpdateLegitStatusText
+  local ultraSectionContent  -- used as an anchor target if Ultra section is shown
   -- Current Character section (header)
-  local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  currentHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  currentHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
-  -- Modern WoW row styling with rounded corners and greyish background
-  currentHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-    tile = true,
-    tileSize = 32,
-    edgeSize = 16,
-    insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
-    },
-  })
-  currentHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
-  currentHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-  -- Header text
-  local currentHeaderLabel = currentHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  currentHeaderLabel:SetPoint('LEFT', currentHeader, 'LEFT', 12, 0)
-  currentHeaderLabel:SetText('Ultra Status (BETA)')
+  if isUltraMember then
+    local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    currentHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+    currentHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
+    -- Modern WoW row styling with rounded corners and greyish background
+    currentHeader:SetBackdrop({
+      bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+      edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+      tile = true,
+      tileSize = 32,
+      edgeSize = 16,
+      insets = {
+        left = 4,
+        right = 4,
+        top = 4,
+        bottom = 4,
+      },
+    })
+    currentHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+    currentHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+    -- Header text
+    local currentHeaderLabel = currentHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    currentHeaderLabel:SetPoint('LEFT', currentHeader, 'LEFT', 12, 0)
+    currentHeaderLabel:SetText('Ultra Status (BETA)')
 
-  -- Current Character section (content)
-  local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  currentContent:SetSize(450, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
-  currentContent:SetPoint('TOPLEFT', currentHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
-  currentContent:Show()
-  currentContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    tile = true,
-    tileSize = 16,
-    edgeSize = 8,
-    insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
-    },
-  })
-  -- "Preset:" label and dynamic value
-  local currentPresetLabel = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  currentPresetLabel:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-  currentPresetLabel:SetText('')
-  currentPresetLabel:Hide()
-  local currentPresetText = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  currentPresetText:ClearAllPoints()
-  currentPresetText:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING)
-  currentPresetText:SetJustifyH('LEFT')
-  currentPresetText:SetText('')
-  currentPresetText:SetShadowOffset(1, -1)
-  currentPresetText:SetShadowColor(0, 0, 0, 0.8)
+    -- Current Character section (content)
+    local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+    currentContent:SetSize(450, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+    currentContent:SetPoint(
+      'TOPLEFT',
+      currentHeader,
+      'BOTTOMLEFT',
+      LAYOUT.CONTENT_INDENT,
+      -LAYOUT.CONTENT_PADDING
+    )
+    currentContent:Show()
+    currentContent:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+      edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+      tile = true,
+      tileSize = 16,
+      edgeSize = 8,
+      insets = {
+        left = 4,
+        right = 4,
+        top = 4,
+        bottom = 4,
+      },
+    })
+    -- expose as anchor for following sections
+    ultraSectionContent = currentContent
 
-  -- Legitimacy message below preset
-  local legitStatusIcon = currentContent:CreateTexture(nil, 'OVERLAY')
-  legitStatusIcon:SetSize(14, 14)
-  legitStatusIcon:SetPoint('TOPLEFT', currentContent, 'TOPLEFT', LAYOUT.ROW_INDENT, -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT - 2)
-  legitStatusIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
+    -- "Preset:" label and dynamic value
+    local currentPresetLabel = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    currentPresetLabel:SetPoint(
+      'TOPLEFT',
+      currentContent,
+      'TOPLEFT',
+      LAYOUT.ROW_INDENT,
+      -LAYOUT.CONTENT_PADDING
+    )
+    currentPresetLabel:SetText('')
+    currentPresetLabel:Hide()
+    local currentPresetText = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    currentPresetText:ClearAllPoints()
+    currentPresetText:SetPoint(
+      'TOPLEFT',
+      currentContent,
+      'TOPLEFT',
+      LAYOUT.ROW_INDENT,
+      -LAYOUT.CONTENT_PADDING
+    )
+    currentPresetText:SetJustifyH('LEFT')
+    currentPresetText:SetText('')
+    currentPresetText:SetShadowOffset(1, -1)
+    currentPresetText:SetShadowColor(0, 0, 0, 0.8)
 
-  local legitStatusLine1 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  legitStatusLine1:SetPoint('LEFT', legitStatusIcon, 'RIGHT', 6, 0)
-  legitStatusLine1:SetShadowOffset(1, -1)
-  legitStatusLine1:SetShadowColor(0, 0, 0, 0.8)
+    -- Legitimacy message below preset
+    local legitStatusIcon = currentContent:CreateTexture(nil, 'OVERLAY')
+    legitStatusIcon:SetSize(14, 14)
+    legitStatusIcon:SetPoint(
+      'TOPLEFT',
+      currentContent,
+      'TOPLEFT',
+      LAYOUT.ROW_INDENT,
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT - 2
+    )
+    legitStatusIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
 
-  local legitStatusLine2 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  legitStatusLine2:SetPoint('TOPLEFT', legitStatusLine1, 'BOTTOMLEFT', 0, -2)
-  legitStatusLine2:SetShadowOffset(1, -1)
-  legitStatusLine2:SetShadowColor(0, 0, 0, 0.8)
+    local legitStatusLine1 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    legitStatusLine1:SetPoint('LEFT', legitStatusIcon, 'RIGHT', 6, 0)
+    legitStatusLine1:SetShadowOffset(1, -1)
+    legitStatusLine1:SetShadowColor(0, 0, 0, 0.8)
 
-  -- Static items verification line (hard-coded, no checks)
-  local legitStatusLine3 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  legitStatusLine3:SetPoint('TOPLEFT', legitStatusLine2, 'BOTTOMLEFT', 0, -2)
-  legitStatusLine3:SetShadowOffset(1, -1)
-  legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
+    local legitStatusLine2 =
+      currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    legitStatusLine2:SetPoint('TOPLEFT', legitStatusLine1, 'BOTTOMLEFT', 0, -2)
+    legitStatusLine2:SetShadowOffset(1, -1)
+    legitStatusLine2:SetShadowColor(0, 0, 0, 0.8)
 
-  local function UpdateLegitStatusText()
-    local isTampered = false
-    if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
-      local success, result = pcall(function()
-        return PlayerStateSnapshot:IsTampered()
-      end)
-      if success then
-        isTampered = result
+    -- Static items verification line (hard-coded, no checks)
+    local legitStatusLine3 =
+      currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+    legitStatusLine3:SetPoint('TOPLEFT', legitStatusLine2, 'BOTTOMLEFT', 0, -2)
+    legitStatusLine3:SetShadowOffset(1, -1)
+    legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
+
+    UpdateLegitStatusText = function()
+      local isTampered = false
+      if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
+        local success, result = pcall(function()
+          return PlayerStateSnapshot:IsTampered()
+        end)
+        if success then
+          isTampered = result
+        end
       end
-    end
 
-    local xpWithoutAddon = 1
-    if CharacterStats and CharacterStats.ReportXPWithoutAddon then
-      local reported = CharacterStats:ReportXPWithoutAddon()
-      if type(reported) == 'number' then
-        xpWithoutAddon = reported
+      local xpWithoutAddon = 1
+      if CharacterStats and CharacterStats.ReportXPWithoutAddon then
+        local reported = CharacterStats:ReportXPWithoutAddon()
+        if type(reported) == 'number' then
+          xpWithoutAddon = reported
+        end
       end
-    end
 
-    -- Get total XP gained with addon
-    local xpWithAddon = 0
-    if CharacterStats and CharacterStats.GetStat then
-      xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
-    end
+      -- Get total XP gained with addon
+      local xpWithAddon = 0
+      if CharacterStats and CharacterStats.GetStat then
+        xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
+      end
 
-    -- Check if character has any UHC settings enabled
-    local hasUHCSettings = false
-    local sections = GetPresetSections('simple', false)
-    for _, section in ipairs(sections) do
-      for _, settingName in ipairs(section.settings or {}) do
-        if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] then
-          hasUHCSettings = true
+      -- Check if character has any UHC settings enabled
+      local hasUHCSettings = false
+      local sections = GetPresetSections('simple', false)
+      for _, section in ipairs(sections) do
+        for _, settingName in ipairs(section.settings or {}) do
+          if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] then
+            hasUHCSettings = true
+            break
+          end
+        end
+        if hasUHCSettings then
           break
         end
       end
-      if hasUHCSettings then break end
+
+      -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
+      local playerLevel = UnitLevel('player') or 1
+      local isLevelOneWithNoXP =
+        (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
+      local passedXPCheck = (xpWithoutAddon == 0 or isLevelOneWithNoXP)
+      local passedTamperCheck = not isTampered
+      local overallPass = passedXPCheck and passedTamperCheck
+
+      legitStatusLine2:SetText('No XP was gained while the addon was inactive')
+      legitStatusLine3:SetText('No character changes have been identified since the last session')
+      legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
+      legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+
+      if overallPass then
+        legitStatusLine1:SetText('Verified Ultra status')
+        legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
+        legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
+      else
+        legitStatusLine1:SetText('Ultra status failed verification')
+        legitStatusLine1:SetTextColor(1.0, 0.35, 0.35)
+        legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
+      end
+
+      if not passedXPCheck then
+        legitStatusLine2:SetText('XP was gained while the addon was inactive')
+        legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
+      end
+
+      if not passedTamperCheck then
+        legitStatusLine3:SetText('Character changes have been identified since the last session')
+        legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
+      end
     end
 
-    -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
-    local playerLevel = UnitLevel('player') or 1
-    local isLevelOneWithNoXP = (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
-    local passedXPCheck = (xpWithoutAddon == 0 or isLevelOneWithNoXP)
-    local passedTamperCheck = not isTampered
-    local overallPass = passedXPCheck and passedTamperCheck
+    -- Helper to update the current preset display
+    UpdateCurrentPresetDisplay = function()
+      local sections = GetPresetSections('simple', false) -- Exclude Misc
+      local function allTrueForSettings(settingsList)
+        for _, settingName in ipairs(settingsList or {}) do
+          if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS[settingName] then
+            return false
+          end
+        end
+        return true
+      end
+      local lite = sections[1] and sections[1].settings or {}
+      local recommended = sections[2] and sections[2].settings or {}
+      local extreme = sections[3] and sections[3].settings or {}
 
-    legitStatusLine2:SetText('No XP was gained while the addon was inactive')
-    legitStatusLine3:SetText('No character changes have been identified since the last session')
-    legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
-    legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
+      local liteOk = allTrueForSettings(lite)
+      local recOk = liteOk and allTrueForSettings(recommended)
+      local extOk = recOk and allTrueForSettings(extreme)
 
-    if overallPass then
-      legitStatusLine1:SetText('Verified Ultra status')
-      legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
-      legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
-    else
-      legitStatusLine1:SetText('Ultra status failed verification')
-      legitStatusLine1:SetTextColor(1.0, 0.35, 0.35)
-      legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
-    end
+      local presetLevel = nil
+      if extOk then
+        presetLevel = 'Extreme'
+      elseif recOk then
+        presetLevel = 'Recommended'
+      elseif liteOk then
+        presetLevel = 'Lite'
+      end
 
-    if not passedXPCheck then
-      legitStatusLine2:SetText('XP was gained while the addon was inactive')
-      legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
-    end
-
-    if not passedTamperCheck then
-      legitStatusLine3:SetText('Character changes have been identified since the last session')
-      legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
-    end
-  end
-
-  -- Helper to update the current preset display
-  local function UpdateCurrentPresetDisplay()
-    local sections = GetPresetSections('simple', false) -- Exclude Misc
-    local function allTrueForSettings(settingsList)
-      for _, settingName in ipairs(settingsList or {}) do
-        if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS[settingName] then
-          return false
+      local xpWithoutAddon = 1
+      if CharacterStats and CharacterStats.ReportXPWithoutAddon then
+        local reported = CharacterStats:ReportXPWithoutAddon()
+        if type(reported) == 'number' then
+          xpWithoutAddon = reported
         end
       end
-      return true
-    end
-    local lite = sections[1] and sections[1].settings or {}
-    local recommended = sections[2] and sections[2].settings or {}
-    local extreme = sections[3] and sections[3].settings or {}
 
-    local liteOk = allTrueForSettings(lite)
-    local recOk = liteOk and allTrueForSettings(recommended)
-    local extOk = recOk and allTrueForSettings(extreme)
-
-    local presetLevel = nil
-    if extOk then
-      presetLevel = 'Extreme'
-    elseif recOk then
-      presetLevel = 'Recommended'
-    elseif liteOk then
-      presetLevel = 'Lite'
-    end
-
-    local xpWithoutAddon = 1
-    if CharacterStats and CharacterStats.ReportXPWithoutAddon then
-      local reported = CharacterStats:ReportXPWithoutAddon()
-      if type(reported) == 'number' then
-        xpWithoutAddon = reported
+      if presetLevel and xpWithoutAddon == 0 then
+        -- Only color the preset name in green; keep the rest at normal highlight color
+        local text =
+          'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
+        currentPresetText:SetText(text)
+        currentPresetText:SetTextColor(0.922, 0.871, 0.761)
+      else
+        currentPresetText:SetText('This character is not a legitimate Ultra.')
+        currentPresetText:SetTextColor(1.0, 0.35, 0.35) -- refined red
       end
     end
 
-    if presetLevel and xpWithoutAddon == 0 then
-      -- Only color the preset name in green; keep the rest at normal highlight color
-      local text = 'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
-      currentPresetText:SetText(text)
-      currentPresetText:SetTextColor(0.922, 0.871, 0.761)
-    else
-      currentPresetText:SetText('This character is not a legitimate Ultra.')
-      currentPresetText:SetTextColor(1.0, 0.35, 0.35) -- refined red
+    -- Initialize the preset display once
+    if UpdateCurrentPresetDisplay then
+      UpdateCurrentPresetDisplay()
+    end
+    if UpdateLegitStatusText then
+      UpdateLegitStatusText()
     end
   end
-
-  -- Initialize the preset display once
-  UpdateCurrentPresetDisplay()
-  UpdateLegitStatusText()
 
   -- Create modern WoW-style lowest health section (no accordion functionality)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below Current Character content
-  lowestHealthHeader:SetPoint('TOPLEFT', currentContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
+  -- Anchor directly below Current Character content when visible, otherwise to top
+  if ultraSectionContent then
+    lowestHealthHeader:SetPoint(
+      'TOPLEFT',
+      ultraSectionContent,
+      'BOTTOMLEFT',
+      -LAYOUT.CONTENT_INDENT,
+      -LAYOUT.SECTION_SPACING
+    )
+  else
+    lowestHealthHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
+  end
 
   -- Modern WoW row styling with rounded corners and greyish background
   lowestHealthHeader:SetBackdrop({
@@ -322,7 +376,13 @@ function InitializeStatisticsTab()
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
   -- Position content directly under its header with consistent padding
-  lowestHealthContent:SetPoint('TOPLEFT', lowestHealthHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
+  lowestHealthContent:SetPoint(
+    'TOPLEFT',
+    lowestHealthHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
   lowestHealthContent:Show() -- Show by default
   -- Modern content frame styling
   lowestHealthContent:SetBackdrop({
@@ -359,7 +419,7 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING
   )
-  levelText:SetText(formatNumberWithCommas(UnitLevel("player")))
+  levelText:SetText(formatNumberWithCommas(UnitLevel('player')))
 
   -- Create radio button for showing level in main screen statistics
   local showStatsLevelRadio =
@@ -436,7 +496,9 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
   )
-  lowestHealthThisLevelText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisLevel') or 100))
+  lowestHealthThisLevelText:SetText(
+    string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
+  )
 
   -- Create radio button for showing this level health in main screen statistics
   local showStatsThisLevelRadio =
@@ -475,7 +537,9 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
   )
-  lowestHealthThisSessionText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisSession') or 100))
+  lowestHealthThisSessionText:SetText(
+    string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisSession') or 100)
+  )
 
   -- Create radio button for showing session health in main screen statistics
   local showStatsSessionHealthRadio =
@@ -534,7 +598,13 @@ function InitializeStatisticsTab()
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Lowest Health content to avoid overlap on different UI scales
-  enemiesSlainHeader:SetPoint('TOPLEFT', lowestHealthContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
+  enemiesSlainHeader:SetPoint(
+    'TOPLEFT',
+    lowestHealthContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
 
   -- Modern WoW row styling with rounded corners and greyish background
   enemiesSlainHeader:SetBackdrop({
@@ -561,7 +631,13 @@ function InitializeStatisticsTab()
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainContent:SetSize(450, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
   -- Position content directly under its header with consistent padding
-  enemiesSlainContent:SetPoint('TOPLEFT', enemiesSlainHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
+  enemiesSlainContent:SetPoint(
+    'TOPLEFT',
+    enemiesSlainHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
   enemiesSlainContent:Show() -- Show by default
   -- Modern content frame styling
   enemiesSlainContent:SetBackdrop({
@@ -868,7 +944,9 @@ function InitializeStatisticsTab()
     -LAYOUT.ROW_INDENT,
     -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
   )
-  highestHealCritText:SetText(formatNumberWithCommas(CharacterStats:GetStat('highestHealCritValue')))
+  highestHealCritText:SetText(
+    formatNumberWithCommas(CharacterStats:GetStat('highestHealCritValue'))
+  )
 
   -- Create radio button for showing highest heal crit value in main screen statistics
   local showStatsHighestHealCritRadio =
@@ -889,7 +967,13 @@ function InitializeStatisticsTab()
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Enemies Slain content to avoid overlap on different UI scales
-  survivalHeader:SetPoint('TOPLEFT', enemiesSlainContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
+  survivalHeader:SetPoint(
+    'TOPLEFT',
+    enemiesSlainContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -915,7 +999,13 @@ function InitializeStatisticsTab()
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
   -- Position content directly under its header with consistent padding
-  survivalContent:SetPoint('TOPLEFT', survivalHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
+  survivalContent:SetPoint(
+    'TOPLEFT',
+    survivalHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
   survivalContent:Show() -- Always show
   -- Modern content frame styling
   survivalContent:SetBackdrop({
@@ -964,38 +1054,6 @@ function InitializeStatisticsTab()
     key = 'closeEscapes',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
-  }, {
-    key = 'duelsTotal',
-    label = 'Duels Total:',
-    tooltipKey = 'duelsTotal',
-  }, {
-    key = 'duelsWon',
-    label = 'Duels Won:',
-    tooltipKey = 'duelsWon',
-  }, {
-    key = 'duelsLost',
-    label = 'Duels Lost:',
-    tooltipKey = 'duelsLost',
-  }, {
-    key = 'duelsWinPercent',
-    label = 'Duel Win Percent:',
-    tooltipKey = 'duelsWinPercent',
-  }, {
-    key = 'playerJumps',
-    label = 'Jumps Performed:',
-    tooltipKey = 'playerJumps',
-  }, {
-    key = 'xpGWA',
-    label = 'Verified XP:',
-    tooltipKey = 'xpGWA',
-  }, {
-    key = 'xpGWOA',
-    label = 'Unverified XP:',
-    tooltipKey = 'xpGWOA',
-  }, {
-    key = 'mapKeyPressesWhileMapBlocked',
-    label = 'Blocked Map Opens (Route Planner):',
-    tooltipKey = 'mapKeyPressesWhileMapBlocked',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -1007,7 +1065,7 @@ function InitializeStatisticsTab()
 
     local text = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-    if stat.key == "duelsWinPercent" then
+    if stat.key == 'duelsWinPercent' then
       -- format percentage stats differently
       local duelWinPercent = CharacterStats:GetStat(stat.key)
       if duelWinPercent % 1 == 0 then
@@ -1043,11 +1101,154 @@ function InitializeStatisticsTab()
   local survivalRows = #survivalStats
   survivalContent:SetSize(450, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
+  -- Create modern WoW-style Misc section (no accordion functionality)
+  local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  miscHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  -- Anchor directly below the Survival content to avoid overlap on different UI scales
+  miscHeader:SetPoint(
+    'TOPLEFT',
+    survivalContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
+  -- Modern WoW row styling with rounded corners and greyish background
+  miscHeader:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+  miscHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+  miscHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  -- Create header text
+  local miscLabel = miscHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  miscLabel:SetPoint('LEFT', miscHeader, 'LEFT', 12, 0)
+  miscLabel:SetText('Misc')
+
+  -- Create content frame for Misc breakdown (always visible)
+  local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  miscContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  -- Position content directly under its header with consistent padding
+  miscContent:SetPoint(
+    'TOPLEFT',
+    miscHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
+  miscContent:Show()
+  -- Modern content frame styling
+  miscContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    tile = true,
+    tileSize = 16,
+    edgeSize = 8,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+
+  -- Create misc statistics display inside the content frame
+  local miscTexts = {}
+  local miscStats = { {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
+  }, {
+    key = 'playerJumps',
+    label = 'Jumps Performed:',
+    tooltipKey = 'playerJumps',
+  }, {
+    key = 'xpGWA',
+    label = 'Verified XP:',
+    tooltipKey = 'xpGWA',
+  }, {
+    key = 'xpGWOA',
+    label = 'Unverified XP:',
+    tooltipKey = 'xpGWOA',
+  }, {
+    key = 'mapKeyPressesWhileMapBlocked',
+    label = 'Blocked Map Opens (Route Planner):',
+    tooltipKey = 'mapKeyPressesWhileMapBlocked',
+  } }
+
+  local miscYOffset = -LAYOUT.CONTENT_PADDING
+  for _, stat in ipairs(miscStats) do
+    local label = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    label:SetPoint('TOPLEFT', miscContent, 'TOPLEFT', LAYOUT.ROW_INDENT, miscYOffset)
+    label:SetText(stat.label)
+    AddStatisticTooltip(label, stat.tooltipKey)
+
+    local text = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    text:SetPoint('TOPRIGHT', miscContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, miscYOffset)
+    if stat.key == 'duelsWinPercent' then
+      local duelWinPercent = CharacterStats:GetStat(stat.key) or 0
+      if duelWinPercent % 1 == 0 then
+        text:SetText(string.format('%d%%', duelWinPercent))
+      else
+        text:SetText(string.format('%.1f%%', duelWinPercent))
+      end
+    else
+      text:SetText(formatNumberWithCommas(CharacterStats:GetStat(stat.key)))
+    end
+
+    -- Create radio button for this misc statistic
+    local radio = CreateFrame('CheckButton', nil, miscContent, 'UIRadioButtonTemplate')
+    radio:SetPoint('LEFT', label, 'LEFT', -20, 0)
+    local settingName = 'showMainStatisticsPanel' .. string.gsub(stat.key, '^%l', string.upper)
+    radio:SetChecked(false)
+    radioButtons[settingName] = radio
+    radio:SetScript('OnClick', function(self)
+      tempSettings[settingName] = self:GetChecked()
+      GLOBAL_SETTINGS[settingName] = self:GetChecked()
+      if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+        UltraHardcoreStatsFrame.UpdateRowVisibility()
+      end
+    end)
+
+    miscTexts[stat.key] = text
+    miscYOffset = miscYOffset - LAYOUT.ROW_HEIGHT
+  end
+
+  -- Correct misc content height now that we know the total rows
+  local miscRows = #miscStats
+  miscContent:SetSize(450, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below Survival content to avoid overlap
-  xpGainedHeader:SetPoint('TOPLEFT', survivalContent, 'BOTTOMLEFT', -LAYOUT.CONTENT_INDENT, -LAYOUT.SECTION_SPACING)
+  xpGainedHeader:SetPoint(
+    'TOPLEFT',
+    miscContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -1073,7 +1274,13 @@ function InitializeStatisticsTab()
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedContent:SetSize(450, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
   -- Position content directly under its header with consistent padding
-  xpGainedContent:SetPoint('TOPLEFT', xpGainedHeader, 'BOTTOMLEFT', LAYOUT.CONTENT_INDENT, -LAYOUT.CONTENT_PADDING)
+  xpGainedContent:SetPoint(
+    'TOPLEFT',
+    xpGainedHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
   xpGainedContent:Show() -- Show by default
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
@@ -1231,7 +1438,9 @@ function InitializeStatisticsTab()
       LoadDBData()
     end
     -- Refresh current preset status in case settings changed
-    UpdateCurrentPresetDisplay()
+    if UpdateCurrentPresetDisplay then
+      UpdateCurrentPresetDisplay()
+    end
 
     -- Update level display
     if levelText then
@@ -1321,6 +1530,24 @@ function InitializeStatisticsTab()
             end
           else
             survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          end
+        end
+      end
+    end
+
+    -- Update misc statistics
+    if miscTexts then
+      for _, stat in ipairs(miscStats) do
+        local value = CharacterStats:GetStat(stat.key) or 0
+        if miscTexts[stat.key] then
+          if stat.key == 'duelsWinPercent' then
+            if value % 1 == 0 then
+              miscTexts[stat.key]:SetText(string.format('%d%%', value))
+            else
+              miscTexts[stat.key]:SetText(string.format('%.1f%%', value))
+            end
+          else
+            miscTexts[stat.key]:SetText(formatNumberWithCommas(value))
           end
         end
       end
