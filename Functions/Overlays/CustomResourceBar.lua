@@ -174,9 +174,8 @@ if not druidFormResourceBar then
   print('UltraHardcore: Failed to create druid form resource bar')
   return
 end
-
-druidFormResourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
-druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 20)
+druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
+druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 druidFormResourceBar:Hide() -- Initially hidden
 -- Add a border around the druid form resource bar
@@ -185,10 +184,9 @@ if not druidFormBorder then
   print('UltraHardcore: Failed to create druid form resource bar border')
   return
 end
-
 druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
 druidFormBorder:SetPoint('CENTER', druidFormResourceBar, 'CENTER', 0, 0)
-druidFormBorder:SetSize(300, 64)
+druidFormBorder:SetSize(171, 50)
 
 -- Position persistence functions for druid form resource bar
 local function SaveDruidFormResourceBarPosition()
@@ -215,26 +213,8 @@ local function LoadDruidFormResourceBarPosition()
 
   local pos = UltraHardcoreDB.druidFormResourceBarPosition
   druidFormResourceBar:ClearAllPoints()
-
-  if not pos then
-    -- Set default position (above the main resource bar)
-    druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
-    SaveDruidFormResourceBarPosition()
-    print('UltraHardcore: Druid form resource bar position initialized to default')
-  else
-    -- Allow anchoring to main resource bar if setting is enabled
-    local anchorTo = 'UIParent'
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
-      anchorTo = 'UltraHardcoreResourceBar'
-    end
-
-    if anchorTo == 'UIParent' then
-      druidFormResourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-    else
-      -- Anchor to resource bar with a default offset
-      druidFormResourceBar:SetPoint('CENTER', resourceBar, 'BOTTOM', 0, -15)
-    end
-  end
+  -- Always anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 end
 
 -- Make the druid form resource bar draggable with position saving
@@ -242,11 +222,11 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
-  self:StartMoving()
+  resourceBar:StartMoving()
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
-  self:StopMovingOrSizing()
-  SaveDruidFormResourceBarPosition()
+  resourceBar:StopMovingOrSizing()
+  SaveResourceBarPosition()
 end)
 
 -- Unified function to update resource points
@@ -706,11 +686,8 @@ end
 local function ResetDruidFormResourceBarPosition()
   -- Clear existing points first
   druidFormResourceBar:ClearAllPoints()
-  -- Reset to default position (above main resource bar)
-  druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
-  -- Save the reset position
-  SaveDruidFormResourceBarPosition()
-  print('UltraHardcore: Druid form resource bar position reset to default')
+  -- Anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 end
 
 -- Slash command to reset resource bar position
