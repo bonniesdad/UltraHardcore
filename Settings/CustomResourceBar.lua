@@ -217,22 +217,20 @@ local function LoadDruidFormResourceBarPosition()
   druidFormResourceBar:ClearAllPoints()
 
   if not pos then
-    -- Set default position (above the main resource bar)
-    druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
+    -- Set default position: anchor to the main resource bar (like pet bar)
+    druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
     SaveDruidFormResourceBarPosition()
     print('UltraHardcore: Druid form resource bar position initialized to default')
   else
-    -- Allow anchoring to main resource bar if setting is enabled
-    local anchorTo = 'UIParent'
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
-      anchorTo = 'UltraHardcoreResourceBar'
-    end
-
-    if anchorTo == 'UIParent' then
+    -- Allow free positioning if setting is enabled (checkbox checked)
+    local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+    
+    if allowFreePositioning then
+      -- Load the saved free position
       druidFormResourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
     else
-      -- Anchor to resource bar with a default offset
-      druidFormResourceBar:SetPoint('CENTER', resourceBar, 'BOTTOM', 0, -15)
+      -- Anchor to resource bar with a default offset (default behavior)
+      druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
     end
   end
 end
@@ -242,16 +240,18 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
-  -- If anchored to resource bar, move the resource bar instead
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+  -- If free positioning is disabled (default), move the resource bar instead
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
     resourceBar:StartMoving()
   else
     self:StartMoving()
   end
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
-  -- If anchored to resource bar, save resource bar position
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+  -- If free positioning is disabled (default), save resource bar position
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
     resourceBar:StopMovingOrSizing()
     SaveResourceBarPosition()
   else

@@ -223,16 +223,18 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
-  -- If anchored to resource bar, move the resource bar instead
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+  -- If free positioning is disabled (default), move the resource bar instead
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
     resourceBar:StartMoving()
   else
     self:StartMoving()
   end
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
-  -- If anchored to resource bar, save resource bar position
-  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+  -- If free positioning is disabled (default), save resource bar position
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
     resourceBar:StopMovingOrSizing()
     SaveResourceBarPosition()
   else
