@@ -95,10 +95,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
 }, {
-  name = 'Show Target Debuffs',
-  dbSettingsValueName = 'showTargetDebuffs',
-  tooltip = 'Show debuffs on the target frame.',
-}, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
@@ -179,6 +175,10 @@ local settingsCheckboxOptions = { {
   name = 'Route Planner - Compass',
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
+}, {
+  name = 'UHC Show Druid Manabar',
+  dbSettingsValueName = 'showDruidFormResourceBar',
+  tooltip = 'Show a separate resource bar when shapeshifted as a druid',
 } }
 
 -- XP Bar Settings
