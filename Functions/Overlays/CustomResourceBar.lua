@@ -688,8 +688,6 @@ local function ResetDruidFormResourceBarPosition()
   druidFormResourceBar:ClearAllPoints()
   -- Anchor to the main resource bar, matching the pet bar
   druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
-  -- No separate position saved for druid bar; it follows the main resource bar
-  print('UltraHardcore: Druid form resource bar anchored to resource bar')
 end
 
 -- Slash command to reset resource bar position
