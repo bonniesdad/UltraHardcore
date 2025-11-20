@@ -74,7 +74,6 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     showDruidFormResourceBar = true,
-    druidFormBarAnchorToResourceBar = false,
     -- Group Found teammate names (locked in at level 2)
     -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
