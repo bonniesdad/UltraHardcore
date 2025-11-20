@@ -1,6 +1,6 @@
 ## Interface: 11508
 ## Title: UltraHardcore
-## Version: 1.2.9
+## Version: 1.2.10
 ## Author: BonniesDad
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB

@@ -1,5 +1,11 @@
 # Patch Notes
 
+## Version 1.2.10 - 2025-11-20
+
+- ### Bug Fixes
+
+- Fix: Route planner blocking map in combat even when disabled.
+
 ## Version 1.2.9 - 2025-11-19
 
 ### New Features

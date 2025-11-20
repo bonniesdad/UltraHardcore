@@ -4,6 +4,8 @@
 ]]
 
 function SetRoutePlanner(routePlanner)
+  if not (GLOBAL_SETTINGS and GLOBAL_SETTINGS.routePlanner) then return end
+
   if routePlanner then
     -- Allow map while resting, near Cozy Fire, or while on taxi
     if IsResting() or HasCozyFire() or UnitOnTaxi('player') then
@@ -26,25 +28,28 @@ local toggleWorldMapBackup = ToggleWorldMap
 local toggleBattlefieldMapBackup = ToggleBattlefieldMap
 
 function MakeMapUnusable()
-    if WorldMapFrame:IsShown() then
-        ToggleWorldMap()
+  if not (GLOBAL_SETTINGS and GLOBAL_SETTINGS.routePlanner) then return end
+  if WorldMapFrame:IsShown() then
+    ToggleWorldMap()
+  end
+  ToggleWorldMap = function()
+    if CharacterStats and CharacterStats.GetStat and CharacterStats.UpdateStat then
+      local current = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
+      CharacterStats:UpdateStat('mapKeyPressesWhileMapBlocked', current + 1)
     end
-    ToggleWorldMap = function()
-      if CharacterStats and CharacterStats.GetStat and CharacterStats.UpdateStat then
-        local current = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
-        CharacterStats:UpdateStat('mapKeyPressesWhileMapBlocked', current + 1)
-      end
-    end
+  end
 
-    if BattlefieldMapFrame and BattlefieldMapFrame:IsShown() then
-        ToggleBattlefieldMap()
-    end
-    ToggleBattlefieldMap = function() end
+  if BattlefieldMapFrame and BattlefieldMapFrame:IsShown() then
+    ToggleBattlefieldMap()
+  end
+  ToggleBattlefieldMap = function() end
 end
 
 function MakeMapUsable()
-    ToggleWorldMap = toggleWorldMapBackup
-    ToggleBattlefieldMap = toggleBattlefieldMapBackup
+  if not (GLOBAL_SETTINGS and GLOBAL_SETTINGS.routePlanner) then return end
+
+  ToggleWorldMap = toggleWorldMapBackup
+  ToggleBattlefieldMap = toggleBattlefieldMapBackup
 end
 
 -- Ensure map usability state stays correct across rest/taxi/focus changes
@@ -55,12 +60,16 @@ routePlannerEventsFrame:RegisterEvent('PLAYER_CONTROL_GAINED')
 routePlannerEventsFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 routePlannerEventsFrame:RegisterEvent('UNIT_AURA')
 routePlannerEventsFrame:SetScript('OnEvent', function(self, event, unit)
+  if not (GLOBAL_SETTINGS and GLOBAL_SETTINGS.routePlanner) then return end
+
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.routePlanner then
     if event == 'UNIT_AURA' and unit ~= 'player' then return end
     -- Re-evaluate immediately and once more shortly after (to handle lagging API updates)
     SetRoutePlanner(true)
     if C_Timer and C_Timer.After then
-      C_Timer.After(0.1, function() SetRoutePlanner(true) end)
+      C_Timer.After(0.1, function()
+        SetRoutePlanner(true)
+      end)
     end
   end
 end)
