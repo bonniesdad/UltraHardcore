@@ -185,7 +185,6 @@ if not druidFormBorder then
   print('UltraHardcore: Failed to create druid form resource bar border')
   return
 end
-
 druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
 druidFormBorder:SetPoint('CENTER', druidFormResourceBar, 'CENTER', 0, 0)
 druidFormBorder:SetSize(171, 50)
@@ -215,26 +214,8 @@ local function LoadDruidFormResourceBarPosition()
 
   local pos = UltraHardcoreDB.druidFormResourceBarPosition
   druidFormResourceBar:ClearAllPoints()
-
-  if not pos then
-    -- Set default position (above the main resource bar)
-    druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
-    SaveDruidFormResourceBarPosition()
-    print('UltraHardcore: Druid form resource bar position initialized to default')
-  else
-    -- Allow anchoring to main resource bar if setting is enabled
-    local anchorTo = 'UIParent'
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
-      anchorTo = 'UltraHardcoreResourceBar'
-    end
-
-    if anchorTo == 'UIParent' then
-      druidFormResourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
-    else
-      -- Anchor to resource bar with a default offset
-      druidFormResourceBar:SetPoint('CENTER', resourceBar, 'BOTTOM', 0, -15)
-    end
-  end
+  -- Always anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 end
 
 -- Make the druid form resource bar draggable with position saving
@@ -717,11 +698,8 @@ end
 local function ResetDruidFormResourceBarPosition()
   -- Clear existing points first
   druidFormResourceBar:ClearAllPoints()
-  -- Reset to default position (above main resource bar)
-  druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 100)
-  -- Save the reset position
-  SaveDruidFormResourceBarPosition()
-  print('UltraHardcore: Druid form resource bar position reset to default')
+  -- Anchor to the main resource bar, matching the pet bar
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
 end
 
 -- Slash command to reset resource bar position

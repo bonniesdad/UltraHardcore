@@ -1054,38 +1054,6 @@ function InitializeStatisticsTab()
     key = 'closeEscapes',
     label = 'Close Escapes:',
     tooltipKey = 'closeEscapes',
-  }, {
-    key = 'duelsTotal',
-    label = 'Duels Total:',
-    tooltipKey = 'duelsTotal',
-  }, {
-    key = 'duelsWon',
-    label = 'Duels Won:',
-    tooltipKey = 'duelsWon',
-  }, {
-    key = 'duelsLost',
-    label = 'Duels Lost:',
-    tooltipKey = 'duelsLost',
-  }, {
-    key = 'duelsWinPercent',
-    label = 'Duel Win Percent:',
-    tooltipKey = 'duelsWinPercent',
-  }, {
-    key = 'playerJumps',
-    label = 'Jumps Performed:',
-    tooltipKey = 'playerJumps',
-  }, {
-    key = 'xpGWA',
-    label = 'Verified XP:',
-    tooltipKey = 'xpGWA',
-  }, {
-    key = 'xpGWOA',
-    label = 'Unverified XP:',
-    tooltipKey = 'xpGWOA',
-  }, {
-    key = 'mapKeyPressesWhileMapBlocked',
-    label = 'Blocked Map Opens (Route Planner):',
-    tooltipKey = 'mapKeyPressesWhileMapBlocked',
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
@@ -1133,13 +1101,150 @@ function InitializeStatisticsTab()
   local survivalRows = #survivalStats
   survivalContent:SetSize(450, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
+  -- Create modern WoW-style Misc section (no accordion functionality)
+  local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  miscHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  -- Anchor directly below the Survival content to avoid overlap on different UI scales
+  miscHeader:SetPoint(
+    'TOPLEFT',
+    survivalContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
+  -- Modern WoW row styling with rounded corners and greyish background
+  miscHeader:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+  miscHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+  miscHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  -- Create header text
+  local miscLabel = miscHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  miscLabel:SetPoint('LEFT', miscHeader, 'LEFT', 12, 0)
+  miscLabel:SetText('Misc')
+
+  -- Create content frame for Misc breakdown (always visible)
+  local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  miscContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  -- Position content directly under its header with consistent padding
+  miscContent:SetPoint(
+    'TOPLEFT',
+    miscHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
+  miscContent:Show()
+  -- Modern content frame styling
+  miscContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    tile = true,
+    tileSize = 16,
+    edgeSize = 8,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+
+  -- Create misc statistics display inside the content frame
+  local miscTexts = {}
+  local miscStats = { {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
+  }, {
+    key = 'playerJumps',
+    label = 'Jumps Performed:',
+    tooltipKey = 'playerJumps',
+  }, {
+    key = 'xpGWA',
+    label = 'Verified XP:',
+    tooltipKey = 'xpGWA',
+  }, {
+    key = 'xpGWOA',
+    label = 'Unverified XP:',
+    tooltipKey = 'xpGWOA',
+  }, {
+    key = 'mapKeyPressesWhileMapBlocked',
+    label = 'Blocked Map Opens (Route Planner):',
+    tooltipKey = 'mapKeyPressesWhileMapBlocked',
+  } }
+
+  local miscYOffset = -LAYOUT.CONTENT_PADDING
+  for _, stat in ipairs(miscStats) do
+    local label = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    label:SetPoint('TOPLEFT', miscContent, 'TOPLEFT', LAYOUT.ROW_INDENT, miscYOffset)
+    label:SetText(stat.label)
+    AddStatisticTooltip(label, stat.tooltipKey)
+
+    local text = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    text:SetPoint('TOPRIGHT', miscContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, miscYOffset)
+    if stat.key == 'duelsWinPercent' then
+      local duelWinPercent = CharacterStats:GetStat(stat.key) or 0
+      if duelWinPercent % 1 == 0 then
+        text:SetText(string.format('%d%%', duelWinPercent))
+      else
+        text:SetText(string.format('%.1f%%', duelWinPercent))
+      end
+    else
+      text:SetText(formatNumberWithCommas(CharacterStats:GetStat(stat.key)))
+    end
+
+    -- Create radio button for this misc statistic
+    local radio = CreateFrame('CheckButton', nil, miscContent, 'UIRadioButtonTemplate')
+    radio:SetPoint('LEFT', label, 'LEFT', -20, 0)
+    local settingName = 'showMainStatisticsPanel' .. string.gsub(stat.key, '^%l', string.upper)
+    radio:SetChecked(false)
+    radioButtons[settingName] = radio
+    radio:SetScript('OnClick', function(self)
+      tempSettings[settingName] = self:GetChecked()
+      GLOBAL_SETTINGS[settingName] = self:GetChecked()
+      if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+        UltraHardcoreStatsFrame.UpdateRowVisibility()
+      end
+    end)
+
+    miscTexts[stat.key] = text
+    miscYOffset = miscYOffset - LAYOUT.ROW_HEIGHT
+  end
+
+  -- Correct misc content height now that we know the total rows
+  local miscRows = #miscStats
+  miscContent:SetSize(450, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below Survival content to avoid overlap
   xpGainedHeader:SetPoint(
     'TOPLEFT',
-    survivalContent,
+    miscContent,
     'BOTTOMLEFT',
     -LAYOUT.CONTENT_INDENT,
     -LAYOUT.SECTION_SPACING
@@ -1425,6 +1530,24 @@ function InitializeStatisticsTab()
             end
           else
             survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
+          end
+        end
+      end
+    end
+
+    -- Update misc statistics
+    if miscTexts then
+      for _, stat in ipairs(miscStats) do
+        local value = CharacterStats:GetStat(stat.key) or 0
+        if miscTexts[stat.key] then
+          if stat.key == 'duelsWinPercent' then
+            if value % 1 == 0 then
+              miscTexts[stat.key]:SetText(string.format('%d%%', value))
+            else
+              miscTexts[stat.key]:SetText(string.format('%.1f%%', value))
+            end
+          else
+            miscTexts[stat.key]:SetText(formatNumberWithCommas(value))
           end
         end
       end
