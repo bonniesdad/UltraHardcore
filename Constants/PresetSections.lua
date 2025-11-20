@@ -59,7 +59,6 @@ local PRESET_SECTIONS = { {
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
-    'druidFormBarAnchorToResourceBar',
   },
 }, {
   title = 'XP Bar:',
