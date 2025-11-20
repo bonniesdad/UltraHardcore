@@ -179,6 +179,10 @@ local settingsCheckboxOptions = { {
   name = 'UHC Show Druid Manabar',
   dbSettingsValueName = 'showDruidFormResourceBar',
   tooltip = 'Show a separate resource bar when shapeshifted as a druid',
+}, {
+  name = 'UHC Free Position Druid Manabar(shifted)',
+  dbSettingsValueName = 'druidFormBarAnchorToResourceBar',
+  tooltip = 'Unanchor the druid form resource bar from the main resource bar to allow free positioning',
 } }
 
 -- XP Bar Settings

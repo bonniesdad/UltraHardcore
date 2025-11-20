@@ -58,8 +58,9 @@ local PRESET_SECTIONS = { {
     'playPlayerDeathSoundbite',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
-    'showDruidFormResourceBar',
-  },
+      'showDruidFormResourceBar',
+      'druidFormBarAnchorToResourceBar',
+    },
 }, {
   title = 'XP Bar:',
   settings = { 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'xpBarHeight' },

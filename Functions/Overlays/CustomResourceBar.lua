@@ -174,8 +174,9 @@ if not druidFormResourceBar then
   print('UltraHardcore: Failed to create druid form resource bar')
   return
 end
+
 druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
-druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 20)
 druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 druidFormResourceBar:Hide() -- Initially hidden
 -- Add a border around the druid form resource bar
@@ -222,11 +223,24 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
-  resourceBar:StartMoving()
+  -- If free positioning is disabled (default), move the resource bar instead
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
+    resourceBar:StartMoving()
+  else
+    self:StartMoving()
+  end
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
-  resourceBar:StopMovingOrSizing()
-  SaveResourceBarPosition()
+  -- If free positioning is disabled (default), save resource bar position
+  local allowFreePositioning = GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar
+  if not allowFreePositioning then
+    resourceBar:StopMovingOrSizing()
+    SaveResourceBarPosition()
+  else
+    self:StopMovingOrSizing()
+    SaveDruidFormResourceBarPosition()
+  end
 end)
 
 -- Unified function to update resource points
