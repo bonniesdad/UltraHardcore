@@ -175,7 +175,7 @@ if not druidFormResourceBar then
   return
 end
 
-druidFormResourceBar:SetSize(225, PlayerFrameManaBar:GetHeight())
+druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
 druidFormResourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 20)
 druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 druidFormResourceBar:Hide() -- Initially hidden
@@ -188,7 +188,7 @@ end
 
 druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
 druidFormBorder:SetPoint('CENTER', druidFormResourceBar, 'CENTER', 0, 0)
-druidFormBorder:SetSize(300, 64)
+druidFormBorder:SetSize(171, 50)
 
 -- Position persistence functions for druid form resource bar
 local function SaveDruidFormResourceBarPosition()
@@ -242,11 +242,22 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
-  self:StartMoving()
+  -- If anchored to resource bar, move the resource bar instead
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+    resourceBar:StartMoving()
+  else
+    self:StartMoving()
+  end
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
-  self:StopMovingOrSizing()
-  SaveDruidFormResourceBarPosition()
+  -- If anchored to resource bar, save resource bar position
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.druidFormBarAnchorToResourceBar then
+    resourceBar:StopMovingOrSizing()
+    SaveResourceBarPosition()
+  else
+    self:StopMovingOrSizing()
+    SaveDruidFormResourceBarPosition()
+  end
 end)
 
 -- Unified function to update resource points
