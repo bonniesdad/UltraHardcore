@@ -1,6 +1,9 @@
 addonName = ...
 UltraHardcore = CreateFrame('Frame')
 
+-- Temporary feature flag: hide Guild Found UI until phase 2
+_G.UHC_ENABLE_GUILD_FOUND_UI = false
+
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
@@ -41,10 +44,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden then
       miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_MAIL)
     end
-    SetMinimapDisplay(
-      GLOBAL_SETTINGS.hideMinimap or false,
-      miniMapMask
-    )
+    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, miniMapMask)
     ShowResourceTrackingExplainer()
     SetTargetFrameDisplay(
       GLOBAL_SETTINGS.hideTargetFrame or false,
@@ -100,7 +100,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
     FullHealthReachedIndicator(
       (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
-      self, event, unit
+      self,
+      event,
+      unit
     )
     -- Check for pet death/abandonment
     if unit == 'pet' then
@@ -154,7 +156,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if unit == 'player' then
       HidePlayerCastBar()
     end
-    
+
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
     if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then
