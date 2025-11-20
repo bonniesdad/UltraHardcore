@@ -81,7 +81,6 @@ local function GetBankItems()
       bankItems[bagId] = bagSlots
     end
   end
-  
   return bankItems
 end
 
@@ -371,6 +370,7 @@ local function DetectTampering(oldState, newState)
   -- Add currently observed items
   local currentInventoryItems = newState.inventoryItems or {}
   local currentEquippedItems = newState.equippedItems or {}
+  local currentBankItems = newState.bankItems or {}
   for _, bagSlots in pairs(currentInventoryItems) do
     for _, itemId in pairs(bagSlots) do
       if itemId then
@@ -381,6 +381,13 @@ local function DetectTampering(oldState, newState)
   for _, itemId in pairs(currentEquippedItems) do
     if itemId then
       allItemIds[itemId] = true
+    end
+  end
+  for _, bagSlots in pairs(currentBankItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
     end
   end
   
@@ -431,6 +438,7 @@ local function BuildChangeTable(oldState, newState)
   -- Add currently observed items
   local currentInventoryItems = newState.inventoryItems or {}
   local currentEquippedItems = newState.equippedItems or {}
+  local currentBankItems = newState.bankItems or {}
   for _, bagSlots in pairs(currentInventoryItems) do
     for _, itemId in pairs(bagSlots) do
       if itemId then
@@ -441,6 +449,13 @@ local function BuildChangeTable(oldState, newState)
   for _, itemId in pairs(currentEquippedItems) do
     if itemId then
       allItemIds[itemId] = true
+    end
+  end
+  for _, bagSlots in pairs(currentBankItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
     end
   end
   
@@ -619,6 +634,21 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
     end
   end
   
+  return hasChanges
+end
+
+-- When bank access becomes available, compare new data against the stored snapshot.
+-- If previously untracked items appear (typically in the bank), flag the player as tampered.
+function PlayerStateSnapshot:CheckBankForTampering()
+  local hasChanges = self:HasPlayerStateChanged()
+
+  if hasChanges then
+    self:SetTampered(true)
+    if type(GLOBAL_SETTINGS) == "table" and GLOBAL_SETTINGS.debugMode then
+      print("|cffff0000[ULTRA]|r Bank tampering detected while opening the bank.")
+    end
+  end
+
   return hasChanges
 end
 
@@ -1058,7 +1088,7 @@ local eventFrame = CreateFrame('Frame')
 local function OnStateChangeEvent(self, event, ...)
   if event == 'BANKFRAME_OPENED' then
     bankIsOpen = true
-    PlayerStateSnapshot:CapturePlayerState()
+    local tamperingDetected = PlayerStateSnapshot:CheckBankForTampering()
     return
   elseif event == 'BANKFRAME_CLOSED' then
     bankIsOpen = false
