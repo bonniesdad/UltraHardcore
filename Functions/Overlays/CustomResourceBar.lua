@@ -338,12 +338,6 @@ UHCBuffFrame:SetHeight(32)
 UHCBuffFrame:ClearAllPoints()
 UHCBuffFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 5)
 
-local DebuffFrame = CreateFrame('Frame', 'UHCDebuffFrame', UIParent)
-DebuffFrame:SetWidth(100)
-DebuffFrame:SetHeight(32)
-DebuffFrame:ClearAllPoints()
-DebuffFrame:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
-
 -- Helper function to check if buff bar should be repositioned
 local function ShouldHideBuffs()
   return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.hideBuffsCompletely
@@ -355,10 +349,6 @@ local function ShouldHideDebuffs()
 end
 
 -- Safer: avoid reparenting/reanchoring Blizzard debuff buttons (can cause anchor loops)
-local function ShouldRepositionDebuffs()
-  return false
-end
-
 local function HideBuffs()
   if BuffFrame then
     BuffFrame:Hide()
@@ -367,7 +357,7 @@ end
 
 local function HideDebuffs()
   if BuffFrame then
-    for i = 0, 40 do
+    for i = 0, 60 do
       local debuff = _G['DebuffButton' .. i]
 
       if debuff ~= nil then
@@ -406,7 +396,7 @@ local function CenterPlayerBuffBar()
     local rowSpacing = 16
 
     -- Count how many buffs and debuffs we have
-    for i = 0, 40 do
+    for i = 0, 60 do
       local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
 
       if aura and aura.isHarmful ~= true then
@@ -446,55 +436,12 @@ local function CenterPlayerBuffBar()
       end
     end
 
-    -- Move debuff buttons into our custom frame (disabled to avoid anchor family loops)
-    if ShouldRepositionDebuffs() and debuffCount > 0 then
-      local debuffOffset = 0
-      for i = 1, debuffCount do
-        local debuff = _G['DebuffButton' .. i]
-        local debuffBorder = _G['DebuffButton' .. i .. 'Border']
-        debuff:SetParent(DebuffFrame)
-        debuff:ClearAllPoints()
-        debuff:SetPoint('TOPLEFT', DebuffFrame, 'TOPLEFT', debuffOffset, 0)
-
-        if debuffWidth == 0 then
-          debuffWidth = debuffBorder:GetWidth()
-        end
-        if debuffHeight == 0 then
-          debuffHeight = debuffBorder:GetHeight()
-        end
-        debuffOffset = debuffOffset + debuffWidth
-        if i < debuffCount then
-          debuffOffset = debuffOffset + iconSpacing
-        end
-      end
-
-      if debuffCount > 0 and debuffWidth > 0 then
-        local newDebuffWidth = (debuffCount * debuffWidth) + ((debuffCount - 1) * iconSpacing)
-        DebuffFrame:SetScale(1.0)
-        DebuffFrame:SetWidth(newDebuffWidth)
-        DebuffFrame:ClearAllPoints()
-        local debuffAnchor = UnitExists('pet') and petResourceBar or resourceBar
-        DebuffFrame:SetPoint('TOP', debuffAnchor, 'BOTTOM', 0, -20)
-      end
-    end
-
     if buffCount == 0 then return end
     local firstBuffButton = _G['BuffButton1']
 
     if firstBuffButton then
       local width = firstBuffButton:GetWidth()
       local height = firstBuffButton:GetHeight()
-
-      -- Debuff icons are larger than buff icons because they have a border (by 3 pixels)
-      -- This makes centering the two bars very difficult.  Try resizing buff icons to match the icon+border size of debuffs.
-      if debuffWidth > 0 and debuffHeight > 0 then
-        for i = 1, buffCount do
-          _G['BuffButton' .. i]:SetWidth(debuffWidth)
-          width = debuffWidth
-          _G['BuffButton' .. i]:SetHeight(debuffHeight)
-          height = debuffHeight
-        end
-      end
 
       -- buffCount + width is the total width of all buff icons
       -- (buffCount - 1) * iconSpacing is the spacing between each icon
