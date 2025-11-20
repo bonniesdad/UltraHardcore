@@ -1,5 +1,9 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '1.2.10',
+  date = '2025-11-20',
+  notes = { 'BUG FIXES:', '• Fix: Route planner blocking map in combat even when disabled.' },
+}, {
   version = '1.2.9',
   date = '2025-11-19',
   notes = {
