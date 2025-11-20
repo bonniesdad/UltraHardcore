@@ -296,27 +296,18 @@ local function CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, p
   return ids
 end
 
--- Build item count map from bags and bank (items can move between them)
-local function BuildItemCountMap(inventoryItems, bankItems)
+-- Build item count map using GetItemCount (includes bags, bank, and equipped items)
+-- This allows items to move between equipped/bags/bank without triggering false positives
+local function BuildItemCountMap(trackedItemIds)
   local itemCounts = {}
   
-  -- Count items in bags
-  if inventoryItems then
-    for bagId = 0, 4 do
-      if inventoryItems[bagId] then
-        for slotId, itemId in pairs(inventoryItems[bagId]) do
-          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
-        end
-      end
-    end
-  end
-  
-  -- Count items in bank
-  if bankItems then
-    for bagId = -1, 11 do
-      if bankItems[bagId] then
-        for slotId, itemId in pairs(bankItems[bagId]) do
-          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
+  -- Use GetItemCount(itemID, true) which includes items in bags, bank, and equipped
+  if trackedItemIds then
+    for itemId in pairs(trackedItemIds) do
+      if itemId then
+        local count = GetItemCount(itemId, true) or 0
+        if count > 0 then
+          itemCounts[itemId] = count
         end
       end
     end
@@ -355,24 +346,16 @@ function PlayerStateSnapshot:CapturePlayerState()
   local bankItems = bankIsOpen and GetBankItems() or (previousSnapshot and previousSnapshot.bankItems)
   local previousItemCounts = previousSnapshot and previousSnapshot.itemCounts
   local trackedItemIds = CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, previousItemCounts)
-  
+
   -- Capture remaining state information
   local timestamp = time()
   local currency = GetCurrencyInfo()
   local levelInfo = GetLevelAndExperience()
   local location = GetPlayerLocation()
-  
-  -- Build item counts using the same method as comparison (BuildItemCountMap)
+
+  -- Build item counts using GetItemCount (includes bags, bank, and equipped items)
   -- This ensures consistency between capture and comparison
-  local itemCounts = BuildItemCountMap(inventoryItems, bankItems)
-  -- Also include equipped items in counts
-  if equippedItems then
-    for _, itemId in pairs(equippedItems) do
-      if itemId then
-        itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
-      end
-    end
-  end
+  local itemCounts = BuildItemCountMap(trackedItemIds)
   
   -- Create player snapshot bundle (all state data)
   local playerSnapshot = {
@@ -417,51 +400,44 @@ function PlayerStateSnapshot:CapturePlayerState()
   return playerSnapshot
 end
 
-local function BuildStoredItemCounts(state)
-  local counts = BuildItemCountMap(state.inventoryItems, state.bankItems)
-  
-  if state.equippedItems then
-    for _, itemId in pairs(state.equippedItems) do
-      if itemId then
-        counts[itemId] = (counts[itemId] or 0) + 1
-      end
-    end
-  end
-  
-  return counts
-end
-
+-- Compare states using stored itemCounts vs current GetItemCount
+-- Returns true if changes detected, false otherwise
 local function CompareStates(oldState, newState)
   if not oldState or not newState then
     return true
   end
   
-  -- Compare equipped items (check all slots 0-19)
-  for slotId = 0, 19 do
-    local oldItemId = oldState.equippedItems and oldState.equippedItems[slotId] or nil
-    local newItemId = newState.equippedItems and newState.equippedItems[slotId] or nil
-    if oldItemId ~= newItemId then
-      return true -- Equipped item changed
-    end
-  end
+  -- Use stored itemCounts from oldState if available (captured using GetItemCount)
+  local oldItemCounts = oldState.itemCounts or {}
   
-  -- Compare items by count (allowing movement between bags and bank)
-  local oldItemCounts = BuildItemCountMap(oldState.inventoryItems, oldState.bankItems)
-  local newItemCounts = BuildItemCountMap(newState.inventoryItems, newState.bankItems)
-  
+  -- Build set of all item IDs to check (from old state and current observations)
   local allItemIds = {}
   for itemId in pairs(oldItemCounts) do
     allItemIds[itemId] = true
   end
-  for itemId in pairs(newItemCounts) do
-    allItemIds[itemId] = true
+  
+  -- Add currently observed items
+  local currentInventoryItems = newState.inventoryItems or {}
+  local currentEquippedItems = newState.equippedItems or {}
+  for _, bagSlots in pairs(currentInventoryItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  for _, itemId in pairs(currentEquippedItems) do
+    if itemId then
+      allItemIds[itemId] = true
+    end
   end
   
+  -- Compare counts using GetItemCount for current state
   for itemId in pairs(allItemIds) do
     local oldCount = oldItemCounts[itemId] or 0
-    local newCount = newItemCounts[itemId] or 0
-    if newCount > oldCount then
-      return true -- New stack appeared
+    local newCount = GetItemCount(itemId, true) or 0
+    if newCount ~= oldCount then
+      return true -- Item count changed
     end
   end
   
@@ -540,49 +516,36 @@ local function BuildChangeTable(oldState, newState)
     end
   end
   
-  -- Check item count changes (inventory + bank)
-  -- Use itemCounts from snapshot if available (already includes equipped items), otherwise build from inventory/bank
-  local oldItemCounts = {}
-  if oldState.itemCounts then
-    -- Snapshot itemCounts already includes equipped items, use as-is
-    for itemId, count in pairs(oldState.itemCounts) do
-      oldItemCounts[itemId] = count
-    end
-  else
-    -- Build from inventory/bank and add equipped items
-    oldItemCounts = BuildItemCountMap(oldState.inventoryItems, oldState.bankItems)
-    if oldState.equippedItems then
-      for _, itemId in pairs(oldState.equippedItems) do
-        if itemId then
-          oldItemCounts[itemId] = (oldItemCounts[itemId] or 0) + 1
-        end
-      end
-    end
-  end
+  -- Check item count changes using GetItemCount (includes bags, bank, and equipped)
+  -- Use itemCounts from snapshot if available (captured using GetItemCount)
+  local oldItemCounts = oldState.itemCounts or {}
   
-  -- Build new counts from inventory/bank and add equipped items (same method as capture)
-  local newItemCounts = BuildItemCountMap(newState.inventoryItems, newState.bankItems)
-  if newState.equippedItems then
-    for _, itemId in pairs(newState.equippedItems) do
-      if itemId then
-        newItemCounts[itemId] = (newItemCounts[itemId] or 0) + 1
-      end
-    end
-  end
-  
-  -- Find all item IDs that changed
+  -- Build set of all item IDs to check (from old state and current observations)
   local allItemIds = {}
   for itemId in pairs(oldItemCounts) do
     allItemIds[itemId] = true
   end
-  for itemId in pairs(newItemCounts) do
-    allItemIds[itemId] = true
+  
+  -- Add currently observed items
+  local currentInventoryItems = newState.inventoryItems or {}
+  local currentEquippedItems = newState.equippedItems or {}
+  for _, bagSlots in pairs(currentInventoryItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  for _, itemId in pairs(currentEquippedItems) do
+    if itemId then
+      allItemIds[itemId] = true
+    end
   end
   
-  -- Track item changes
+  -- Track item changes using GetItemCount for current state
   for itemId in pairs(allItemIds) do
     local oldCount = oldItemCounts[itemId] or 0
-    local newCount = newItemCounts[itemId] or 0
+    local newCount = GetItemCount(itemId, true) or 0
     if oldCount ~= newCount then
       changes.items[itemId] = { old = oldCount, new = newCount, delta = newCount - oldCount }
     end
@@ -768,41 +731,25 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   local hasChanges = false
   
   if storedItemCounts and next(storedItemCounts) then
-    local observedIds = GatherObservedItemIds()
-    
-    for itemId in pairs(observedIds) do
-      if itemId and storedItemCounts[itemId] == nil then
-        hasChanges = true
-        break
-      end
+    -- Build set of all item IDs to check (from stored state and current observations)
+    local allItemIds = {}
+    for itemId in pairs(storedItemCounts) do
+      allItemIds[itemId] = true
     end
     
-    if not hasChanges then
-      -- Check item count changes
-      local currentItemCounts = BuildItemCountMap(currentState.inventoryItems, currentState.bankItems)
-      if currentState.equippedItems then
-        for _, itemId in pairs(currentState.equippedItems) do
-          if itemId then
-            currentItemCounts[itemId] = (currentItemCounts[itemId] or 0) + 1
-          end
-        end
-      end
-      
-      for itemId, newCount in pairs(currentItemCounts) do
-        local oldCount = storedItemCounts[itemId] or 0
-        if newCount ~= oldCount then
-          hasChanges = true
-          break
-        end
-      end
-      
-      -- Also check for items that were in stored but not in current
-      for itemId, oldCount in pairs(storedItemCounts) do
-        local newCount = currentItemCounts[itemId] or 0
-        if newCount ~= oldCount then
-          hasChanges = true
-          break
-        end
+    -- Add currently observed items
+    local observedIds = GatherObservedItemIds()
+    for itemId in pairs(observedIds) do
+      allItemIds[itemId] = true
+    end
+    
+    -- Check item count changes using GetItemCount (includes bags, bank, and equipped)
+    for itemId in pairs(allItemIds) do
+      local oldCount = storedItemCounts[itemId] or 0
+      local newCount = GetItemCount(itemId, true) or 0
+      if newCount ~= oldCount then
+        hasChanges = true
+        break
       end
     end
   else
@@ -819,6 +766,8 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   end
   
   -- Compare XP/level (from deserialized snapshot)
+  -- XP changes are commented out - gaining XP should not trigger tamper detection
+  --[[
   local oldLevel = lastSnapshot.levelInfo and lastSnapshot.levelInfo.level or 0
   local oldXP = lastSnapshot.levelInfo and lastSnapshot.levelInfo.currentXP or 0
   local newLevel = currentState.levelInfo and currentState.levelInfo.level or 0
@@ -826,6 +775,7 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   if oldLevel ~= newLevel or oldXP ~= newXP then
     hasChanges = true
   end
+  --]]
   
   -- If changes detected, build and store change table
   if hasChanges then
@@ -1099,7 +1049,7 @@ function PlayerStateSnapshot:FormatChangeTable(changeTable)
         table.insert(itemChanges, {
           itemId = itemId,
           msg = string.format(
-            '%s added (count: %d → %d, +%d)',
+            '%s added (count: %d > %d, +%d)',
             itemDisplay,
             change.old,
             change.new,
@@ -1110,7 +1060,7 @@ function PlayerStateSnapshot:FormatChangeTable(changeTable)
         table.insert(itemChanges, {
           itemId = itemId,
           msg = string.format(
-            '%s removed (count: %d → %d, %d)',
+            '%s removed (count: %d > %d, %d)',
             itemDisplay,
             change.old,
             change.new,
@@ -1121,7 +1071,7 @@ function PlayerStateSnapshot:FormatChangeTable(changeTable)
         table.insert(itemChanges, {
           itemId = itemId,
           msg = string.format(
-            '%s changed (count: %d → %d)',
+            '%s changed (count: %d > %d)',
             itemDisplay,
             change.old,
             change.new
@@ -1192,7 +1142,7 @@ function PlayerStateSnapshot:FormatChangeTable(changeTable)
         ))
       else
         table.insert(changes, string.format(
-          '%s slot: %s → %s',
+          '%s slot: %s > %s',
           slotName,
           oldDisplay,
           newDisplay

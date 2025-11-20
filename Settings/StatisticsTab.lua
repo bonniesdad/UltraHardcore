@@ -246,16 +246,12 @@ function InitializeStatisticsTab()
         changeMessages = PlayerStateSnapshot:FormatChangeTable(changeTable)
       end
       
+      -- Always show generic message in red
+      legitStatusLine3:SetText('Character changes have been identified since the last session')
+      legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
+      
+      -- Add tooltip to show all changes on hover (only if we have messages)
       if changeMessages and #changeMessages > 0 then
-        -- Display the first change message, or combine multiple
-        if #changeMessages == 1 then
-          legitStatusLine3:SetText(changeMessages[1])
-        else
-          -- Show first message with count of additional changes
-          legitStatusLine3:SetText(changeMessages[1] .. ' (+' .. (#changeMessages - 1) .. ' more)')
-        end
-        
-        -- Add tooltip to show all changes on hover
         legitStatusLine3:SetScript('OnEnter', function()
           GameTooltip:SetOwner(legitStatusLine3, 'ANCHOR_RIGHT')
           GameTooltip:SetText('Character Changes Detected:', 1, 1, 1, 1, true)
@@ -268,12 +264,10 @@ function InitializeStatisticsTab()
           GameTooltip:Hide()
         end)
       else
-        legitStatusLine3:SetText('Character changes have been identified since the last session')
         -- Clear tooltip handlers if no changes
         legitStatusLine3:SetScript('OnEnter', nil)
         legitStatusLine3:SetScript('OnLeave', nil)
       end
-      legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
     else
       -- Clear tooltip handlers when passed
       legitStatusLine3:SetScript('OnEnter', nil)
