@@ -10,7 +10,7 @@ local AddonXPTracking = {
     [51] = 153900, [52] = 160400, [53] = 167100, [54] = 173900, [55] = 180800, [56] = 187900, [57] = 195000, [58] = 202300, [59] = 209800, [60] = 217400
   },
   highXpMark = 999999999,
-  DEBUGXP = false,
+  DEBUGXP = true,
   trackingInitialized = false
 }
 
@@ -83,6 +83,17 @@ function AddonXPTracking:ShouldRecalculateXPGainedWithAddon()
   end
 end
 
+function AddonXPTracking:ShouldCheckStat(statName)
+  local result = statName ~= "xpTotal"
+                  and statName ~= "xpGWA"
+                  and statName ~= "xpGWOA"
+                  and statName ~= "playerJumps"
+                  and statName ~= "lastSessionXP"
+                  and string.find(statName, "lowestHealth") == nil
+  --self:XPTrackingDebug("Should we count stats for " .. statName .. "? " .. tostring(result))
+  return result                  
+end
+
 function AddonXPTracking:GetHighestNonHealthStat()
   local stats = self:Stats()
   local highestXPStatName = ""
@@ -90,15 +101,11 @@ function AddonXPTracking:GetHighestNonHealthStat()
 
   for statName, _ in pairs(self:DefaultSettings()) do
     local xpForStat = stats[statName] 
-    if statName ~= "xpTotal" and statName ~= "xpGWA" and statName ~= "xpGWOA" and statName ~= "playerJumps" then
-      local startIdx = string.find(statName, "lowestHealth")
-
-      if startIdx == nil then
-        if xpForStat == nil then xpForStat = 0 end
-        if xpForStat > highestXp then
-          highestXPStatName = statName
-          highestXp = xpForStat
-        end
+    if self:ShouldCheckStat(statName) then
+      if xpForStat == nil then xpForStat = 0 end
+      if xpForStat > highestXp then
+        highestXPStatName = statName
+        highestXp = xpForStat
       end
     end
   end
