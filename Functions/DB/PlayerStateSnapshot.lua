@@ -637,20 +637,6 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   return hasChanges
 end
 
--- When bank access becomes available, compare new data against the stored snapshot.
--- If previously untracked items appear (typically in the bank), flag the player as tampered.
-function PlayerStateSnapshot:CheckBankForTampering()
-  local hasChanges = self:HasPlayerStateChanged()
-
-  if hasChanges then
-    self:SetTampered(true)
-    if type(GLOBAL_SETTINGS) == "table" and GLOBAL_SETTINGS.debugMode then
-      print("|cffff0000[ULTRA]|r Bank tampering detected while opening the bank.")
-    end
-  end
-
-  return hasChanges
-end
 
 -- Verify integrity of stored state (returns true if valid, false if tampered)
 function PlayerStateSnapshot:VerifyStateIntegrity()
@@ -1088,7 +1074,13 @@ local eventFrame = CreateFrame('Frame')
 local function OnStateChangeEvent(self, event, ...)
   if event == 'BANKFRAME_OPENED' then
     bankIsOpen = true
-    local tamperingDetected = PlayerStateSnapshot:CheckBankForTampering()
+    local hasChanges = PlayerStateSnapshot:HasPlayerStateChanged()
+    if hasChanges then
+      PlayerStateSnapshot:SetTampered(true)
+      if type(GLOBAL_SETTINGS) == "table" and GLOBAL_SETTINGS.debugMode then
+        print("|cffff0000[ULTRA]|r Bank tampering detected while opening the bank.")
+      end
+    end
     return
   elseif event == 'BANKFRAME_CLOSED' then
     bankIsOpen = false
