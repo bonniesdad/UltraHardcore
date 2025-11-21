@@ -50,7 +50,7 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
-    showTargetDebuffs = false,
+    -- showTargetDebuffs = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
@@ -73,6 +73,7 @@ function LoadDBData()
     roachHearthstoneInPartyCombat = false,
     guildSelfFound = false,
     groupSelfFound = false,
+    showDruidFormResourceBar = true,
     -- Group Found teammate names (locked in at level 2)
     -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
