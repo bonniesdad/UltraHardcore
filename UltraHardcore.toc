@@ -4,6 +4,7 @@
 ## Author: BonniesDad
 ## Notes: Making the game more difficult in various ways.
 ## SavedVariables: UltraHardcoreDB
+## SavedVariablesPerCharacter: UHC_ChallengeState
 
 UltraHardcore.lua
 
@@ -47,6 +48,8 @@ Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
 Functions/ExpBar.lua
+Functions/Challenges.lua
+Functions/ChallengesDefinitions.lua
 Functions/TradeRestriction.lua
 Functions/AddonXPTracking.lua
 
@@ -127,6 +130,8 @@ Settings/XFoundMode/IntroPage.lua
 Settings/XFoundMode/StatusPage.lua
 Settings/XFoundMode/GuildConfirmPage.lua
 Settings/XFoundMode/GroupConfirmPage.lua
+Settings/ChallengesTab.lua
+
 
 ## Constants
 Constants/PresetSections.lua
