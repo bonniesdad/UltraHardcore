@@ -542,6 +542,7 @@ resourceBar:RegisterEvent('GROUP_ROSTER_UPDATE')
 resourceBar:RegisterEvent('GROUP_JOINED')
 resourceBar:RegisterEvent('GROUP_LEFT')
 resourceBar:RegisterEvent('PLAYER_LOGIN')
+resourceBar:RegisterEvent('UNIT_INVENTORY_CHANGED')
 comboFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 
 -- Register druid form resource bar for events
@@ -655,8 +656,17 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
     -- Update pet resource when pet starts/stops attacking
     UpdatePetResourcePoints()
-  elseif unit == 'player' and event == 'UNIT_AURA' or event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'GROUP_LEFT' then
+  elseif unit == 'player' and event == 'UNIT_AURA'
+          or event == 'GROUP_ROSTER_UPDATE'
+          or event == 'GROUP_JOINED'
+          or event == 'GROUP_LEFT' then
     CenterPlayerBuffBar()
+  elseif unit == 'player' and event == 'UNIT_INVENTORY_CHANGED' then
+    -- This event triggers based on inventory items changing so it needs a small delay
+    -- or the normal buffs end up in the BuffFrame instead of the custom frame.
+    C_Timer.After(0.1, function()
+      CenterPlayerBuffBar()
+    end)
   end
 end)
 
