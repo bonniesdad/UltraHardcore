@@ -40,6 +40,9 @@ function IsAllowedByGuildList(name)
   -- Kick off a roster request in case cache isn't ready yet
   if _G.UHC_RequestGuildRoster then _G.UHC_RequestGuildRoster() end
 
+  -- Request guild roster information from the server
+  GuildRoster()
+
   local numGuildMembers = GetNumGuildMembers and GetNumGuildMembers() or 0
   for j = 1, numGuildMembers do
     local guildName = GetGuildRosterInfo(j)
