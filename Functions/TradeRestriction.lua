@@ -31,14 +31,16 @@ function IsAllowedByGuildList(name)
   if not normalizedTarget then
     return false
   end
-  
+
   -- Prefer cached roster if available
   if _G.UHC_GuildRoster and _G.UHC_GuildRoster.isReady and _G.UHC_GuildRoster.namesSet then
     return _G.UHC_GuildRoster.namesSet[normalizedTarget] == true
   end
 
   -- Kick off a roster request in case cache isn't ready yet
-  if _G.UHC_RequestGuildRoster then _G.UHC_RequestGuildRoster() end
+  if _G.UHC_RequestGuildRoster then
+    _G.UHC_RequestGuildRoster()
+  end
 
   -- Request guild roster information from the server
   GuildRoster()
@@ -54,6 +56,15 @@ function IsAllowedByGuildList(name)
   return false
 end
 
+-- Helper: treat players in guild "U L T R A" as Guild Found
+function IsUltraGuildMember()
+  local guildName = GetGuildInfo and GetGuildInfo('player')
+  if not guildName then
+    return false
+  end
+  return guildName == 'U L T R A'
+end
+
 -- Guild Found handshake (silent addon messages during trade)
 local ADDON_PREFIX_GF = 'UHC_GF'
 local verifiedPartners = {}
@@ -61,14 +72,21 @@ local verifiedPartners = {}
 local function MarkPartnerVerifiedGF(name)
   local normalized = NormalizeName(name)
   if not normalized then return end
-  verifiedPartners[normalized] = { gf = true, ts = GetTime() }
+  verifiedPartners[normalized] = {
+    gf = true,
+    ts = GetTime(),
+  }
 end
 
 local function IsPartnerVerifiedGF(name)
   local normalized = NormalizeName(name)
-  if not normalized then return false end
+  if not normalized then
+    return false
+  end
   local entry = verifiedPartners[normalized]
-  if not entry then return false end
+  if not entry then
+    return false
+  end
   -- consider verification fresh for 60 seconds
   return entry.gf and (GetTime() - (entry.ts or 0) < 60)
 end
@@ -77,8 +95,12 @@ end
 local tradeOverlay = nil
 
 local function EnsureTradeOverlay()
-  if tradeOverlay and tradeOverlay:GetParent() == TradeFrame then return tradeOverlay end
-  if not TradeFrame then return nil end
+  if tradeOverlay and tradeOverlay:GetParent() == TradeFrame then
+    return tradeOverlay
+  end
+  if not TradeFrame then
+    return nil
+  end
   tradeOverlay = CreateFrame('Frame', 'UHCTradeOverlay', TradeFrame)
   tradeOverlay:SetAllPoints(TradeFrame)
   tradeOverlay:SetFrameStrata(TradeFrame:GetFrameStrata())
@@ -105,7 +127,9 @@ end
 local function ShowTradeOverlay(message)
   local overlay = EnsureTradeOverlay()
   if not overlay then return end
-  if message then overlay.text:SetText(message) end
+  if message then
+    overlay.text:SetText(message)
+  end
   overlay:Show()
 end
 
@@ -132,12 +156,16 @@ local function NormalizeTradeTarget(name)
 end
 
 local function IsCurrentTradeTarget(name)
-  if not currentTradeValidation then return false end
+  if not currentTradeValidation then
+    return false
+  end
   return NormalizeTradeTarget(name) == currentTradeValidation.target
 end
 
 local function BuildOverlayMessage()
-  if not currentTradeValidation then return nil end
+  if not currentTradeValidation then
+    return nil
+  end
   local pending = {}
   if not currentTradeValidation.gfVerified then
     table.insert(pending, 'Guild Found handshake')
@@ -160,7 +188,11 @@ local function UpdateTradeOverlayStatus()
   end
 end
 
-local function EnsureTradeValidationState(targetName, requiresGuildVerification, requiresTamperVerification)
+local function EnsureTradeValidationState(
+targetName,
+  requiresGuildVerification,
+  requiresTamperVerification
+)
   currentTradeValidation = {
     target = NormalizeTradeTarget(targetName),
     gfVerified = not requiresGuildVerification,
@@ -173,13 +205,10 @@ local function EnsureTradeValidationState(targetName, requiresGuildVerification,
 end
 
 local function CompleteTradeValidationIfReady()
-  if not currentTradeValidation then
-    return
-  end
+  if not currentTradeValidation then return end
 
-  local tamperSatisfied = currentTradeValidation.requiresTamper
-      and currentTradeValidation.tamperVerified
-    or not currentTradeValidation.requiresTamper
+  local tamperSatisfied =
+    currentTradeValidation.requiresTamper and currentTradeValidation.tamperVerified or not currentTradeValidation.requiresTamper
 
   if currentTradeValidation.gfVerified and tamperSatisfied then
     currentTradeValidation.ready = true
@@ -188,11 +217,10 @@ local function CompleteTradeValidationIfReady()
 end
 
 local function CancelTradeForReason(message)
-  if currentTradeValidation and currentTradeValidation.cancelled then
-    return
-  end
+  if currentTradeValidation and currentTradeValidation.cancelled then return end
   if message then
     PrintRestrictionMessage(message)
+    SendChatMessage(message, 'EMOTE')
   end
   CancelTrade()
   if currentTradeValidation then
@@ -202,62 +230,60 @@ local function CancelTradeForReason(message)
 end
 
 local function MarkGuildVerificationComplete(name)
-  if not IsCurrentTradeTarget(name) or not currentTradeValidation then
-    return
-  end
+  if not IsCurrentTradeTarget(name) or not currentTradeValidation then return end
   currentTradeValidation.gfVerified = true
   UpdateTradeOverlayStatus()
   CompleteTradeValidationIfReady()
 end
 
-local function StartTamperVerification(targetName)
-  if not currentTradeValidation or not currentTradeValidation.requiresTamper then
-    return
-  end
+-- local function StartTamperVerification(targetName)
+--   if not currentTradeValidation or not currentTradeValidation.requiresTamper then return end
 
-  if not PlayerComm or not PlayerComm.RequestTamperStatus then
-    CancelTradeForReason(
-      'Trade with ' .. targetName .. ' cancelled - tamper verification unavailable.'
-    )
-    return
-  end
+--   if not PlayerComm or not PlayerComm.RequestTamperStatus then
+--     CancelTradeForReason(
+--       'Trade with ' .. targetName .. ' cancelled - tamper verification unavailable.'
+--     )
+--     return
+--   end
 
-  local requestAccepted = PlayerComm:RequestTamperStatus(targetName, function(isTampered, playerName, success)
-    if not IsCurrentTradeTarget(playerName) or not currentTradeValidation then
-      return
-    end
+--   local requestAccepted = PlayerComm:RequestTamperStatus(targetName, function(isTampered, playerName, success)
+--     if not IsCurrentTradeTarget(playerName) or not currentTradeValidation then
+--       return
+--     end
 
-    if not success then
-      CancelTradeForReason(
-        'Trade with ' .. targetName .. ' cancelled - tamper status verification timed out.'
-      )
-      return
-    end
+--     if not success then
+--       CancelTradeForReason(
+--         'Trade with ' .. targetName .. ' cancelled - tamper status verification timed out.'
+--       )
+--       return
+--     end
 
-    if isTampered then
-      CancelTradeForReason(
-        'Trade with ' .. targetName .. ' cancelled - player failed tamper verification.'
-      )
-      return
-    end
+--     if isTampered then
+--       CancelTradeForReason(
+--         'Trade with ' .. targetName .. ' cancelled - player failed tamper verification.'
+--       )
+--       return
+--     end
 
-    currentTradeValidation.tamperVerified = true
-    UpdateTradeOverlayStatus()
-    CompleteTradeValidationIfReady()
-  end)
+--     currentTradeValidation.tamperVerified = true
+--     UpdateTradeOverlayStatus()
+--     CompleteTradeValidationIfReady()
+--   end)
 
-  if not requestAccepted then
-    CancelTradeForReason(
-      'Trade with ' .. targetName .. ' cancelled - unable to request tamper verification.'
-    )
-    return
-  end
+--   if not requestAccepted then
+--     CancelTradeForReason(
+--       'Trade with ' .. targetName .. ' cancelled - unable to request tamper verification.'
+--     )
+--     return
+--   end
 
-  UpdateTradeOverlayStatus()
-end
+--   UpdateTradeOverlayStatus()
+-- end
 
 local function SendGuildFoundPing(targetName)
-  if not targetName then return false end
+  if not targetName then
+    return false
+  end
   if PlayerComm and PlayerComm.SendGuildFoundHandshake then
     return PlayerComm:SendGuildFoundHandshake('PING', targetName)
   end
@@ -272,7 +298,8 @@ frame:RegisterEvent('AUCTION_HOUSE_SHOW')
 frame:RegisterEvent('MAIL_INBOX_UPDATE')
 
 frame:SetScript('OnEvent', function(self, event, ...)
-  local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
+  local inGuildFound =
+    ((GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or IsUltraGuildMember())
   local inGroupFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
 
   if not (inGuildFound or inGroupFound) then return end
@@ -382,13 +409,12 @@ frame:SetScript('OnEvent', function(self, event, ...)
 end)
 
 local function HandleGuildFoundHandshake(payload)
-  if not payload or not payload.action or not payload.sender then
-    return
-  end
+  if not payload or not payload.action or not payload.sender then return end
 
   local sender = payload.sender
   local action = payload.action
-  local inGuildFound = GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound
+  local inGuildFound =
+    ((GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or IsUltraGuildMember())
 
   if action == 'PING' then
     if inGuildFound and PlayerComm and PlayerComm.SendGuildFoundHandshake then
