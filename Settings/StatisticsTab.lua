@@ -311,6 +311,7 @@ function InitializeStatisticsTab()
       legitStatusLine3:SetScript('OnEnter', nil)
       legitStatusLine3:SetScript('OnLeave', nil)
     end
+  end
 
     -- Helper to update the current preset display
     UpdateCurrentPresetDisplay = function()
