@@ -1,32 +1,10 @@
 -- Player State Snapshot
 -- Captures and stores player information to detect cheating by turning addon off/on
 
+local AceSerializer = LibStub("AceSerializer-3.0")
+
 local PlayerStateSnapshot = {}
 local bankIsOpen = false
-
--- Equipment slot IDs (0-19)
-local EQUIPMENT_SLOTS = {
-  [0] = 'AMMOSLOT',
-  [1] = 'HEAD',
-  [2] = 'NECK',
-  [3] = 'SHOULDER',
-  [4] = 'SHIRT',
-  [5] = 'CHEST',
-  [6] = 'WAIST',
-  [7] = 'LEGS',
-  [8] = 'FEET',
-  [9] = 'WRIST',
-  [10] = 'HAND',
-  [11] = 'FINGER0',
-  [12] = 'FINGER1',
-  [13] = 'TRINKET0',
-  [14] = 'TRINKET1',
-  [15] = 'BACK',
-  [16] = 'MAINHAND',
-  [17] = 'OFFHAND',
-  [18] = 'RANGED',
-  [19] = 'TABARDSLOT',
-}
 
 -- Get all equipped items
 local function GetEquippedItems()
@@ -103,40 +81,23 @@ local function GetBankItems()
       bankItems[bagId] = bagSlots
     end
   end
-  
   return bankItems
 end
 
 -- Get player currency information
 local function GetCurrencyInfo()
-  local currency = {
+  return {
     money = GetMoney(),
-  }
-  return currency
-end
-
--- Get player level and experience
-local function GetLevelAndExperience()
-  return {
-    level = UnitLevel('player'),
-    currentXP = UnitXP('player'),
-  }
-end
-
--- Get player location
-local function GetPlayerLocation()
-  local zoneName = GetZoneText()
-  local subZoneName = GetSubZoneText()
-  
-  return {
-    zoneName = zoneName,
-    subZoneName = subZoneName,
   }
 end
 
 -- Simple hash function for data integrity
--- Combines important values (items, money, level) into a hash to detect tampering
+-- Combines important values (items, money) into a hash to detect tampering
 local function GenerateStateHash(state)
+  if not state or type(state) ~= "table" then
+    return 0
+  end
+  
   local hash = 0
   
   -- Hash equipped items
@@ -174,30 +135,77 @@ local function GenerateStateHash(state)
     hash = hash + (state.currency.money or 0)
   end
   
-  -- Hash level
-  if state.levelInfo then
-    hash = hash + ((state.levelInfo.level or 0) * 1000000000)
-  end
-  
   -- Simple modulo to keep hash reasonable size
   return hash % 2147483647
+end
+
+-- Serialize any table using AceSerializer (makes data non-human-readable)
+local function SerializeData(data)
+  if not data or not AceSerializer then
+    return nil
+  end
+  
+  -- AceSerializer.Serialize can throw errors, so we wrap it in pcall
+  local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, data)
+  if success and serialized then
+    return serialized
+  end
+  
+  return nil
+end
+
+-- Deserialize data using AceSerializer
+local function DeserializeData(serializedData)
+  if not serializedData or not AceSerializer then
+    return nil
+  end
+  
+  -- AceSerializer.Deserialize already uses pcall internally and returns (success, data, ...) or (false, error)
+  -- So we should NOT wrap it in another pcall
+  local success, data = AceSerializer:Deserialize(serializedData)
+  
+  if success and data then
+    return data
+  end
+  
+  return nil
+end
+
+-- Get deserialized player snapshot from state
+local function GetDeserializedSnapshot(state)
+  if not state or not state.playerSnapshotSerialized then
+    return nil
+  end
+  
+  local snapshot = DeserializeData(state.playerSnapshotSerialized)
+  if snapshot and type(snapshot) == "table" then
+    return snapshot
+  end
+  
+  return nil
 end
 
 -- Verify hash matches state data
 -- Returns true if valid, false if tampered
 local function VerifyStateHash(state)
-  if not state or not state.hash then
-    return false -- No state or no hash
+  if not state or not state.playerSnapshotSerialized or not state.playerSnapshotHash then
+    return false
   end
   
-  -- Calculate expected hash from current state data
-  local expectedHash = GenerateStateHash(state)
+  local snapshot = DeserializeData(state.playerSnapshotSerialized)
+  if not snapshot or type(snapshot) ~= "table" then
+    return false -- Deserialization failed or invalid data type
+  end
+  
+  -- Calculate expected hash from deserialized data
+  local expectedHash = GenerateStateHash(snapshot)
   
   -- Compare stored hash with calculated hash
-  return state.hash == expectedHash
+  return state.playerSnapshotHash == expectedHash
 end
 
-local function CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, previousCounts)
+-- Collect all item IDs from equipped, inventory, bank, and previous counts
+local function CollectAllItemIds(equippedItems, inventoryItems, bankItems, previousCounts)
   local ids = {}
   
   if inventoryItems then
@@ -230,13 +238,30 @@ local function CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, p
   
   if previousCounts then
     for itemId in pairs(previousCounts) do
-      if itemId then
-        ids[itemId] = true
-      end
+      ids[itemId] = true
     end
   end
   
   return ids
+end
+
+-- Build item count map using GetItemCount (includes bags, bank, and equipped items)
+-- This allows items to move between equipped/bags/bank without triggering false positives
+local function BuildItemCountMap(trackedItemIds)
+  local itemCounts = {}
+  
+  if trackedItemIds then
+    for itemId in pairs(trackedItemIds) do
+      if itemId then
+        local count = GetItemCount(itemId, true) or 0
+        if count > 0 then
+          itemCounts[itemId] = count
+        end
+      end
+    end
+  end
+  
+  return itemCounts
 end
 
 -- Capture complete player state snapshot
@@ -258,50 +283,56 @@ function PlayerStateSnapshot:CapturePlayerState()
   
   -- Preserve existing tamper flags (don't overwrite them)
   local existingState = UltraHardcoreDB.playerState[characterGUID] or {}
-  local existingTamperHash = existingState.tamperHash
-  local existingTamperTimestamp = existingState.tamperTimestamp
+  local existingTamperHash = existingState.playerHash
+  local existingTamperTimestamp = existingState.playerTimestamp
+  
+  -- Get previous snapshot if it exists (for bank items and item counts)
+  local previousSnapshot = GetDeserializedSnapshot(existingState)
   
   local equippedItems = GetEquippedItems()
   local inventoryItems = GetInventoryItems()
-  local bankItems = bankIsOpen and GetBankItems() or existingState.bankItems
-  local previousItemCounts = existingState.itemCounts
-  local trackedItemIds = CollectTrackedItemIds(equippedItems, inventoryItems, bankItems, previousItemCounts)
-  
+  local bankItems = bankIsOpen and GetBankItems() or (previousSnapshot and previousSnapshot.bankItems)
+  local previousItemCounts = previousSnapshot and previousSnapshot.itemCounts
+  local trackedItemIds = CollectAllItemIds(equippedItems, inventoryItems, bankItems, previousItemCounts)
+
   -- Capture remaining state information
   local timestamp = time()
   local currency = GetCurrencyInfo()
-  local levelInfo = GetLevelAndExperience()
-  local location = GetPlayerLocation()
+
+  -- Build item counts using GetItemCount (includes bags, bank, and equipped items)
+  -- This ensures consistency between capture and comparison
+  local itemCounts = BuildItemCountMap(trackedItemIds)
   
-  existingState.timestamp = timestamp
-  existingState.equippedItems = equippedItems
-  existingState.inventoryItems = inventoryItems
-  existingState.bankItems = bankItems
-  existingState.itemCounts = {}
+  -- Create player snapshot bundle (all state data)
+  local playerSnapshot = {
+    timestamp = timestamp,
+    equippedItems = equippedItems,
+    inventoryItems = inventoryItems,
+    bankItems = bankItems,
+    itemCounts = itemCounts,
+    currency = currency,
+  }
   
-  if trackedItemIds then
-    for itemId in pairs(trackedItemIds) do
-      if itemId then
-        local totalCount = GetItemCount(itemId, true) or 0
-        existingState.itemCounts[itemId] = totalCount
-      end
-    end
-  end
-  
-  existingState.currency = currency
-  existingState.levelInfo = levelInfo
-  existingState.location = location
-  
-  -- Generate and store hash for integrity checking
-  existingState.hash = GenerateStateHash(existingState)
+  -- Generate and store hash for integrity checking (one-line verification)
+  local stateHash = GenerateStateHash(playerSnapshot)
   
   -- Preserve tamper flags (don't overwrite persistent tamper detection)
   if existingTamperHash then
-    existingState.tamperHash = existingTamperHash
+    existingState.playerHash = existingTamperHash
   end
   if existingTamperTimestamp then
-    existingState.tamperTimestamp = existingTamperTimestamp
+    existingState.playerTimestamp = existingTamperTimestamp
   end
+  
+    -- Serialize the entire player snapshot (non-human-readable)
+    local snapshotSerialized = SerializeData(playerSnapshot)
+    if not snapshotSerialized then
+      -- Serialization failed - this shouldn't happen
+      return nil
+    end
+    
+    existingState.playerSnapshotSerialized = snapshotSerialized
+    existingState.playerSnapshotHash = stateHash
   
   -- Store the state
   UltraHardcoreDB.playerState[characterGUID] = existingState
@@ -309,112 +340,206 @@ function PlayerStateSnapshot:CapturePlayerState()
   -- Save to database
   SaveDBData('playerState', UltraHardcoreDB.playerState)
   
-  return existingState
+  -- Return deserialized state for compatibility
+  return playerSnapshot
 end
 
--- Build item count map from bags and bank (items can move between them)
-local function BuildItemCountMap(inventoryItems, bankItems)
-  local itemCounts = {}
-  
-  -- Count items in bags
-  if inventoryItems then
-    for bagId = 0, 4 do
-      if inventoryItems[bagId] then
-        for slotId, itemId in pairs(inventoryItems[bagId]) do
-          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
-        end
-      end
-    end
-  end
-  
-  -- Count items in bank
-  if bankItems then
-    for bagId = -1, 11 do
-      if bankItems[bagId] then
-        for slotId, itemId in pairs(bankItems[bagId]) do
-          itemCounts[itemId] = (itemCounts[itemId] or 0) + 1
-        end
-      end
-    end
-  end
-  
-  return itemCounts
-end
-
-local function BuildStoredItemCounts(state)
-  local counts = BuildItemCountMap(state.inventoryItems, state.bankItems)
-  
-  if state.equippedItems then
-    for _, itemId in pairs(state.equippedItems) do
-      if itemId then
-        counts[itemId] = (counts[itemId] or 0) + 1
-      end
-    end
-  end
-  
-  return counts
-end
-
-local function CompareStates(oldState, newState)
+-- Check if new items were added or currency changed
+-- Returns true if tampering detected (new items or currency change), false otherwise
+local function DetectTampering(oldState, newState)
   if not oldState or not newState then
-    return true
+    return false
   end
   
-  -- Compare equipped items (check all slots 0-19)
-  for slotId = 0, 19 do
-    local oldItemId = oldState.equippedItems and oldState.equippedItems[slotId] or nil
-    local newItemId = newState.equippedItems and newState.equippedItems[slotId] or nil
-    if oldItemId ~= newItemId then
-      return true -- Equipped item changed
-    end
+  -- Check for currency change (both increases and decreases are suspicious)
+  local oldMoney = oldState.currency and oldState.currency.money or 0
+  local newMoney = newState.currency and newState.currency.money or 0
+  if newMoney ~= oldMoney then
+    return true -- Currency changed
   end
   
-  -- Compare items by count (allowing movement between bags and bank)
-  local oldItemCounts = BuildItemCountMap(oldState.inventoryItems, oldState.bankItems)
-  local newItemCounts = BuildItemCountMap(newState.inventoryItems, newState.bankItems)
+  -- Check for new items (items that increased in count)
+  local oldItemCounts = oldState.itemCounts or {}
   
+  -- Build set of all item IDs to check (from old state and current observations)
   local allItemIds = {}
   for itemId in pairs(oldItemCounts) do
     allItemIds[itemId] = true
   end
-  for itemId in pairs(newItemCounts) do
+  
+  -- Add currently observed items
+  local currentInventoryItems = newState.inventoryItems or {}
+  local currentEquippedItems = newState.equippedItems or {}
+  local currentBankItems = newState.bankItems or {}
+  for _, bagSlots in pairs(currentInventoryItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  for _, itemId in pairs(currentEquippedItems) do
+    if itemId then
+      allItemIds[itemId] = true
+    end
+  end
+  for _, bagSlots in pairs(currentBankItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  
+  -- Check for items that increased in count (new items)
+  for itemId in pairs(allItemIds) do
+    local oldCount = oldItemCounts[itemId] or 0
+    local newCount = GetItemCount(itemId, true) or 0
+    if newCount > oldCount then
+      return true -- Item count increased (new items added)
+    end
+  end
+  
+  return false -- No tampering detected
+end
+
+-- Build a detailed table of what changed between two states
+-- Only tracks new items (increased counts) and currency changes (both directions)
+local function BuildChangeTable(oldState, newState)
+  local changes = {
+    items = {},
+    currency = {},
+    hashMismatch = false,
+  }
+  
+  if not oldState or not newState then
+    return changes
+  end
+  
+  -- Check currency changes (both increases and decreases are suspicious)
+  local oldMoney = oldState.currency and oldState.currency.money or 0
+  local newMoney = newState.currency and newState.currency.money or 0
+  
+  if newMoney ~= oldMoney then
+    changes.currency = {
+      money = { old = oldMoney, new = newMoney, delta = newMoney - oldMoney },
+    }
+  end
+  
+  -- Check for new items (items that increased in count)
+  local oldItemCounts = oldState.itemCounts or {}
+  
+  -- Build set of all item IDs to check (from old state and current observations)
+  local allItemIds = {}
+  for itemId in pairs(oldItemCounts) do
     allItemIds[itemId] = true
   end
   
+  -- Add currently observed items
+  local currentInventoryItems = newState.inventoryItems or {}
+  local currentEquippedItems = newState.equippedItems or {}
+  local currentBankItems = newState.bankItems or {}
+  for _, bagSlots in pairs(currentInventoryItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  for _, itemId in pairs(currentEquippedItems) do
+    if itemId then
+      allItemIds[itemId] = true
+    end
+  end
+  for _, bagSlots in pairs(currentBankItems) do
+    for _, itemId in pairs(bagSlots) do
+      if itemId then
+        allItemIds[itemId] = true
+      end
+    end
+  end
+  
+  -- Track only items that increased in count (new items)
   for itemId in pairs(allItemIds) do
     local oldCount = oldItemCounts[itemId] or 0
-    local newCount = newItemCounts[itemId] or 0
+    local newCount = GetItemCount(itemId, true) or 0
     if newCount > oldCount then
-      return true -- New stack appeared
+      changes.items[itemId] = { old = oldCount, new = newCount, delta = newCount - oldCount }
     end
   end
   
-  return false
+  -- Check for hash mismatch (tampering indicator)
+  -- Note: oldState here is the stored state object, not the deserialized snapshot
+  if oldState and oldState.playerSnapshotSerialized and oldState.playerSnapshotHash then
+    local snapshot = DeserializeData(oldState.playerSnapshotSerialized)
+    if snapshot and type(snapshot) == "table" then
+      local expectedHash = GenerateStateHash(snapshot)
+      if oldState.playerSnapshotHash ~= expectedHash then
+        changes.hashMismatch = true
+      end
+    else
+      changes.hashMismatch = true -- Deserialization failed or invalid data type
+    end
+  end
+  
+  return changes
 end
 
-local function GatherObservedItemIds()
-  local ids = {}
-  local inventoryItems = GetInventoryItems()
-  if inventoryItems then
-    for _, bagSlots in pairs(inventoryItems) do
-      for _, itemId in pairs(bagSlots) do
-        if itemId then
-          ids[itemId] = true
-        end
-      end
+-- Hash a change table for integrity
+local function HashChangeTable(changes)
+  if not changes or type(changes) ~= "table" or not next(changes) then
+    return 0
+  end
+  
+  local hash = 0
+  
+  -- Hash currency changes
+  if changes.currency and changes.currency.money then
+    hash = hash + (changes.currency.money.delta or 0) * 1000000000
+  end
+  
+  -- Hash new items (items that increased)
+  if changes.items and next(changes.items) then
+    for itemId, change in pairs(changes.items) do
+      hash = hash + (itemId * 100000) + ((change.delta or 0) * 1000) + (change.new or 0)
     end
   end
   
-  local equippedItems = GetEquippedItems()
-  if equippedItems then
-    for _, itemId in pairs(equippedItems) do
-      if itemId then
-        ids[itemId] = true
-      end
-    end
+  -- Hash mismatch flag
+  if changes.hashMismatch then
+    hash = hash + 999999999
   end
   
-  return ids
+  return hash % 2147483647
+end
+
+-- Serialize change table (wrapper for consistency)
+local function SerializeChangeTable(changeTable)
+  return SerializeData(changeTable)
+end
+
+-- Deserialize change table (wrapper for consistency)
+local function DeserializeChangeTable(serializedData)
+  local changeTable = DeserializeData(serializedData)
+  if changeTable and type(changeTable) == "table" then
+    return changeTable
+  end
+  
+  return nil
+end
+
+-- Verify change table hash matches the actual change table data
+-- Returns true if valid, false if tampered
+local function VerifyChangeTableHash(changeTable, storedHash)
+  if not changeTable or type(changeTable) ~= "table" or not storedHash then
+    return false -- No change table or hash to verify
+  end
+  
+  -- Calculate expected hash from current change table
+  local expectedHash = HashChangeTable(changeTable)
+  
+  -- Compare stored hash with calculated hash
+  return storedHash == expectedHash
 end
 
 -- Compare two states and return true if anything changed
@@ -437,65 +562,81 @@ function PlayerStateSnapshot:HasPlayerStateChanged()
   
   -- Get last known state
   local lastState = nil
+  local lastSnapshot = nil
   if UltraHardcoreDB.playerState[characterGUID] then
     lastState = UltraHardcoreDB.playerState[characterGUID]
     
-    -- Only treat it as a valid previous state if it has a hash (meaning it was captured before)
+    -- Deserialize the stored snapshot
+    lastSnapshot = GetDeserializedSnapshot(lastState)
+    
+    -- Only treat it as a valid previous state if it has a serialized snapshot and hash
     -- An empty state entry doesn't count as a previous state
-    if not lastState.hash then
+    if not lastState.playerSnapshotSerialized or not lastState.playerSnapshotHash then
       return false -- No valid previous state (empty entry, first time)
     end
     
+    -- Only verify hash if we have a valid deserialized snapshot to compare against
+    -- If deserialization fails, don't treat it as tampering (might be corrupted data)
+    if not lastSnapshot or type(lastSnapshot) ~= "table" then
+      return false -- Can't verify without valid snapshot
+    end
+    
     -- Verify hash integrity - if hash doesn't match, data was tampered with
-    if not VerifyStateHash(lastState) then
+    local hashValid = VerifyStateHash(lastState)
+    if not hashValid then
+      -- Build change table for hash mismatch
+      local currentState = {
+        equippedItems = GetEquippedItems(),
+        inventoryItems = GetInventoryItems(),
+        bankItems = bankIsOpen and GetBankItems() or (lastSnapshot and lastSnapshot.bankItems),
+        currency = GetCurrencyInfo(),
+      }
+      local changes = BuildChangeTable(lastSnapshot, currentState)
+      changes.hashMismatch = true
+      -- Serialize change table before storing (non-human-readable)
+      local serialized = SerializeChangeTable(changes)
+      if serialized then
+        lastState.changeTableSerialized = serialized
+        lastState.changeTableHash = HashChangeTable(changes)
+        SaveDBData('playerState', UltraHardcoreDB.playerState)
+      end
       return true -- Hash mismatch indicates tampering
     end
+    -- Hash matches - data integrity is good, but we still need to check for state changes
+    -- (changes could have happened while addon was off)
   end
   
   -- If no previous state exists, we can't compare
-  if not lastState then
+  if not lastState or not lastSnapshot or type(lastSnapshot) ~= "table" then
     return false -- No previous state to compare against
   end
   
-  local storedItemCounts = lastState.itemCounts
-  if storedItemCounts and next(storedItemCounts) then
-    local observedIds = GatherObservedItemIds()
-    
-    for itemId in pairs(observedIds) do
-      if itemId and storedItemCounts[itemId] == nil then
-        return true -- brand new item detected
-      end
+  -- Build current state for comparison
+  local currentState = {
+    equippedItems = GetEquippedItems(),
+    inventoryItems = GetInventoryItems(),
+    bankItems = bankIsOpen and GetBankItems() or (lastSnapshot and lastSnapshot.bankItems),
+    currency = GetCurrencyInfo(),
+  }
+  
+  -- Check for tampering (new items or currency increases only)
+  local hasChanges = DetectTampering(lastSnapshot, currentState)
+  
+  -- If changes detected, build and store change table
+  if hasChanges then
+    local changes = BuildChangeTable(lastSnapshot, currentState)
+    -- Serialize change table before storing (non-human-readable)
+    local serialized = SerializeChangeTable(changes)
+    if serialized then
+      lastState.changeTableSerialized = serialized
+      lastState.changeTableHash = HashChangeTable(changes)
+      SaveDBData('playerState', UltraHardcoreDB.playerState)
     end
-  else
-    local currentState = {
-      equippedItems = GetEquippedItems(),
-      inventoryItems = GetInventoryItems(),
-      bankItems = bankIsOpen and GetBankItems() or lastState.bankItems,
-    }
-    
-    if CompareStates(lastState, currentState) then
-      return true
-    end
   end
   
-  -- Compare currency
-  local oldMoney = lastState.currency and lastState.currency.money or 0
-  local newMoney = GetMoney()
-  if oldMoney ~= newMoney then
-    return true
-  end
-  
-  -- Compare XP/level
-  local oldLevel = lastState.levelInfo and lastState.levelInfo.level or 0
-  local oldXP = lastState.levelInfo and lastState.levelInfo.currentXP or 0
-  local newLevel = UnitLevel('player')
-  local newXP = UnitXP('player')
-  if oldLevel ~= newLevel or oldXP ~= newXP then
-    return true
-  end
-  
-  return false
+  return hasChanges
 end
+
 
 -- Verify integrity of stored state (returns true if valid, false if tampered)
 function PlayerStateSnapshot:VerifyStateIntegrity()
@@ -516,16 +657,72 @@ function PlayerStateSnapshot:VerifyStateIntegrity()
     return true -- No state to verify, but not tampered (normal for new database)
   end
   
-  -- If state exists but has no hash, it's invalid (shouldn't happen normally)
-  if not state.hash then
-    return false -- State exists but corrupted (no hash)
+  -- If state exists but has no serialized snapshot or hash, it's invalid
+  if not state.playerSnapshotSerialized or not state.playerSnapshotHash then
+    return false -- State exists but corrupted (no serialized snapshot or hash)
   end
   
   local hashValid = VerifyStateHash(state)
+  
+  -- If hash is invalid, build and store change table
+  if not hashValid then
+    local lastSnapshot = GetDeserializedSnapshot(state)
+    
+    -- Even if deserialization fails, we should create a change table to explain the issue
+    if not lastSnapshot or type(lastSnapshot) ~= "table" then
+      -- Create a minimal change table indicating deserialization failure
+      local changes = {
+        hashMismatch = true,
+        deserializationFailed = true,
+        items = {},
+        currency = {},
+      }
+      local serialized = SerializeChangeTable(changes)
+      if serialized then
+        state.changeTableSerialized = serialized
+        state.changeTableHash = HashChangeTable(changes)
+        SaveDBData('playerState', UltraHardcoreDB.playerState)
+      end
+      return false
+    end
+    
+    local currentState = {
+      equippedItems = GetEquippedItems(),
+      inventoryItems = GetInventoryItems(),
+      bankItems = bankIsOpen and GetBankItems() or (lastSnapshot and lastSnapshot.bankItems),
+      currency = GetCurrencyInfo(),
+    }
+    local changes = BuildChangeTable(lastSnapshot, currentState)
+    changes.hashMismatch = true
+    -- Serialize change table before storing (non-human-readable)
+    local serialized = SerializeChangeTable(changes)
+    if serialized then
+      state.changeTableSerialized = serialized
+      state.changeTableHash = HashChangeTable(changes)
+      SaveDBData('playerState', UltraHardcoreDB.playerState)
+    end
+  end
+  
+  -- Also verify change table hash if it exists
+  if state.changeTableSerialized and state.changeTableHash then
+    local changeTable = DeserializeChangeTable(state.changeTableSerialized)
+    if not changeTable then
+      -- Deserialization failed - data corrupted
+      PlayerStateSnapshot:SetTampered(true)
+      return false
+    end
+    
+    if not VerifyChangeTableHash(changeTable, state.changeTableHash) then
+      -- Change table was tampered with - set tamper flag
+      PlayerStateSnapshot:SetTampered(true)
+      return false -- State is invalid due to tampered change table
+    end
+  end
+  
   return hashValid
 end
 
--- Get last captured state for current player
+-- Get last captured state for current player (returns deserialized snapshot)
 function PlayerStateSnapshot:GetLastState()
   local characterGUID = UnitGUID('player')
   
@@ -534,10 +731,137 @@ function PlayerStateSnapshot:GetLastState()
   end
   
   if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
-    return UltraHardcoreDB.playerState[characterGUID]
+    local state = UltraHardcoreDB.playerState[characterGUID]
+    -- Return deserialized snapshot
+    return GetDeserializedSnapshot(state)
   end
   
   return nil
+end
+
+-- Get the change table for the current player (what changed when tampering was detected)
+-- Automatically verifies hash integrity - if tampered, returns nil and sets tamper flag
+-- Deserializes the change table from stored serialized data
+function PlayerStateSnapshot:GetChangeTable()
+  local characterGUID = UnitGUID('player')
+  
+  if not characterGUID then
+    return nil
+  end
+  
+  if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
+    local state = UltraHardcoreDB.playerState[characterGUID]
+    
+    -- Check for serialized change table (new format)
+    if state.changeTableSerialized and state.changeTableHash then
+      -- Deserialize the change table
+      local changeTable = DeserializeChangeTable(state.changeTableSerialized)
+      if not changeTable or type(changeTable) ~= "table" then
+        -- Deserialization failed - data corrupted
+        -- Create a fallback change table so user can see something
+        changeTable = {
+          hashMismatch = true,
+          deserializationFailed = true,
+          items = {},
+          currency = {},
+        }
+        -- Don't set tamper flag again (already set)
+        return changeTable, state.changeTableHash
+      end
+      
+      -- Verify hash integrity - if hash doesn't match, change table was tampered with
+      local hashValid = VerifyChangeTableHash(changeTable, state.changeTableHash)
+      if not hashValid then
+        -- Hash mismatch indicates tampering - set tamper flag
+        -- Return the table anyway so user can see what was detected
+        -- Don't set tamper flag again (already set)
+        return changeTable, state.changeTableHash
+      end
+      
+      -- Hash is valid, return the deserialized change table
+      return changeTable, state.changeTableHash
+    end
+  end
+  
+  return nil
+end
+
+-- Format change table into an ordered list of readable strings
+-- Returns an array of formatted change messages: Hash Mismatch, Currency Increases, New Items
+function PlayerStateSnapshot:FormatChangeTable(changeTable)
+  if not changeTable or type(changeTable) ~= "table" then
+    return {}
+  end
+  
+  local changes = {}
+  
+  -- Check for hash mismatch first (highest priority indicator)
+  if changeTable.hashMismatch then
+    if changeTable.deserializationFailed then
+      table.insert(changes, 'State data corruption detected (deserialization failed)')
+    else
+      table.insert(changes, 'State hash mismatch detected (possible tampering)')
+    end
+  end
+  
+  -- Currency changes (both increases and decreases are tracked)
+  if changeTable.currency and changeTable.currency.money then
+    local money = changeTable.currency.money
+    local oldFormatted = GetCoinText(money.old, " ")
+    local newFormatted = GetCoinText(money.new, " ")
+    
+    if money.delta > 0 then
+      local deltaFormatted = GetCoinText(money.delta, " ")
+      table.insert(changes, string.format(
+        'Currency increased from %s to %s (+%s)',
+        oldFormatted,
+        newFormatted,
+        deltaFormatted
+      ))
+    elseif money.delta < 0 then
+      local deltaFormatted = GetCoinText(math.abs(money.delta), " ")
+      table.insert(changes, string.format(
+        'Currency decreased from %s to %s (-%s)',
+        oldFormatted,
+        newFormatted,
+        deltaFormatted
+      ))
+    else
+      table.insert(changes, string.format(
+        'Currency changed from %s to %s',
+        oldFormatted,
+        newFormatted
+      ))
+    end
+  end
+  
+  -- New items (only items that increased in count are tracked)
+  if changeTable.items and next(changeTable.items) then
+    local itemChanges = {}
+    for itemId, change in pairs(changeTable.items) do
+      local itemName = GetItemInfo and GetItemInfo(itemId)
+      local itemDisplay = itemName or ('Item ' .. tostring(itemId))
+      
+      if change.delta > 0 then
+        table.insert(itemChanges, {
+          itemId = itemId,
+          msg = string.format(
+            '%s added (+%d)',
+            itemDisplay,
+            change.delta
+          )
+        })
+      end
+    end
+    
+    -- Sort item changes by item ID for consistent ordering
+    table.sort(itemChanges, function(a, b) return a.itemId < b.itemId end)
+    for _, itemChange in ipairs(itemChanges) do
+      table.insert(changes, itemChange.msg)
+    end
+  end
+  
+  return changes
 end
 
 -- Generate tamper flag hash (prevents players from editing the database)
@@ -582,7 +906,7 @@ function PlayerStateSnapshot:IsTampered()
   local state = UltraHardcoreDB.playerState[characterGUID]
   
   -- If no tamper hash exists, assume clean
-  if not state.tamperHash then
+  if not state.playerHash then
     return false
   end
   
@@ -590,7 +914,7 @@ function PlayerStateSnapshot:IsTampered()
   -- Verify hash matches expected value for tampered=true
   local isValidTampered = false
   local success, result = pcall(function()
-    return VerifyTamperFlagHash(characterGUID, state.tamperHash, true)
+    return VerifyTamperFlagHash(characterGUID, state.playerHash, true)
   end)
   if success then
     isValidTampered = result
@@ -606,15 +930,15 @@ function PlayerStateSnapshot:IsTampered()
   -- Hash doesn't match tampered=true, so player is NOT tampered
   -- Clear any invalid timestamp (from old bug or corruption)
   local needsSave = false
-  if state.tamperTimestamp then
-    state.tamperTimestamp = nil
+  if state.playerTimestamp then
+    state.playerTimestamp = nil
     needsSave = true
   end
   
   -- Verify hash matches expected value for tampered=false
   local isValidClean = false
   success, result = pcall(function()
-    return VerifyTamperFlagHash(characterGUID, state.tamperHash, false)
+    return VerifyTamperFlagHash(characterGUID, state.playerHash, false)
   end)
   if success then
     isValidClean = result
@@ -626,7 +950,7 @@ function PlayerStateSnapshot:IsTampered()
   if not isValidClean then
     -- Hash is corrupted or invalid - update it to match clean state
     local cleanHash = GenerateTamperFlagHash(characterGUID, false)
-    state.tamperHash = cleanHash
+    state.playerHash = cleanHash
     needsSave = true
   end
   
@@ -657,15 +981,15 @@ function PlayerStateSnapshot:SetTampered(isTampered)
   
   -- Generate and store hashed tamper flag
   local tamperHash = GenerateTamperFlagHash(characterGUID, isTampered)
-  UltraHardcoreDB.playerState[characterGUID].tamperHash = tamperHash
+  UltraHardcoreDB.playerState[characterGUID].playerHash = tamperHash
   
   -- If setting tampered=true, store timestamp (one-way flag)
   -- This prevents clearing by editing hash to "false" value
   if isTampered then
-    UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = time()
+    UltraHardcoreDB.playerState[characterGUID].playerTimestamp = time()
   else
     -- Only clear timestamp if explicitly clearing via function (appeals)
-    UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = nil
+    UltraHardcoreDB.playerState[characterGUID].playerTimestamp = nil
   end
   
   SaveDBData('playerState', UltraHardcoreDB.playerState)
@@ -675,6 +999,18 @@ end
 -- Clear tamper flag (for appeals/manual override)
 function PlayerStateSnapshot:ClearTamperFlag()
   return self:SetTampered(false)
+end
+
+-- Reset tamper state: clears flag and updates snapshot to current state
+-- This prevents re-flagging on next login since the snapshot will match current state
+function PlayerStateSnapshot:ResetTamperState()
+  local cleared = self:ClearTamperFlag()
+  if cleared then
+    -- Update snapshot to current state so future comparisons won't re-flag
+    self:CapturePlayerState()
+    return true
+  end
+  return false
 end
 
 -- Helper function for login: Check for changes and set persistent hashed tamper flag
@@ -699,23 +1035,29 @@ function PlayerStateSnapshot:OnLogin()
     UltraHardcoreDB.playerState[characterGUID] = {}
   end
   
-  local hasChanged = self:HasPlayerStateChanged()
+  -- Check if we have a valid previous state before checking for changes
+  -- Don't check for changes on first login (when there's no previous state)
+  local previousStateExists = UltraHardcoreDB.playerState[characterGUID] and 
+                              UltraHardcoreDB.playerState[characterGUID].playerSnapshotSerialized ~= nil and
+                              UltraHardcoreDB.playerState[characterGUID].playerSnapshotHash ~= nil
   
-  -- If tampering detected, set persistent hashed flag (one-way, never clears)
-  if hasChanged then
-    self:SetTampered(true)
-  end
-  
-  -- Also check hash integrity and set flag if invalid (one-way, never clears)
-  -- Only check if we have a previous state - if no state exists, there's nothing to verify
-  local previousStateExists = UltraHardcoreDB.playerState[characterGUID] and UltraHardcoreDB.playerState[characterGUID].hash ~= nil
+  local hasChanged = false
   if previousStateExists then
+    hasChanged = self:HasPlayerStateChanged()
+    
+    -- If tampering detected, set persistent hashed flag (one-way, never clears)
+    if hasChanged then
+      self:SetTampered(true)
+    end
+    
+    -- Also check hash integrity and set flag if invalid (one-way, never clears)
     local isValid = self:VerifyStateIntegrity()
     if not isValid then
       self:SetTampered(true)
       hasChanged = true
     end
   end
+  -- If no previous state exists, this is the first login - don't check for changes
   
   return hasChanged
 end
@@ -728,48 +1070,55 @@ end
 -- Event frame for automatic state capture
 local eventFrame = CreateFrame('Frame')
 
-local function CaptureOnEvent()
-  if not UnitGUID('player') then
-    return
-  end
-  
-  PlayerStateSnapshot:CapturePlayerState()
-end
-
 -- Event handler
 local function OnStateChangeEvent(self, event, ...)
   if event == 'BANKFRAME_OPENED' then
     bankIsOpen = true
-    CaptureOnEvent()
+    local hasChanges = PlayerStateSnapshot:HasPlayerStateChanged()
+    if hasChanges then
+      PlayerStateSnapshot:SetTampered(true)
+      if type(GLOBAL_SETTINGS) == "table" and GLOBAL_SETTINGS.debugMode then
+        print("|cffff0000[ULTRA]|r Bank tampering detected while opening the bank.")
+      end
+    end
     return
   elseif event == 'BANKFRAME_CLOSED' then
     bankIsOpen = false
     return
   elseif event == 'PLAYERBANKSLOTS_CHANGED' or event == 'PLAYERBANKBAGSLOTS_CHANGED' then
     bankIsOpen = true
+    -- Bank items changed, capture state
+    PlayerStateSnapshot:CapturePlayerState()
+    return
   elseif event == 'PLAYER_ENTERING_WORLD' then
     if not UltraHardcoreDB then
       UltraHardcoreDB = {}
     end
+    return
+  elseif event == 'PLAYER_MONEY' then
+    -- Currency changed - capture state immediately
+    PlayerStateSnapshot:CapturePlayerState()
+    return
+  elseif event == 'BAG_UPDATE' then
+    -- Bag contents changed - BAG_UPDATE fires for almost all item changes
+    -- (loot, trades, mail, quest rewards, moving items, etc.)
+    -- Capture state immediately to protect against disconnects
+    PlayerStateSnapshot:CapturePlayerState()
+    return
   end
-  
-  CaptureOnEvent()
 end
 
 -- Register events for state changes
-eventFrame:RegisterEvent('BAG_UPDATE') -- Triggered when bag contents change
-eventFrame:RegisterEvent('BAG_UPDATE_DELAYED')
-eventFrame:RegisterEvent('BANKFRAME_OPENED') -- Triggered when bank is opened
+-- BAG_UPDATE fires for almost all item changes (loot, trades, mail, quest rewards, etc.)
+eventFrame:RegisterEvent('BAG_UPDATE')
+-- PLAYER_MONEY fires when currency changes
+eventFrame:RegisterEvent('PLAYER_MONEY')
+-- Bank events for capturing bank items when bank is opened
+eventFrame:RegisterEvent('BANKFRAME_OPENED')
 eventFrame:RegisterEvent('BANKFRAME_CLOSED')
 eventFrame:RegisterEvent('PLAYERBANKSLOTS_CHANGED')
 eventFrame:RegisterEvent('PLAYERBANKBAGSLOTS_CHANGED')
-eventFrame:RegisterEvent('PLAYER_MONEY') -- Triggered when money changes
-eventFrame:RegisterEvent('PLAYER_XP_UPDATE') -- Triggered when XP changes
-eventFrame:RegisterEvent('PLAYER_LEVEL_UP') -- Triggered when player levels up
-eventFrame:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
-eventFrame:RegisterEvent('ZONE_CHANGED')
-eventFrame:RegisterEvent('ZONE_CHANGED_INDOORS')
-eventFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
+-- Other utility events
 eventFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 -- Set event handler
