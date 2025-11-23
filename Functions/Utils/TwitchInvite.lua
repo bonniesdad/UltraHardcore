@@ -1,13 +1,13 @@
--- Reusable Discord invite dialog and button helpers
+-- Reusable Twitch invite dialog and button helpers
 
-UHC_DiscordInvite = UHC_DiscordInvite or {}
+UHC_TwitchInvite = UHC_TwitchInvite or {}
 
 do
   local dialogFrame
   local editBox
-  local inviteUrl = 'https://discord.gg/zuSPDNhYEN'
+  local twitchUrl = 'https://www.twitch.tv/BonniesDadTV'
 
-  function UHC_DiscordInvite_ShowDialog()
+  function UHC_TwitchInvite_ShowDialog()
     if dialogFrame and dialogFrame:IsShown() then
       dialogFrame:Raise()
       if editBox then
@@ -29,7 +29,7 @@ do
     end
 
     if not dialogFrame then
-      dialogFrame = CreateFrame('Frame', 'UltraHardcoreDiscordDialog', UIParent, 'BackdropTemplate')
+      dialogFrame = CreateFrame('Frame', 'UltraHardcoreTwitchDialog', UIParent, 'BackdropTemplate')
       dialogFrame:SetFrameStrata('FULLSCREEN_DIALOG')
       dialogFrame:SetToplevel(true)
       dialogFrame:SetSize(420, 145)
@@ -53,7 +53,7 @@ do
 
       local title = dialogFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
       title:SetPoint('TOP', dialogFrame, 'TOP', 0, -16)
-      title:SetText('Discord Invite')
+      title:SetText('Twitch Channel')
       title:SetJustifyH('CENTER')
 
       local message = dialogFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -61,13 +61,13 @@ do
       message:SetWidth(380)
       message:SetJustifyH('CENTER')
       message:SetNonSpaceWrap(true)
-      message:SetText('Copy the invite link below and paste it into your web browser:')
+      message:SetText('Copy the channel link below and paste it into your web browser:')
 
       editBox = CreateFrame('EditBox', nil, dialogFrame, 'InputBoxTemplate')
       editBox:SetSize(360, 30)
       editBox:SetPoint('TOP', message, 'BOTTOM', 0, -10)
       editBox:SetAutoFocus(false)
-      editBox:SetText(inviteUrl)
+      editBox:SetText(twitchUrl)
       editBox:SetScript('OnEscapePressed', function(self)
         self:ClearFocus()
       end)
@@ -85,7 +85,7 @@ do
 
       dialogFrame:SetScript('OnShow', function()
         if editBox then
-          editBox:SetText(inviteUrl)
+          editBox:SetText(twitchUrl)
           if C_Timer and C_Timer.After then
             C_Timer.After(0.05, function()
               editBox:SetFocus()
@@ -107,7 +107,7 @@ do
     dialogFrame:Raise()
   end
 
-  function UHC_CreateDiscordInviteButton(
+  function UHC_CreateTwitchInviteButton(
   parent,
     point,
     relativeTo,
@@ -125,9 +125,9 @@ do
     if point and relativeTo and relativePoint then
       button:SetPoint(point, relativeTo, relativePoint, xOfs or 0, yOfs or 0)
     end
-    button:SetText(label or 'Discord Invite Link')
+    button:SetText(label or 'Twitch Channel')
     button:SetScript('OnClick', function()
-      UHC_DiscordInvite_ShowDialog()
+      UHC_TwitchInvite_ShowDialog()
     end)
     return button
   end
