@@ -34,15 +34,21 @@ do
       dialogFrame:SetToplevel(true)
       dialogFrame:SetSize(420, 145)
       dialogFrame:SetPoint('CENTER')
+      -- Solid black background texture (fully opaque)
+      local bgTexture = dialogFrame:CreateTexture(nil, 'BACKGROUND')
+      bgTexture:SetAllPoints()
+      bgTexture:SetColorTexture(0, 0, 0, 1) -- Almost black background
       dialogFrame:SetBackdrop({
-        bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
         edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-        tile = true,
-        tileSize = 32,
+        tile = false,
         edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+        insets = {
+          left = 4,
+          right = 4,
+          top = 4,
+          bottom = 4,
+        },
       })
-      dialogFrame:SetBackdropColor(0.1, 0.1, 0.1, 1)
       dialogFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
 
       local title = dialogFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
@@ -62,14 +68,20 @@ do
       editBox:SetPoint('TOP', message, 'BOTTOM', 0, -10)
       editBox:SetAutoFocus(false)
       editBox:SetText(inviteUrl)
-      editBox:SetScript('OnEscapePressed', function(self) self:ClearFocus() end)
-      editBox:SetScript('OnEditFocusGained', function(self) self:HighlightText() end)
+      editBox:SetScript('OnEscapePressed', function(self)
+        self:ClearFocus()
+      end)
+      editBox:SetScript('OnEditFocusGained', function(self)
+        self:HighlightText()
+      end)
 
       local closeButton = CreateFrame('Button', nil, dialogFrame, 'UIPanelButtonTemplate')
       closeButton:SetSize(100, 22)
       closeButton:SetText('Close')
       closeButton:SetPoint('TOP', editBox, 'BOTTOM', 0, -8)
-      closeButton:SetScript('OnClick', function() dialogFrame:Hide() end)
+      closeButton:SetScript('OnClick', function()
+        dialogFrame:Hide()
+      end)
 
       dialogFrame:SetScript('OnShow', function()
         if editBox then
@@ -95,7 +107,17 @@ do
     dialogFrame:Raise()
   end
 
-  function UHC_CreateDiscordInviteButton(parent, point, relativeTo, relativePoint, xOfs, yOfs, width, height, label)
+  function UHC_CreateDiscordInviteButton(
+  parent,
+    point,
+    relativeTo,
+    relativePoint,
+    xOfs,
+    yOfs,
+    width,
+    height,
+    label
+  )
     local button = CreateFrame('Button', nil, parent, 'UIPanelButtonTemplate')
     if width and height then
       button:SetSize(width, height)
@@ -110,5 +132,3 @@ do
     return button
   end
 end
-
-

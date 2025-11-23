@@ -106,7 +106,12 @@ local function updateSettingsFrameBackdrop()
     edgeFile = 'Interface\\Buttons\\WHITE8x8',
     tile = false,
     edgeSize = 2,
-    insets = { left = 0, right = 0, top = 0, bottom = 0 },
+    insets = {
+      left = 0,
+      right = 0,
+      top = 0,
+      bottom = 0,
+    },
   })
   settingsFrame:SetBackdropBorderColor(0, 0, 0, 1)
 end
@@ -127,6 +132,19 @@ local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHi
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
 settingsTitleLabel:SetText('Ultra Hardcore')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
+
+-- Initialize TBC feature (comment out this line to disable TBC feature)
+-- To completely remove: Also remove Settings/TBCFeature.lua from UltraHardcore.toc
+if InitializeTBCFeature then
+  InitializeTBCFeature(
+    titleBar,
+    settingsFrame,
+    updateSettingsFrameBackdrop,
+    initializeTabs,
+    initializeTempSettings
+  )
+end
+
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
 dividerFrame:SetSize(570, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
@@ -148,6 +166,9 @@ closeButton:SetScript('OnClick', function()
   if TabManager then
     TabManager.resetTabState()
   end
+  if _G.tbcContentFrame then
+    _G.tbcContentFrame:Hide()
+  end
   initializeTempSettings()
   settingsFrame:Hide()
 end)
@@ -167,6 +188,9 @@ function ToggleSettings()
   if settingsFrame:IsShown() then
     if TabManager then
       TabManager.resetTabState()
+    end
+    if _G.tbcContentFrame then
+      _G.tbcContentFrame:Hide()
     end
     settingsFrame:Hide()
   else
@@ -216,6 +240,9 @@ function OpenSettingsToTab(tabIndex)
     _G.selectedPreset = nil
   end
 
+  if _G.tbcContentFrame then
+    _G.tbcContentFrame:Hide()
+  end
   if TabManager then
     TabManager.hideAllTabs()
     TabManager.switchToTab(tabIndex)
