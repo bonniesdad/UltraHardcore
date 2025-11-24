@@ -64,7 +64,7 @@ function InitializeStatisticsTab()
   tabContents[1].initialized = true
 
   local statsFrame = CreateFrame('Frame', nil, tabContents[1], 'BackdropTemplate')
-  statsFrame:SetSize(500, 490) -- Back to original height
+  statsFrame:SetSize(600, 540) -- Increased width and height to match new layout
   statsFrame:SetPoint('TOP', tabContents[1], 'TOP', 0, -55) -- Moved up 10px
   statsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -82,13 +82,13 @@ function InitializeStatisticsTab()
 
   -- Create scroll frame for statistics content
   local statsScrollFrame = CreateFrame('ScrollFrame', nil, statsFrame, 'UIPanelScrollFrameTemplate')
-  statsScrollFrame:SetSize(340, 360)
+  statsScrollFrame:SetSize(440, 410) -- Increased width and height to match new layout
   statsScrollFrame:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -10)
   statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 10)
 
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(500, 300) -- Increased height to accommodate proper bottom spacing for XP section
+  statsScrollChild:SetSize(600, 300) -- Increased width to match new layout
   statsScrollFrame:SetScrollChild(statsScrollChild)
 
   -- Ultra guild membership and local updaters for the Ultra Status section
@@ -99,7 +99,7 @@ function InitializeStatisticsTab()
   -- Current Character section (header)
   if isUltraMember then
     local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    currentHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+    currentHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
     currentHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
     -- Modern WoW row styling with rounded corners and greyish background
     currentHeader:SetBackdrop({
@@ -124,7 +124,7 @@ function InitializeStatisticsTab()
 
     -- Current Character section (content)
     local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    currentContent:SetSize(450, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+    currentContent:SetSize(550, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
     currentContent:SetPoint(
       'TOPLEFT',
       currentHeader,
@@ -337,7 +337,7 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style lowest health section (no accordion functionality)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  lowestHealthHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below Current Character content when visible, otherwise to top
   if ultraSectionContent then
     lowestHealthHeader:SetPoint(
@@ -374,7 +374,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Lowest Health breakdown
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
+  lowestHealthContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
   -- Position content directly under its header with consistent padding
   lowestHealthContent:SetPoint(
     'TOPLEFT',
@@ -596,7 +596,7 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style enemies slain section (no accordion functionality)
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  enemiesSlainHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Lowest Health content to avoid overlap on different UI scales
   enemiesSlainHeader:SetPoint(
     'TOPLEFT',
@@ -629,7 +629,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainContent:SetSize(450, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
+  enemiesSlainContent:SetSize(550, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
   -- Position content directly under its header with consistent padding
   enemiesSlainContent:SetPoint(
     'TOPLEFT',
@@ -965,7 +965,7 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style Survival section (no accordion functionality)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  survivalHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Enemies Slain content to avoid overlap on different UI scales
   survivalHeader:SetPoint(
     'TOPLEFT',
@@ -997,7 +997,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Survival breakdown (always visible)
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  survivalContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
   -- Position content directly under its header with consistent padding
   survivalContent:SetPoint(
     'TOPLEFT',
@@ -1099,11 +1099,11 @@ function InitializeStatisticsTab()
 
   -- Correct survival content height now that we know the total rows
   local survivalRows = #survivalStats
-  survivalContent:SetSize(450, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  survivalContent:SetSize(550, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
   -- Create modern WoW-style Misc section (no accordion functionality)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  miscHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Survival content to avoid overlap on different UI scales
   miscHeader:SetPoint(
     'TOPLEFT',
@@ -1135,7 +1135,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Misc breakdown (always visible)
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(450, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  miscContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
   -- Position content directly under its header with consistent padding
   miscContent:SetPoint(
     'TOPLEFT',
@@ -1236,11 +1236,11 @@ function InitializeStatisticsTab()
 
   -- Correct misc content height now that we know the total rows
   local miscRows = #miscStats
-  miscContent:SetSize(450, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  miscContent:SetSize(550, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
   -- Create modern WoW-style XP gained section (no accordion functionality)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedHeader:SetSize(470, LAYOUT.SECTION_HEADER_HEIGHT)
+  xpGainedHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below Survival content to avoid overlap
   xpGainedHeader:SetPoint(
     'TOPLEFT',
@@ -1272,7 +1272,7 @@ function InitializeStatisticsTab()
 
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedContent:SetSize(450, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
+  xpGainedContent:SetSize(550, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
   -- Position content directly under its header with consistent padding
   xpGainedContent:SetPoint(
     'TOPLEFT',
