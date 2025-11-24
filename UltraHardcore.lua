@@ -96,7 +96,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
-    TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
+    TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false, GLOBAL_SETTINGS.heartbeatSoundOnLowHealth or false)
     -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
     FullHealthReachedIndicator(
       (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
