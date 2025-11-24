@@ -77,7 +77,7 @@ end
 local settingsFrame =
   CreateFrame('Frame', 'UltraHardcoreSettingsFrame', UIParent, 'BackdropTemplate')
 tinsert(UISpecialFrames, 'UltraHardcoreSettingsFrame')
-settingsFrame:SetSize(560, 640)
+settingsFrame:SetSize(660, 700) -- Increased width and height to accommodate more content
 settingsFrame:SetMovable(true)
 settingsFrame:EnableMouse(true)
 settingsFrame:RegisterForDrag('LeftButton')
@@ -117,7 +117,7 @@ local function updateSettingsFrameBackdrop()
 end
 updateSettingsFrameBackdrop()
 local titleBar = CreateFrame('Frame', nil, settingsFrame, 'BackdropTemplate')
-titleBar:SetSize(560, 60)
+titleBar:SetSize(660, 60)
 titleBar:SetPoint('TOP', settingsFrame, 'TOP')
 titleBar:SetFrameStrata('DIALOG')
 titleBar:SetFrameLevel(20)
@@ -146,7 +146,7 @@ if InitializeTBCFeature then
 end
 
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
-dividerFrame:SetSize(570, 24)
+dividerFrame:SetSize(670, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
 dividerFrame:SetFrameStrata('DIALOG')
 dividerFrame:SetFrameLevel(20)

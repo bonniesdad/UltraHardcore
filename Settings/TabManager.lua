@@ -3,7 +3,7 @@
 
 local TabManager = {}
 
-local NUM_TABS = 6
+local NUM_TABS = 7
 local TAB_WIDTH = 92
 local TAB_HEIGHT = 32
 local TAB_SPACING = 2
@@ -80,7 +80,7 @@ end
 -- Create tab content frames
 local function createTabContent(index, parentFrame)
   local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(520, 540)
+  content:SetSize(620, 600) -- Increased width and height to match larger frame
   content:SetPoint('TOP', parentFrame, 'TOP', 0, -50) -- Positioned below tabs
   content:Hide()
   return content
@@ -101,6 +101,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
   tabButtons[5] = createTabButton('Info', 5, settingsFrame)
   tabButtons[6] = createTabButton('Commands', 6, settingsFrame)
+  tabButtons[7] = createTabButton('Credits', 7, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
@@ -109,6 +110,7 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
   tabContents[6] = createTabContent(6, settingsFrame) -- Commands tab
+  tabContents[7] = createTabContent(7, settingsFrame) -- Credits tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
 end
@@ -220,6 +222,11 @@ function TabManager.switchToTab(index)
   -- Initialize Commands tab if it's being shown
   if index == 6 and InitializeCommandsTab then
     InitializeCommandsTab()
+  end
+
+  -- Initialize Credits tab if it's being shown
+  if index == 7 and InitializeCreditsTab then
+    InitializeCreditsTab()
   end
 end
 

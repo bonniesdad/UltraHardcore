@@ -71,6 +71,7 @@ Functions/Utils/NormalizeName.lua
 Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
 Functions/Utils/TwitchInvite.lua
+Functions/Utils/AboutAuthor.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
@@ -122,6 +123,7 @@ Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
+Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 Settings/XFoundMode/IntroPage.lua
