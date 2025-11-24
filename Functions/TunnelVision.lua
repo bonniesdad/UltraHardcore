@@ -1,5 +1,12 @@
 -- Track previous health percentage to detect increases
 local previousHealthPercent = 100
+-- Track which heartbeat sounds are currently active
+local heartbeatSoundFile1 = 'Interface\\AddOns\\UltraHardcore\\Sounds\\heartbeat_01.ogg'
+local heartbeatSoundFile2 = 'Interface\\AddOns\\UltraHardcore\\Sounds\\heartbeat_02.ogg'
+local heartbeatSoundFile3 = 'Interface\\AddOns\\UltraHardcore\\Sounds\\heartbeat_03.ogg'
+local heartbeatSoundFile4 = 'Interface\\AddOns\\UltraHardcore\\Sounds\\heartbeat_04.ogg'
+
+local activeHeartbeatLevel = nil
 
 function TunnelVision(self, event, unit, showTunnelVision)
   if showTunnelVision then
@@ -14,6 +21,8 @@ function TunnelVision(self, event, unit, showTunnelVision)
     -- Only remove overlays if health is above 80%
     if healthPercent > 80 then
       RemoveTunnelVision()
+      -- Stop all heartbeat sounds when above 80% health
+      activeHeartbeatLevel = nil
       previousHealthPercent = healthPercent
       return
     end
@@ -53,15 +62,23 @@ function TunnelVision(self, event, unit, showTunnelVision)
     -- Show overlays that should be active but aren't yet (health went down)
     if shouldShow19 and not wasShowing19 then
       ShowTunnelVision(19)
+      PlaySoundFile(heartbeatSoundFile4, 'SFX')
+      activeHeartbeatLevel = 19
     end
     if shouldShow14 and not wasShowing14 then
       ShowTunnelVision(14)
+      PlaySoundFile(heartbeatSoundFile3, 'SFX')
+      activeHeartbeatLevel = 14
     end
     if shouldShow9 and not wasShowing9 then
       ShowTunnelVision(9)
+      PlaySoundFile(heartbeatSoundFile2, 'SFX')
+      activeHeartbeatLevel = 9
     end
     if shouldShow4 and not wasShowing4 then
       ShowTunnelVision(4)
+      PlaySoundFile(heartbeatSoundFile1, 'SFX')
+      activeHeartbeatLevel = 4
     end
 
     -- Update previous health for next comparison
@@ -69,5 +86,6 @@ function TunnelVision(self, event, unit, showTunnelVision)
   else
     RemoveTunnelVision()
     previousHealthPercent = 100
+    activeHeartbeatLevel = nil
   end
 end
