@@ -278,7 +278,7 @@ function InitializeSettingsOptionsTab()
   end
 
   local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
-  presetButtonsFrame:SetSize(420, 150)
+  presetButtonsFrame:SetSize(520, 150) -- Increased width to match new layout
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
@@ -437,7 +437,7 @@ function InitializeSettingsOptionsTab()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
-  searchBox:SetSize(405, 24)
+  searchBox:SetSize(505, 24) -- Increased width to match new layout
   searchBox:SetAutoFocus(false)
   searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
 
@@ -720,7 +720,7 @@ function InitializeSettingsOptionsTab()
       sectionTitles[sectionIndex] = section.title
       -- Container for the whole section so collapsing reflows subsequent sections
       local sectionFrame = CreateFrame('Frame', nil, scrollChild)
-      sectionFrame:SetWidth(420)
+      sectionFrame:SetWidth(520) -- Increased width to match new layout
       if prevSectionFrame then
         sectionFrame:SetPoint('TOPLEFT', prevSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
         sectionFrame:SetPoint('TOPRIGHT', prevSectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
@@ -863,7 +863,7 @@ function InitializeSettingsOptionsTab()
 
           -- Create slider frame
           local sliderFrame = CreateFrame('Frame', nil, sectionFrame)
-          sliderFrame:SetSize(400, ROW_HEIGHT)
+          sliderFrame:SetSize(500, ROW_HEIGHT) -- Increased width to match new layout
           sliderFrame:SetPoint(
             'TOPLEFT',
             sectionFrame,
@@ -982,7 +982,7 @@ function InitializeSettingsOptionsTab()
       -- Insert an informational note after the Extreme section
       if sectionIndex == 3 then
         local infoFrame = CreateFrame('Frame', nil, scrollChild)
-        infoFrame:SetWidth(420)
+        infoFrame:SetWidth(520) -- Increased width to match new layout
         infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
         infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
         infoFrame:SetHeight(64)
@@ -1101,7 +1101,7 @@ function InitializeSettingsOptionsTab()
   local SUBHEADER_TO_ROWS_GAP = 10
 
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
-  colorSectionFrame:SetWidth(420)
+  colorSectionFrame:SetWidth(520) -- Increased width to match new layout
   if lastSectionFrame then
     colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -10)
     colorSectionFrame:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -10)
@@ -1161,7 +1161,7 @@ function InitializeSettingsOptionsTab()
 
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
     local row = CreateFrame('Frame', nil, colorSectionFrame)
-    row:SetSize(380, 24)
+    row:SetSize(480, 24) -- Increased width to match new layout
     row:SetPoint(
       'TOPLEFT',
       colorSectionFrame,
@@ -1509,7 +1509,7 @@ function InitializeSettingsOptionsTab()
   statsSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
-  opacityRow:SetSize(380, 24)
+  opacityRow:SetSize(480, 24) -- Increased width to match new layout
   opacityRow:SetPoint('TOPLEFT', statsSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH = 140
@@ -1563,7 +1563,7 @@ function InitializeSettingsOptionsTab()
   clockSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
-  minimapClockScaleRow:SetSize(380, 24)
+  minimapClockScaleRow:SetSize(480, 24) -- Increased width to match new layout
   minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH2 = 140
@@ -1625,7 +1625,7 @@ function InitializeSettingsOptionsTab()
   mailSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
   local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleRow)
-  minimapMailScaleRow:SetSize(380, 24)
+  minimapMailScaleRow:SetSize(480, 24) -- Increased width to match new layout
   minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local minimapMailScaleLabel =

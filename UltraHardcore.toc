@@ -70,11 +70,12 @@ Functions/Utils/FormatNumber.lua
 Functions/Utils/NormalizeName.lua
 Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
+Functions/Utils/TwitchInvite.lua
+Functions/Utils/AboutAuthor.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
 Functions/DB/CharacterStats.lua
-Functions/DB/PlayerStateSnapshot.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
@@ -114,6 +115,7 @@ Functions/Overlays/ShowNatureDamageOverlay.lua
 Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
+Settings/TBCFeature.lua
 Settings/Settings.lua
 Settings/TabManager.lua
 Settings/StatisticsTab.lua
@@ -121,6 +123,7 @@ Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
+Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 Settings/XFoundMode/IntroPage.lua
