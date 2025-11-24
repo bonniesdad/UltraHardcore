@@ -24,7 +24,7 @@ function InitializeInfoTab()
   local bugReportText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   bugReportText:SetPoint('TOP', philosophyText, 'BOTTOM', 0, -10)
   bugReportText:SetText(
-    'Found a bug or have suggestions?\n\nJoin the developers discord community and twitch channel to have your say on the future of this addon!'
+    'Found a bug or have suggestions?\n\nJoin the developers discord community to have your say on the future of this addon!'
   )
   bugReportText:SetJustifyH('CENTER')
   bugReportText:SetTextColor(0.95, 0.95, 0.9)
@@ -45,30 +45,16 @@ function InitializeInfoTab()
       'Discord Invite Link'
     )
 
-  -- Twitch invite button (same width as Discord button)
-  local twitchButton =
-    UHC_CreateTwitchInviteButton(
-      tabContents[5],
-      'TOP',
-      discordButton,
-      'BOTTOM',
-      0,
-      0,
-      220,
-      28,
-      'Twitch Channel'
-    )
-
-  -- Patch Notes Section (at bottom, smaller)
+  -- Patch Notes Section (at bottom, bigger to fill space)
   local patchNotesTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  patchNotesTitle:SetPoint('TOP', twitchButton, 'BOTTOM', 0, -30)
+  patchNotesTitle:SetPoint('TOP', discordButton, 'BOTTOM', 0, -30)
   patchNotesTitle:SetText('Patch Notes')
   patchNotesTitle:SetJustifyH('CENTER')
   patchNotesTitle:SetTextColor(1, 1, 0.5)
 
-  -- Create patch notes display at bottom (larger to fill new space)
+  -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
   local patchNotesFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
-  patchNotesFrame:SetSize(600, 370)
+  patchNotesFrame:SetSize(600, 420)
   patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -5)
   patchNotesFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -87,5 +73,5 @@ function InitializeInfoTab()
   patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
 
   -- Create patch notes display using reusable component (larger to fill new space)
-  local patchNotesScrollFrame = CreatePatchNotesDisplay(patchNotesFrame, 560, 350, 10, -10)
+  local patchNotesScrollFrame = CreatePatchNotesDisplay(patchNotesFrame, 560, 400, 10, -10)
 end
