@@ -117,7 +117,9 @@ _G.GetXPGainedForSetting = GetXPGainedForSetting
 -- Register events for XP tracking
 local xpTrackingFrame = CreateFrame("Frame")
 xpTrackingFrame:RegisterEvent("PLAYER_XP_UPDATE")
-xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+-- Now that XP is tracking more reliably, I'm not sure we need this post combat check
+-- Commenting the register event call to rule this out as a cause of framerate issues exiting combat
+--xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 xpTrackingFrame:RegisterEvent("PLAYER_LEVEL_UP")
 xpTrackingFrame:RegisterEvent("PLAYER_LOGIN")
 xpTrackingFrame:RegisterEvent("ADDON_LOADED")
