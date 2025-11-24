@@ -325,7 +325,7 @@ function AddonXPTracking:XPReport()
   end
 
   -- REMOVE BEFORE RELEASE
-  print(msgPrefix .. "If your XP was invalidated from the Nov 12th beta, run " .. redTextColour .. "/uhcresettracking|r to correct this")
+  -- print(msgPrefix .. "If your XP was invalidated from the Nov 12th beta, run " .. redTextColour .. "/uhcresettracking|r to correct this")
 end 
 
 
