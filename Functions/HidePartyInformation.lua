@@ -278,8 +278,8 @@ local function HookCompactRaidHealthHiding()
         if activeProfile and GetRaidProfileOption(activeProfile, 'useClassColors') and unit then
           local _, englishClass = UnitClass(unit)
           if englishClass then
-            local classR, classG, classB = GetClassColor(englishClass)
-            r, g, b, a = classR, classG, classB, .5
+            r, g, b = GetClassColor(englishClass)
+            a = .4
           end
         end
       end)
