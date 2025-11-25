@@ -1252,6 +1252,7 @@ function InitializeSettingsOptionsTab()
   -- Position will be handled by reflow
   lockResourceBarCheckbox:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
   lockResourceBarCheckbox.Text:SetText('Lock Resource Bar Position')
+  lockResourceBarCheckbox.Text:SetPoint('LEFT', lockResourceBarCheckbox, 'RIGHT', 5, 0)
   lockResourceBarCheckbox:SetChecked(tempSettings.lockResourceBar)
   lockResourceBarCheckbox:SetScript('OnClick', function(self)
     tempSettings.lockResourceBar = self:GetChecked()
