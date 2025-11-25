@@ -300,8 +300,14 @@ end
 
 -- Helper function to check if player is shapeshifted
 local function IsShapeshifted()
-  local shapeShiftForm = GetShapeshiftForm()
-  return shapeShiftForm and shapeShiftForm > 0
+  -- 1 - Cat Form
+  -- 5 - Bear Form
+  -- 8 - Dire Bear Form
+  local form = GetShapeshiftFormID()
+  if form == 5 or form == 8 or form == 1 then
+    return true
+  end
+  return false
 end
 
 -- Function to update druid form resource bar

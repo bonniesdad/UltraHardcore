@@ -3,6 +3,14 @@
   Compact party frames are not supported yet.
 ]]
 
+
+--[[
+BUGS:
+- On player or raid memeber level up, all health in raid is shown.
+- On player or raid member logout, all health in raid is shown.
+- On player leave raid, frames become blizzard blocked
+- 
+]]
 PARTY_MEMBER_SUBFRAMES_TO_HIDE =
   {
     'HealthBar',
@@ -78,6 +86,45 @@ function HidePartySubFrame(n, subFrame)
   end
 end
 
+-- Cosmetic suppression helpers (avoid taint by leaving Show() intact)
+local function UHC_SetElementSuppressed(frame, suppress)
+  if not frame then return end
+
+  local function getAlphaSafe(f)
+    if not f or not f.GetAlpha then return nil end
+    local ok, alpha = pcall(f.GetAlpha, f)
+    if ok then
+      return alpha
+    end
+    return nil
+  end
+
+  if suppress then
+    if frame.uhcOriginalAlpha == nil then
+      frame.uhcOriginalAlpha = getAlphaSafe(frame) or 1
+    end
+    if frame.SetAlpha then
+      frame:SetAlpha(0)
+    end
+  else
+    local restoreAlpha = frame.uhcOriginalAlpha
+    if restoreAlpha == nil then
+      restoreAlpha = getAlphaSafe(frame) or 1
+    end
+    if frame.SetAlpha then
+      frame:SetAlpha(restoreAlpha)
+    end
+    frame.uhcOriginalAlpha = nil
+  end
+
+  if frame.GetObjectType and frame:GetObjectType() == 'StatusBar' and frame.GetStatusBarTexture then
+    local tex = frame:GetStatusBarTexture()
+    if tex then
+      UHC_SetElementSuppressed(tex, suppress)
+    end
+  end
+end
+
 -- Raid (Compact) Frames: Hide only the health bar so the name remains visible
 local function HideRaidHealthBar(i)
   local frame = _G['CompactRaidFrame' .. i]
@@ -96,22 +143,20 @@ local function HideRaidHealthBar(i)
         frame.healAbsorbBar,
       }
     for _, elem in ipairs(elements) do
-      if elem then
-        ForceHideFrame(elem)
-      end
+      UHC_SetElementSuppressed(elem, true)
     end
-    if frame.statusText and frame.statusText.Hide then
-      frame.statusText:Hide()
+    if frame.statusText then
+      UHC_SetElementSuppressed(frame.statusText, true)
     end
   else
     -- Fallback to global-named health bar if direct frame not available
     local healthBar = _G['CompactRaidFrame' .. i .. 'HealthBar']
     if healthBar then
-      ForceHideFrame(healthBar)
+      UHC_SetElementSuppressed(healthBar, true)
     end
     local healthText = _G['CompactRaidFrame' .. i .. 'HealthBarText']
-    if healthText and healthText.Hide then
-      healthText:Hide()
+    if healthText then
+      UHC_SetElementSuppressed(healthText, true)
     end
   end
 end
@@ -132,21 +177,19 @@ local function ShowRaidHealthBar(i)
         frame.healAbsorbBar,
       }
     for _, elem in ipairs(elements) do
-      if elem then
-        RestoreAndShowFrame(elem)
-      end
+      UHC_SetElementSuppressed(elem, false)
     end
-    if frame.statusText and frame.statusText.Show then
-      frame.statusText:Show()
+    if frame.statusText then
+      UHC_SetElementSuppressed(frame.statusText, false)
     end
   else
     local healthBar = _G['CompactRaidFrame' .. i .. 'HealthBar']
     if healthBar then
-      RestoreAndShowFrame(healthBar)
+      UHC_SetElementSuppressed(healthBar, false)
     end
     local healthText = _G['CompactRaidFrame' .. i .. 'HealthBarText']
-    if healthText and healthText.Show then
-      healthText:Show()
+    if healthText then
+      UHC_SetElementSuppressed(healthText, false)
     end
   end
 end
@@ -159,6 +202,15 @@ function SetRaidFramesInfo(hideGroupHealth)
     else
       ShowRaidHealthBar(i)
     end
+  end
+
+  local containerBorder = _G['CompactRaidFrameContainerBorderFrame']
+  if containerBorder then
+    UHC_SetElementSuppressed(containerBorder, hideGroupHealth)
+  end
+  local raidBackground = _G['CompactRaidFrameBackground']
+  if raidBackground then
+    UHC_SetElementSuppressed(raidBackground, hideGroupHealth)
   end
 end
 
@@ -222,16 +274,14 @@ local function HookCompactRaidHealthHiding()
         frame.aggroHighlight,
       }
     for _, elem in ipairs(borderCandidates) do
-      if elem then
-        ForceHideFrame(elem)
-      end
+      UHC_SetElementSuppressed(elem, true)
     end
     -- Explicitly hide common background globals if they exist
     local frameName = frame.GetName and frame:GetName() or nil
     if frameName then
       local bg = _G[frameName .. 'Background']
       if bg then
-        ForceHideFrame(bg)
+        UHC_SetElementSuppressed(bg, true)
       end
       -- Hide per-frame border slices if present
       local borderNames =
@@ -245,15 +295,15 @@ local function HookCompactRaidHealthHiding()
       for _, bn in ipairs(borderNames) do
         local b = _G[bn]
         if b then
-          ForceHideFrame(b)
+          UHC_SetElementSuppressed(b, true)
         end
       end
     end
     if _G['CompactRaidFrameBackground'] then
-      ForceHideFrame(_G['CompactRaidFrameBackground'])
+      UHC_SetElementSuppressed(_G['CompactRaidFrameBackground'], true)
     end
     if _G['CompactRaidFrameContainerBorderFrame'] then
-      ForceHideFrame(_G['CompactRaidFrameContainerBorderFrame'])
+      UHC_SetElementSuppressed(_G['CompactRaidFrameContainerBorderFrame'], true)
     end
     -- Add circular frame if not present
     if not frame.uhcCircle then
@@ -336,12 +386,10 @@ local function HookCompactRaidHealthHiding()
           frame.healAbsorbBar,
         }
       for _, elem in ipairs(elements) do
-        if elem then
-          ForceHideFrame(elem)
-        end
+        UHC_SetElementSuppressed(elem, true)
       end
-      if frame.statusText and frame.statusText.Hide then
-        frame.statusText:Hide()
+      if frame.statusText then
+        UHC_SetElementSuppressed(frame.statusText, true)
       end
       -- Apply styling (border removal + circular frame + name position)
       styleCompactRaidFrame(frame)
@@ -365,9 +413,6 @@ frame:SetScript('OnEvent', function(self, event, arg1)
     if GLOBAL_SETTINGS.hideGroupHealth then
       HookCompactRaidHealthHiding()
       SetRaidFramesInfo(true)
-      if _G['CompactRaidFrameContainerBorderFrame'] then
-        ForceHideFrame(_G['CompactRaidFrameContainerBorderFrame'])
-      end
     end
     return
   end
