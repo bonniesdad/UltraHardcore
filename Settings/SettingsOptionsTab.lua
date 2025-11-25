@@ -243,6 +243,21 @@ local presets = { {
   routePlanner = true,
 } }
 
+-- UI Layout Constants
+-- Centralized layout definitions to avoid hardcoded magic numbers and ensure consistency
+local LAYOUT = {
+  PAGE_WIDTH = 520, -- Width of the main container sections
+  ROW_WIDTH = 480, -- Width of inner content rows (sliders, color rows)
+  SEARCH_WIDTH = 400, -- Width of the search box
+  HEADER_HEIGHT = 22, -- Height of section headers
+  ROW_HEIGHT = 30, -- Standard height for checkbox/slider rows
+  COLOR_ROW_HEIGHT = 24, -- Height for color picker rows
+  SECTION_GAP = 10, -- Gap between vertical sections
+  HEADER_CONTENT_GAP = 10, -- Gap between a header and its first child
+  LABEL_WIDTH = 140, -- Width of standard left-side labels
+  SLIDER_WIDTH = 150, -- Width of standard sliders
+}
+
 -- Global function to update radio buttons (needed by Statistics tab)
 function updateRadioButtons()
   for settingName, radio in pairs(radioButtons) do
@@ -282,7 +297,7 @@ function InitializeSettingsOptionsTab()
   end
 
   local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
-  presetButtonsFrame:SetSize(520, 150) -- Increased width to match new layout
+  presetButtonsFrame:SetSize(LAYOUT.PAGE_WIDTH, 150) -- Increased width to match new layout
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
@@ -441,7 +456,7 @@ function InitializeSettingsOptionsTab()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
-  searchBox:SetSize(400, 24) -- Reduced width to fit Collapse button
+  searchBox:SetSize(LAYOUT.SEARCH_WIDTH, 24) -- Reduced width to fit Collapse button
   searchBox:SetAutoFocus(false)
   searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
 
@@ -511,9 +526,9 @@ function InitializeSettingsOptionsTab()
     local childrenBySection = _G.__UHC_SectionChildren
     local framesBySection = _G.__UHC_SectionFrames
     local collapsedBySection = _G.__UHC_SectionCollapsed
-    local HEADER_HEIGHT = _G.__UHC_SECTION_HEADER_HEIGHT or 22
-    local ROW_HEIGHT = _G.__UHC_ROW_HEIGHT or 30
-    local HEADER_CONTENT_GAP = _G.__UHC_HEADER_CONTENT_GAP or 10
+    local HEADER_HEIGHT = _G.__UHC_SECTION_HEADER_HEIGHT or LAYOUT.HEADER_HEIGHT
+    local ROW_HEIGHT = _G.__UHC_ROW_HEIGHT or LAYOUT.ROW_HEIGHT
+    local HEADER_CONTENT_GAP = _G.__UHC_HEADER_CONTENT_GAP or LAYOUT.HEADER_CONTENT_GAP
 
     if not childrenBySection or not framesBySection or not collapsedBySection then return end
 
@@ -718,10 +733,10 @@ function InitializeSettingsOptionsTab()
       end
     end
 
-    local HEADER_HEIGHT = 22
-    local ROW_HEIGHT = 30
-    local SECTION_GAP = 10
-    local HEADER_CONTENT_GAP = 10
+    local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+    local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+    local SECTION_GAP = LAYOUT.SECTION_GAP
+    local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
     local prevSectionFrame = nil
 
     local sectionChildren = {}
@@ -734,9 +749,9 @@ function InitializeSettingsOptionsTab()
     local sectionTitles = {}
 
     -- Expose layout numbers and section arrays for the search filter
-    _G.__UHC_SECTION_HEADER_HEIGHT = HEADER_HEIGHT
-    _G.__UHC_ROW_HEIGHT = ROW_HEIGHT
-    _G.__UHC_HEADER_CONTENT_GAP = HEADER_CONTENT_GAP
+    _G.__UHC_SECTION_HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+    _G.__UHC_ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+    _G.__UHC_HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
 
     local function updateSectionCount(idx)
       if not sectionCountTexts[idx] or not sectionChildSettingNames[idx] then return end
@@ -772,7 +787,7 @@ function InitializeSettingsOptionsTab()
       sectionTitles[sectionIndex] = section.title
       -- Container for the whole section so collapsing reflows subsequent sections
       local sectionFrame = CreateFrame('Frame', nil, scrollChild)
-      sectionFrame:SetWidth(520) -- Increased width to match new layout
+      sectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
       if prevSectionFrame then
         sectionFrame:SetPoint('TOPLEFT', prevSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
         sectionFrame:SetPoint('TOPRIGHT', prevSectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
@@ -915,7 +930,7 @@ function InitializeSettingsOptionsTab()
 
           -- Create slider frame
           local sliderFrame = CreateFrame('Frame', nil, sectionFrame)
-          sliderFrame:SetSize(500, ROW_HEIGHT) -- Increased width to match new layout
+          sliderFrame:SetSize(500, LAYOUT.ROW_HEIGHT) -- Increased width to match new layout
           sliderFrame:SetPoint(
             'TOPLEFT',
             sectionFrame,
@@ -931,7 +946,7 @@ function InitializeSettingsOptionsTab()
 
           -- Create the slider
           local slider = CreateFrame('Slider', nil, sliderFrame, 'OptionsSliderTemplate')
-          slider:SetSize(150, 15)
+          slider:SetSize(LAYOUT.SLIDER_WIDTH, 15)
           slider:SetPoint('RIGHT', sliderFrame, 'RIGHT', -50, 0)
           slider:SetMinMaxValues(sliderItem.minValue, sliderItem.maxValue)
           slider:SetValue(tempSettings[sliderItem.dbSettingsValueName] or sliderItem.defaultValue)
@@ -1034,9 +1049,9 @@ function InitializeSettingsOptionsTab()
       -- Insert an informational note after the Extreme section
       if sectionIndex == 3 then
         local infoFrame = CreateFrame('Frame', nil, scrollChild)
-        infoFrame:SetWidth(520) -- Increased width to match new layout
-        infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
-        infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
+        infoFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
+        infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -LAYOUT.SECTION_GAP)
+        infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -LAYOUT.SECTION_GAP)
         infoFrame:SetHeight(64)
 
         -- Divider line above the note
@@ -1147,15 +1162,15 @@ function InitializeSettingsOptionsTab()
   createCheckboxes()
 
   -- Collapsible: Resource Bar Colors
-  local HEADER_HEIGHT = 22
-  local ROW_HEIGHT = 28
-  local HEADER_CONTENT_GAP = 10
+  local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+  local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+  local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
   local SUBHEADER_TO_ROWS_GAP = 10
   local LOCK_ROW_HEIGHT = 24
   local LOCK_ROW_GAP = 8
 
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
-  colorSectionFrame:SetWidth(520) -- Increased width to match new layout
+  colorSectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
   if lastSectionFrame then
     colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -10)
     colorSectionFrame:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -10)
@@ -1252,7 +1267,7 @@ function InitializeSettingsOptionsTab()
 
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
     local row = CreateFrame('Frame', nil, colorSectionFrame)
-    row:SetSize(480, 24) -- Increased width to match new layout
+    row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
     -- Position will be handled by reflow
     row:SetPoint(
       'TOPLEFT',
@@ -1262,7 +1277,7 @@ function InitializeSettingsOptionsTab()
       -100 -- Temporary placeholder
     )
 
-    local LABEL_WIDTH = 140
+    local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
     local SWATCH_WIDTH = 54
     local GAP = 12
 
@@ -1603,11 +1618,11 @@ function InitializeSettingsOptionsTab()
   addUIHeader(statsSubHeader)
 
   local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
-  opacityRow:SetSize(480, 24) -- Increased width to match new layout
+  opacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
   opacityRow:SetPoint('TOPLEFT', statsSubHeader, 'BOTTOMLEFT', 14, -6)
 
-  local LABEL_WIDTH = 140
+  local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
   local GAP = 12
 
   local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -1662,11 +1677,11 @@ function InitializeSettingsOptionsTab()
   addUIHeader(clockSubHeader)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
-  minimapClockScaleRow:SetSize(480, 24) -- Increased width to match new layout
+  minimapClockScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
   minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
 
-  local LABEL_WIDTH2 = 140
+  local LABEL_WIDTH2 = LAYOUT.LABEL_WIDTH
   local GAP2 = 12
 
   local minimapClockScaleLabel =
@@ -1729,7 +1744,7 @@ function InitializeSettingsOptionsTab()
   addUIHeader(mailSubHeader)
 
   local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleRow)
-  minimapMailScaleRow:SetSize(480, 24) -- Increased width to match new layout
+  minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
   minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
 
@@ -1841,21 +1856,21 @@ function InitializeSettingsOptionsTab()
     end
 
     -- Apply Layout: Stack items vertically
-    local currentY = -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    local currentY = -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP)
     for _, item in ipairs(finalLayoutList) do
       item:Show()
       item:ClearAllPoints()
 
       if item._isHeader then
         -- Headers might need extra spacing if they follow a previous section
-        if currentY < -(HEADER_HEIGHT + HEADER_CONTENT_GAP) then
+        if currentY < -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP) then
           currentY = currentY - 10 -- Gap before header
         end
         item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, currentY)
         currentY = currentY - 20 -- Header height (approx)
       else
         item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, currentY)
-        currentY = currentY - ROW_HEIGHT
+        currentY = currentY - LAYOUT.ROW_HEIGHT
       end
     end
 
@@ -1867,7 +1882,7 @@ function InitializeSettingsOptionsTab()
 
   -- Initial height calculation
   local colorExpandedHeight = reflowUISettings('')
-  local colorCollapsedHeight = HEADER_HEIGHT
+  local colorCollapsedHeight = LAYOUT.HEADER_HEIGHT
   -- Initial collapsed state (default collapsed) using unified key
   local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
   if colorCollapsed == nil then
@@ -1888,7 +1903,7 @@ function InitializeSettingsOptionsTab()
         item:Hide()
       end
       colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
-      colorSectionFrame:SetHeight(HEADER_HEIGHT)
+      colorSectionFrame:SetHeight(LAYOUT.HEADER_HEIGHT)
     else
       -- Reflow will show correct children
       local h = reflowUISettings(_G.__UHC_CurrentSearchQuery)
@@ -1919,7 +1934,7 @@ function InitializeSettingsOptionsTab()
   -- Recalculate scroll child height so the scrollbar reflects current content
   recalcContentHeight = function()
     local total = 10 -- top padding
-    local SECTION_GAP = 10
+    local SECTION_GAP = LAYOUT.SECTION_GAP
     for i, sf in ipairs(sectionFrames) do
       if i > 1 then
         total = total + SECTION_GAP
