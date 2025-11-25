@@ -71,6 +71,7 @@ Functions/Utils/NormalizeName.lua
 Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
 Functions/Utils/TwitchInvite.lua
+Functions/Utils/KofiInvite.lua
 Functions/Utils/AboutAuthor.lua
 
 Functions/DB/LoadDBData.lua
