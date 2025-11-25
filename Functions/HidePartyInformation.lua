@@ -268,11 +268,23 @@ local function HookCompactRaidHealthHiding()
       if frame.uhcCircle.SetBlendMode then
         frame.uhcCircle:SetBlendMode('BLEND')
       end
-      if frame.uhcCircle.SetVertexColor then
-        frame.uhcCircle:SetVertexColor(0, 0, 0, 0.2)
-      else
-        frame.uhcCircle:SetAlpha(0.2)
-      end
+      -- Default color is black with low opacity
+      local r, g, b, a = 0, 0, 0, 0.2
+      -- Check if class colors are enabled and apply class color if available
+      -- Defensive against any of these methods not being available or returning unexpected values
+      local success, err = pcall(function()
+        local activeProfile = GetActiveRaidProfile()
+        local unit = frame.displayedUnit or frame.unit
+        if activeProfile and GetRaidProfileOption(activeProfile, 'useClassColors') and unit then
+          local _, englishClass = UnitClass(unit)
+          if englishClass then
+            local classR, classG, classB = GetClassColor(englishClass)
+            r, g, b, a = classR, classG, classB, .5
+          end
+        end
+      end)
+      -- If any error occurred, r, g, b, a will remain at default black values
+      frame.uhcCircle:SetVertexColor(r, g, b, a)
     end
     -- Size and position the circle to match the raid frame, and keep it updated
     UHC_UpdateRaidCircleAndIndicatorSizes(frame)
