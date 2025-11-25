@@ -23,6 +23,7 @@ Functions/SetTargetFrameDisplay.lua
 Functions/SetTargetTooltipDisplay.lua
 Functions/SetUIErrorsDisplay.lua
 Functions/TunnelVision.lua
+Functions/TunnelVisionHeartbeat.lua
 Functions/OnCombatLogEvent.lua
 Functions/WelcomeMessage.lua
 Functions/PatchNotes.lua
