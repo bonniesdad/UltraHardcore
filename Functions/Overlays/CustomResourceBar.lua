@@ -56,6 +56,7 @@ resourceBar:SetMovable(true)
 resourceBar:EnableMouse(true)
 resourceBar:RegisterForDrag('LeftButton')
 resourceBar:SetScript('OnDragStart', function(self)
+  if not self:IsMovable() then return end
   self:StartMoving()
 end)
 resourceBar:SetScript('OnDragStop', function(self)
@@ -161,6 +162,7 @@ petResourceBar:SetMovable(true)
 petResourceBar:EnableMouse(true)
 petResourceBar:RegisterForDrag('LeftButton')
 petResourceBar:SetScript('OnDragStart', function(self)
+  if not resourceBar:IsMovable() then return end
   resourceBar:StartMoving()
 end)
 petResourceBar:SetScript('OnDragStop', function(self)
@@ -222,12 +224,31 @@ druidFormResourceBar:SetMovable(true)
 druidFormResourceBar:EnableMouse(true)
 druidFormResourceBar:RegisterForDrag('LeftButton')
 druidFormResourceBar:SetScript('OnDragStart', function(self)
+  if not resourceBar:IsMovable() then return end
   resourceBar:StartMoving()
 end)
 druidFormResourceBar:SetScript('OnDragStop', function(self)
   resourceBar:StopMovingOrSizing()
   SaveResourceBarPosition()
 end)
+
+local function ApplyResourceBarLockState(lockOverride)
+  local locked = lockOverride
+  if locked == nil then
+    locked = GLOBAL_SETTINGS and GLOBAL_SETTINGS.lockResourceBar
+  end
+
+  local enableDrag = not locked
+
+  resourceBar:SetMovable(enableDrag)
+  resourceBar:EnableMouse(enableDrag)
+  petResourceBar:SetMovable(enableDrag)
+  petResourceBar:EnableMouse(enableDrag)
+  druidFormResourceBar:SetMovable(enableDrag)
+  druidFormResourceBar:EnableMouse(enableDrag)
+end
+
+_G.UltraHardcoreApplyResourceBarLockState = ApplyResourceBarLockState
 
 -- Unified function to update resource points
 local function UpdateResourcePoints()
@@ -621,6 +642,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   end
 
   if event == 'PLAYER_ENTERING_WORLD' then
+    ApplyResourceBarLockState()
     HideComboPointsForNonUsers()
     UpdateResourcePoints()
     UpdatePetResourcePoints()
@@ -686,6 +708,8 @@ end)
 
 -- Make the buff bar setting change handler globally accessible
 _G.UltraHardcoreHandleBuffBarSettingChange = HandleBuffBarSettingChange
+
+ApplyResourceBarLockState()
 
 -- Reset resource bar position function
 local function ResetResourceBarPosition()
