@@ -245,6 +245,7 @@ local presets = { {
 
 -- UI Layout Constants
 -- Centralized layout definitions to avoid hardcoded magic numbers and ensure consistency
+-- PAGE_WIDTH controls the width of ALL sections (Presets + UI Settings)
 local LAYOUT = {
   PAGE_WIDTH = 520, -- Width of the main container sections
   ROW_WIDTH = 480, -- Width of inner content rows (sliders, color rows)
@@ -259,6 +260,9 @@ local LAYOUT = {
 }
 
 -- Search Logic Helper
+-- Performs a substring match.
+-- NOTE: `searchBlob` should be pre-computed and lower-cased for performance.
+--       `query` is expected to be lower-cased by the caller.
 local function IsSearchMatch(searchBlob, query)
   -- If no query, everything matches
   if not query or query == '' then
@@ -1827,7 +1831,7 @@ function InitializeSettingsOptionsTab()
         local matches = IsSearchMatch(item._uhcSearch, query)
         if matches then
           table.insert(visibleItems, item)
-          -- If a child row matches, ensure its parent header is visible
+          -- Bubble Up Visibility: If a child row matches, force show its parent header
           if item._uhcParentHeader then
             item._uhcParentHeader._forceShow = true
           end
@@ -1873,18 +1877,26 @@ function InitializeSettingsOptionsTab()
     local currentY = -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP)
     for _, item in ipairs(finalLayoutList) do
       item:Show()
-      item:ClearAllPoints()
 
+      local targetY = currentY
+      local targetX = 10 -- Default indentation
       if item._isHeader then
-        -- Headers might need extra spacing if they follow a previous section
         if currentY < -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP) then
-          currentY = currentY - 10 -- Gap before header
+          targetY = targetY - 10 -- Gap before header
         end
-        item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 6, currentY)
-        currentY = currentY - 20 -- Header height (approx)
+        targetX = 6 -- Header indentation
+        currentY = targetY - 20 -- Header height (approx)
       else
-        item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, currentY)
-        currentY = currentY - LAYOUT.ROW_HEIGHT
+        currentY = targetY - LAYOUT.ROW_HEIGHT
+      end
+
+      -- Optimization: Only ClearAllPoints/SetPoint if the position has actually changed.
+      -- This reduces layout engine thrashing during typing.
+      if item._lastY ~= targetY or item._lastX ~= targetX then
+        item:ClearAllPoints()
+        item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', targetX, targetY)
+        item._lastY = targetY
+        item._lastX = targetX
       end
     end
 
@@ -1965,7 +1977,8 @@ function InitializeSettingsOptionsTab()
   _G.__UHC_RecalcContentHeight = recalcContentHeight
 
   -- Hook into global search filter to handle UI Settings section
-  -- This ensures that when the user searches, the UI Settings section expands and filters its contents.
+  -- Wraps the earlier definition to include UI Settings logic (which relies on variables created after the original function).
+  -- This ensures both Presets and UI Settings respond to the single search box.
   local originalSearchFilter = _G.UHC_ApplySettingsSearchFilter
   _G.UHC_ApplySettingsSearchFilter = function(q)
     if originalSearchFilter then
