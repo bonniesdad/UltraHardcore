@@ -277,6 +277,14 @@ function InitializeSettingsOptionsTab()
     GLOBAL_SETTINGS.collapsedSettingsSections.presetSection = {}
   end
 
+  if tempSettings.lockResourceBar == nil then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.lockResourceBar ~= nil then
+      tempSettings.lockResourceBar = GLOBAL_SETTINGS.lockResourceBar
+    else
+      tempSettings.lockResourceBar = false
+    end
+  end
+
   local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
   presetButtonsFrame:SetSize(520, 150) -- Increased width to match new layout
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
@@ -1099,6 +1107,8 @@ function InitializeSettingsOptionsTab()
   local ROW_HEIGHT = 28
   local HEADER_CONTENT_GAP = 10
   local SUBHEADER_TO_ROWS_GAP = 10
+  local LOCK_ROW_HEIGHT = 24
+  local LOCK_ROW_GAP = 8
 
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
   colorSectionFrame:SetWidth(520) -- Increased width to match new layout
@@ -1145,6 +1155,26 @@ function InitializeSettingsOptionsTab()
   tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
   local colorRows = {}
 
+  local lockResourceBarCheckbox =
+    CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
+  lockResourceBarCheckbox:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+  lockResourceBarCheckbox.Text:SetText('Lock Resource Bar Position')
+  lockResourceBarCheckbox:SetChecked(tempSettings.lockResourceBar)
+  lockResourceBarCheckbox:SetScript('OnClick', function(self)
+    tempSettings.lockResourceBar = self:GetChecked()
+    if _G.UltraHardcoreApplyResourceBarLockState then
+      UltraHardcoreApplyResourceBarLockState(tempSettings.lockResourceBar)
+    end
+  end)
+  lockResourceBarCheckbox:SetScript('OnEnter', function(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    GameTooltip:SetText('Prevent dragging the custom resource bar')
+    GameTooltip:Show()
+  end)
+  lockResourceBarCheckbox:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+
   -- Subheader: Resource Bar Colours
   local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   resourceSubHeader:SetPoint(
@@ -1152,12 +1182,13 @@ function InitializeSettingsOptionsTab()
     colorSectionFrame,
     'TOPLEFT',
     6,
-    -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+    -(HEADER_HEIGHT + HEADER_CONTENT_GAP + LOCK_ROW_HEIGHT + LOCK_ROW_GAP)
   )
   resourceSubHeader:SetText('Resource Bar Colours')
   resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
 
-  local COLOR_ROWS_TOP_OFFSET = HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP
+  local COLOR_ROWS_TOP_OFFSET =
+    HEADER_HEIGHT + HEADER_CONTENT_GAP + LOCK_ROW_HEIGHT + LOCK_ROW_GAP + 18 + SUBHEADER_TO_ROWS_GAP
 
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
     local row = CreateFrame('Frame', nil, colorSectionFrame)
@@ -1674,7 +1705,24 @@ function InitializeSettingsOptionsTab()
 
   -- Expanded height now includes resource subheader + color rows + other subheaders + two rows
   local colorExpandedHeight =
-    HEADER_HEIGHT + HEADER_CONTENT_GAP + 18 + SUBHEADER_TO_ROWS_GAP + (#colorRows * ROW_HEIGHT) + 12 + 18 + 8 + 24 + 12 + 18 + 8 + 24 + 8 + 24 + 12
+    HEADER_HEIGHT
+    + HEADER_CONTENT_GAP
+    + LOCK_ROW_HEIGHT
+    + LOCK_ROW_GAP
+    + 18
+    + SUBHEADER_TO_ROWS_GAP
+    + (#colorRows * ROW_HEIGHT)
+    + 12
+    + 18
+    + 8
+    + 24
+    + 12
+    + 18
+    + 8
+    + 24
+    + 8
+    + 24
+    + 12
   local colorCollapsedHeight = HEADER_HEIGHT
   -- Initial collapsed state (default collapsed) using unified key
   local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
@@ -1687,6 +1735,7 @@ function InitializeSettingsOptionsTab()
   colorHeaderIcon:SetTexture(
     colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
   )
+  lockResourceBarCheckbox:SetShown(not colorCollapsed)
   resourceSubHeader:SetShown(not colorCollapsed)
   for _, r in ipairs(colorRows) do
     r:SetShown(not colorCollapsed)
@@ -1703,6 +1752,7 @@ function InitializeSettingsOptionsTab()
     colorHeaderIcon:SetTexture(
       colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
     )
+    lockResourceBarCheckbox:SetShown(not colorCollapsed)
     resourceSubHeader:SetShown(not colorCollapsed)
     for _, r in ipairs(colorRows) do
       r:SetShown(not colorCollapsed)
