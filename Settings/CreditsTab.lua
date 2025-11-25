@@ -15,7 +15,7 @@ function InitializeCreditsTab()
   contentBackground:SetPoint('TOP', tabContents[7], 'TOP', 0, -50)
   contentBackground:SetPoint('LEFT', tabContents[7], 'LEFT', 10, 0)
   contentBackground:SetPoint('RIGHT', tabContents[7], 'RIGHT', -10, 0)
-  contentBackground:SetPoint('BOTTOM', tabContents[7], 'BOTTOM', 0, 10)
+  contentBackground:SetPoint('BOTTOM', tabContents[7], 'BOTTOM', 0, -20)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -121,4 +121,22 @@ function InitializeCreditsTab()
   twitchButton:ClearAllPoints()
   twitchButton:SetPoint('TOP', discordButton, 'BOTTOM', 0, 0)
   twitchButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+
+  -- Donate button (centered in tab)
+  local donateButton =
+    UHC_CreateKofiInviteButton(
+      contentBackground,
+      'TOP',
+      twitchButton,
+      'BOTTOM',
+      0,
+      0,
+      220,
+      28,
+      'Donate'
+    )
+  -- Center the button horizontally in the tab
+  donateButton:ClearAllPoints()
+  donateButton:SetPoint('TOP', twitchButton, 'BOTTOM', 0, 0)
+  donateButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
 end
