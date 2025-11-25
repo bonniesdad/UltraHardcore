@@ -323,21 +323,18 @@ function AddonXPTracking:XPReport()
   if AddonXPTracking:ValidateTotalStoredXP() ~= true then
     AddonXPTracking:PrintXPVerificationWarning()
   end
-
-  -- REMOVE BEFORE RELEASE
-  -- print(msgPrefix .. "If your XP was invalidated from the Nov 12th beta, run " .. redTextColour .. "/uhcresettracking|r to correct this")
 end 
 
 
 -- REMOVE BEFORE RELEASE
-SLASH_DEVRESETXP1 = '/uhcresettracking'
+--[[SLASH_DEVRESETXP1 = '/uhcresettracking'
 SlashCmdList['DEVRESETXP'] = function()
   AddonXPTracking:UpdateStat("xpTotal", nil)
   AddonXPTracking:UpdateStat("xpGWA", nil)
   AddonXPTracking:UpdateStat("xpGWOA", nil)
   AddonXPTracking:ResetXPGainedWithAddon(true)
   print(msgPrefix .. yellowTextColour ..  "ADDON XP RESET.|r Please do " .. redTextColour .. "/reload|r now")
-end
+end]]
 
 SLASH_XPFORLEVEL1 = '/uhcxpforlevel'
 SlashCmdList['XPFORLEVEL'] = function(msg)
