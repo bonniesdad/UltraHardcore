@@ -258,6 +258,20 @@ local LAYOUT = {
   SLIDER_WIDTH = 150, -- Width of standard sliders
 }
 
+-- Search Logic Helper
+local function IsSearchMatch(searchBlob, query)
+  -- If no query, everything matches
+  if not query or query == '' then
+    return true
+  end
+  -- If no search text on item, it can't match a specific query
+  if not searchBlob then
+    return false
+  end
+  -- Simple substring match (assumes caller provides lower-case query if needed)
+  return string.find(searchBlob, query, 1, true) ~= nil
+end
+
 -- Global function to update radio buttons (needed by Statistics tab)
 function updateRadioButtons()
   for settingName, radio in pairs(radioButtons) do
@@ -539,7 +553,7 @@ function InitializeSettingsOptionsTab()
 
       for _, cb in ipairs(children) do
         local searchBlob = cb._uhcSearch or ''
-        local isMatch = (ql == '' or string.find(searchBlob, ql, 1, true) ~= nil)
+        local isMatch = IsSearchMatch(searchBlob, ql)
         if not isCollapsed and isMatch then
           cb:Show()
           cb:ClearAllPoints()
@@ -1810,7 +1824,7 @@ function InitializeSettingsOptionsTab()
     local visibleItems = {}
     for _, item in ipairs(uiSettingsRows) do
       if not item._isHeader then
-        local matches = (query == '' or string.find(item._uhcSearch or '', query, 1, true))
+        local matches = IsSearchMatch(item._uhcSearch, query)
         if matches then
           table.insert(visibleItems, item)
           -- If a child row matches, ensure its parent header is visible
