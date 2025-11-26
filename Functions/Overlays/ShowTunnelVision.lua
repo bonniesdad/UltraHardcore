@@ -88,8 +88,8 @@ function ShowTunnelVision(blurIntensity)
   local frame = UltraHardcore.tunnelVisionFrames[frameName]
   
   -- Determine the texture based on active seasonal theme
-  local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and "halloween_foggy_" or "tinted_foggy_" -- Fallback to default texture
-  local texturePath = 'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format('%02d', blurIntensity) .. '.png'
+  local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and "halloween_foggy_" or "tunnel_vision_" -- Fallback to default texture
+  local texturePath = 'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format(blurIntensity) .. '.png'
   
   frame.texture:SetTexture(texturePath)
   frame:SetAlpha(0)
