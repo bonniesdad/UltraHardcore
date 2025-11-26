@@ -33,6 +33,8 @@ local STATISTIC_TOOLTIPS = {
   xpGWA = 'XP gained with addon enabled.',
   xpGWOA = 'XP gained with addon disabled or on another device.',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
+  totalHP = 'Your maximum possible health with current gear and buffs',
+  totalMana = 'Your maximum possible mana with current gear and buffs',
 }
 
 -- Helper function to attach tooltip to a statistic label
@@ -90,12 +92,15 @@ function InitializeStatisticsTab()
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
   statsScrollChild:SetSize(600, 300) -- Increased width to match new layout
   statsScrollFrame:SetScrollChild(statsScrollChild)
+  local totalHPText
+  local totalManaText
 
   -- Ultra guild membership and local updaters for the Ultra Status section
   local isUltraMember = IsUltraGuildMember and IsUltraGuildMember()
   local UpdateCurrentPresetDisplay
   local UpdateLegitStatusText
   local ultraSectionContent  -- used as an anchor target if Ultra section is shown
+  local resourceEventFrame
   -- Current Character section (header)
   if isUltraMember then
     local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -594,13 +599,135 @@ function InitializeStatisticsTab()
     end
   end)
 
+  -- Create Total HP & Mana section
+  local resourcesHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  resourcesHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  resourcesHeader:SetPoint(
+    'TOPLEFT',
+    lowestHealthContent,
+    'BOTTOMLEFT',
+    -LAYOUT.CONTENT_INDENT,
+    -LAYOUT.SECTION_SPACING
+  )
+  resourcesHeader:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    tile = true,
+    tileSize = 32,
+    edgeSize = 16,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+  resourcesHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+  resourcesHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+
+  local resourcesLabel = resourcesHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  resourcesLabel:SetPoint('LEFT', resourcesHeader, 'LEFT', 12, 0)
+  resourcesLabel:SetText('Total HP & Mana')
+
+  local resourcesContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  resourcesContent:SetSize(550, 2 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  resourcesContent:SetPoint(
+    'TOPLEFT',
+    resourcesHeader,
+    'BOTTOMLEFT',
+    LAYOUT.CONTENT_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
+  resourcesContent:Show()
+  resourcesContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    tile = true,
+    tileSize = 16,
+    edgeSize = 8,
+    insets = {
+      left = 4,
+      right = 4,
+      top = 4,
+      bottom = 4,
+    },
+  })
+
+  local totalHPLabel = resourcesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  totalHPLabel:SetPoint(
+    'TOPLEFT',
+    resourcesContent,
+    'TOPLEFT',
+    LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
+  totalHPLabel:SetText('Total HP:')
+  AddStatisticTooltip(totalHPLabel, 'totalHP')
+
+  totalHPText = resourcesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  totalHPText:SetPoint(
+    'TOPRIGHT',
+    resourcesContent,
+    'TOPRIGHT',
+    -LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING
+  )
+  totalHPText:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
+
+  local showStatsTotalHPRadio = CreateFrame('CheckButton', nil, resourcesContent, 'UIRadioButtonTemplate')
+  showStatsTotalHPRadio:SetPoint('LEFT', totalHPLabel, 'LEFT', -20, 0)
+  showStatsTotalHPRadio:SetChecked(false)
+  radioButtons.showMainStatisticsPanelTotalHP = showStatsTotalHPRadio
+  showStatsTotalHPRadio:SetScript('OnClick', function(self)
+    tempSettings.showMainStatisticsPanelTotalHP = self:GetChecked()
+    GLOBAL_SETTINGS.showMainStatisticsPanelTotalHP = self:GetChecked()
+    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    end
+  end)
+
+  local totalManaLabel = resourcesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  totalManaLabel:SetPoint(
+    'TOPLEFT',
+    resourcesContent,
+    'TOPLEFT',
+    LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
+  )
+  totalManaLabel:SetText('Total Mana:')
+  AddStatisticTooltip(totalManaLabel, 'totalMana')
+
+  totalManaText = resourcesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  totalManaText:SetPoint(
+    'TOPRIGHT',
+    resourcesContent,
+    'TOPRIGHT',
+    -LAYOUT.ROW_INDENT,
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
+  )
+  local manaPowerType = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
+  totalManaText:SetText(formatNumberWithCommas(UnitPowerMax('player', manaPowerType) or 0))
+
+  local showStatsTotalManaRadio =
+    CreateFrame('CheckButton', nil, resourcesContent, 'UIRadioButtonTemplate')
+  showStatsTotalManaRadio:SetPoint('LEFT', totalManaLabel, 'LEFT', -20, 0)
+  showStatsTotalManaRadio:SetChecked(false)
+  radioButtons.showMainStatisticsPanelTotalMana = showStatsTotalManaRadio
+  showStatsTotalManaRadio:SetScript('OnClick', function(self)
+    tempSettings.showMainStatisticsPanelTotalMana = self:GetChecked()
+    GLOBAL_SETTINGS.showMainStatisticsPanelTotalMana = self:GetChecked()
+    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
+      UltraHardcoreStatsFrame.UpdateRowVisibility()
+    end
+  end)
+
   -- Create modern WoW-style enemies slain section (no accordion functionality)
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Anchor directly below the Lowest Health content to avoid overlap on different UI scales
   enemiesSlainHeader:SetPoint(
     'TOPLEFT',
-    lowestHealthContent,
+    resourcesContent,
     'BOTTOMLEFT',
     -LAYOUT.CONTENT_INDENT,
     -LAYOUT.SECTION_SPACING
@@ -1447,6 +1574,17 @@ function InitializeStatisticsTab()
       levelText:SetText(formatNumberWithCommas(playerLevel))
     end
 
+    if totalHPText then
+      local maxHealth = UnitHealthMax('player') or 0
+      totalHPText:SetText(formatNumberWithCommas(maxHealth))
+    end
+
+    if totalManaText then
+      local manaPowerType = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
+      local maxMana = UnitPowerMax('player', manaPowerType) or 0
+      totalManaText:SetText(formatNumberWithCommas(maxMana))
+    end
+
     if lowestHealthText then
       local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
       lowestHealthText:SetText(string.format('%.1f', currentLowestHealth) .. '%')
@@ -1552,6 +1690,21 @@ function InitializeStatisticsTab()
       end
     end
   end
+
+  -- Keep Total HP/Mana values current when stats change outside the panel
+  resourceEventFrame = CreateFrame('Frame')
+  resourceEventFrame:RegisterEvent('PLAYER_LEVEL_UP')
+  resourceEventFrame:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
+  resourceEventFrame:RegisterEvent('UNIT_MAXHEALTH')
+  resourceEventFrame:RegisterEvent('UNIT_MAXPOWER')
+  resourceEventFrame:SetScript('OnEvent', function(_, event, unit)
+    if (event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER') and unit ~= 'player' then
+      return
+    end
+    if UpdateLowestHealthDisplay then
+      UpdateLowestHealthDisplay()
+    end
+  end)
 
   -- Share button for Statistics tab
   local shareButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
