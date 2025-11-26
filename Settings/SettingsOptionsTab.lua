@@ -71,10 +71,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showFullHealthIndicatorAudioCue',
   tooltip = 'An audio cue plays when you are at full health',
 }, {
-  name = 'UHC Incoming Damage Effect',
-  dbSettingsValueName = 'showIncomingDamageEffect',
-  tooltip = 'Various screen effects on incoming damage',
-}, {
   name = 'UHC Incoming Healing Effect',
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
@@ -152,9 +148,9 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'playPlayerDeathSoundbite',
   tooltip = 'Play a soundbite when you die',
 }, {
-  name = 'Spooky Tunnel Vision',
+  name = 'Seasonal-themed Tunnel Vision',
   dbSettingsValueName = 'spookyTunnelVision',
-  tooltip = 'Use Halloween-themed tunnel vision overlay for ultra spooky experience',
+  tooltip = 'Use the latest holiday themed tunnel vision overlay',
 }, {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',

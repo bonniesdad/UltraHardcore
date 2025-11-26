@@ -31,7 +31,6 @@ local PRESET_SECTIONS = { {
     'showFullHealthIndicator',
     'showFullHealthIndicatorAudioCue',
     'hideCustomResourceBar',
-    'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',
     'completelyRemovePlayerFrame',
