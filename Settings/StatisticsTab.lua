@@ -1324,7 +1324,6 @@ function InitializeStatisticsTab()
     showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
     showFullHealthIndicator = 'Use UHC Full Health Indicator',
     hideCustomResourceBar = 'Hide Custom Resource Bar',
-    showIncomingDamageEffect = 'Use UHC Incoming Damage Effect',
     showHealingIndicator = 'Use UHC Incoming Healing Effect',
   }
 

@@ -34,7 +34,6 @@ local settingToXPVariable = {
   showFullHealthIndicator = 'xpGainedWithoutOptionShowFullHealthIndicator',
   showFullHealthIndicatorAudioCue = 'xpGainedWithoutOptionShowFullHealthIndicatorAudioCue',
   hideCustomResourceBar = 'xpGainedWithoutOptionHideCustomResourceBar',
-  showIncomingDamageEffect = 'xpGainedWithoutOptionShowIncomingDamageEffect',
   showHealingIndicator = 'xpGainedWithoutOptionShowHealingIndicator',
 }
 

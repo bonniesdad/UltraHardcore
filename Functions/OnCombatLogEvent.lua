@@ -12,9 +12,6 @@ function OnCombatLogEvent(self, event)
     amount = select(12, CombatLogGetCurrentEventInfo()) -- fallback
   end
 
-  -- Handle incoming damage overlays
-  DamageOverlayHandler.HandleIncomingDamage(subEvent, destGUID)
-
   -- Handle critical hit effects and tracking
   CritTracker.HandleCriticalHit(subEvent, sourceGUID, destGUID, amount)
   CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
