@@ -540,7 +540,7 @@ function CreatePartyTargetHighlight(partyIndex)
     highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
     
     -- Use holy damage texture for a golden glow effect
-    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\holy-damage.png')
+    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect
@@ -585,7 +585,7 @@ function CreatePetTargetHighlight(petType)
     end
     
     -- Use holy damage texture for a golden glow effect
-    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\holy-damage.png')
+    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect

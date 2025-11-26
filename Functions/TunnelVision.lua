@@ -25,43 +25,43 @@ function TunnelVision(self, event, unit, showTunnelVision)
     end
 
     -- Determine which overlays should be active based on current health
-    local shouldShow19 = healthPercent <= 20
-    local shouldShow14 = healthPercent <= 40
-    local shouldShow9 = healthPercent <= 60
-    local shouldShow4 = healthPercent <= 80
+    local shouldShow4 = healthPercent <= 20
+    local shouldShow3 = healthPercent <= 40
+    local shouldShow2 = healthPercent <= 60
+    local shouldShow1 = healthPercent <= 80
 
     -- Determine which overlays were active based on previous health
-    local wasShowing19 = previousHealthPercent <= 20
-    local wasShowing14 = previousHealthPercent <= 40
-    local wasShowing9 = previousHealthPercent <= 60
-    local wasShowing4 = previousHealthPercent <= 80
+    local wasShowing4 = previousHealthPercent <= 20
+    local wasShowing3 = previousHealthPercent <= 40
+    local wasShowing2 = previousHealthPercent <= 60
+    local wasShowing1 = previousHealthPercent <= 80
 
     -- Remove overlays that should no longer be shown (health went up)
-    if wasShowing19 and not shouldShow19 then
-      RemoveSpecificTunnelVision(19)
-    end
-    if wasShowing14 and not shouldShow14 then
-      RemoveSpecificTunnelVision(14)
-    end
-    if wasShowing9 and not shouldShow9 then
-      RemoveSpecificTunnelVision(9)
-    end
     if wasShowing4 and not shouldShow4 then
       RemoveSpecificTunnelVision(4)
     end
+    if wasShowing3 and not shouldShow3 then
+      RemoveSpecificTunnelVision(3)
+    end
+    if wasShowing2 and not shouldShow2 then
+      RemoveSpecificTunnelVision(2)
+    end
+    if wasShowing1 and not shouldShow1 then
+      RemoveSpecificTunnelVision(1)
+    end
 
     -- Show overlays that should be active but aren't yet (health went down)
-    if shouldShow19 and not wasShowing19 then
-      ShowTunnelVision(19)
-    end
-    if shouldShow14 and not wasShowing14 then
-      ShowTunnelVision(14)
-    end
-    if shouldShow9 and not wasShowing9 then
-      ShowTunnelVision(9)
-    end
     if shouldShow4 and not wasShowing4 then
       ShowTunnelVision(4)
+    end
+    if shouldShow3 and not wasShowing3 then
+      ShowTunnelVision(3)
+    end
+    if shouldShow2 and not wasShowing2 then
+      ShowTunnelVision(2)
+    end
+    if shouldShow1 and not wasShowing1 then
+      ShowTunnelVision(1)
     end
 
     -- Update previous health for next comparison
