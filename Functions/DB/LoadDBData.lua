@@ -44,7 +44,6 @@ function LoadDBData()
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,
-    showIncomingDamageEffect = false,
     showHealingIndicator = false,
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,

@@ -85,7 +85,6 @@ Functions/Checks/IsDungeonBoss.lua
 Functions/Checks/HasBuff.lua
 Functions/Checks/TargetTamperCheck.lua
 
-Functions/DamageOverlayHandler.lua
 Functions/CritTracker.lua
 Functions/KillTracker.lua
 Functions/ItemTracker.lua
@@ -102,18 +101,6 @@ Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
-Functions/Overlays/ShowPhysicalDamageOverlay.lua
-Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
-Functions/Overlays/ShowShadowDamageOverlay.lua
-Functions/Overlays/ShowShadowDamageOverTimeOverlay.lua
-Functions/Overlays/ShowHolyDamageOverlay.lua
-Functions/Overlays/ShowHolyDamageOverTimeOverlay.lua
-Functions/Overlays/ShowArcaneDamageOverlay.lua
-Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
-Functions/Overlays/ShowFireDamageOverlay.lua
-Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
-Functions/Overlays/ShowNatureDamageOverlay.lua
-Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
 Settings/TBCFeature.lua
