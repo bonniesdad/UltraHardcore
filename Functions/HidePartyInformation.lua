@@ -355,10 +355,10 @@ local function HookCompactRaidHealthHiding()
       if nameFrame.GetFont and nameFrame.SetFont then
         local font, size, flags = nameFrame:GetFont()
         if size and size > 8 then
-          nameFrame:SetFont(font, math.max(8, size - 3), flags)
+          nameFrame:SetFont(font, math.max(10, size - 1), flags)
         end
       elseif nameFrame.SetTextHeight then
-        nameFrame:SetTextHeight(8)
+        nameFrame:SetTextHeight(10)
       end
     end
     -- Re-anchor and resize the health indicator to match the circle/frame
