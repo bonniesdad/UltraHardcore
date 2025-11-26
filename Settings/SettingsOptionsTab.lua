@@ -243,6 +243,39 @@ local presets = { {
   routePlanner = true,
 } }
 
+-- UI Layout Constants
+-- Centralized layout definitions to avoid hardcoded magic numbers and ensure consistency
+-- PAGE_WIDTH controls the width of ALL sections (Presets + UI Settings)
+local LAYOUT = {
+  PAGE_WIDTH = 520, -- Width of the main container sections
+  ROW_WIDTH = 480, -- Width of inner content rows (sliders, color rows)
+  SEARCH_WIDTH = 400, -- Width of the search box
+  HEADER_HEIGHT = 22, -- Height of section headers
+  ROW_HEIGHT = 30, -- Standard height for checkbox/slider rows
+  COLOR_ROW_HEIGHT = 24, -- Height for color picker rows
+  SECTION_GAP = 10, -- Gap between vertical sections
+  HEADER_CONTENT_GAP = 10, -- Gap between a header and its first child
+  LABEL_WIDTH = 140, -- Width of standard left-side labels
+  SLIDER_WIDTH = 150, -- Width of standard sliders
+}
+
+-- Search Logic Helper
+-- Performs a substring match.
+-- NOTE: `searchBlob` should be pre-computed and lower-cased for performance.
+--       `query` is expected to be lower-cased by the caller.
+local function IsSearchMatch(searchBlob, query)
+  -- If no query, everything matches
+  if not query or query == '' then
+    return true
+  end
+  -- If no search text on item, it can't match a specific query
+  if not searchBlob then
+    return false
+  end
+  -- Simple substring match (assumes caller provides lower-case query if needed)
+  return string.find(searchBlob, query, 1, true) ~= nil
+end
+
 -- Global function to update radio buttons (needed by Statistics tab)
 function updateRadioButtons()
   for settingName, radio in pairs(radioButtons) do
@@ -282,7 +315,7 @@ function InitializeSettingsOptionsTab()
   end
 
   local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
-  presetButtonsFrame:SetSize(520, 150) -- Increased width to match new layout
+  presetButtonsFrame:SetSize(LAYOUT.PAGE_WIDTH, 150) -- Increased width to match new layout
   presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
 
   local checkboxes = {}
@@ -441,7 +474,7 @@ function InitializeSettingsOptionsTab()
 
   -- Search bar (filters options below)
   local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
-  searchBox:SetSize(505, 24) -- Increased width to match new layout
+  searchBox:SetSize(LAYOUT.SEARCH_WIDTH, 24) -- Reduced width to fit Collapse button
   searchBox:SetAutoFocus(false)
   searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
 
@@ -454,6 +487,54 @@ function InitializeSettingsOptionsTab()
   clearSearchButton:SetPoint('LEFT', searchBox, 'RIGHT', 6, 0)
   clearSearchButton:SetText('Clear')
 
+  local collapseAllButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  collapseAllButton:SetSize(96, 22)
+  collapseAllButton:SetPoint('LEFT', clearSearchButton, 'RIGHT', 6, 0)
+  collapseAllButton:SetText('Collapse All')
+
+  -- Iterate through all collapsible sections (Presets + UI Settings) and force them closed
+  collapseAllButton:SetScript('OnClick', function()
+    local framesBySection = _G.__UHC_SectionFrames
+    local collapsedBySection = _G.__UHC_SectionCollapsed
+    local headerIcons = _G.__UHC_SectionHeaderIcons
+    local collapsedHeights = _G.__UHC_SectionCollapsedHeights
+    local childrenBySection = _G.__UHC_SectionChildren
+
+    if framesBySection and collapsedBySection then
+      for idx, frame in ipairs(framesBySection) do
+        collapsedBySection[idx] = true
+        if headerIcons and headerIcons[idx] then
+          headerIcons[idx]:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
+        end
+        if collapsedHeights and collapsedHeights[idx] then
+          frame:SetHeight(collapsedHeights[idx])
+        end
+        if childrenBySection and childrenBySection[idx] then
+          for _, child in ipairs(childrenBySection[idx]) do
+            child:SetShown(false)
+          end
+        end
+
+        -- Update persistent storage if tracking exists
+        if GLOBAL_SETTINGS.collapsedSettingsSections and GLOBAL_SETTINGS.collapsedSettingsSections.presetSection then
+          local title = _G.__UHC_SectionTitles and _G.__UHC_SectionTitles[idx]
+          if title then
+            GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[title] = true
+          end
+        end
+      end
+    end
+
+    -- Also collapse the UI Settings section if it exists
+    if _G.__UHC_ToggleUISettingsCollapse then
+      _G.__UHC_ToggleUISettingsCollapse(true)
+    end
+
+    if _G.__UHC_RecalcContentHeight then
+      _G.__UHC_RecalcContentHeight()
+    end
+  end)
+
   -- Global filter function (uses globals set after checkbox creation)
   _G.UHC_ApplySettingsSearchFilter = function(query)
     local q = (query or '')
@@ -463,9 +544,9 @@ function InitializeSettingsOptionsTab()
     local childrenBySection = _G.__UHC_SectionChildren
     local framesBySection = _G.__UHC_SectionFrames
     local collapsedBySection = _G.__UHC_SectionCollapsed
-    local HEADER_HEIGHT = _G.__UHC_SECTION_HEADER_HEIGHT or 22
-    local ROW_HEIGHT = _G.__UHC_ROW_HEIGHT or 30
-    local HEADER_CONTENT_GAP = _G.__UHC_HEADER_CONTENT_GAP or 10
+    local HEADER_HEIGHT = _G.__UHC_SECTION_HEADER_HEIGHT or LAYOUT.HEADER_HEIGHT
+    local ROW_HEIGHT = _G.__UHC_ROW_HEIGHT or LAYOUT.ROW_HEIGHT
+    local HEADER_CONTENT_GAP = _G.__UHC_HEADER_CONTENT_GAP or LAYOUT.HEADER_CONTENT_GAP
 
     if not childrenBySection or not framesBySection or not collapsedBySection then return end
 
@@ -476,7 +557,7 @@ function InitializeSettingsOptionsTab()
 
       for _, cb in ipairs(children) do
         local searchBlob = cb._uhcSearch or ''
-        local isMatch = (ql == '' or string.find(searchBlob, ql, 1, true) ~= nil)
+        local isMatch = IsSearchMatch(searchBlob, ql)
         if not isCollapsed and isMatch then
           cb:Show()
           cb:ClearAllPoints()
@@ -670,10 +751,10 @@ function InitializeSettingsOptionsTab()
       end
     end
 
-    local HEADER_HEIGHT = 22
-    local ROW_HEIGHT = 30
-    local SECTION_GAP = 10
-    local HEADER_CONTENT_GAP = 10
+    local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+    local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+    local SECTION_GAP = LAYOUT.SECTION_GAP
+    local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
     local prevSectionFrame = nil
 
     local sectionChildren = {}
@@ -686,9 +767,9 @@ function InitializeSettingsOptionsTab()
     local sectionTitles = {}
 
     -- Expose layout numbers and section arrays for the search filter
-    _G.__UHC_SECTION_HEADER_HEIGHT = HEADER_HEIGHT
-    _G.__UHC_ROW_HEIGHT = ROW_HEIGHT
-    _G.__UHC_HEADER_CONTENT_GAP = HEADER_CONTENT_GAP
+    _G.__UHC_SECTION_HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+    _G.__UHC_ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+    _G.__UHC_HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
 
     local function updateSectionCount(idx)
       if not sectionCountTexts[idx] or not sectionChildSettingNames[idx] then return end
@@ -724,7 +805,7 @@ function InitializeSettingsOptionsTab()
       sectionTitles[sectionIndex] = section.title
       -- Container for the whole section so collapsing reflows subsequent sections
       local sectionFrame = CreateFrame('Frame', nil, scrollChild)
-      sectionFrame:SetWidth(520) -- Increased width to match new layout
+      sectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
       if prevSectionFrame then
         sectionFrame:SetPoint('TOPLEFT', prevSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
         sectionFrame:SetPoint('TOPRIGHT', prevSectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
@@ -867,7 +948,7 @@ function InitializeSettingsOptionsTab()
 
           -- Create slider frame
           local sliderFrame = CreateFrame('Frame', nil, sectionFrame)
-          sliderFrame:SetSize(500, ROW_HEIGHT) -- Increased width to match new layout
+          sliderFrame:SetSize(500, LAYOUT.ROW_HEIGHT) -- Increased width to match new layout
           sliderFrame:SetPoint(
             'TOPLEFT',
             sectionFrame,
@@ -883,7 +964,7 @@ function InitializeSettingsOptionsTab()
 
           -- Create the slider
           local slider = CreateFrame('Slider', nil, sliderFrame, 'OptionsSliderTemplate')
-          slider:SetSize(150, 15)
+          slider:SetSize(LAYOUT.SLIDER_WIDTH, 15)
           slider:SetPoint('RIGHT', sliderFrame, 'RIGHT', -50, 0)
           slider:SetMinMaxValues(sliderItem.minValue, sliderItem.maxValue)
           slider:SetValue(tempSettings[sliderItem.dbSettingsValueName] or sliderItem.defaultValue)
@@ -986,9 +1067,9 @@ function InitializeSettingsOptionsTab()
       -- Insert an informational note after the Extreme section
       if sectionIndex == 3 then
         local infoFrame = CreateFrame('Frame', nil, scrollChild)
-        infoFrame:SetWidth(520) -- Increased width to match new layout
-        infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
-        infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -SECTION_GAP)
+        infoFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
+        infoFrame:SetPoint('TOPLEFT', sectionFrame, 'BOTTOMLEFT', 0, -LAYOUT.SECTION_GAP)
+        infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -LAYOUT.SECTION_GAP)
         infoFrame:SetHeight(64)
 
         -- Divider line above the note
@@ -1099,15 +1180,15 @@ function InitializeSettingsOptionsTab()
   createCheckboxes()
 
   -- Collapsible: Resource Bar Colors
-  local HEADER_HEIGHT = 22
-  local ROW_HEIGHT = 28
-  local HEADER_CONTENT_GAP = 10
+  local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
+  local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
+  local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
   local SUBHEADER_TO_ROWS_GAP = 10
   local LOCK_ROW_HEIGHT = 24
   local LOCK_ROW_GAP = 8
 
   local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
-  colorSectionFrame:SetWidth(520) -- Increased width to match new layout
+  colorSectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
   if lastSectionFrame then
     colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -10)
     colorSectionFrame:SetPoint('TOPRIGHT', lastSectionFrame, 'BOTTOMRIGHT', 0, -10)
@@ -1148,13 +1229,30 @@ function InitializeSettingsOptionsTab()
   colorHeaderIcon:SetSize(16, 16)
   colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
 
+  -- Dynamic Layout & Search Storage
+  -- uiSettingsRows stores all frames (headers and content rows) for the UI Settings section.
+  -- We iterate this list to filter visibility and dynamically stack them.
+  local uiSettingsRows = {}
+  local function addUIRow(frame, searchTags, parentHeaderFrame)
+    -- Tag the frame with search terms (concatenated string)
+    frame._uhcSearch = string.lower(searchTags or '')
+    -- Link to parent header so we can force-show the header if a child matches
+    frame._uhcParentHeader = parentHeaderFrame
+    table.insert(uiSettingsRows, frame)
+  end
+  local function addUIHeader(frame)
+    frame._isHeader = true
+    table.insert(uiSettingsRows, frame)
+  end
+
   tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
-  local colorRows = {}
 
   local lockResourceBarCheckbox =
     CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
+  -- Position will be handled by reflow
   lockResourceBarCheckbox:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
   lockResourceBarCheckbox.Text:SetText('Lock Resource Bar Position')
+  lockResourceBarCheckbox.Text:SetPoint('LEFT', lockResourceBarCheckbox, 'RIGHT', 5, 0)
   lockResourceBarCheckbox:SetChecked(tempSettings.lockResourceBar)
   lockResourceBarCheckbox:SetScript('OnClick', function(self)
     tempSettings.lockResourceBar = self:GetChecked()
@@ -1170,9 +1268,11 @@ function InitializeSettingsOptionsTab()
   lockResourceBarCheckbox:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
+  addUIRow(lockResourceBarCheckbox, 'lock resource bar position custom move', nil)
 
   -- Subheader: Resource Bar Colours
   local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  -- Position will be handled by reflow
   resourceSubHeader:SetPoint(
     'TOPLEFT',
     colorSectionFrame,
@@ -1182,22 +1282,21 @@ function InitializeSettingsOptionsTab()
   )
   resourceSubHeader:SetText('Resource Bar Colours')
   resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
-
-  local COLOR_ROWS_TOP_OFFSET =
-    HEADER_HEIGHT + HEADER_CONTENT_GAP + LOCK_ROW_HEIGHT + LOCK_ROW_GAP + 18 + SUBHEADER_TO_ROWS_GAP
+  addUIHeader(resourceSubHeader)
 
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
     local row = CreateFrame('Frame', nil, colorSectionFrame)
-    row:SetSize(480, 24) -- Increased width to match new layout
+    row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
+    -- Position will be handled by reflow
     row:SetPoint(
       'TOPLEFT',
       colorSectionFrame,
       'TOPLEFT',
       20,
-      -(COLOR_ROWS_TOP_OFFSET + ((rowIndex - 1) * ROW_HEIGHT))
+      -100 -- Temporary placeholder
     )
 
-    local LABEL_WIDTH = 140
+    local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
     local SWATCH_WIDTH = 54
     local GAP = 12
 
@@ -1510,7 +1609,7 @@ function InitializeSettingsOptionsTab()
       setSwatchColor(dr, dg, db)
     end)
 
-    table.insert(colorRows, row)
+    addUIRow(row, labelText .. ' color resource bar', resourceSubHeader)
   end
 
   createColorRowInSection('Energy', 'ENERGY', 1)
@@ -1525,21 +1624,24 @@ function InitializeSettingsOptionsTab()
 
   -- Statistics Background subheader
   local statsSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  -- Position will be handled by reflow
   statsSubHeader:SetPoint(
     'TOPLEFT',
     colorSectionFrame,
     'TOPLEFT',
     6,
-    -(COLOR_ROWS_TOP_OFFSET + (#colorRows * ROW_HEIGHT) + SUBHEADER_GAP)
+    -200 -- Temporary
   )
   statsSubHeader:SetText('Statistics Background')
   statsSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  addUIHeader(statsSubHeader)
 
   local opacityRow = CreateFrame('Frame', nil, colorSectionFrame)
-  opacityRow:SetSize(480, 24) -- Increased width to match new layout
+  opacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
+  -- Position will be handled by reflow
   opacityRow:SetPoint('TOPLEFT', statsSubHeader, 'BOTTOMLEFT', 14, -6)
 
-  local LABEL_WIDTH = 140
+  local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
   local GAP = 12
 
   local opacityLabel = opacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -1583,17 +1685,22 @@ function InitializeSettingsOptionsTab()
     tempSettings.statisticsBackgroundOpacity = pct / 100
   end)
 
+  addUIRow(opacityRow, 'statistics background opacity transparency', statsSubHeader)
+
   -- Minimap Clock Scale subheader
   local clockSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  -- Position will be handled by reflow
   clockSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
   clockSubHeader:SetText('Minimap Clock Scale')
   clockSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  addUIHeader(clockSubHeader)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
-  minimapClockScaleRow:SetSize(480, 24) -- Increased width to match new layout
+  minimapClockScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
+  -- Position will be handled by reflow
   minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
 
-  local LABEL_WIDTH2 = 140
+  local LABEL_WIDTH2 = LAYOUT.LABEL_WIDTH
   local GAP2 = 12
 
   local minimapClockScaleLabel =
@@ -1645,14 +1752,19 @@ function InitializeSettingsOptionsTab()
     minimapClockScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapClockScale = steps / 10
   end)
+  addUIRow(minimapClockScaleRow, 'minimap clock scale size', clockSubHeader)
+
   -- Minimap mail Scale subheader
   local mailSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  -- Position will be handled by reflow
   mailSubHeader:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', -14, -12)
   mailSubHeader:SetText('Minimap Mail Scale')
   mailSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  addUIHeader(mailSubHeader)
 
   local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleRow)
-  minimapMailScaleRow:SetSize(480, 24) -- Increased width to match new layout
+  minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
+  -- Position will be handled by reflow
   minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local minimapMailScaleLabel =
@@ -1698,28 +1810,106 @@ function InitializeSettingsOptionsTab()
     minimapMailScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapMailScale = steps / 10
   end)
+  addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
 
-  -- Expanded height now includes resource subheader + color rows + other subheaders + two rows
-  local colorExpandedHeight =
-    HEADER_HEIGHT
-    + HEADER_CONTENT_GAP
-    + LOCK_ROW_HEIGHT
-    + LOCK_ROW_GAP
-    + 18
-    + SUBHEADER_TO_ROWS_GAP
-    + (#colorRows * ROW_HEIGHT)
-    + 12
-    + 18
-    + 8
-    + 24
-    + 12
-    + 18
-    + 8
-    + 24
-    + 8
-    + 24
-    + 12
-  local colorCollapsedHeight = HEADER_HEIGHT
+  -- Dynamic Reflow Function
+  -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
+  local function reflowUISettings(filterQuery)
+    local query = string.lower(filterQuery or '')
+    local isSearch = (query ~= '')
+
+    -- Reset header visibility tracking
+    for _, item in ipairs(uiSettingsRows) do
+      if item._isHeader then
+        item._forceShow = false
+      end
+    end
+
+    -- Determine visibility of content rows based on search query
+    local visibleItems = {}
+    for _, item in ipairs(uiSettingsRows) do
+      if not item._isHeader then
+        local matches = IsSearchMatch(item._uhcSearch, query)
+        if matches then
+          table.insert(visibleItems, item)
+          -- Bubble Up Visibility: If a child row matches, force show its parent header
+          if item._uhcParentHeader then
+            item._uhcParentHeader._forceShow = true
+          end
+        else
+          item:Hide()
+        end
+      end
+    end
+
+    -- Construct the final list of items to display (headers + visible rows)
+    local finalLayoutList = {}
+    if not isSearch then
+      -- In default mode (no search), show everything in original order
+      for _, item in ipairs(uiSettingsRows) do
+        table.insert(finalLayoutList, item)
+      end
+    else
+      -- In search mode, we reconstruct the list to ensure headers appear before their children
+      for _, item in ipairs(uiSettingsRows) do
+        if item._isHeader then
+          if item._forceShow then
+            table.insert(finalLayoutList, item)
+          else
+            item:Hide()
+          end
+        else
+          -- Check if this row was deemed visible
+          local isVisible = false
+          for _, v in ipairs(visibleItems) do
+            if v == item then
+              isVisible = true
+              break
+            end
+          end
+          if isVisible then
+            table.insert(finalLayoutList, item)
+          end
+        end
+      end
+    end
+
+    -- Apply Layout: Stack items vertically
+    local currentY = -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP)
+    for _, item in ipairs(finalLayoutList) do
+      item:Show()
+
+      local targetY = currentY
+      local targetX = 10 -- Default indentation
+      if item._isHeader then
+        if currentY < -(LAYOUT.HEADER_HEIGHT + LAYOUT.HEADER_CONTENT_GAP) then
+          targetY = targetY - 10 -- Gap before header
+        end
+        targetX = 6 -- Header indentation
+        currentY = targetY - 20 -- Header height (approx)
+      else
+        currentY = targetY - LAYOUT.ROW_HEIGHT
+      end
+
+      -- Optimization: Only ClearAllPoints/SetPoint if the position has actually changed.
+      -- This reduces layout engine thrashing during typing.
+      if item._lastY ~= targetY or item._lastX ~= targetX then
+        item:ClearAllPoints()
+        item:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', targetX, targetY)
+        item._lastY = targetY
+        item._lastX = targetX
+      end
+    end
+
+    return math.abs(currentY) + 10
+  end
+
+  -- Expose for global search
+  _G.__UHC_ReflowUISettings = reflowUISettings
+
+  -- Initial height calculation
+  local colorExpandedHeight = reflowUISettings('')
+  local colorCollapsedHeight = LAYOUT.HEADER_HEIGHT
   -- Initial collapsed state (default collapsed) using unified key
   local colorCollapsed = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
   if colorCollapsed == nil then
@@ -1728,38 +1918,37 @@ function InitializeSettingsOptionsTab()
       colorCollapsed = true
     end
   end
-  colorHeaderIcon:SetTexture(
-    colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-  )
-  lockResourceBarCheckbox:SetShown(not colorCollapsed)
-  resourceSubHeader:SetShown(not colorCollapsed)
-  for _, r in ipairs(colorRows) do
-    r:SetShown(not colorCollapsed)
+
+  local function toggleUICollapsing(forceCollapse)
+    if forceCollapse ~= nil then
+      colorCollapsed = forceCollapse
+    end
+
+    if colorCollapsed then
+      -- Hide all children
+      for _, item in ipairs(uiSettingsRows) do
+        item:Hide()
+      end
+      colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
+      colorSectionFrame:SetHeight(LAYOUT.HEADER_HEIGHT)
+    else
+      -- Reflow will show correct children
+      local h = reflowUISettings(_G.__UHC_CurrentSearchQuery)
+      colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
+      colorSectionFrame:SetHeight(h)
+    end
   end
-  statsSubHeader:SetShown(not colorCollapsed)
-  opacityRow:SetShown(not colorCollapsed)
-  clockSubHeader:SetShown(not colorCollapsed)
-  minimapClockScaleRow:SetShown(not colorCollapsed)
-  mailSubHeader:SetShown(not colorCollapsed)
-  minimapMailScaleRow:SetShown(not colorCollapsed)
-  colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
+
+  _G.__UHC_ToggleUISettingsCollapse = function(val)
+    toggleUICollapsing(val)
+  end
+
+  toggleUICollapsing(colorCollapsed)
+
   colorHeaderButton:SetScript('OnClick', function()
     colorCollapsed = not colorCollapsed
-    colorHeaderIcon:SetTexture(
-      colorCollapsed and 'Interface\\Buttons\\UI-PlusButton-Up' or 'Interface\\Buttons\\UI-MinusButton-Up'
-    )
-    lockResourceBarCheckbox:SetShown(not colorCollapsed)
-    resourceSubHeader:SetShown(not colorCollapsed)
-    for _, r in ipairs(colorRows) do
-      r:SetShown(not colorCollapsed)
-    end
-    statsSubHeader:SetShown(not colorCollapsed)
-    opacityRow:SetShown(not colorCollapsed)
-    clockSubHeader:SetShown(not colorCollapsed)
-    minimapClockScaleRow:SetShown(not colorCollapsed)
-    mailSubHeader:SetShown(not colorCollapsed)
-    minimapMailScaleRow:SetShown(not colorCollapsed)
-    colorSectionFrame:SetHeight(colorCollapsed and colorCollapsedHeight or colorExpandedHeight)
+    toggleUICollapsing()
+
     GLOBAL_SETTINGS.collapsedSettingsSections.uiColour = colorCollapsed
     if SaveCharacterSettings then
       SaveCharacterSettings(GLOBAL_SETTINGS)
@@ -1772,7 +1961,7 @@ function InitializeSettingsOptionsTab()
   -- Recalculate scroll child height so the scrollbar reflects current content
   recalcContentHeight = function()
     local total = 10 -- top padding
-    local SECTION_GAP = 10
+    local SECTION_GAP = LAYOUT.SECTION_GAP
     for i, sf in ipairs(sectionFrames) do
       if i > 1 then
         total = total + SECTION_GAP
@@ -1787,6 +1976,36 @@ function InitializeSettingsOptionsTab()
 
   -- Make recalc accessible to search filter
   _G.__UHC_RecalcContentHeight = recalcContentHeight
+
+  -- Hook into global search filter to handle UI Settings section
+  -- Wraps the earlier definition to include UI Settings logic (which relies on variables created after the original function).
+  -- This ensures both Presets and UI Settings respond to the single search box.
+  local originalSearchFilter = _G.UHC_ApplySettingsSearchFilter
+  _G.UHC_ApplySettingsSearchFilter = function(q)
+    if originalSearchFilter then
+      originalSearchFilter(q)
+    end
+
+    if q and q ~= '' then
+      -- Search mode: Force expand and reflow the UI Settings section
+      if _G.__UHC_ToggleUISettingsCollapse then
+        _G.__UHC_ToggleUISettingsCollapse(false)
+      end
+    else
+      -- Clear mode: Restore persisted collapsed state
+      local persistedState = GLOBAL_SETTINGS.collapsedSettingsSections.uiColour
+      if persistedState == nil then
+        persistedState = true
+      end -- Default to collapsed
+      if _G.__UHC_ToggleUISettingsCollapse then
+        _G.__UHC_ToggleUISettingsCollapse(persistedState)
+      end
+    end
+
+    if recalcContentHeight then
+      recalcContentHeight()
+    end
+  end
 
   -- Initial recalculation after building UI
   if recalcContentHeight then
