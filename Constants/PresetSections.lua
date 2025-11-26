@@ -56,6 +56,7 @@ local PRESET_SECTIONS = { {
     'playPartyDeathSoundbite',
     'playPlayerDeathSoundbite',
     'spookyTunnelVision',
+    'heartbeatSoundOnLowHealth',
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
   },
