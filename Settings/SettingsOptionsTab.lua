@@ -108,6 +108,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showOnScreenStatistics',
   tooltip = 'Show important UHC statistics on the screen at all times',
 }, {
+  name = 'Vitals Overlay',
+  dbSettingsValueName = 'showVitalsOverlay',
+  tooltip = 'Show your maximum health and mana in the character panel',
+}, {
   name = 'Announce Level Up to Guild',
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
@@ -383,6 +387,12 @@ function InitializeSettingsOptionsTab()
       tempSettings.hidePlayerFrame or false,
       tempSettings.completelyRemovePlayerFrame or false
     )
+    
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(
+        tempSettings.showVitalsOverlay or false
+      )
+    end
 
     updateCheckboxes()
     updateSliders()
@@ -923,6 +933,13 @@ function InitializeSettingsOptionsTab()
               if _G.UltraHardcoreHandleBuffBarSettingChange then
                 _G.UltraHardcoreHandleBuffBarSettingChange()
               end
+            end
+
+            if
+              checkboxItem.dbSettingsValueName == 'showVitalsOverlay'
+              and SetVitalsOverlayEnabled
+            then
+              SetVitalsOverlayEnabled(self:GetChecked())
             end
 
             if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
