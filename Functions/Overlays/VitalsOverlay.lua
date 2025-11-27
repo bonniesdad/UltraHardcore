@@ -100,14 +100,12 @@ local function createOverlayFrame()
 
   if overlayFrame then
     if characterModelFrame and overlayFrame.__usesFallbackParent then
-      -- Reposition health text to bottom left
       if overlayFrame.healthText then
         overlayFrame.healthText:SetParent(characterModelFrame)
         overlayFrame.healthText:ClearAllPoints()
         overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34)
       end
       
-      -- Reposition power resource text (mana/rage/energy) to bottom right
       if overlayFrame.manaText then
         overlayFrame.manaText:SetParent(characterModelFrame)
         overlayFrame.manaText:ClearAllPoints()
@@ -137,7 +135,7 @@ local function createOverlayFrame()
   overlayFrame.healthText:SetTextColor(0.04, 0.84, 0.13)
   -- FontStrings inherit frame strata/level from their parent frame
 
-  -- Power resource text (mana/rage/energy) in bottom right
+  -- Power resource text (mana/rage/energy)
   overlayFrame.manaIcon = parentFrame:CreateTexture(nil, 'OVERLAY')
   overlayFrame.manaIcon:SetSize(12, 12)
   overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', parentFrame, 'BOTTOMLEFT', 6, 18)
