@@ -70,11 +70,13 @@ Functions/Utils/FormatNumber.lua
 Functions/Utils/NormalizeName.lua
 Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
+Functions/Utils/TwitchInvite.lua
+Functions/Utils/KofiInvite.lua
+Functions/Utils/AboutAuthor.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
 Functions/DB/CharacterStats.lua
-Functions/DB/PlayerStateSnapshot.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
@@ -83,7 +85,6 @@ Functions/Checks/IsDungeonBoss.lua
 Functions/Checks/HasBuff.lua
 Functions/Checks/TargetTamperCheck.lua
 
-Functions/DamageOverlayHandler.lua
 Functions/CritTracker.lua
 Functions/KillTracker.lua
 Functions/ItemTracker.lua
@@ -100,20 +101,9 @@ Functions/Overlays/MainScreenStatistics.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
-Functions/Overlays/ShowPhysicalDamageOverlay.lua
-Functions/Overlays/ShowPhysicalDamageOverTimeOverlay.lua
-Functions/Overlays/ShowShadowDamageOverlay.lua
-Functions/Overlays/ShowShadowDamageOverTimeOverlay.lua
-Functions/Overlays/ShowHolyDamageOverlay.lua
-Functions/Overlays/ShowHolyDamageOverTimeOverlay.lua
-Functions/Overlays/ShowArcaneDamageOverlay.lua
-Functions/Overlays/ShowArcaneDamageOverTimeOverlay.lua
-Functions/Overlays/ShowFireDamageOverlay.lua
-Functions/Overlays/ShowFireDamageOverTimeOverlay.lua
-Functions/Overlays/ShowNatureDamageOverlay.lua
-Functions/Overlays/ShowNatureDamageOverTimeOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
+Settings/TBCFeature.lua
 Settings/Settings.lua
 Settings/TabManager.lua
 Settings/StatisticsTab.lua
@@ -121,6 +111,7 @@ Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
+Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 Settings/XFoundMode/IntroPage.lua
