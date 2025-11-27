@@ -52,6 +52,7 @@ function LoadDBData()
     -- showTargetDebuffs = false,
     -- Misc Settings
     showOnScreenStatistics = true,
+    showVitalsOverlay = false,
     minimapClockPosition = {},
     minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,
