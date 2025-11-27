@@ -38,6 +38,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hidePlayerFrame or false,
       GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
     )
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
+    end
     if GLOBAL_SETTINGS.showClockEvenWhenMapHidden then
       miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_CLOCK)
     end
