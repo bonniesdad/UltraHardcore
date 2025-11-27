@@ -49,7 +49,9 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
-    -- showTargetDebuffs = false,
+    showTargetBuffs = false,
+    showTargetDebuffs = false,
+    showTargetRaidIcon = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
