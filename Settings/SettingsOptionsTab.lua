@@ -9,9 +9,9 @@ local settingsCheckboxOptions = { {
   tooltip = 'The screen gets darker as you get closer to death',
 }, {
   -- Recommended Preset Settings
-  name = 'Hide Target Frame',
+  name = 'UHC Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
-  tooltip = "Target frame is not visible, so you can't see the target's health or level",
+  tooltip = "Show UHC target frame, so you can't see the target's health or level",
 }, {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
@@ -90,6 +90,18 @@ local settingsCheckboxOptions = { {
   name = 'Completely Remove Target Frame',
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
+}, {
+  name = 'Show Target Buffs',
+  dbSettingsValueName = 'showTargetBuffs',
+  tooltip = 'Show buffs on the target frame',
+}, {
+  name = 'Show Target Debuffs',
+  dbSettingsValueName = 'showTargetDebuffs',
+  tooltip = 'Show debuffs on the target frame',
+}, {
+  name = 'Show Target Raid Icon',
+  dbSettingsValueName = 'showTargetRaidIcon',
+  tooltip = 'Show raid icon on the target frame',
 }, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
@@ -370,10 +382,6 @@ function InitializeSettingsOptionsTab()
     SetPlayerFrameDisplay(
       tempSettings.hidePlayerFrame or false,
       tempSettings.completelyRemovePlayerFrame or false
-    )
-    SetTargetFrameDisplay(
-      tempSettings.hideTargetFrame or false,
-      tempSettings.completelyRemoveTargetFrame or false
     )
 
     updateCheckboxes()
@@ -1132,10 +1140,11 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS.hidePlayerFrame or false,
       GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
     )
-    SetTargetFrameDisplay(
-      GLOBAL_SETTINGS.hideTargetFrame or false,
-      GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
-    )
+
+    -- Set target frame accordingly
+    if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+      SetTargetFrameDisplay({})
+    end
 
     -- Handle XP Bar settings
     if GLOBAL_SETTINGS.showExpBar then
