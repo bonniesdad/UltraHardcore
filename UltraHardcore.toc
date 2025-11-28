@@ -46,6 +46,7 @@ Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
+Functions/ProfessionPanel.lua
 Functions/ExpBar.lua
 Functions/TradeRestriction.lua
 Functions/AddonXPTracking.lua
