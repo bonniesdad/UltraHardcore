@@ -129,7 +129,7 @@ local function PositionAuras()
     local shownIndex = 0
 
     -- debuffs start below the last buff row
-    local baseYOffset = 15 - buffRowsUsed * (size + spacing) - spacing
+    local baseYOffset = 5 - buffRowsUsed * (size + spacing) - spacing
 
     for i = 1, maxDebuffs do
       local debuff = _G["TargetFrameDebuff"..i]
