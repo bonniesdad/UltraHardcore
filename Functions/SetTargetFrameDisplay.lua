@@ -37,7 +37,7 @@ local function HideTextureRegions(frame)
   for i = 1, select("#", frame:GetRegions()) do
     local region = select(i, frame:GetRegions())
     if region ~= TargetFramePortrait and
-       region ~= TargetFrameTextureFrameRaidTargetIcon then
+    region ~= TargetFrameTextureFrameRaidTargetIcon then
       region:SetAlpha(0)
     end
   end
@@ -90,34 +90,63 @@ local function ApplyAuras()
   end
 end
 
--- Position buffs and debuffs 
+-- Position buffs and debuffs
 local function PositionAuras()
   local spacing = 5 -- spacing between icons
   local size = 16   -- icon size
+  local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
 
   -- Buffs
+  local buffRowsUsed = 0
+
   if targetFrameMask.buffs then
-    local offset = 0
+    local shownIndex = 0
+
     for i = 1, maxBuffs do
       local buff = _G["TargetFrameBuff"..i]
       if buff and buff:IsShown() then
+        shownIndex = shownIndex + 1
+
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
+
         buff:ClearAllPoints()
-        buff:SetPoint("LEFT", TargetFramePortrait, "RIGHT", offset + spacing, 10)
-        offset = offset + size + spacing
+        buff:SetPoint(
+          "LEFT",
+          TargetFramePortrait,
+          "RIGHT",
+          spacing + col * (size + spacing),
+          15 - row * (size + spacing)
+        )
+
+        buffRowsUsed = row + 1
       end
     end
   end
 
   -- Debuffs
   if targetFrameMask.debuffs then
-    local offset = 0
-    local startY = -size - spacing -- vertical offset below buffs
+    local shownIndex = 0
+
+    -- debuffs start below the last buff row
+    local baseYOffset = 15 - buffRowsUsed * (size + spacing) - spacing
+
     for i = 1, maxDebuffs do
       local debuff = _G["TargetFrameDebuff"..i]
       if debuff and debuff:IsShown() then
+        shownIndex = shownIndex + 1
+
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
+
         debuff:ClearAllPoints()
-        debuff:SetPoint("LEFT", TargetFramePortrait, "RIGHT", offset + spacing, startY)
-        offset = offset + size + spacing
+        debuff:SetPoint(
+          "LEFT",
+          TargetFramePortrait,
+          "RIGHT",
+          spacing + col * (size + spacing),
+          baseYOffset - row * (size + spacing)
+        )
       end
     end
   end
