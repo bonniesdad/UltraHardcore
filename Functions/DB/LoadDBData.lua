@@ -130,6 +130,14 @@ function LoadDBData()
     UltraHardcoreDB.characterSettings[characterGUID] = defaultSettings
   end
 
+  -- Iterate over the defaults to see if there are any new settings
+  -- we need to add to characters that have existing settings.
+  for settingName, settingValue in pairs(defaultSettings) do
+    if UltraHardcoreDB.characterSettings[characterGUID][settingName] == nil then
+      UltraHardcoreDB.characterSettings[characterGUID][settingName] = settingValue
+    end
+  end
+
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
 end
