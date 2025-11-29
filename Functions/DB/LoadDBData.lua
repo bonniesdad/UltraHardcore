@@ -75,6 +75,11 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     showDruidFormResourceBar = true,
+    -- XP Bar
+    showExpBar = false,
+    showXpBarToolTip = false,
+    hideDefaultExpBar = false,
+    xpBarHeight = 3,
     -- Group Found teammate names (locked in at level 2)
     -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
@@ -82,6 +87,10 @@ function LoadDBData()
     showMainStatisticsPanelLowestHealth = true,
     showMainStatisticsPanelSessionHealth = true,
     showMainStatisticsPanelThisLevel = false,
+    -- HP/Mana Totals
+    showMainStatisticsPanelTotalHP = false,
+    showMainStatisticsPanelTotalMana = false,
+    -- Fighting stats
     showMainStatisticsPanelEnemiesSlain = true,
     showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelPetDeaths = false,
@@ -123,8 +132,4 @@ function LoadDBData()
 
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
-
-  if GLOBAL_SETTINGS.autoJoinUHCChannel == nil then
-    GLOBAL_SETTINGS.autoJoinUHCChannel = true
-  end
 end
