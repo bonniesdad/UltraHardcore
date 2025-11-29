@@ -131,7 +131,7 @@ function LoadDBData()
   end
 
   -- Iterate over the defaults to see if there are any new settings
-  -- we need to add to characters that have existing settings.
+  -- we need to add to characters that have an existing DB.
   for settingName, settingValue in pairs(defaultSettings) do
     if UltraHardcoreDB.characterSettings[characterGUID][settingName] == nil then
       UltraHardcoreDB.characterSettings[characterGUID][settingName] = settingValue
