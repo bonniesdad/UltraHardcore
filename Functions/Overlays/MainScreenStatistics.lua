@@ -487,14 +487,7 @@ local function UpdateRowVisibility()
       -- Use the actual setting value
       isVisible = GLOBAL_SETTINGS[element.setting]
     else
-      -- Apply default behavior based on the setting
-      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelCloseEscapes' then
-        -- These default to true (show unless explicitly false)
-        isVisible = true
-      else
-        -- These default to false (hide unless explicitly true)
-        isVisible = false
-      end
+      isVisible = false
     end
 
     if isVisible then
