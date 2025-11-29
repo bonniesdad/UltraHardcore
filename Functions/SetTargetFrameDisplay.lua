@@ -214,12 +214,10 @@ hooksecurefunc("TargetFrame_CheckClassification", ApplyMask)
 hooksecurefunc("TargetFrame_Update", ApplyMask)
 hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
 hooksecurefunc("TargetofTarget_Update", function()
-  C_Timer.After(0, function()
-    HideSubFrames("TargetFrameToT")
-    HideTextureRegions(TargetFrameToTTextureFrame)
-    HideToTAuras()
-    ShowToT()
-  end)
+  HideSubFrames("TargetFrameToT")
+  HideTextureRegions(TargetFrameToTTextureFrame)
+  HideToTAuras()
+  ShowToT()
 end)
 
 
@@ -237,7 +235,6 @@ function SetTargetFrameDisplay(mask)
     targetFrameEventFrame:SetScript("OnEvent", function(_, event, unit)
       if event == "PLAYER_TARGET_CHANGED" then
         ApplyMask()
-        ShowToT()
       end
     end)
   end
