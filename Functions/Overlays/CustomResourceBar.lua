@@ -440,6 +440,11 @@ local function CenterPlayerBuffBar()
     local buffsMoved = 0
     for i = 1, buffCount do
       local buff = _G['BuffButton' .. i]
+      if not buff then
+        -- Buff buttons are created lazily; try again shortly if they are not ready yet
+        C_Timer.After(0.1, CenterPlayerBuffBar)
+        return
+      end
       buff:SetParent(UHCBuffFrame)
       buff:ClearAllPoints()
       buff:SetPoint('BOTTOMLEFT', UHCBuffFrame, 'BOTTOMLEFT', buffOffset, buffYOffset)
