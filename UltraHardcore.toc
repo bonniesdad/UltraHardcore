@@ -103,6 +103,7 @@ Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
+Functions/Overlays/ShowKnockdownOverlay.lua
 
 Settings/TBCFeature.lua
 Settings/Settings.lua
