@@ -16,11 +16,7 @@ local function shouldRadioBeChecked(settingName, settings)
   if settings[settingName] ~= nil then
     return settings[settingName]
   else
-    if settingName == 'showMainStatisticsPanelLevel' or settingName == 'showMainStatisticsPanelLowestHealth' or settingName == 'showMainStatisticsPanelEnemiesSlain' or settingName == 'showMainStatisticsPanelDungeonsCompleted' or settingName == 'showMainStatisticsPanelHighestCritValue' or settingName == 'showMainStatisticsPanelCloseEscapes' then
-      return true
-    else
-      return false
-    end
+    return false
   end
 end
 
@@ -36,20 +32,6 @@ local function initializeTempSettings()
     if tempSettings[settingName] == nil then
       tempSettings[settingName] = shouldRadioBeChecked(settingName, GLOBAL_SETTINGS)
     end
-  end
-
-  -- Initialize checkbox defaults for settings that don't exist
-  if tempSettings.showExpBar == nil then
-    tempSettings.showExpBar = false -- Default to off
-  end
-  if tempSettings.showXpBarToolTip == nil then
-    tempSettings.showXpBarToolTip = false -- Default to off (hide tooltip)
-  end
-  if tempSettings.hideDefaultExpBar == nil then
-    tempSettings.hideDefaultExpBar = false -- Default to off (show default XP bar)
-  end
-  if tempSettings.xpBarHeight == nil then
-    tempSettings.xpBarHeight = 3 -- Default height
   end
 end
 
