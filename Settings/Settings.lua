@@ -62,6 +62,7 @@ local CLASS_BACKGROUND_MAP = {
   MAGE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_mage.png',
   WARLOCK = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warlock.png',
   DRUID = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_druid.png',
+  SHAMAN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_shaman.png',
 }
 
 local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
