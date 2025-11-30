@@ -15,7 +15,6 @@ local settingToXPVariable = {
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
   showTunnelVision = 'xpGainedWithoutOptionShowTunnelVision',
   announceLevelUpToGuild = 'xpGainedWithoutOptionAnnounceLevelUpToGuild',
-  
   -- Recommended Preset Settings
   tunnelVisionMaxStrata = 'xpGainedWithoutOptionTunnelVisionMaxStrata',
   hideTargetFrame = 'xpGainedWithoutOptionHideTargetFrame',
@@ -25,7 +24,6 @@ local settingToXPVariable = {
   hideGroupHealth = 'xpGainedWithoutOptionHideGroupHealth',
   hideMinimap = 'xpGainedWithoutOptionHideMinimap',
   hideBreathIndicator = 'xpGainedWithoutOptionHideBreathIndicator',
-  
   -- Experimental Preset Settings
   showCritScreenMoveEffect = 'xpGainedWithoutOptionShowCritScreenMoveEffect',
   hideActionBars = 'xpGainedWithoutOptionHideActionBars',
@@ -44,75 +42,59 @@ local lastXPValue = nil
 
 -- Function to initialize XP tracking
 local function InitializeXPTracking()
-  local playerLevel = UnitLevel("player")
+  local playerLevel = UnitLevel('player')
   -- Start tracking from current XP for this session
-  lastXPValue = UnitXP("player")
+  lastXPValue = UnitXP('player')
   lastXPUpdate = GetTime()
   AddonXPTracking:Initialize(lastXPValue)
 end
 
 -- Function to update XP tracking for each setting
 local function UpdateXPTracking(levelUp)
-  if levelUp == nil then levelUp = false end
- 
-  local currentXP = AddonXPTracking:GetXP(levelUp)
-  local currentTime = GetTime()
-
-  -- This checks for XP drift and tries to correct it outside of a level up event
-  if levelUp == false and UnitLevel("player") > 1 and AddonXPTracking:ValidateTotalStoredXP() == false then
-    local xpDiff = AddonXPTracking:FixAddonXPDrift(UnitLevel("player"))
-    if lastXPValue > currentXP then
-      lastXPValue = 0
-    end
+  if levelUp == nil then
+    levelUp = false
   end
 
-  AddonXPTracking:XPTrackingDebug("XP Check " .. lastXPValue .. " vs " .. currentXP)
+  local currentXP = AddonXPTracking:GetXP(levelUp)
 
-  -- Only update if XP has increased and enough time has passed (prevent spam)
-  -- TIME CONDITIONAL HAS BEEN REMOVED!
-  -- After reimplementing this so stats are updated directly, I don't think we care
-  -- about calling this a lot.  I tested the performance and even with a level up and the
-  -- two XP update events that follow, this executes in under a millisecond for all 3 events.
-  -- I did these tests with my wow settings cranked up and with my laptop in eco mode (i.e run as slow as possible)
+  AddonXPTracking:XPTrackingDebug('XP Check ' .. lastXPValue .. ' vs ' .. currentXP)
+
   if currentXP > lastXPValue then
     local xpGained = currentXP - lastXPValue
-    AddonXPTracking:XPTrackingDebug("UpdateXPTracking conditional passed. XP gained = " .. xpGained)
-    local statsChanged = 0 
+    AddonXPTracking:XPTrackingDebug('UpdateXPTracking conditional passed. XP gained = ' .. xpGained)
     local stats = CharacterStats:GetCurrentCharacterStats()
+
+    if levelUp == false then
+      stats['xpTotal'] = AddonXPTracking:GetTotalXP()
+      AddonXPTracking:XPTrackingDebug('Setting total XP to ' .. stats.xpTotal)
+    end
 
     -- Update XP tracking for each setting that is currently disabled
     for settingName, xpVariable in pairs(settingToXPVariable) do
       -- Check if this setting is currently disabled (meaning we're gaining XP "without" it)
       local isSettingEnabled = GLOBAL_SETTINGS[settingName]
-       
+
       -- For boolean settings, if they're false, we're gaining XP "without" that option
       if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
-        if AddonXPTracking:ShouldStoreStat(xpVariable) then 
-          --[[ Original Code
-          local currentXPForSetting = CharacterStats:GetStat(xpVariable) or 0
-          local newXPForSetting = currentXPForSetting + xpGained
-          CharacterStats:UpdateStat(xpVariable, newXPForSetting) 
-          ]]
-
+        if AddonXPTracking:ShouldStoreStat(xpVariable) then
           -- Access character stats directly from our local variable to minimize calls
           local currentXPForSetting = stats[xpVariable] or 0
           local newXPForSetting = currentXPForSetting + xpGained
           stats[xpVariable] = newXPForSetting
-          statsChanged = statsChanged + 1
         end
       end
     end
 
-    if statsChanged > 0 then
+    -- In lua, tables are accessed by reference (as opposed to by value).  We do not need to call SaveDBData.
+    -- I believe this code can all be removed
+    --[[if statsChanged > 0 then
       -- Instead of repeatedly calling UpdateStat in the loop above (which resaves CharacterStats over and over)
       -- Call SaveDBData once at the end
       SaveDBData('characterStats', UltraHardcoreDB.characterStats)
-    end
+    end]]
 
     lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
-    lastXPUpdate = AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
-
 end
 
 -- Function to get XP gained for a specific setting
@@ -130,39 +112,37 @@ _G.InitializeXPTracking = InitializeXPTracking
 _G.GetXPGainedForSetting = GetXPGainedForSetting
 
 -- Register events for XP tracking
-local xpTrackingFrame = CreateFrame("Frame")
-xpTrackingFrame:RegisterEvent("PLAYER_XP_UPDATE")
-xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-xpTrackingFrame:RegisterEvent("PLAYER_LEVEL_UP")
-xpTrackingFrame:RegisterEvent("PLAYER_LOGIN")
-xpTrackingFrame:RegisterEvent("ADDON_LOADED")
+local xpTrackingFrame = CreateFrame('Frame')
+xpTrackingFrame:RegisterEvent('PLAYER_XP_UPDATE')
+-- Now that XP is tracking more reliably, I'm not sure we need this post combat check
+-- Commenting the register event call to rule this out as a cause of framerate issues exiting combat
+--xpTrackingFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+xpTrackingFrame:RegisterEvent('PLAYER_LEVEL_UP')
+xpTrackingFrame:RegisterEvent('PLAYER_LOGIN')
+xpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
-xpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
-  if event == "PLAYER_REGEN_ENABLED" then
-    AddonXPTracking:XPTrackingDebug("PLAYER_REGEN_ENABLED event fired")
-    C_Timer.After(3.0, function() 
+xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
+  if event == 'PLAYER_REGEN_ENABLED' then
+    AddonXPTracking:XPTrackingDebug('PLAYER_REGEN_ENABLED event fired')
+    C_Timer.After(3.0, function()
       if AddonXPTracking:ValidateTotalStoredXP() ~= true then
         AddonXPTracking:PrintXPVerificationWarning()
       end
       UpdateXPTracking(false)
     end)
-  elseif event == "PLAYER_XP_UPDATE" then
-    AddonXPTracking:XPTrackingDebug("PLAYER_XP_UPDATE event fired")
+  elseif event == 'PLAYER_XP_UPDATE' then
+    AddonXPTracking:XPTrackingDebug('PLAYER_XP_UPDATE event fired')
     UpdateXPTracking(false)
-  elseif event == "PLAYER_LEVEL_UP" then
-    AddonXPTracking:XPTrackingDebug("PLAYER_LEVEL_UP event fired")
+  elseif event == 'PLAYER_LEVEL_UP' then
+    AddonXPTracking:XPTrackingDebug('PLAYER_LEVEL_UP event fired')
     UpdateXPTracking(true)
-  elseif event == "PLAYER_LOGIN" then
+  elseif event == 'PLAYER_LOGIN' then
     InitializeXPTracking()
-    if UnitLevel("player") > 1 then 
-      AddonXPTracking:XPReport()
-    end
-  elseif event == "ADDON_LOADED" and select(1, ...) == "UltraHardcore" then
+  elseif event == 'ADDON_LOADED' and select(1, ...) == 'UltraHardcore' then
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
-    -- So use a timer to call InitializeXPTracking 
-    C_Timer.After(3.0, function() 
+    -- So use a timer to call InitializeXPTracking
+    C_Timer.After(3.0, function()
       InitializeXPTracking()
     end)
   end
 end)
-

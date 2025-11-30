@@ -1,282 +1,241 @@
---[[
-  Removes health information (and power) from the target frames.
-  Uses the same logic as HidePartyInformation.lua
-]]
-
-TARGET_FRAME_SUBFRAMES_TO_HIDE =
-  {
-    'HealthBar',
-    'ManaBar',
-    'Texture',
-    'Background',
-    'LevelText',
-    'Name',
-    'NameBackground',
-    'StatusTexture',
-    'TextureFrameHealthBarText',
-    'TextureFrameManaBarText',
-    'NumericalThreat',
-    'Buff1',
-    'Buff2',
-    'Buff3',
-    'Buff4',
-    'Buff5',
-    'Buff6',
-    'Buff7',
-    'Buff8',
-    'Debuff1',
-    'Debuff2',
-    'Debuff3',
-    'Debuff4',
-    'Debuff5',
-    'Debuff6',
-    'Debuff7',
-    'Debuff8',
-  }
-
-TARGET_OF_TARGET_SUBFRAMES_TO_HIDE =
-  {
-    'HealthBar',
-    'ManaBar',
-    'Texture',
-    'Background',
-    'LevelText',
-    'Name',
-    'NameBackground',
-    'TextureFrameHealthBarText',
-    'TextureFrameManaBarText',
-    'Buff1',
-    'Buff2',
-    'Buff3',
-    'Buff4',
-    'Buff5',
-    'Buff6',
-    'Buff7',
-    'Buff8',
-    'Debuff1',
-    'Debuff2',
-    'Debuff3',
-    'Debuff4',
-    'Debuff5',
-    'Debuff6',
-    'Debuff7',
-    'Debuff8',
-  }
-
--- Global variable to track if target frame hiding is enabled
-local targetFrameHidingEnabled = false
+-- Global mask and event frame
+local targetFrameMask = {}
 local targetFrameEventFrame = nil
 
--- Immediate buff/debuff blocking - runs on addon load
-local function BlockBuffDebuffFrames()
-  -- Use a more targeted approach that doesn't override global CreateFrame
-  local function hideTargetBuffDebuffFrames()
-    for i = 1, 8 do
-      local buffFrame = _G['TargetFrameBuff' .. i]
-      if buffFrame then
-        buffFrame.Show = function() end
-        buffFrame:Hide()
-      end
-      local debuffFrame = _G['TargetFrameDebuff' .. i]
-      if debuffFrame then
-        debuffFrame.Show = function() end
-        debuffFrame:Hide()
+-- Buff Limits
+local maxBuffs = BUFF_MAX_DISPLAY or 32
+local maxDebuffs = DEBUFF_MAX_DISPLAY or 16
+
+-- Top-level frames that can be hidden
+local HIDEABLE_SUBFRAMES = {
+  "HealthBar",
+  "ManaBar",
+  "Name",
+  "NameBackground",
+  "HealthBarText",
+  "ManaBarText",
+  "Background"
+}
+
+-- TextureFrame children that Blizzard forcibly updates
+local TEXTURE_CHILD_FRAMES = {
+  "Name",
+  "ManaBarText",
+  "HealthBarText",
+  "StatusTexture",
+  "Background",
+}
+
+-- Hide all texture regions inside frame except portrait, raid icon
+local function HideTextureRegions(frame)
+  if not frame then return end
+  if targetFrameMask.all then
+    -- Don't hide if we are trying to show all frames, like when in lite mode
+    return
+  end
+
+  for i = 1, select("#", frame:GetRegions()) do
+    local region = select(i, frame:GetRegions())
+    if region ~= TargetFramePortrait and
+    region ~= TargetFrameTextureFrameRaidTargetIcon then
+      region:SetAlpha(0)
+    end
+  end
+end
+
+-- Apply alpha to hide subframes
+local function HideSubFrames(frame)
+  if targetFrameMask.all then
+    -- don't hide anything if we are trying to show all
+    return
+  end
+
+  for _, name in ipairs(HIDEABLE_SUBFRAMES) do
+    local f = _G[frame..name]
+    if f then
+      f:SetAlpha(0)
+    end
+  end
+
+  -- Inner TextureFrame children
+  for _, name in ipairs(TEXTURE_CHILD_FRAMES) do
+    local f = _G[frame.."TextureFrame"..name]
+    if f then
+      f:SetAlpha(0)
+    end
+  end
+end
+
+-- Show/hide portrait
+local function ApplyPortrait()
+  if TargetFramePortrait then
+    TargetFramePortrait:SetAlpha(targetFrameMask.portrait and 1 or 0)
+  end
+end
+
+-- Show/hide buffs/debuffs
+local function ApplyAuras()
+  for i = 1, maxBuffs do
+    local buff = _G["TargetFrameBuff"..i]
+    if buff then
+      buff:SetAlpha(targetFrameMask.buffs and 1 or 0)
+    end
+  end
+
+  for i = 1, maxDebuffs do
+    local debuff = _G["TargetFrameDebuff"..i]
+    if debuff then
+      debuff:SetAlpha(targetFrameMask.debuffs and 1 or 0)
+    end
+  end
+end
+
+-- Position buffs and debuffs
+local function PositionAuras()
+  local spacing = 5 -- spacing between icons
+  local size = 16   -- icon size
+  local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
+
+  -- Buffs
+  local buffRowsUsed = 0
+
+  if targetFrameMask.buffs then
+    local shownIndex = 0
+
+    for i = 1, maxBuffs do
+      local buff = _G["TargetFrameBuff"..i]
+      if buff and buff:IsShown() then
+        shownIndex = shownIndex + 1
+
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
+
+        buff:ClearAllPoints()
+        buff:SetPoint(
+          "LEFT",
+          TargetFramePortrait,
+          "RIGHT",
+          spacing + col * (size + spacing),
+          15 - row * (size + spacing)
+        )
+
+        buffRowsUsed = row + 1
       end
     end
   end
 
-  -- Hide frames immediately and set up periodic checking
-  hideTargetBuffDebuffFrames()
+  -- Debuffs
+  if targetFrameMask.debuffs then
+    local shownIndex = 0
 
-  -- Set up a timer to periodically check and hide any new buff/debuff frames
-  local checkTimer = C_Timer.NewTicker(0.1, function()
-    hideTargetBuffDebuffFrames()
-  end)
+    -- debuffs start below the last buff row
+    local baseYOffset = 5 - buffRowsUsed * (size + spacing) - spacing
 
-  -- Store the timer so we can stop it later if needed
-  _G.UltraHardcoreTargetFrameTimer = checkTimer
-end
+    for i = 1, maxDebuffs do
+      local debuff = _G["TargetFrameDebuff"..i]
+      if debuff and debuff:IsShown() then
+        shownIndex = shownIndex + 1
 
--- Run the blocking immediately
-BlockBuffDebuffFrames()
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
 
-function SetTargetFrameDisplay(hideDetails, completelyRemove)
-  targetFrameHidingEnabled = hideDetails
-
-  if hideDetails then
-    if completelyRemove then
-      -- Completely hide the entire target frame
-      CompletelyHideTargetFrame()
-    else
-      SetTargetFrameInfo()
-      SetTargetOfTargetFrameInfo()
-
-      -- Create event frame to monitor target changes and buff/debuff updates
-      if not targetFrameEventFrame then
-        targetFrameEventFrame = CreateFrame('Frame')
-        targetFrameEventFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
-        targetFrameEventFrame:RegisterEvent('UNIT_TARGET')
-        targetFrameEventFrame:RegisterEvent('UNIT_AURA')
-        targetFrameEventFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
-        targetFrameEventFrame:SetScript('OnEvent', function(self, event, unit)
-          if targetFrameHidingEnabled then
-            if event == 'UNIT_AURA' and (unit == 'target' or unit == 'targettarget') then
-              -- Immediately hide buffs/debuffs when auras update
-              C_Timer.After(0.01, function()
-                for i = 1, 8 do
-                  local buffFrame = _G['TargetFrameBuff' .. i]
-                  if buffFrame then
-                    buffFrame:Hide()
-                    buffFrame.Show = function() end
-                  end
-                  local debuffFrame = _G['TargetFrameDebuff' .. i]
-                  if debuffFrame then
-                    debuffFrame:Hide()
-                    debuffFrame.Show = function() end
-                  end
-                end
-              end)
-            else
-              -- Small delay to ensure frames are created before hiding
-              C_Timer.After(0.1, function()
-                SetTargetFrameInfo()
-                SetTargetOfTargetFrameInfo()
-              end)
-            end
-          end
-        end)
+        debuff:ClearAllPoints()
+        debuff:SetPoint(
+          "LEFT",
+          TargetFramePortrait,
+          "RIGHT",
+          spacing + col * (size + spacing),
+          baseYOffset - row * (size + spacing)
+        )
       end
     end
+  end
+end
+
+-- Show/hide raid icon
+local function ApplyRaidIcon()
+  if TargetFrameTextureFrameRaidTargetIcon then
+    TargetFrameTextureFrameRaidTargetIcon:SetAlpha(targetFrameMask.raidIcon and 1 or 0)
+  end
+end
+
+-- Showing Buffs/Debuffs on ToT can be a bit too much
+local function HideToTAuras()
+  for i = 1, maxBuffs do
+    local buff = _G["TargetFrameToTBuff"..i]
+    if buff then buff:SetAlpha(0) end
+  end
+  for i = 1, maxDebuffs do
+    local debuff = _G["TargetFrameToTDebuff"..i]
+    if debuff then debuff:SetAlpha(0) end
+  end
+end
+
+-- Show Target of Target if the user has turned it on in the blizzard options
+-- We will strip it down to just the portrait
+local function ShowToT()
+  if not TargetFrameToT then return end
+
+  if UnitExists("targettarget") then
+    TargetFrameToT:SetAlpha(1)
   else
-    if completelyRemove then
-      -- Completely restore the entire target frame
-      CompletelyShowTargetFrame()
-    else
-      RestoreTargetFrameInfo()
-      RestoreTargetOfTargetFrameInfo()
+    TargetFrameToT:SetAlpha(0)
+  end
+end
 
-      -- Clean up event frame
-      if targetFrameEventFrame then
-        targetFrameEventFrame:UnregisterAllEvents()
-        targetFrameEventFrame:SetScript('OnEvent', nil)
-        targetFrameEventFrame = nil
+-- Apply the full mask (combat-safe with alpha instead of Show/Hide)
+local function ApplyMask()
+  if TargetFrame then TargetFrame:SetAlpha(1) end
+  if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(1) end
+
+  -- If mask is set to show all, do nothing (show Blizzard default frames)
+  if targetFrameMask.all then
+    -- still must update ToT visibility
+    ShowToT()
+    return
+  end
+
+  if not UnitExists("target") then
+    if TargetFrame then TargetFrame:SetAlpha(0) end
+    if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(0) end
+    return
+  end
+
+  HideSubFrames("TargetFrame")
+  HideTextureRegions(TargetFrameTextureFrame)
+  ApplyPortrait()
+  ApplyRaidIcon()
+  ApplyAuras()
+  PositionAuras()
+end
+
+-- Hook Blizzard update functions
+hooksecurefunc("TargetFrame_CheckClassification", ApplyMask)
+hooksecurefunc("TargetFrame_Update", ApplyMask)
+hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
+hooksecurefunc("TargetofTarget_Update", function()
+  HideSubFrames("TargetFrameToT")
+  HideTextureRegions(TargetFrameToTTextureFrame)
+  HideToTAuras()
+  ShowToT()
+end)
+
+
+-- Main API
+function SetTargetFrameDisplay(mask)
+  -- ensure mask is always a table
+  if type(mask) ~= "table" then mask = {} end
+  targetFrameMask = mask
+
+  if not targetFrameEventFrame then
+    targetFrameEventFrame = CreateFrame("Frame")
+    targetFrameEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+    targetFrameEventFrame:RegisterEvent("UNIT_AURA")
+    targetFrameEventFrame:RegisterEvent("RAID_TARGET_UPDATE")
+    targetFrameEventFrame:SetScript("OnEvent", function(_, event, unit)
+      if event == "PLAYER_TARGET_CHANGED" then
+        ApplyMask()
       end
-
-      -- Stop the periodic timer for buff/debuff hiding
-      if _G.UltraHardcoreTargetFrameTimer then
-        _G.UltraHardcoreTargetFrameTimer:Cancel()
-        _G.UltraHardcoreTargetFrameTimer = nil
-      end
-    end
-  end
-end
-
-function SetTargetFrameInfo()
-  for _, subFrame in ipairs(TARGET_FRAME_SUBFRAMES_TO_HIDE) do
-    HideTargetSubFrame(subFrame)
-  end
-end
-
-function SetTargetOfTargetFrameInfo()
-  for _, subFrame in ipairs(TARGET_OF_TARGET_SUBFRAMES_TO_HIDE) do
-    HideTargetOfTargetSubFrame(subFrame)
-  end
-end
-
-function HideTargetSubFrame(subFrame)
-  local frame = _G['TargetFrame' .. subFrame]
-  if frame then
-    ForceHideFrame(frame)
-
-    -- For buff/debuff frames, also hook their creation to prevent them from ever showing
-    if string.match(subFrame, '^Buff%d+$') or string.match(subFrame, '^Debuff%d+$') then
-      -- Override the frame's Show method to do nothing
-      frame.Show = function() end
-      -- Also hook any potential parent frame creation
-      hooksecurefunc(frame, 'Show', function()
-        frame:Hide()
-      end)
-    end
-  end
-
-  -- Special case for TargetFrameTextureFrame
-  if subFrame == 'TextureFrameHealthBarText' or subFrame == 'TextureFrameManaBarText' then
-    local textureFrame = _G['TargetFrameTextureFrame']
-    if textureFrame then
-      ForceHideFrame(textureFrame)
-    end
-  end
-end
-
-function HideTargetOfTargetSubFrame(subFrame)
-  local frame = _G['TargetFrameToT' .. subFrame]
-  if frame then
-    ForceHideFrame(frame)
-
-    -- For buff/debuff frames, also hook their creation to prevent them from ever showing
-    if string.match(subFrame, '^Buff%d+$') or string.match(subFrame, '^Debuff%d+$') then
-      -- Override the frame's Show method to do nothing
-      frame.Show = function() end
-      -- Also hook any potential parent frame creation
-      hooksecurefunc(frame, 'Show', function()
-        frame:Hide()
-      end)
-    end
-  end
-end
-
-function CompletelyHideTargetFrame()
-  -- Hide the entire TargetFrame
-  if TargetFrame then
-    ForceHideFrame(TargetFrame)
-  end
-
-  -- Hide target of target frame
-  if TargetFrameToT then
-    ForceHideFrame(TargetFrameToT)
-  end
-
-  -- Stop the periodic timer for buff/debuff hiding since we're hiding everything
-  if _G.UltraHardcoreTargetFrameTimer then
-    _G.UltraHardcoreTargetFrameTimer:Cancel()
-    _G.UltraHardcoreTargetFrameTimer = nil
-  end
-end
-
-function CompletelyShowTargetFrame()
-  -- Show the entire TargetFrame
-  if TargetFrame then
-    RestoreAndShowFrame(TargetFrame)
-  end
-
-  -- Show target of target frame
-  if TargetFrameToT then
-    RestoreAndShowFrame(TargetFrameToT)
-  end
-end
-
-function RestoreTargetFrameInfo()
-  for _, subFrame in ipairs(TARGET_FRAME_SUBFRAMES_TO_HIDE) do
-    local frame = _G['TargetFrame' .. subFrame]
-    if frame then
-      RestoreAndShowFrame(frame)
-    end
-
-    -- Special case for TargetFrameTextureFrame
-    if subFrame == 'TextureFrameHealthBarText' or subFrame == 'TextureFrameManaBarText' then
-      local textureFrame = _G['TargetFrameTextureFrame']
-      if textureFrame then
-        RestoreAndShowFrame(textureFrame)
-      end
-    end
-  end
-end
-
-function RestoreTargetOfTargetFrameInfo()
-  for _, subFrame in ipairs(TARGET_OF_TARGET_SUBFRAMES_TO_HIDE) do
-    local frame = _G['TargetFrameToT' .. subFrame]
-    if frame then
-      RestoreAndShowFrame(frame)
-    end
+    end)
   end
 end
