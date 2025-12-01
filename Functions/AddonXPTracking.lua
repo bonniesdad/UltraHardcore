@@ -10,7 +10,7 @@ local AddonXPTracking = {
     [51] = 153900, [52] = 160400, [53] = 167100, [54] = 173900, [55] = 180800, [56] = 187900, [57] = 195000, [58] = 202300, [59] = 209800, [60] = 217400
   },
   highXpMark = 999999999,
-  DEBUGXP = false,
+  DEBUGXP = true,
   trackingInitialized = false
 }
 
@@ -216,10 +216,6 @@ function AddonXPTracking:Initialize(lastXPValue)
 
     if playerLevel == 1 and lastXPValue == 0 then
       self:UpdateStat("xpTotal", 0)
-      self:UpdateStat("xpGWA", 0)
-      self:UpdateStat("xpGWOA", 0)
-    elseif self:ShouldRecalculateXPGainedWithAddon() == true then
-      self:ResetXPGainedWithAddon(true)
     end
     self.trackingInitialized = true
   end
@@ -298,9 +294,10 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
 end
 
 function AddonXPTracking:IsAddonXPValid(currentLevel) 
-  local stats = self:Stats()
+  --[[local stats = self:Stats()
   local xpForLevel = self:GetMinXPForLevel(currentLevel)
-  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel
+  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel]]
+  return true
 end
 
 function AddonXPTracking:ValidateTotalStoredXP()
@@ -308,21 +305,22 @@ function AddonXPTracking:ValidateTotalStoredXP()
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
+  --[[
     local totalXP = self:GetTotalXP()
     local storedTotalXP = self:TotalXP()
     print(msgPrefix .. redTextColour .. "WARNING!|r Detected " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r missing XP!")
+    ]]
 end
 
 function AddonXPTracking:XPReport()
+  --[[
   local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
 
   print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
   print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
   print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
   print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
-  if AddonXPTracking:ValidateTotalStoredXP() ~= true then
-    AddonXPTracking:PrintXPVerificationWarning()
-  end
+  ]]
 end 
 
 
@@ -348,11 +346,6 @@ SlashCmdList['XPFORLEVEL'] = function(msg)
         .. "|r character has at least " 
         .. redTextColour .. formatNumberWithCommas(totalXP) 
         .. "|r XP")
-end
-
-SLASH_FORCESAVE1 = '/uhcforcesave'
-SlashCmdList['FORCESAVE'] = function()
-  AddonXPTracking:ForceSave()
 end
 
 SLASH_XPGWAREPORT1 = '/uhcxpreport'

@@ -211,7 +211,9 @@ end
 
 -- Deprecated: This function will be removed on a future release
 function CharacterStats:ReportXPWithoutAddon()
-  return AddonXPTracking:WithoutAddon()
+  -- XP verification is being removed
+  return 0
+  -- return AddonXPTracking:WithoutAddon()
 end
 
 -- Get the current character's stats
