@@ -44,13 +44,14 @@ function LoadDBData()
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,
-    showIncomingDamageEffect = false,
     showHealingIndicator = false,
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
+    showTargetBuffs = false,
     showTargetDebuffs = false,
+    showTargetRaidIcon = false,
     -- Misc Settings
     showOnScreenStatistics = true,
     minimapClockPosition = {},
@@ -73,6 +74,12 @@ function LoadDBData()
     roachHearthstoneInPartyCombat = false,
     guildSelfFound = false,
     groupSelfFound = false,
+    showDruidFormResourceBar = true,
+    -- XP Bar
+    showExpBar = false,
+    showXpBarToolTip = false,
+    hideDefaultExpBar = false,
+    xpBarHeight = 3,
     -- Group Found teammate names (locked in at level 2)
     -- groupFoundNames = {},
     -- Statistics Row Visibility Settings
@@ -80,6 +87,10 @@ function LoadDBData()
     showMainStatisticsPanelLowestHealth = true,
     showMainStatisticsPanelSessionHealth = true,
     showMainStatisticsPanelThisLevel = false,
+    -- HP/Mana Totals
+    showMainStatisticsPanelTotalHP = false,
+    showMainStatisticsPanelTotalMana = false,
+    -- Fighting stats
     showMainStatisticsPanelEnemiesSlain = true,
     showMainStatisticsPanelDungeonsCompleted = false,
     showMainStatisticsPanelPetDeaths = false,
@@ -119,10 +130,14 @@ function LoadDBData()
     UltraHardcoreDB.characterSettings[characterGUID] = defaultSettings
   end
 
+  -- Iterate over the defaults to see if there are any new settings
+  -- we need to add to characters that have an existing DB.
+  for settingName, settingValue in pairs(defaultSettings) do
+    if UltraHardcoreDB.characterSettings[characterGUID][settingName] == nil then
+      UltraHardcoreDB.characterSettings[characterGUID][settingName] = settingValue
+    end
+  end
+
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
-
-  if GLOBAL_SETTINGS.autoJoinUHCChannel == nil then
-    GLOBAL_SETTINGS.autoJoinUHCChannel = true
-  end
 end

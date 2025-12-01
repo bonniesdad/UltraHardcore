@@ -1,7 +1,7 @@
 function GetCurrentResourceType()
   local _, playerClass = UnitClass('player')
   local form = GetShapeshiftFormID()
-  --   1 - Cat Form
+  -- 1 - Cat Form
   -- 3 - Travel Form
   -- 4 - Aquatic Form
   -- 5 - Bear Form

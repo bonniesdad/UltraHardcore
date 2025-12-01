@@ -21,12 +21,7 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Extreme:',
-  settings = {
-    'petsDiePermanently',
-    'hideActionBars',
-    'tunnelVisionMaxStrata',
-    'routePlanner',
-  },
+  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner' },
 }, {
   title = 'Experimental:',
   settings = {
@@ -36,15 +31,16 @@ local PRESET_SECTIONS = { {
     'showFullHealthIndicator',
     'showFullHealthIndicatorAudioCue',
     'hideCustomResourceBar',
-    'showIncomingDamageEffect',
     'showHealingIndicator',
     'setFirstPersonCamera',
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
+    'showTargetBuffs',
     'showTargetDebuffs',
+    'showTargetRaidIcon',
   },
-},  {
+}, {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
@@ -63,16 +59,12 @@ local PRESET_SECTIONS = { {
     'playPlayerDeathSoundbite',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
+    'showDruidFormResourceBar',
   },
 }, {
   title = 'XP Bar:',
-  settings = {
-    'showExpBar',
-    'showXpBarToolTip',
-    'hideDefaultExpBar',
-    'xpBarHeight',
-  },
-}, }
+  settings = { 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'xpBarHeight' },
+} }
 
 -- Function to get preset sections with custom title formatting
 -- @param titleFormat: "simple" for "Lite:", "extended" for "Lite Preset Settings:", or custom function
