@@ -57,16 +57,12 @@ local function UpdateXPTracking(levelUp)
 
   local currentXP = AddonXPTracking:GetXP(levelUp)
 
-  AddonXPTracking:XPTrackingDebug('XP Check ' .. lastXPValue .. ' vs ' .. currentXP)
-
   if currentXP > lastXPValue then
     local xpGained = currentXP - lastXPValue
-    AddonXPTracking:XPTrackingDebug('UpdateXPTracking conditional passed. XP gained = ' .. xpGained)
     local stats = CharacterStats:GetCurrentCharacterStats()
 
     if levelUp == false then
       stats['xpTotal'] = AddonXPTracking:GetTotalXP()
-      AddonXPTracking:XPTrackingDebug('Setting total XP to ' .. stats.xpTotal)
     end
 
     -- Update XP tracking for each setting that is currently disabled
@@ -75,13 +71,11 @@ local function UpdateXPTracking(levelUp)
       local isSettingEnabled = GLOBAL_SETTINGS[settingName]
 
       -- For boolean settings, if they're false, we're gaining XP "without" that option
-      if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
-        if AddonXPTracking:ShouldStoreStat(xpVariable) then
-          -- Access character stats directly from our local variable to minimize calls
-          local currentXPForSetting = stats[xpVariable] or 0
-          local newXPForSetting = currentXPForSetting + xpGained
-          stats[xpVariable] = newXPForSetting
-        end
+      if not isSettingEnabled then
+        -- Access character stats directly from our local variable to minimize calls
+        local currentXPForSetting = stats[xpVariable] or 0
+        local newXPForSetting = currentXPForSetting + xpGained
+        stats[xpVariable] = newXPForSetting
       end
     end
 
@@ -122,15 +116,7 @@ xpTrackingFrame:RegisterEvent('PLAYER_LOGIN')
 xpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
 xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
-  if event == 'PLAYER_REGEN_ENABLED' then
-    AddonXPTracking:XPTrackingDebug('PLAYER_REGEN_ENABLED event fired')
-    C_Timer.After(3.0, function()
-      if AddonXPTracking:ValidateTotalStoredXP() ~= true then
-        AddonXPTracking:PrintXPVerificationWarning()
-      end
-      UpdateXPTracking(false)
-    end)
-  elseif event == 'PLAYER_XP_UPDATE' then
+  if event == 'PLAYER_XP_UPDATE' then
     AddonXPTracking:XPTrackingDebug('PLAYER_XP_UPDATE event fired')
     UpdateXPTracking(false)
   elseif event == 'PLAYER_LEVEL_UP' then

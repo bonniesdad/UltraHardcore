@@ -125,11 +125,6 @@ function InitializeCommandsTab()
       },
     },
   }, {
-    header = 'XP Tracking',
-    items = {
-      { '/uhcxpreport', 'Print a verification report of your XP (verified vs unverified).' },
-    },
-  }, {
     header = 'UI & Minimap',
     items = {
       { '/resetclockposition, /rcp', 'Reset the minimap clock to the default position.' },
