@@ -1,7 +1,5 @@
 local minimapHideTimer = nil
 local initialRotateMinimap = GetCVar("RotateMinimap") or false
-local showClockInitialized = false
-local showMailInitialized = false
 
 -- Track temporary reveal state so we can restore cleanly on any event
 local minimapRevealState = {
@@ -86,12 +84,12 @@ local function ResetMinimapRevealState()
   }
 end
 
-function SetMinimapDisplay(hideMinimap, miniMapMask)
+function SetMinimapDisplay(hideMinimap)
   -- Always reset any temporary reveal state first
   ResetMinimapRevealState()
   if hideMinimap then
     -- With Hide Minimap enabled, keep it hidden in all cases (including taxi/dead)
-    HideMinimap(miniMapMask)
+    HideMinimap()
   else
     ShowMinimap()
   end
@@ -140,7 +138,7 @@ local function DisableMouseAndHideChildren(f)
   end
 end
 
-local function ShowClock()
+function ShowClock()
   if not TimeManagerClockButton then
     print("TimeManagerClockButton not found!")
     return
@@ -165,7 +163,7 @@ local function ShowClock()
   showClockInitialized = true
 end
 
-local function ShowMail()
+function ShowMail()
   if not MiniMapMailFrame then
     print("MiniMapMailFrame not found!")
     return
@@ -194,7 +192,7 @@ local function ShowMail()
   showMailInitialized = true
 end
 
-function HideMinimap(miniMapMask)
+function HideMinimap()
   -- Ensure no temporary reveal leftovers are active
   ResetMinimapRevealState()
   -- Use custom blip texture to hide party members and objective arrows
@@ -208,14 +206,6 @@ function HideMinimap(miniMapMask)
   -- Hide it completely by default
   Minimap:Hide()
   MinimapCluster:Hide()
-
-  if not showClockInitialized and HasFlag(miniMapMask, MINIMAP_FLAG_CLOCK) then
-    ShowClock()
-  end
-
-  if not showMailInitialized and HasFlag(miniMapMask, MINIMAP_FLAG_MAIL) then
-    ShowMail()
-  end
 
   -- Show it for 5 seconds after casting particular spells
   Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
@@ -364,7 +354,7 @@ minimapEventsFrame:RegisterEvent('PLAYER_CONTROL_LOST')   -- starting taxi/contr
 minimapEventsFrame:RegisterEvent('PLAYER_CONTROL_GAINED') -- ending taxi/control gain
 minimapEventsFrame:SetScript('OnEvent', function()
   if GLOBAL_SETTINGS then
-    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, miniMapMask)
+    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
   end
 end)
 
