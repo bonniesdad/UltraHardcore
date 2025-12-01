@@ -232,8 +232,9 @@ function SetTargetFrameDisplay(mask)
     targetFrameEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     targetFrameEventFrame:RegisterEvent("UNIT_AURA")
     targetFrameEventFrame:RegisterEvent("RAID_TARGET_UPDATE")
+    targetFrameEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
     targetFrameEventFrame:SetScript("OnEvent", function(_, event, unit)
-      if event == "PLAYER_TARGET_CHANGED" then
+      if event == "PLAYER_TARGET_CHANGED" or event == "GROUP_ROSTER_UPDATE" then
         ApplyMask()
       end
     end)
