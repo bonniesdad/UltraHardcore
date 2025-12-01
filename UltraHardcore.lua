@@ -1,6 +1,9 @@
 addonName = ...
 UltraHardcore = CreateFrame('Frame')
 
+-- Temporary feature flag: hide Guild Found UI until phase 2
+_G.UHC_ENABLE_GUILD_FOUND_UI = false
+
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
@@ -46,10 +49,25 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       ShowMail()
     end
     ShowResourceTrackingExplainer()
-    SetTargetFrameDisplay(
-      GLOBAL_SETTINGS.hideTargetFrame or false,
-      GLOBAL_SETTINGS.completelyRemoveTargetFrame or false
-    )
+
+    -- Setup target frame options
+    local targetMask = {}
+    if GLOBAL_SETTINGS.hideTargetFrame then
+      -- Hide target frame really means show our stripped down target frame instead of blizzard target frame
+      targetMask.portrait = true
+    else
+      -- show all elements (default target frame)
+      targetMask.all = true
+    end
+    targetMask.buffs = GLOBAL_SETTINGS.showTargetBuffs or false
+    targetMask.debuffs = GLOBAL_SETTINGS.showTargetDebuffs or false
+    targetMask.raidIcon = GLOBAL_SETTINGS.showTargetRaidIcon or false
+    if GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+      -- An empty table will result in hiding everything
+      targetMask = {}
+    end
+    SetTargetFrameDisplay(targetMask)
+
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
@@ -100,7 +118,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     -- FullHealthReachedIndicator is enabled when either screen glow or audio cue is enabled
     FullHealthReachedIndicator(
       (GLOBAL_SETTINGS.showFullHealthIndicator or GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue),
-      self, event, unit
+      self,
+      event,
+      unit
     )
     -- Check for pet death/abandonment
     if unit == 'pet' then
@@ -154,7 +174,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if unit == 'player' then
       HidePlayerCastBar()
     end
-    
+
     -- Check for Hearthstone casting start
     local unit, castGUID, spellID = ...
     if GLOBAL_SETTINGS.roachHearthstoneInPartyCombat then

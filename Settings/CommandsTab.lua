@@ -117,7 +117,7 @@ function InitializeCommandsTab()
       { '/logstatsg', 'Immediately post a condensed stats line to guild chat.' },
       {
         '/setlowesthealth <0-100>',
-        'Set your tracked “lowest health” value to a specific percentage.',
+        'Increase your tracked lowest health value to a specific percentage (only if higher than the current value).',
       },
       {
         '/uhcstatsreset, /uhcsr',

@@ -31,7 +31,6 @@ local CharacterStats = {
     xpGainedWithoutOptionPetsDiePermanently = 0,
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
     xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
-    xpGainedWithoutOptionShowIncomingDamageEffect = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
     xpGWA = 0, -- Used to track XP gained with the addon
     xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing

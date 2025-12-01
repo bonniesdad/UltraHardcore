@@ -1,6 +1,23 @@
 function OnCombatLogEvent(self, event)
-  local _, subEvent, _, sourceGUID, _, _, _, destGUID, enemyName, _, _, spellID, a, b, c, d, e, f =
-    CombatLogGetCurrentEventInfo()
+  local _,
+    subEvent,
+    _,
+    sourceGUID,
+    sourceName,
+    _,
+    _,
+    destGUID,
+    destName,
+    _,
+    _,
+    spellID,
+    a,
+    b,
+    c,
+    d,
+    e,
+    f
+  = CombatLogGetCurrentEventInfo()
 
   -- Extract amount based on damage type
   local amount
@@ -12,8 +29,8 @@ function OnCombatLogEvent(self, event)
     amount = select(12, CombatLogGetCurrentEventInfo()) -- fallback
   end
 
-  -- Handle incoming damage overlays
-  DamageOverlayHandler.HandleIncomingDamage(subEvent, destGUID)
+  -- Track damage events for death details
+  DeathDetails.TrackDamageEvent(subEvent, sourceGUID, sourceName, destGUID)
 
   -- Handle critical hit effects and tracking
   CritTracker.HandleCriticalHit(subEvent, sourceGUID, destGUID, amount)
@@ -34,6 +51,8 @@ function OnCombatLogEvent(self, event)
   -- Handle party member deaths
   if subEvent == 'UNIT_DIED' then
     PartyDeathTracker.HandlePartyMemberDeath(destGUID)
+    -- Handle player death details
+    DeathDetails.HandlePlayerDeath(destGUID)
   end
 
   -- Handle buff application tracking for rejecting buffs from others

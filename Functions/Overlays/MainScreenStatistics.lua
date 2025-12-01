@@ -11,6 +11,8 @@ local statsBackground = statsFrame:CreateTexture(nil, 'BACKGROUND')
 statsBackground:SetAllPoints(statsFrame)
 statsBackground:SetColorTexture(0, 0, 0, 0.3)
 
+local MANA_POWER_TYPE = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
+
 local function ApplyStatsBackgroundOpacity()
   local alpha = 0.3
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.statisticsBackgroundOpacity ~= nil then
@@ -42,6 +44,26 @@ local levelValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighligh
 levelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -5)
 levelValue:SetText(formatNumberWithCommas(1))
 levelValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local totalHPLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -20)
+totalHPLabel:SetText('Total HP:')
+totalHPLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local totalHPValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+totalHPValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -20)
+totalHPValue:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
+totalHPValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local totalManaLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+totalManaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+totalManaLabel:SetText('Total Mana:')
+totalManaLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local totalManaValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+totalManaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+totalManaValue:SetText(formatNumberWithCommas(UnitPowerMax('player', MANA_POWER_TYPE) or 0))
+totalManaValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lowestHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -20)
@@ -336,6 +358,14 @@ local statsElements = { {
   value = levelValue,
   setting = 'showMainStatisticsPanelLevel',
 }, {
+  label = totalHPLabel,
+  value = totalHPValue,
+  setting = 'showMainStatisticsPanelTotalHP',
+}, {
+  label = totalManaLabel,
+  value = totalManaValue,
+  setting = 'showMainStatisticsPanelTotalMana',
+}, {
   label = lowestHealthLabel,
   value = lowestHealthValue,
   setting = 'showMainStatisticsPanelLowestHealth',
@@ -457,14 +487,7 @@ local function UpdateRowVisibility()
       -- Use the actual setting value
       isVisible = GLOBAL_SETTINGS[element.setting]
     else
-      -- Apply default behavior based on the setting
-      if element.setting == 'showMainStatisticsPanelLevel' or element.setting == 'showMainStatisticsPanelLowestHealth' or element.setting == 'showMainStatisticsPanelEnemiesSlain' or element.setting == 'showMainStatisticsPanelDungeonsCompleted' or element.setting == 'showMainStatisticsPanelHighestCritValue' or element.setting == 'showMainStatisticsPanelCloseEscapes' then
-        -- These default to true (show unless explicitly false)
-        isVisible = true
-      else
-        -- These default to false (hide unless explicitly true)
-        isVisible = false
-      end
+      isVisible = false
     end
 
     if isVisible then
@@ -512,6 +535,13 @@ function UpdateStatistics()
   -- Update character level
   local playerLevel = UnitLevel('player') or 1
   levelValue:SetText(formatNumberWithCommas(playerLevel))
+
+  -- Update total HP and Mana
+  local maxHealth = UnitHealthMax('player') or 0
+  totalHPValue:SetText(formatNumberWithCommas(maxHealth))
+
+  local maxMana = UnitPowerMax('player', MANA_POWER_TYPE) or 0
+  totalManaValue:SetText(formatNumberWithCommas(maxMana))
 
   -- Update lowest health
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
@@ -628,6 +658,9 @@ end
 statsFrame:RegisterEvent('UNIT_HEALTH_FREQUENT')
 statsFrame:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
 statsFrame:RegisterEvent('PLAYER_LEVEL_UP')
+statsFrame:RegisterEvent('PLAYER_EQUIPMENT_CHANGED')
+statsFrame:RegisterEvent('UNIT_MAXHEALTH')
+statsFrame:RegisterEvent('UNIT_MAXPOWER')
 statsFrame:RegisterEvent('PLAYER_LOGIN') -- Player entity and world are ready. Addon database and C_ APIs are safe to access.
 statsFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_LOGIN' then
@@ -636,11 +669,18 @@ statsFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     -- Update lowest health when health changes
     UpdateStatistics()
+  elseif event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER' then
+    local unit = ...
+    if unit == 'player' then
+      UpdateStatistics()
+    end
   elseif event == 'COMBAT_LOG_EVENT_UNFILTERED' then
     -- Update kill counts when combat events occur
     UpdateStatistics()
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Update XP when leveling up
+    UpdateStatistics()
+  elseif event == 'PLAYER_EQUIPMENT_CHANGED' then
     UpdateStatistics()
   end
 end)

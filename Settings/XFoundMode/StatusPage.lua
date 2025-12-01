@@ -1,6 +1,23 @@
 -- 🟢 X Found Mode - Status Page
 -- Shows the player's current X Found status for non-level 1 players
 
+local function GetXFoundPlayerContext()
+  local playerLevel = UnitLevel('player') or 1
+  local hasSelfFoundBuff = HasSelfFoundBuff and HasSelfFoundBuff()
+  local treatAsLevelOne
+  if XFoundMode_ShouldTreatPlayerAsLevelOne then
+    treatAsLevelOne = XFoundMode_ShouldTreatPlayerAsLevelOne()
+  else
+    treatAsLevelOne = (playerLevel == 1) or hasSelfFoundBuff
+  end
+  return playerLevel, treatAsLevelOne, hasSelfFoundBuff
+end
+
+local function PlayerCanEditGroupFoundFields()
+  local _, treatAsLevelOne = GetXFoundPlayerContext()
+  return treatAsLevelOne
+end
+
 local function CreateStatusPage(parentFrame)
   local statusPage = CreateFrame('Frame', nil, parentFrame)
   statusPage:SetAllPoints(parentFrame)
@@ -40,7 +57,9 @@ local function CreateStatusPage(parentFrame)
     titleText:SetDrawLayer('OVERLAY', 1)
   end
   -- Hide title on this view
-  if titleText.Hide then titleText:Hide() end
+  if titleText.Hide then
+    titleText:Hide()
+  end
 
   -- Current Mode Display
   local modeLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
@@ -71,14 +90,14 @@ local function CreateStatusPage(parentFrame)
   restrictionsText:SetJustifyH('LEFT')
   restrictionsText:SetNonSpaceWrap(true)
   restrictionsText:SetTextColor(0.8, 0.8, 0.8)
-  
+
   -- What still works (shown when not in Group Found to reduce empty space)
   local whatWorksLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   whatWorksLabel:SetPoint('TOPLEFT', restrictionsText, 'BOTTOMLEFT', 0, -20)
   whatWorksLabel:SetText('What still works:')
   whatWorksLabel:SetTextColor(0.8, 1, 0.8)
   whatWorksLabel:Hide()
-  
+
   local whatWorksText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   whatWorksText:SetPoint('TOPLEFT', whatWorksLabel, 'BOTTOMLEFT', 0, -16)
   whatWorksText:SetWidth(400)
@@ -86,7 +105,7 @@ local function CreateStatusPage(parentFrame)
   whatWorksText:SetNonSpaceWrap(true)
   whatWorksText:SetTextColor(0.75, 0.9, 0.75)
   whatWorksText:Hide()
-  
+
   -- Guild status line (only meaningful for Guild Found)
   local guildStatusText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   -- Anchor directly below restrictions (whatWorks section is removed visually)
@@ -94,14 +113,14 @@ local function CreateStatusPage(parentFrame)
   guildStatusText:SetWidth(400)
   guildStatusText:SetJustifyH('LEFT')
   guildStatusText:Hide()
-  
+
   -- Stats block
   local statsLabel = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   statsLabel:SetPoint('TOPLEFT', guildStatusText, 'BOTTOMLEFT', 0, -20)
   statsLabel:SetText('Stats:')
   statsLabel:SetTextColor(1, 1, 1)
   statsLabel:Hide()
-  
+
   local statsText = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   statsText:SetPoint('TOPLEFT', statsLabel, 'BOTTOMLEFT', 0, -16)
   statsText:SetWidth(400)
@@ -165,7 +184,9 @@ local function CreateStatusPage(parentFrame)
   autofillDesc:SetPoint('LEFT', autofillButton, 'RIGHT', 10, 0)
   autofillDesc:SetWidth(280)
   autofillDesc:SetJustifyH('LEFT')
-  autofillDesc:SetText('Fill with your current party or raid members (excluding you) and save automatically.')
+  autofillDesc:SetText(
+    'Fill with your current party or raid members (excluding you) and save automatically.'
+  )
   autofillDesc:SetTextColor(0.9, 0.9, 0.9)
 
   local lockNote = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
@@ -196,7 +217,12 @@ local function CreateStatusPage(parentFrame)
     tile = true,
     tileSize = 16,
     edgeSize = 12,
-    insets = { left = 6, right = 6, top = 6, bottom = 6 },
+    insets = {
+      left = 6,
+      right = 6,
+      top = 6,
+      bottom = 6,
+    },
   })
   warningPanel:SetBackdropColor(0.08, 0.06, 0.02, 0.9)
   warningPanel:SetBackdropBorderColor(1, 0.8, 0.2, 1)
@@ -221,7 +247,36 @@ local function CreateStatusPage(parentFrame)
   if warningText.SetDrawLayer then
     warningText:SetDrawLayer('OVERLAY', 2)
   end
-  
+
+  local leaveModeButton = CreateFrame('Button', nil, statusFrame, 'UIPanelButtonTemplate')
+  leaveModeButton:SetSize(210, 26)
+  leaveModeButton:SetPoint('BOTTOM', backButton, 'TOP', 0, 8)
+  leaveModeButton:SetText('Leave Guild/Group Found')
+  leaveModeButton:Hide()
+  leaveModeButton:SetFrameLevel(statusFrame:GetFrameLevel() + 2)
+  local leaveBtnFS = leaveModeButton.GetFontString and leaveModeButton:GetFontString()
+  if leaveBtnFS then
+    leaveBtnFS:SetTextColor(1, 0.4, 0.4)
+  end
+  leaveModeButton:SetScript('OnClick', function()
+    if LeaveXFoundModes then
+      LeaveXFoundModes()
+    else
+      print('|cffffd000[ULTRA]|r Leave handler not available right now.')
+    end
+  end)
+
+  local function UpdateWarningAnchors(showLeaveButton)
+    if not warningPanel then return end
+    warningPanel:ClearAllPoints()
+    if showLeaveButton then
+      warningPanel:SetPoint('BOTTOM', leaveModeButton, 'TOP', 0, 12)
+    else
+      warningPanel:SetPoint('BOTTOM', backButton, 'TOP', 15)
+    end
+  end
+  UpdateWarningAnchors(false)
+
   -- Simple note used for post-level-1 (no alert box)
   local lockedNote = statusFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   lockedNote:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 16)
@@ -242,28 +297,54 @@ local function CreateStatusPage(parentFrame)
 
   -- Update function
   local function UpdateStatus()
-    -- Get current player level
-    local playerLevel = UnitLevel('player')
+    -- Get current player level and eligibility
+    local playerLevel, treatAsLevelOne, hasSelfFoundBuff = GetXFoundPlayerContext()
+    local hasActiveXFoundMode =
+      (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.guildSelfFound or GLOBAL_SETTINGS.groupSelfFound)) or false
 
     -- Show/hide back button based on player level
-    if playerLevel == 1 then
+    if treatAsLevelOne then
       backButton:Show()
-      warningText:SetText('Note: You can still change your X Found mode selection at level 1.')
+      if hasSelfFoundBuff and playerLevel > 1 then
+        warningText:SetText(
+          'Self Found buff detected: You can still change your X Found mode selection.'
+        )
+      else
+        warningText:SetText('Note: You can still change your X Found mode selection at level 1.')
+      end
       warningText:SetTextColor(1, 0.95, 0.4) -- Bright yellow for level 1
       if warningPanel and warningPanel.SetBackdropBorderColor then
         warningPanel:SetBackdropBorderColor(1, 0.9, 0.3, 1)
       end
-      if warningPanel and warningPanel.Show then warningPanel:Show() end
-      if lockedNote and lockedNote.Hide then lockedNote:Hide() end
+      if warningPanel and warningPanel.Show then
+        warningPanel:Show()
+      end
+      if lockedNote and lockedNote.Hide then
+        lockedNote:Hide()
+      end
     else
       backButton:Hide()
-      if warningPanel and warningPanel.Hide then warningPanel:Hide() end
+      if warningPanel and warningPanel.Hide then
+        warningPanel:Hide()
+      end
       if lockedNote and lockedNote.Show then
-        lockedNote:SetText('Note: X Found modes can only be selected at level 1. Your current mode is locked.')
+        lockedNote:SetText(
+          'Note: X Found modes can only be selected at level 1 or while the Self Found buff is active. Your current mode is locked.'
+        )
         lockedNote:SetTextColor(0.9, 0.9, 0.9)
         lockedNote:Show()
       end
     end
+
+    local canLeaveFoundMode = treatAsLevelOne and hasActiveXFoundMode
+    if leaveModeButton then
+      if canLeaveFoundMode then
+        leaveModeButton:Show()
+      else
+        leaveModeButton:Hide()
+      end
+    end
+    UpdateWarningAnchors(canLeaveFoundMode)
 
     -- Get current X Found mode from settings
     local currentMode = 'None Selected'
@@ -275,7 +356,7 @@ local function CreateStatusPage(parentFrame)
     local guildStatusLine = ''
 
     -- Check if guild found is enabled
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound or (IsUltraGuildMember and IsUltraGuildMember()) then
       currentMode = 'Guild Found'
       currentIcon = 'Interface\\Icons\\INV_Misc_Note_01'
       restrictions =
@@ -320,7 +401,7 @@ local function CreateStatusPage(parentFrame)
     end
     statusIcon:SetTexture(currentIcon)
     restrictionsText:SetText(restrictions)
-    
+
     -- Show/hide supplemental sections to reduce empty space
     local isGroup = GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound
     -- Reposition back button specifically for Group Found choice page
@@ -331,6 +412,10 @@ local function CreateStatusPage(parentFrame)
       else
         backButton:SetPoint('BOTTOM', statusFrame, 'BOTTOM', 0, 14)
       end
+    end
+    if leaveModeButton and leaveModeButton:IsShown() then
+      leaveModeButton:ClearAllPoints()
+      leaveModeButton:SetPoint('BOTTOM', backButton, 'TOP', 0, 8)
     end
     if isGroup then
       -- Hide all supplemental sections in Group Found for now
@@ -377,7 +462,7 @@ local function CreateStatusPage(parentFrame)
       end
 
       -- Enable or lock based on level
-      local canEdit = playerLevel == 1
+      local canEdit = treatAsLevelOne
       for i = 1, 10 do
         if canEdit then
           editBoxes[i]:Enable()
@@ -386,23 +471,37 @@ local function CreateStatusPage(parentFrame)
         end
       end
       saveNamesButton:SetEnabled(canEdit)
-      if autofillButton then autofillButton:SetEnabled(canEdit) end
+      if autofillButton then
+        autofillButton:SetEnabled(canEdit)
+      end
       if canEdit then
-        lockNote:SetText('Editable at level 1. Locked from level 2.')
+        if hasSelfFoundBuff and playerLevel > 1 then
+          lockNote:SetText('Editable while the Self Found buff is active.')
+        else
+          lockNote:SetText('Editable at level 1. Locked from level 2.')
+        end
         lockNote:SetTextColor(1, 0.8, 0.2)
         -- Position next to buttons for level 1
         lockNote:ClearAllPoints()
         lockNote:SetPoint('LEFT', saveNamesButton, 'RIGHT', 10, -10) -- move note down by 60 only on Group choice page
         lockNote:SetJustifyH('LEFT')
         saveNamesButton:Show()
-        if autofillButton then autofillButton:Show() end
-        if autofillDesc then autofillDesc:Show() end
+        if autofillButton then
+          autofillButton:Show()
+        end
+        if autofillDesc then
+          autofillDesc:Show()
+        end
       else
         -- Hide the red lock message entirely when above level 1
         lockNote:Hide()
         saveNamesButton:Hide()
-        if autofillButton then autofillButton:Hide() end
-        if autofillDesc then autofillDesc:Hide() end
+        if autofillButton then
+          autofillButton:Hide()
+        end
+        if autofillDesc then
+          autofillDesc:Hide()
+        end
       end
     else
       groupSectionLabel:Hide()
@@ -410,17 +509,21 @@ local function CreateStatusPage(parentFrame)
         editBoxes[i]:Hide()
       end
       saveNamesButton:Hide()
-      if autofillButton then autofillButton:Hide() end
-      if autofillDesc then autofillDesc:Hide() end
+      if autofillButton then
+        autofillButton:Hide()
+      end
+      if autofillDesc then
+        autofillDesc:Hide()
+      end
       lockNote:Hide()
     end
-    
+
     -- Adjust panel size based on mode to reduce empty space
     local desiredHeight = 500
     if isGroup then
       desiredHeight = 420
     end
-    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and playerLevel > 1 and not isGroup then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound and not treatAsLevelOne and not isGroup then
       desiredHeight = 420
     end
     if statusFrame.GetHeight and statusFrame.SetHeight then
@@ -443,6 +546,7 @@ local function CreateStatusPage(parentFrame)
   local levelEventFrame = CreateFrame('Frame', nil, statusPage)
   levelEventFrame:RegisterEvent('PLAYER_LEVEL_UP')
   levelEventFrame:RegisterEvent('UNIT_LEVEL')
+  levelEventFrame:RegisterEvent('UNIT_AURA')
   levelEventFrame:SetScript('OnEvent', function(_, event, arg1)
     if event == 'PLAYER_LEVEL_UP' then
       if XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
@@ -452,13 +556,17 @@ local function CreateStatusPage(parentFrame)
       if arg1 == 'player' and XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
         statusPage:UpdateStatus()
       end
+    elseif event == 'UNIT_AURA' then
+      if arg1 == 'player' and XFoundModeManager and XFoundModeManager.currentPage == 'status' and statusPage.UpdateStatus then
+        statusPage:UpdateStatus()
+      end
     end
   end)
 
   -- Save handler
   saveNamesButton:SetScript('OnClick', function()
     if not GLOBAL_SETTINGS then return end
-    if UnitLevel('player') ~= 1 then return end
+    if not PlayerCanEditGroupFoundFields() then return end
     local names = {}
     for i = 1, 10 do
       local raw = editBoxes[i]:GetText() or ''
@@ -517,14 +625,20 @@ local function CreateStatusPage(parentFrame)
   autofillButton:SetScript('OnEnter', function(self)
     GameTooltip:SetOwner(self, 'ANCHOR_TOP')
     GameTooltip:SetText('Auto-Fill from Group')
-    GameTooltip:AddLine('Copy current party/raid members into the fields (excludes you).', 1, 1, 1, true)
+    GameTooltip:AddLine(
+      'Copy current party/raid members into the fields (excludes you).',
+      1,
+      1,
+      1,
+      true
+    )
     GameTooltip:Show()
   end)
   autofillButton:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
   autofillButton:SetScript('OnClick', function()
-    if UnitLevel('player') ~= 1 then return end
+    if not PlayerCanEditGroupFoundFields() then return end
     local groupNames = GetCurrentGroupMemberNames()
     if not groupNames or #groupNames == 0 then
       print('|cffffd000[ULTRA]|r No party/raid members found to add.')
@@ -556,7 +670,9 @@ local function CreateStatusPage(parentFrame)
         while nextIndex <= 10 and not isEmpty(nextIndex) do
           nextIndex = nextIndex + 1
         end
-        if nextIndex > 10 then break end
+        if nextIndex > 10 then
+          break
+        end
         editBoxes[nextIndex]:SetText(name)
         existing[key] = true
         filled = filled + 1
@@ -577,7 +693,9 @@ local function CreateStatusPage(parentFrame)
         local raw = editBoxes[i]:GetText() or ''
         raw = string.gsub(raw, '^%s+', '')
         raw = string.gsub(raw, '%s+$', '')
-        if raw ~= '' then table.insert(namesToSave, raw) end
+        if raw ~= '' then
+          table.insert(namesToSave, raw)
+        end
       end
       GLOBAL_SETTINGS.groupFoundNames = namesToSave
       if SaveCharacterSettings then
