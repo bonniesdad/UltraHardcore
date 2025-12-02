@@ -157,19 +157,10 @@ end
 -- We will strip it down to just the portrait
 local function ShowToT()
   if not TargetFrameToT then return end
-
-  if UnitExists("targettarget") then
     -- allow Blizzard to show ToT normally
-    TargetFrameToT:SetAlpha(1)
-    if TargetFrameToTTextureFrame then
-      TargetFrameToTTextureFrame:SetAlpha(1)
-    end
-  else
-    -- hide it cleanly when no ToT exists
-    TargetFrameToT:SetAlpha(0)
-    if TargetFrameToTTextureFrame then
-      TargetFrameToTTextureFrame:SetAlpha(0)
-    end
+  TargetFrameToT:SetAlpha(1)
+  if TargetFrameToTTextureFrame then
+    TargetFrameToTTextureFrame:SetAlpha(1)
   end
 end
 
@@ -202,20 +193,18 @@ end
 -- Hook Blizzard update functions
 hooksecurefunc("TargetFrame_Update", ApplyMask)
 hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
--- Target of Target hook
+  -- Target of Target hook (NO existence checks, NO visibility logic)
 hooksecurefunc("TargetofTarget_Update", function()
-  if UnitExists("targettarget") then
-    -- allow ToT to show, then apply cosmetic stripping
-    TargetFrameToT:SetAlpha(1)
-    HideSubFrames("TargetFrameToT")
-    if TargetFrameToTTextureFrame then
-        HideTextureRegions(TargetFrameToTTextureFrame)
-    end
-    HideToTAuras()
-  else
-    -- hide entire ToT in one step; no need to strip anything
-    TargetFrameToT:SetAlpha(0)
+  -- Always allow default alpha/visibility
+  TargetFrameToT:SetAlpha(1)
+
+  -- Strip subframes/texture
+  HideSubFrames("TargetFrameToT")
+  if TargetFrameToTTextureFrame then
+    HideTextureRegions(TargetFrameToTTextureFrame)
   end
+  -- Always hide auras (regardless of ToT existence)
+  HideToTAuras()
 end)
 
 
