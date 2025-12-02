@@ -44,7 +44,7 @@ function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
       if sourceGUID == UnitGUID('player') then
         local currentHighestCrit = CharacterStats:GetStat('highestCritValue') or 0
         if amount > currentHighestCrit then
-          print('|cFFFF0000[UHC]|r Highest crit value updated to: ' .. amount .. '|r')
+          print('|cFFFF0000[ULTRA]|r Highest crit value updated to: ' .. amount .. '|r')
           CharacterStats:UpdateStat('highestCritValue', amount)
           if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
             PlayRandomCritSound()
@@ -65,7 +65,7 @@ function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
       if sourceGUID == UnitGUID('player') then
         local currentHighestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
         if amount > currentHighestHealCrit then
-          print('|cFF00FF00[UHC]|r Highest heal crit updated to: ' .. amount .. '|r')
+          print('|cFF00FF00[ULTRA]|r Highest heal crit updated to: ' .. amount .. '|r')
           CharacterStats:UpdateStat('highestHealCritValue', amount)
           if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
             PlayRandomCritSound()

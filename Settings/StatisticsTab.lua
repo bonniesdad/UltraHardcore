@@ -234,7 +234,7 @@ function InitializeStatisticsTab()
         xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
       end
 
-      -- Check if character has any UHC settings enabled
+      -- Check if character has any ULTRA settings enabled
       local hasUHCSettings = false
       local sections = GetPresetSections('simple', false)
       for _, section in ipairs(sections) do
@@ -249,7 +249,7 @@ function InitializeStatisticsTab()
         end
       end
 
-      -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
+      -- Level 1 character with no XP gained at all should be considered verified only if they have ULTRA settings enabled
       local playerLevel = UnitLevel('player') or 1
       local isLevelOneWithNoXP =
         (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
@@ -1439,7 +1439,7 @@ function InitializeStatisticsTab()
     hideTargetTooltip = 'Hide Target Tooltips',
     disableNameplateHealth = 'Disable Nameplates',
     showDazedEffect = 'Show Dazed Effect',
-    hideGroupHealth = 'Use UHC Party Frames',
+    hideGroupHealth = 'Use ULTRA Party Frames',
     hideMinimap = 'Hide Minimap',
     -- Extreme section
     petsDiePermanently = 'Pets Die Permanently',
@@ -1447,11 +1447,11 @@ function InitializeStatisticsTab()
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
     routePlanner = 'Route Planner',
     -- Experimental section
-    hideBreathIndicator = 'Use UHC Breath Indicator',
-    showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
-    showFullHealthIndicator = 'Use UHC Full Health Indicator',
+    hideBreathIndicator = 'Use ULTRA Breath Indicator',
+    showCritScreenMoveEffect = 'Use ULTRA Incoming Crit Effect',
+    showFullHealthIndicator = 'Use ULTRA Full Health Indicator',
     hideCustomResourceBar = 'Hide Custom Resource Bar',
-    showHealingIndicator = 'Use UHC Incoming Healing Effect',
+    showHealingIndicator = 'Use ULTRA Incoming Healing Effect',
   }
 
   -- Define preset sections with their settings (limit to up to Extreme)
@@ -1715,7 +1715,7 @@ function InitializeStatisticsTab()
   -- Add tooltip
   shareButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(shareButton, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Share UHC Stats to Chat')
+    GameTooltip:SetText('Share ULTRA Stats to Chat')
     GameTooltip:Show()
   end)
   shareButton:SetScript('OnLeave', function()
@@ -1726,7 +1726,7 @@ function InitializeStatisticsTab()
     if CharacterStats and CharacterStats.LogStatsToChat then
       CharacterStats:LogStatsToChat()
     else
-      print('UHC - CharacterStats not available. Please reload UI.')
+      print('ULTRA - CharacterStats not available. Please reload UI.')
     end
   end)
 

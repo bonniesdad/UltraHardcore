@@ -32,7 +32,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local font, _, flags = title:GetFont()
   title:SetFont(font, 18, flags)
   title:SetTextColor(1, 1, 0)
-  title:SetText('Ultra Hardcore Updated!')
+  title:SetText('ULTRA Updated!')
 
   -- Version info
   local versionText = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')

@@ -44,6 +44,7 @@ local CLASS_BACKGROUND_MAP = {
   MAGE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_mage.png',
   WARLOCK = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warlock.png',
   DRUID = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_druid.png',
+  SHAMAN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_shaman.png',
 }
 
 local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
@@ -112,7 +113,7 @@ titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\heade
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
-settingsTitleLabel:SetText('Ultra Hardcore')
+settingsTitleLabel:SetText('ULTRA')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 -- Initialize TBC feature (comment out this line to disable TBC feature)
@@ -248,7 +249,7 @@ initializeTempSettings()
 -- Create LibDataBroker object for minimap button
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   type = 'data source',
-  text = 'Ultra Hardcore',
+  text = 'ULTRA',
   icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
   OnClick = function(self, btn)
     if btn == 'LeftButton' then
@@ -257,7 +258,7 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   end,
   OnTooltipShow = function(tooltip)
     if not tooltip or not tooltip.AddLine then return end
-    tooltip:AddLine('|cffffffffUltra Hardcore|r\n\nLeft-click to open settings', nil, nil, nil, nil)
+    tooltip:AddLine('|cffffffffULTRA|r\n\nLeft-click to open settings', nil, nil, nil, nil)
   end,
 })
 

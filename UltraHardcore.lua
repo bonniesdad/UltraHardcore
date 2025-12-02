@@ -41,13 +41,18 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       GLOBAL_SETTINGS.hidePlayerFrame or false,
       GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
     )
-    if GLOBAL_SETTINGS.showClockEvenWhenMapHidden then
-      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_CLOCK)
+    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
+    if GLOBAL_SETTINGS.showClockEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
+      ShowClock()
     end
-    if GLOBAL_SETTINGS.showMailEvenWhenMapHidden then
-      miniMapMask = AddFlag(miniMapMask, MINIMAP_FLAG_MAIL)
+
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
     end
-    SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false, miniMapMask)
+    
+    if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
+      ShowMail()
+    end
     ShowResourceTrackingExplainer()
 
     -- Setup target frame options
