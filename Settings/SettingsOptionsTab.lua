@@ -1,6 +1,6 @@
 local settingsCheckboxOptions = { {
   -- Lite Preset Settings
-  name = 'UHC Player Frame',
+  name = 'ULTRA Player Frame',
   dbSettingsValueName = 'hidePlayerFrame',
   tooltip = 'Minimalistic player frame to hide own health',
 }, {
@@ -9,9 +9,9 @@ local settingsCheckboxOptions = { {
   tooltip = 'The screen gets darker as you get closer to death',
 }, {
   -- Recommended Preset Settings
-  name = 'UHC Target Frame',
+  name = 'ULTRA Target Frame',
   dbSettingsValueName = 'hideTargetFrame',
-  tooltip = "Show UHC target frame, so you can't see the target's health or level",
+  tooltip = "Show ULTRA target frame, so you can't see the target's health or level",
 }, {
   name = 'Hide Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
@@ -25,7 +25,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showDazedEffect',
   tooltip = 'A blue blur effect appears around your character when dazed',
 }, {
-  name = 'UHC Party Frames',
+  name = 'ULTRA Party Frames',
   dbSettingsValueName = 'hideGroupHealth',
   tooltip = 'Party healthbars are hidden and replaced with a custom health indicator',
 }, {
@@ -51,11 +51,11 @@ local settingsCheckboxOptions = { {
   tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
 }, {
   -- Experimental Preset Settings
-  name = 'UHC Breath Indicator',
+  name = 'ULTRA Breath Indicator',
   dbSettingsValueName = 'hideBreathIndicator',
   tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
 }, {
-  name = 'UHC Incoming Crit Effect',
+  name = 'ULTRA Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
 }, {
@@ -63,15 +63,15 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideCustomResourceBar',
   tooltip = 'Hide the custom resource bar',
 }, {
-  name = 'UHC Full Health Indicator (Screen Glow)',
+  name = 'ULTRA Full Health Indicator (Screen Glow)',
   dbSettingsValueName = 'showFullHealthIndicator',
   tooltip = 'The edges of the screen glow when you are at full health',
 }, {
-  name = 'UHC Full Health Indicator (Audio Cue)',
+  name = 'ULTRA Full Health Indicator (Audio Cue)',
   dbSettingsValueName = 'showFullHealthIndicatorAudioCue',
   tooltip = 'An audio cue plays when you are at full health',
 }, {
-  name = 'UHC Incoming Healing Effect',
+  name = 'ULTRA Incoming Healing Effect',
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
@@ -106,13 +106,13 @@ local settingsCheckboxOptions = { {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
   dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important UHC statistics on the screen at all times',
+  tooltip = 'Show important ULTRA statistics on the screen at all times',
 }, {
   name = 'Announce Level Up to Guild',
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
 }, {
-  name = 'Auto Join UHC Channel',
+  name = 'Auto Join ULTRA Channel',
   dbSettingsValueName = 'autoJoinUHCChannel',
   tooltip = 'Automatically join the Ultra Hardcore chat channel on login',
 }, {
@@ -184,7 +184,7 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'routePlannerCompass',
   tooltip = 'Get a compass to aid you in your journey',
 }, {
-  name = 'UHC Show Druid Manabar',
+  name = 'ULTRA Show Druid Manabar',
   dbSettingsValueName = 'showDruidFormResourceBar',
   tooltip = 'Show a separate resource bar when shapeshifted as a druid',
 } }

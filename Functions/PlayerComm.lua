@@ -11,7 +11,7 @@ local AceSerializer = LibStub("AceSerializer-3.0")
 local PlayerComm = {}
 
 -- Communication prefix (max 16 characters)
-local COMM_PREFIX = "UHC"
+local COMM_PREFIX = "ULTRA"
 
 -- Storage for player tamper status (cache)
 local playerTamperStatus = {}
