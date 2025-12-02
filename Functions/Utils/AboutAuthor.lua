@@ -58,7 +58,7 @@ function UHC_CreateAboutAuthorSection(parent, point, relativeTo, relativePoint, 
   aboutText:SetPoint('TOPLEFT', profilePictureFrame, 'BOTTOMLEFT', 0, -15)
   aboutText:SetWidth(width) -- Full width
   aboutText:SetText(
-    'What started as learning .lua code between his day job as a developer has grown into something much bigger.\n\nWith help from the community sharing ideas and feedback, Ultra Hardcore evolved from a simple pet project into the addon you see today.\n\nWe have since grown into a team of developers who are passionate about creating a fun and challenging experience for players.\n\nYou can catch us coding live on stream. We fix bugs in real-time, chat about new features, and turn your suggestions into reality. Feel free to drop by!'
+    'What started as learning .lua code between his day job as a developer has grown into something much bigger.\n\nWith help from the community sharing ideas and feedback, ULTRA evolved from a simple pet project into the addon you see today.\n\nWe have since grown into a team of developers who are passionate about creating a fun and challenging experience for players.\n\nYou can catch us coding live on stream. We fix bugs in real-time, chat about new features, and turn your suggestions into reality. Feel free to drop by!'
   )
   aboutText:SetJustifyH('LEFT')
   aboutText:SetNonSpaceWrap(false) -- Allow line breaks
