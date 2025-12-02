@@ -27,7 +27,7 @@ local function HideTextureRegions(frame)
 
   for i = 1, select("#", frame:GetRegions()) do
     local region = select(i, frame:GetRegions())
-    if region then
+    if region and not region:IsProtected() then
       region:SetAlpha(0)
     end
   end
@@ -158,9 +158,11 @@ end
 local function ShowToT()
   if not TargetFrameToT then return end
     -- allow Blizzard to show ToT normally
-  TargetFrameToT:SetAlpha(1)
-  if TargetFrameToTTextureFrame then
-    TargetFrameToTTextureFrame:SetAlpha(1)
+  if not InCombatLockdown() then
+    TargetFrameToT:SetAlpha(1)
+    if TargetFrameToTTextureFrame then
+      TargetFrameToTTextureFrame:SetAlpha(1)
+    end
   end
 end
 
