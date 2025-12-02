@@ -29,7 +29,6 @@ local PRESET_SECTIONS = { {
     'hidePlayerCastBar',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
-    'showFullHealthIndicatorAudioCue',
     'hideCustomResourceBar',
     'showHealingIndicator',
     'setFirstPersonCamera',
@@ -39,6 +38,15 @@ local PRESET_SECTIONS = { {
     'showTargetBuffs',
     'showTargetDebuffs',
     'showTargetRaidIcon',
+  },
+}, {
+  title = 'Sounds:',
+  settings = {
+    'newHighCritAppreciationSoundbite',
+    'playPartyDeathSoundbite',
+    'playPlayerDeathSoundbite',
+    'showFullHealthIndicatorAudioCue',
+    'soundbiteChannel',
   },
 }, {
   title = 'Misc:',
@@ -54,9 +62,6 @@ local PRESET_SECTIONS = { {
     'buffBarOnResourceBar',
     'hideBuffsCompletely',
     'hideDebuffs',
-    'newHighCritAppreciationSoundbite',
-    'playPartyDeathSoundbite',
-    'playPlayerDeathSoundbite',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
