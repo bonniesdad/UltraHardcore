@@ -125,6 +125,44 @@ local function UHC_SetElementSuppressed(frame, suppress)
   end
 end
 
+local OFFLINE_LABEL = PLAYER_OFFLINE or OFFLINE or 'Offline'
+local function UHC_UpdateRaidOfflineStatus(frame)
+  if not frame or not frame.statusText then return end
+  local statusText = frame.statusText
+  local unit = frame.displayedUnit or frame.unit
+  local isOffline = false
+
+  if unit and type(UnitIsConnected) == 'function' then
+    local ok, connected = pcall(UnitIsConnected, unit)
+    if ok and connected == false then
+      isOffline = true
+    end
+  end
+
+  if isOffline then
+    if statusText.ClearAllPoints and statusText.SetPoint then
+      statusText:ClearAllPoints()
+      statusText:SetPoint('CENTER', frame.uhcCircle or frame, 'CENTER', 0, -2)
+    end
+    local ok, font, size, flags = pcall(statusText.GetFont, statusText)
+    if ok and font and statusText.SetFont then
+      statusText:SetFont(font, math.max(10, size or 10), flags)
+    end
+    if statusText.SetTextColor then
+      statusText:SetTextColor(0.9, 0.35, 0.35, 1)
+    end
+    if statusText.SetText then
+      statusText:SetText(OFFLINE_LABEL)
+    end
+    UHC_SetElementSuppressed(statusText, false)
+  else
+    if statusText.SetText then
+      statusText:SetText('')
+    end
+    UHC_SetElementSuppressed(statusText, true)
+  end
+end
+
 -- Raid (Compact) Frames: Hide only the health bar so the name remains visible
 local function HideRaidHealthBar(i)
   local frame = _G['CompactRaidFrame' .. i]
@@ -146,7 +184,7 @@ local function HideRaidHealthBar(i)
       UHC_SetElementSuppressed(elem, true)
     end
     if frame.statusText then
-      UHC_SetElementSuppressed(frame.statusText, true)
+      UHC_UpdateRaidOfflineStatus(frame)
     end
   else
     -- Fallback to global-named health bar if direct frame not available
@@ -365,6 +403,9 @@ local function HookCompactRaidHealthHiding()
     if frame.uhcCircle and RAID_HEALTH_INDICATOR_FRAMES then
       UHC_UpdateRaidCircleAndIndicatorSizes(frame)
     end
+    if frame.statusText then
+      UHC_UpdateRaidOfflineStatus(frame)
+    end
   end
   local function hideFromUpdate(frame)
     if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideGroupHealth then return end
@@ -388,9 +429,7 @@ local function HookCompactRaidHealthHiding()
       for _, elem in ipairs(elements) do
         UHC_SetElementSuppressed(elem, true)
       end
-      if frame.statusText then
-        UHC_SetElementSuppressed(frame.statusText, true)
-      end
+      UHC_UpdateRaidOfflineStatus(frame)
       -- Apply styling (border removal + circular frame + name position)
       styleCompactRaidFrame(frame)
     end
