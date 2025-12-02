@@ -1031,12 +1031,13 @@ function InitializeSettingsOptionsTab()
           label:SetPoint('LEFT', row, 'LEFT', 0, 0)
           label:SetText('Soundbite Channel')
 
-          -- Available Classic sound channels
+          -- Available sound channels (aligned with in-game Sound options)
           local CHANNEL_OPTIONS = {
             { text = 'Master', value = 'Master' },
-            { text = 'Sound Effects', value = 'SFX' },
             { text = 'Music', value = 'Music' },
+            { text = 'Effects', value = 'SFX' },
             { text = 'Ambience', value = 'Ambience' },
+            { text = 'Dialog', value = 'Dialog' },
           }
 
           -- Initialize setting from GLOBAL_SETTINGS or default to Master
@@ -1082,9 +1083,7 @@ function InitializeSettingsOptionsTab()
           dropdown:EnableMouse(true)
           dropdown:SetScript('OnEnter', function(self)
             GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText(
-              'Select and audio channel then adjust the volume of this channel in the in-game audio options.'
-            )
+            GameTooltip:SetText('Select a sound channel (Master, Music, Effects, Ambience, Dialog). Adjust this channel volume in the in-game Sound options to control soundbite loudness.')
             GameTooltip:Show()
           end)
           dropdown:SetScript('OnLeave', function()
