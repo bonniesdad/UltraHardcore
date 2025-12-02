@@ -69,7 +69,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'UHC Full Health Indicator (Audio Cue)',
   dbSettingsValueName = 'showFullHealthIndicatorAudioCue',
-  tooltip = 'An audio cue plays when you are at full health',
+  tooltip = 'A sound / audio cue plays when you are at full health',
 }, {
   name = 'UHC Incoming Healing Effect',
   dbSettingsValueName = 'showHealingIndicator',
@@ -1083,7 +1083,7 @@ function InitializeSettingsOptionsTab()
           dropdown:EnableMouse(true)
           dropdown:SetScript('OnEnter', function(self)
             GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText('Select a sound channel (Master, Music, Effects, Ambience, Dialog). Adjust this channel volume in the in-game Sound options to control soundbite loudness.')
+            GameTooltip:SetText('Select a sound channel and control volume in game settings.')
             GameTooltip:Show()
           end)
           dropdown:SetScript('OnLeave', function()
