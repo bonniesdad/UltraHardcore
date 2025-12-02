@@ -196,7 +196,7 @@ function DeathDetails.HandlePlayerDeath(destGUID)
     )
 
   -- Always print to chat frame first (works even when dead)
-  DEFAULT_CHAT_FRAME:AddMessage('|cFFFF0000[UHC Death]|r ' .. message, 1, 0, 0)
+  DEFAULT_CHAT_FRAME:AddMessage('|cFFFF0000[ULTRA]|r ' .. message, 1, 0, 0)
 
   -- Try to post as emote (required when dead, cannot use SAY)
   local emoteSuccess, emoteErr = pcall(function()

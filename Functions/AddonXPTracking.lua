@@ -17,7 +17,7 @@ local AddonXPTracking = {
 local yellowTextColour = '|cffffd000'
 local greenTextColour = '|cff33F24C'
 local redTextColour = '|cffFF4444'
-local msgPrefix = yellowTextColour .. "[|r" .. redTextColour .. "UHC|r" .. yellowTextColour .. "]|r "
+local msgPrefix = yellowTextColour .. "[|r" .. redTextColour .. "ULTRA|r" .. yellowTextColour .. "]|r "
 
 function AddonXPTracking:Stats()
     return CharacterStats:GetCurrentCharacterStats() 

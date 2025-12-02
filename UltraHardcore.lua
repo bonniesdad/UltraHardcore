@@ -45,6 +45,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if GLOBAL_SETTINGS.showClockEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowClock()
     end
+
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
+    end
+    
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowMail()
     end
