@@ -1013,6 +1013,90 @@ function InitializeSettingsOptionsTab()
           sliderFrame:SetScript('OnLeave', function(self)
             GameTooltip:Hide()
           end)
+        elseif settingName == 'soundbiteChannel' then
+          -- Special-case: Soundbite channel dropdown row (not a simple checkbox/slider)
+          numRows = numRows + 1
+
+          local row = CreateFrame('Frame', nil, sectionFrame)
+          row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.ROW_HEIGHT)
+          row:SetPoint(
+            'TOPLEFT',
+            sectionFrame,
+            'TOPLEFT',
+            10,
+            -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
+          )
+
+          local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+          label:SetPoint('LEFT', row, 'LEFT', 0, 0)
+          label:SetText('Soundbite Channel')
+
+          -- Available Classic sound channels
+          local CHANNEL_OPTIONS = {
+            { text = 'Master', value = 'Master' },
+            { text = 'Sound Effects', value = 'SFX' },
+            { text = 'Music', value = 'Music' },
+            { text = 'Ambience', value = 'Ambience' },
+          }
+
+          -- Initialize setting from GLOBAL_SETTINGS or default to Master
+          if tempSettings.soundbiteChannel == nil then
+            if GLOBAL_SETTINGS and GLOBAL_SETTINGS.soundbiteChannel ~= nil then
+              tempSettings.soundbiteChannel = GLOBAL_SETTINGS.soundbiteChannel
+            else
+              tempSettings.soundbiteChannel = 'Master'
+            end
+          end
+
+          local dropdown = CreateFrame('Frame', nil, row, 'UIDropDownMenuTemplate')
+          dropdown:SetPoint('LEFT', label, 'RIGHT', 10, -2)
+
+          local function GetDisplayTextForChannel(value)
+            for _, opt in ipairs(CHANNEL_OPTIONS) do
+              if opt.value == value then
+                return opt.text
+              end
+            end
+            return 'Master'
+          end
+
+          UIDropDownMenu_SetWidth(dropdown, 150)
+          UIDropDownMenu_SetText(dropdown, GetDisplayTextForChannel(tempSettings.soundbiteChannel))
+
+          UIDropDownMenu_Initialize(dropdown, function(self, level)
+            local info = UIDropDownMenu_CreateInfo()
+            for _, opt in ipairs(CHANNEL_OPTIONS) do
+              info = UIDropDownMenu_CreateInfo()
+              info.text = opt.text
+              info.func = function()
+                tempSettings.soundbiteChannel = opt.value
+                UIDropDownMenu_SetText(dropdown, opt.text)
+                updateSectionCount(sectionIndex)
+              end
+              info.checked = (tempSettings.soundbiteChannel == opt.value)
+              UIDropDownMenu_AddButton(info, level)
+            end
+          end)
+
+          -- Tooltip anchored to the dropdown so it lines up with the control
+          dropdown:EnableMouse(true)
+          dropdown:SetScript('OnEnter', function(self)
+            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+            GameTooltip:SetText(
+              'Select and audio channel then adjust the volume of this channel in the in-game audio options.'
+            )
+            GameTooltip:Show()
+          end)
+          dropdown:SetScript('OnLeave', function()
+            GameTooltip:Hide()
+          end)
+
+          -- Search integration
+          row._uhcSearch =
+            string.lower('soundbite channel audio volume master sfx sound effects music ambience')
+
+          table.insert(sectionChildren[sectionIndex], row)
+          table.insert(sectionChildSettingNames[sectionIndex], 'soundbiteChannel')
         end
       end
 

@@ -19,7 +19,10 @@ function FullHealthReachedIndicator(enabled, self, event, unit)
         end
 
         if GLOBAL_SETTINGS.showFullHealthIndicatorAudioCue then
-            PlaySoundFile('Interface\\AddOns\\UltraHardcore\\Sounds\\full-health-indicator.mp3', 'Master')
+            PlaySoundFile(
+                'Interface\\AddOns\\UltraHardcore\\Sounds\\full-health-indicator.mp3',
+                UHC_GetSoundbiteChannel()
+            )
         end
     end
     

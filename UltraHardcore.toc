@@ -29,6 +29,7 @@ Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
 Functions/ResourceTrackingExplainer.lua
+Functions/Utils/AudioUtils.lua
 Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
