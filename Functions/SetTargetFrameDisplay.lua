@@ -17,15 +17,6 @@ local HIDEABLE_SUBFRAMES = {
   "Background"
 }
 
--- TextureFrame children that Blizzard forcibly updates
-local TEXTURE_CHILD_FRAMES = {
-  "Name",
-  "ManaBarText",
-  "HealthBarText",
-  "StatusTexture",
-  "Background",
-}
-
 -- Hide all texture regions inside frame except portrait, raid icon
 local function HideTextureRegions(frame)
   if not frame then return end
@@ -36,8 +27,7 @@ local function HideTextureRegions(frame)
 
   for i = 1, select("#", frame:GetRegions()) do
     local region = select(i, frame:GetRegions())
-    if region ~= TargetFramePortrait and
-    region ~= TargetFrameTextureFrameRaidTargetIcon then
+    if region then
       region:SetAlpha(0)
     end
   end
@@ -52,14 +42,6 @@ local function HideSubFrames(frame)
 
   for _, name in ipairs(HIDEABLE_SUBFRAMES) do
     local f = _G[frame..name]
-    if f then
-      f:SetAlpha(0)
-    end
-  end
-
-  -- Inner TextureFrame children
-  for _, name in ipairs(TEXTURE_CHILD_FRAMES) do
-    local f = _G[frame.."TextureFrame"..name]
     if f then
       f:SetAlpha(0)
     end
@@ -177,9 +159,17 @@ local function ShowToT()
   if not TargetFrameToT then return end
 
   if UnitExists("targettarget") then
+    -- allow Blizzard to show ToT normally
     TargetFrameToT:SetAlpha(1)
+    if TargetFrameToTTextureFrame then
+      TargetFrameToTTextureFrame:SetAlpha(1)
+    end
   else
+    -- hide it cleanly when no ToT exists
     TargetFrameToT:SetAlpha(0)
+    if TargetFrameToTTextureFrame then
+      TargetFrameToTTextureFrame:SetAlpha(0)
+    end
   end
 end
 
@@ -210,14 +200,22 @@ local function ApplyMask()
 end
 
 -- Hook Blizzard update functions
-hooksecurefunc("TargetFrame_CheckClassification", ApplyMask)
 hooksecurefunc("TargetFrame_Update", ApplyMask)
 hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
+-- Target of Target hook
 hooksecurefunc("TargetofTarget_Update", function()
-  HideSubFrames("TargetFrameToT")
-  HideTextureRegions(TargetFrameToTTextureFrame)
-  HideToTAuras()
-  ShowToT()
+  if UnitExists("targettarget") then
+    -- allow ToT to show, then apply cosmetic stripping
+    TargetFrameToT:SetAlpha(1)
+    HideSubFrames("TargetFrameToT")
+    if TargetFrameToTTextureFrame then
+        HideTextureRegions(TargetFrameToTTextureFrame)
+    end
+    HideToTAuras()
+  else
+    -- hide entire ToT in one step; no need to strip anything
+    TargetFrameToT:SetAlpha(0)
+  end
 end)
 
 
