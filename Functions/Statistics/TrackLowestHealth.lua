@@ -24,6 +24,12 @@ local function IsFeigningDeath()
   return false
 end
 
+local function UpdateLowestHealthStat(stat, value)
+  if not UnitIsDeadOrGhost('player') and value ~= nil and value > 0 then
+    CharacterStats:UpdateStat(stat, value)
+  end
+end
+
 local function leftCombat()
   if combatLowest == nil then return end
 
@@ -35,19 +41,19 @@ local function leftCombat()
   -- Only record new lows during normal tracking on UNIT_HEALTH and OUTSIDE of combat
   -- Check if lowestHealth tracking is not paused
   if not pvpPauseLowestHealth and combatLowest < currentLowestHealth then
-    CharacterStats:UpdateStat('lowestHealth', combatLowest)
+    UpdateLowestHealthStat('lowestHealth', combatLowest)
   end
 
   -- Track This Level lowest health (same conditions as total)
   -- Check if lowestHealthThisLevel tracking is not paused
   if not pvpPauseLowestHealthThisLevel and combatLowest < currentLowestHealthThisLevel then
-    CharacterStats:UpdateStat('lowestHealthThisLevel', combatLowest)
+    UpdateLowestHealthStat('lowestHealthThisLevel', combatLowest)
   end
 
   -- Track This Session lowest health (same conditions as total)
   -- Check if lowestHealthThisSession tracking is not paused
   if not pvpPauseLowestHealthThisSession and combatLowest < currentLowestHealthThisSession then
-    CharacterStats:UpdateStat('lowestHealthThisSession', combatLowest)
+    UpdateLowestHealthStat('lowestHealthThisSession', combatLowest)
   end
 
   -- Track Close Escapes lowest health
@@ -137,17 +143,17 @@ local function TrackLowestHealth(event)
 
   -- Track lowestHealth (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealth and healthPercent < currentLowestHealth then
-    CharacterStats:UpdateStat('lowestHealth', healthPercent)
+    UpdateLowestHealthStat('lowestHealth', healthPercent)
   end
 
   -- Track This Level lowest health (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealthThisLevel and healthPercent < currentLowestHealthThisLevel then
-    CharacterStats:UpdateStat('lowestHealthThisLevel', healthPercent)
+    UpdateLowestHealthStat('lowestHealthThisLevel', healthPercent)
   end
 
   -- Track This Session lowest health (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealthThisSession and healthPercent < currentLowestHealthThisSession then
-    CharacterStats:UpdateStat('lowestHealthThisSession', healthPercent)
+    UpdateLowestHealthStat('lowestHealthThisSession', healthPercent)
   end
 
   -- Track Close Escapes
