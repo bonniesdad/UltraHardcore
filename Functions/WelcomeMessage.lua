@@ -29,7 +29,7 @@ function CreateWelcomeFrame()
   local font, _, flags = title:GetFont()
   title:SetFont(font, 22, flags)
   title:SetTextColor(1, 1, 0)
-  title:SetText('Welcome to Ultra Hardcore!')
+  title:SetText('Welcome to ULTRA!')
   local text = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   text:SetPoint('TOP', frame, 'TOP', 0, -70)
   text:SetWidth(360) -- Constrain width to prevent overflowing

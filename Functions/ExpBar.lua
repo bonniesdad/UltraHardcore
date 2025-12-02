@@ -127,7 +127,7 @@ end
 -- Update the XP bar display
 function UHC_XPBar:UpdateXPBar()
     if not xpBarFrame then
-        print("UHC XP Bar: UpdateXPBar called but frame doesn't exist")
+        print("ULTRA XP Bar: UpdateXPBar called but frame doesn't exist")
         return
     end
 
@@ -340,47 +340,47 @@ end
 SLASH_UHCXPBAR1 = "/uhcxp"
 SlashCmdList["UHCXPBAR"] = function(msg)
     if msg == "show" then
-        print("UHC XP Bar: Manual show command")
+        print("ULTRA XP Bar: Manual show command")
         InitializeExpBar()
         ShowExpBar()
     elseif msg == "hide" then
-        print("UHC XP Bar: Manual hide command")
+        print("ULTRA XP Bar: Manual hide command")
         HideExpBar()
     elseif msg == "toggle" then
-        print("UHC XP Bar: Manual toggle command")
+        print("ULTRA XP Bar: Manual toggle command")
         ToggleExpBar()
     elseif msg:match("^height (%d+)$") then
         local height = tonumber(msg:match("^height (%d+)$"))
         if height and height >= 1 and height <= 10 then
             GLOBAL_SETTINGS.xpBarHeight = height
-            print("UHC XP Bar: Set height to", height)
+            print("ULTRA XP Bar: Set height to", height)
             if _G.UpdateExpBarHeight then
                 UpdateExpBarHeight()
             end
         else
-            print("UHC XP Bar: Invalid height. Use 1-10.")
+            print("ULTRA XP Bar: Invalid height. Use 1-10.")
         end
     elseif msg == "showdefault" then
-        print("UHC XP Bar: Showing default XP bar")
+        print("ULTRA XP Bar: Showing default XP bar")
         ShowDefaultExpBar()
     elseif msg == "hidedefault" then
-        print("UHC XP Bar: Hiding default XP bar")
+        print("ULTRA XP Bar: Hiding default XP bar")
         HideDefaultExpBar()
     elseif msg == "test" then
-        print("UHC XP Bar: Test - Frame exists:", xpBarFrame ~= nil)
+        print("ULTRA XP Bar: Test - Frame exists:", xpBarFrame ~= nil)
         if xpBarFrame then
-            print("UHC XP Bar: Frame is shown:", xpBarFrame:IsShown())
-            print("UHC XP Bar: Frame size:", xpBarFrame:GetWidth(), "x", xpBarFrame:GetHeight())
+            print("ULTRA XP Bar: Frame is shown:", xpBarFrame:IsShown())
+            print("ULTRA XP Bar: Frame size:", xpBarFrame:GetWidth(), "x", xpBarFrame:GetHeight())
         end
-        print("UHC XP Bar: Setting enabled:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.showExpBar)
-        print("UHC XP Bar: Height setting:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight)
+        print("ULTRA XP Bar: Setting enabled:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.showExpBar)
+        print("ULTRA XP Bar: Height setting:", GLOBAL_SETTINGS and GLOBAL_SETTINGS.xpBarHeight)
         if MainMenuExpBar then
-            print("UHC XP Bar: Default XP bar is shown:", MainMenuExpBar:IsShown())
+            print("ULTRA XP Bar: Default XP bar is shown:", MainMenuExpBar:IsShown())
         else
-            print("UHC XP Bar: Default XP bar not found")
+            print("ULTRA XP Bar: Default XP bar not found")
         end
     else
-        print("UHC XP Bar Commands:")
+        print("ULTRA XP Bar Commands:")
         print("/uhcxp show - Show XP bar")
         print("/uhcxp hide - Hide XP bar")
         print("/uhcxp toggle - Toggle XP bar")

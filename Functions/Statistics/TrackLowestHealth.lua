@@ -24,6 +24,12 @@ local function IsFeigningDeath()
   return false
 end
 
+local function UpdateLowestHealthStat(stat, value)
+  if not UnitIsDeadOrGhost('player') and value ~= nil and value > 0 then
+    CharacterStats:UpdateStat(stat, value)
+  end
+end
+
 local function leftCombat()
   if combatLowest == nil then return end
 
@@ -35,19 +41,19 @@ local function leftCombat()
   -- Only record new lows during normal tracking on UNIT_HEALTH and OUTSIDE of combat
   -- Check if lowestHealth tracking is not paused
   if not pvpPauseLowestHealth and combatLowest < currentLowestHealth then
-    CharacterStats:UpdateStat('lowestHealth', combatLowest)
+    UpdateLowestHealthStat('lowestHealth', combatLowest)
   end
 
   -- Track This Level lowest health (same conditions as total)
   -- Check if lowestHealthThisLevel tracking is not paused
   if not pvpPauseLowestHealthThisLevel and combatLowest < currentLowestHealthThisLevel then
-    CharacterStats:UpdateStat('lowestHealthThisLevel', combatLowest)
+    UpdateLowestHealthStat('lowestHealthThisLevel', combatLowest)
   end
 
   -- Track This Session lowest health (same conditions as total)
   -- Check if lowestHealthThisSession tracking is not paused
   if not pvpPauseLowestHealthThisSession and combatLowest < currentLowestHealthThisSession then
-    CharacterStats:UpdateStat('lowestHealthThisSession', combatLowest)
+    UpdateLowestHealthStat('lowestHealthThisSession', combatLowest)
   end
 
   -- Track Close Escapes lowest health
@@ -83,7 +89,7 @@ local function TrackLowestHealth(event)
     if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealth or health == 0) then
       pvpPauseLowestHealth = false
       print(
-        '|cfff44336[UHC]|r |cfff0f000Health has returned above your previous lowest health stat. Lowest Health tracking has resumed!|r'
+        '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health stat. Lowest Health tracking has resumed!|r'
       )
     else
     -- Skip lowestHealth tracking while paused
@@ -96,7 +102,7 @@ local function TrackLowestHealth(event)
     if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisLevel or health == 0) then
       pvpPauseLowestHealthThisLevel = false
       print(
-        '|cfff44336[UHC]|r |cfff0f000Health has returned above your previous lowest health this level stat. This Level Health tracking has resumed!|r'
+        '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health this level stat. This Level Health tracking has resumed!|r'
       )
     else
     -- Skip lowestHealthThisLevel tracking while paused
@@ -109,7 +115,7 @@ local function TrackLowestHealth(event)
     if not GLOBAL_SETTINGS.isDueling and (healthPercent >= currentLowestHealthThisSession or health == 0) then
       pvpPauseLowestHealthThisSession = false
       print(
-        '|cfff44336[UHC]|r |cfff0f000Health has returned above your previous lowest health this session stat. This Session Health tracking has resumed!|r'
+        '|cfff44336[ULTRA]|r |cfff0f000Health has returned above your previous lowest health this session stat. This Session Health tracking has resumed!|r'
       )
     else
     -- Skip lowestHealthThisSession tracking while paused
@@ -122,7 +128,7 @@ local function TrackLowestHealth(event)
     if not GLOBAL_SETTINGS.isDueling and (healthPercent > closeEscapeHealthPercent or health == 0) then
       pvpPauseLowestHealthCloseEscape = false
       --print(
-      --  '|cfff44336[UHC]|r |cfff0f000Health has returned above the close escape threshold.  This session close escape tracking has resumed!|r'
+      --  '|cfff44336[ULTRA]|r |cfff0f000Health has returned above the close escape threshold.  This session close escape tracking has resumed!|r'
       --)
     else
     -- Skip closeEscape tracking while paused
@@ -137,17 +143,17 @@ local function TrackLowestHealth(event)
 
   -- Track lowestHealth (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealth and healthPercent < currentLowestHealth then
-    CharacterStats:UpdateStat('lowestHealth', healthPercent)
+    UpdateLowestHealthStat('lowestHealth', healthPercent)
   end
 
   -- Track This Level lowest health (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealthThisLevel and healthPercent < currentLowestHealthThisLevel then
-    CharacterStats:UpdateStat('lowestHealthThisLevel', healthPercent)
+    UpdateLowestHealthStat('lowestHealthThisLevel', healthPercent)
   end
 
   -- Track This Session lowest health (only if not paused)
   if event == 'UNIT_HEALTH' and not inCombat and not pvpPauseLowestHealthThisSession and healthPercent < currentLowestHealthThisSession then
-    CharacterStats:UpdateStat('lowestHealthThisSession', healthPercent)
+    UpdateLowestHealthStat('lowestHealthThisSession', healthPercent)
   end
 
   -- Track Close Escapes
@@ -177,21 +183,21 @@ frame:SetScript('OnEvent', function(self, event, arg1, arg2, arg3)
     pvpPauseLowestHealthCloseEscape = true
     GLOBAL_SETTINGS.isDueling = true
     print(
-      '|cfff44336[UHC]|r |cfff0f000A duel has been initiated. All Lowest Health tracking is paused.|r'
+      '|cfff44336[ULTRA]|r |cfff0f000A duel has been initiated. All Lowest Health tracking is paused.|r'
     )
   elseif event == 'DUEL_FINISHED' then
     GLOBAL_SETTINGS.isDueling = false
     print(
-      '|cfff44336[UHC]|r |cfff0f000Dueling has finished. Each health tracking will resume when your health returns above its respective previous lowest value.|r'
+      '|cfff44336[ULTRA]|r |cfff0f000Dueling has finished. Each health tracking will resume when your health returns above its respective previous lowest value.|r'
     )
   elseif event == 'PLAYER_LEVEL_UP' then
     -- Reset This Level stats when leveling up
     CharacterStats:ResetLowestHealthThisLevel()
-    print('|cfff44336[UHC]|r |cfff0f000Level up! This Level lowest health has been reset.|r')
+    print('|cfff44336[ULTRA]|r |cfff0f000Level up! This Level lowest health has been reset.|r')
   elseif event == 'PLAYER_LOGIN' then
     -- Reset This Session stats when logging in
     CharacterStats:ResetLowestHealthThisSession()
-    print('|cfff44336[UHC]|r |cfff0f000New session! This Session lowest health has been reset.|r')
+    print('|cfff44336[ULTRA]|r |cfff0f000New session! This Session lowest health has been reset.|r')
   elseif event == 'PLAYER_REGEN_ENABLED' then
     leftCombat()
     return
