@@ -71,6 +71,7 @@ function LoadDBData()
     playPartyDeathSoundbite = false,
     playPlayerDeathSoundbite = false,
     spookyTunnelVision = false,
+    heartbeatSoundOnLowHealth = true,
     roachHearthstoneInPartyCombat = false,
     guildSelfFound = false,
     groupSelfFound = false,
