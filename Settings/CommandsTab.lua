@@ -102,10 +102,10 @@ function InitializeCommandsTab()
   local commandGroups = { {
     header = 'General',
     items = {
-      { '/uhc', 'Open the Ultra Hardcore settings window.' },
+      { '/uhc', 'Open the ULTRA settings window.' },
       {
         '/uhcversion, /uhcv',
-        'Post your UltraHardcore version to your current chat (auto-detects context).',
+        'Post your ULTRA version to your current chat (auto-detects context).',
       },
     },
   }, {

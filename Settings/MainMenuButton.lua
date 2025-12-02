@@ -1,6 +1,6 @@
 -- Create the button
 local button = CreateFrame("Button", "GameMenuButtonUltraHardcore", GameMenuFrame, "GameMenuButtonTemplate")
-button:SetText("Ultra Hardcore")
+button:SetText("ULTRA")
 
 -- Set initial position
 button:SetPoint("TOP", GameMenuFrame, "TOP", 0, 0)

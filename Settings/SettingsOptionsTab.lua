@@ -114,7 +114,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Auto Join ULTRA Channel',
   dbSettingsValueName = 'autoJoinUHCChannel',
-  tooltip = 'Automatically join the Ultra Hardcore chat channel on login',
+  tooltip = 'Automatically join the ULTRA chat channel on login',
 }, {
   name = 'Hide UI Error Messages',
   dbSettingsValueName = 'hideUIErrors',
