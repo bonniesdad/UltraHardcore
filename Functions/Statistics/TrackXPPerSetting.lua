@@ -7,9 +7,7 @@
 -- Organized by preset type: Lite, Recommended, Experimental
 local settingToXPVariable = {
   -- Total XP, not tied to settings
-  xpGWA = 'xpGWA',
-  xpGWOA = 'xpGWOA',
-  xpTotal = 'xpTotal', -- DO NOT REMOVE THIS IT IS IMPORTANT FOR XP TRACKING!
+  xpTotal = 'xpTotal', 
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
