@@ -54,6 +54,7 @@ function LoadDBData()
     showTargetRaidIcon = false,
     -- Misc Settings
     showOnScreenStatistics = true,
+    useCustomComboFrame = true,
     minimapClockPosition = {},
     minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,

@@ -44,6 +44,7 @@ local PRESET_SECTIONS = { {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
+    'useCustomComboFrame',
     'announceLevelUpToGuild',
     'autoJoinUHCChannel',
     'hideUIErrors',
