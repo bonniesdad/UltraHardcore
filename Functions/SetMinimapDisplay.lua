@@ -283,8 +283,11 @@ function HideMinimap()
         Minimap:SetScale(8.0)
       end
 
-      -- This should hide and disable the mouse for all child frames, like QuestieFrameXXX
-      DisableMouseAndHideChildren(Minimap)
+      -- Only hide child frames for temporary reveal (not Always On mode)
+      -- This prevents addon buttons (like MinimapButtonButton) from being hidden permanently
+      if not isAlwaysOn then
+        DisableMouseAndHideChildren(Minimap)
+      end
 
       -- Hide extra minimap adornments while revealing
       minimapRevealState.toggledFrames = {}
