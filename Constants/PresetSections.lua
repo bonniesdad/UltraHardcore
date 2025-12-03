@@ -41,6 +41,12 @@ local PRESET_SECTIONS = { {
     'showTargetRaidIcon',
   },
 }, {
+  title = 'Maps:',
+  settings = {
+    'alwaysShowResourceMap',
+    'showPlayerArrowOnResourceMap',
+  },
+}, {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
