@@ -215,13 +215,13 @@ function HideMinimap()
   Minimap:SetAlpha(0)
   Minimap:Hide()
   MinimapCluster:Hide()
-  
-  -- Register spell event handler for both modes
+
+  -- Register spell event handler
   Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
   Minimap:SetScript("OnEvent", function(self, event, ...)
     local unit, _, spellId = ...
     local initialZoom = Minimap:GetZoom()
-    
+
     -- Tracking spells that should trigger the resource map reveal
     local trackingSpellIDs = {
       [2580] = true, -- Find Minerals
@@ -241,16 +241,16 @@ function HideMinimap()
       [10242] = true, -- Elemental Tracking
       [5124] = true, -- Elemental Tracker
     }
-    
+
     local isAlwaysOn = GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap
-    
+
     if (unit == 'player' and trackingSpellIDs[spellId]) or isAlwaysOn then
       -- Reset any existing reveal state to ensure we capture the true 'base' state
       ResetMinimapRevealState()
 
       -- Temporarily make the minimap rotate with the user
       SetCVar("RotateMinimap", true)
-      
+
       -- Allow clicks through minimap while this is up
       Minimap:EnableMouse(false)
       -- Prevent zooming when showing our tracking
@@ -272,7 +272,7 @@ function HideMinimap()
       Minimap:SetParent(UIParent)
 
       Minimap:ClearAllPoints()
-      
+
       if isAlwaysOn then
         -- Normal position/scale for Always On mode
         Minimap:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -20, -20)
@@ -325,12 +325,12 @@ function HideMinimap()
       -- Show only the minimap (keep cluster elements hidden)
       Minimap:Show()
       Minimap:SetZoom(0)
-      
+
       -- Cancel any existing 'hide' timer
       if minimapHideTimer then
         minimapHideTimer:Cancel()
       end
-      
+
       -- Only set timer if NOT in Always On mode
       if not isAlwaysOn then
         -- After a few seconds, hide the minimap again
@@ -347,7 +347,7 @@ function HideMinimap()
       end
     end
   end)
-  
+
   -- If Always On mode is enabled, manually trigger the reveal immediately
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap then
     C_Timer.After(0.1, function()
