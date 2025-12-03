@@ -36,13 +36,13 @@ end
 -- Apply alpha to hide subframes
 local function HideSubFrames(frame)
   if targetFrameMask.all then
-    -- don't hide anything if we are trying to show all
+  -- don't hide anything if we are trying to show all
     return
   end
 
   for _, name in ipairs(HIDEABLE_SUBFRAMES) do
     local f = _G[frame..name]
-    if f then
+    if f and not f:IsProtected() then
       f:SetAlpha(0)
     end
   end
@@ -153,30 +153,13 @@ local function HideToTAuras()
   end
 end
 
--- Show Target of Target if the user has turned it on in the blizzard options
--- We will strip it down to just the portrait
-local function ShowToT()
-  if not TargetFrameToT then return end
-    -- allow Blizzard to show ToT normally
-  if not InCombatLockdown() then
-    TargetFrameToT:SetAlpha(1)
-    if TargetFrameToTTextureFrame then
-      TargetFrameToTTextureFrame:SetAlpha(1)
-    end
-  end
-end
-
 -- Apply the full mask (combat-safe with alpha instead of Show/Hide)
 local function ApplyMask()
   if TargetFrame then TargetFrame:SetAlpha(1) end
   if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(1) end
 
   -- If mask is set to show all, do nothing (show Blizzard default frames)
-  if targetFrameMask.all then
-    -- still must update ToT visibility
-    ShowToT()
-    return
-  end
+  if targetFrameMask.all then return end
 
   if not UnitExists("target") then
     if TargetFrame then TargetFrame:SetAlpha(0) end
@@ -192,21 +175,37 @@ local function ApplyMask()
   PositionAuras()
 end
 
--- Hook Blizzard update functions
-hooksecurefunc("TargetFrame_Update", ApplyMask)
-hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
-  -- Target of Target hook (NO existence checks, NO visibility logic)
-hooksecurefunc("TargetofTarget_Update", function()
-  -- Always allow default alpha/visibility
-  TargetFrameToT:SetAlpha(1)
-
-  -- Strip subframes/texture
-  HideSubFrames("TargetFrameToT")
-  if TargetFrameToTTextureFrame then
+local function SetupHooks()
+  -- Hook Blizzard update functions
+  hooksecurefunc("TargetFrame_Update", ApplyMask)
+  hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
+    -- Target of Target hook (NO existence checks, NO visibility logic)
+  hooksecurefunc("TargetofTarget_Update", function()
+    -- Strip subframes/texture
+    HideSubFrames("TargetFrameToT")
     HideTextureRegions(TargetFrameToTTextureFrame)
+    -- Always hide auras (regardless of ToT existence)
+    HideToTAuras()
+  end)
+end
+
+local function InitToTPostSetup()
+  if TargetFrameToT then
+      TargetFrameToT:SetAlpha(1)
   end
-  -- Always hide auras (regardless of ToT existence)
-  HideToTAuras()
+  if TargetFrameToTTextureFrame then
+      TargetFrameToTTextureFrame:SetAlpha(1)
+  end
+end
+
+-- Run *after* Blizzard finishes secure frame creation
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_ENTERING_WORLD")
+f:SetScript("OnEvent", function(self)
+    -- Safe because Blizzard has finished secure setup
+    InitToTPostSetup()
+    SetupHooks()
+    self:UnregisterEvent("PLAYER_ENTERING_WORLD") -- only needed once
 end)
 
 
@@ -219,8 +218,6 @@ function SetTargetFrameDisplay(mask)
   if not targetFrameEventFrame then
     targetFrameEventFrame = CreateFrame("Frame")
     targetFrameEventFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
-    targetFrameEventFrame:RegisterEvent("UNIT_AURA")
-    targetFrameEventFrame:RegisterEvent("RAID_TARGET_UPDATE")
     targetFrameEventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
     targetFrameEventFrame:SetScript("OnEvent", function(_, event, unit)
       if event == "PLAYER_TARGET_CHANGED" or event == "GROUP_ROSTER_UPDATE" then
