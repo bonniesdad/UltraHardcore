@@ -104,7 +104,6 @@ Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 
-Settings/TBCFeature.lua
 Settings/Settings.lua
 Settings/TabManager.lua
 Settings/StatisticsTab.lua

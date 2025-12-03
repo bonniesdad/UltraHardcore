@@ -117,10 +117,7 @@ end
 
 -- Switch to a specific tab
 function TabManager.switchToTab(index)
-  -- Hide TBC overlay if it's showing
-  if _G.tbcContentFrame then
-    _G.tbcContentFrame:Hide()
-  end
+
 
   -- Hide all tab contents
   for i, content in ipairs(tabContents) do
