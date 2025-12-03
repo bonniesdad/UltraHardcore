@@ -53,6 +53,7 @@ local function AddStatisticTooltip(label, tooltipKey)
   end)
 end
 
+-- Extracting this logic so it can be called outside of the original function
 local function IsTampered() 
   local isTampered = false
   if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
