@@ -221,7 +221,7 @@ function InitializeStatisticsTab()
     legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
 
     UpdateLegitStatusText = function()
-      local isTampered = self:IsTampered()
+      local isTampered = IsTampered()
 
       -- Check if character has any ULTRA settings enabled
       local hasUHCSettings = false
@@ -288,7 +288,7 @@ function InitializeStatisticsTab()
         presetLevel = 'Lite'
       end
 
-      if presetLevel and not self:IsTampered() then
+      if presetLevel and not IsTampered() then
         -- Only color the preset name in green; keep the rest at normal highlight color
         local text =
           'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
