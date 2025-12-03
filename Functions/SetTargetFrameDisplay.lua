@@ -184,10 +184,12 @@ local function SetupHooks()
     -- Always allow default alpha/visibility
     if not TargetFrameToT:IsProtected() then
       TargetFrameToT:SetAlpha(1)
-      -- Strip subframes/texture
-      HideSubFrames("TargetFrameToT")
     end
-    if TargetFrameToTTextureFrame and not TargetFrameToTTextureFrame:IsProtected() then
+
+    -- Strip subframes/texture
+    HideSubFrames("TargetFrameToT")
+
+    if TargetFrameToTTextureFrame then
       HideTextureRegions(TargetFrameToTTextureFrame)
     end
     -- Always hide auras (regardless of ToT existence)
