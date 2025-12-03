@@ -207,15 +207,15 @@
 --   if not characterGUID then
 --     return nil -- Player GUID not available yet
 --   end
---   if not UltraHardcoreDB then
---     UltraHardcoreDB = {}
+--   if not UltraDB then
+--     UltraDB = {}
 --   end
 --   -- Initialize player state database if it doesn't exist
---   if not UltraHardcoreDB.playerState then
---     UltraHardcoreDB.playerState = {}
+--   if not UltraDB.playerState then
+--     UltraDB.playerState = {}
 --   end
 --   -- Preserve existing tamper flags (don't overwrite them)
---   local existingState = UltraHardcoreDB.playerState[characterGUID] or {}
+--   local existingState = UltraDB.playerState[characterGUID] or {}
 --   local existingTamperHash = existingState.tamperHash
 --   local existingTamperTimestamp = existingState.tamperTimestamp
 --   local equippedItems = GetEquippedItems()
@@ -254,9 +254,9 @@
 --     existingState.tamperTimestamp = existingTamperTimestamp
 --   end
 --   -- Store the state
---   UltraHardcoreDB.playerState[characterGUID] = existingState
+--   UltraDB.playerState[characterGUID] = existingState
 --   -- Save to database
---   SaveDBData('playerState', UltraHardcoreDB.playerState)
+--   SaveDBData('playerState', UltraDB.playerState)
 --   return existingState
 -- end
 -- -- Build item count map from bags and bank (items can move between them)
@@ -356,16 +356,16 @@
 --     return false
 --   end
 --   -- Ensure database is loaded
---   if not UltraHardcoreDB then
+--   if not UltraDB then
 --     return false
 --   end
---   if not UltraHardcoreDB.playerState then
---     UltraHardcoreDB.playerState = {}
+--   if not UltraDB.playerState then
+--     UltraDB.playerState = {}
 --   end
 --   -- Get last known state
 --   local lastState = nil
---   if UltraHardcoreDB.playerState[characterGUID] then
---     lastState = UltraHardcoreDB.playerState[characterGUID]
+--   if UltraDB.playerState[characterGUID] then
+--     lastState = UltraDB.playerState[characterGUID]
 --     -- Only treat it as a valid previous state if it has a hash (meaning it was captured before)
 --     -- An empty state entry doesn't count as a previous state
 --     if not lastState.hash then
@@ -421,8 +421,8 @@
 --     return true -- Can't verify without GUID, but not tampered (no evidence)
 --   end
 --   local state = nil
---   if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
---     state = UltraHardcoreDB.playerState[characterGUID]
+--   if UltraDB.playerState and UltraDB.playerState[characterGUID] then
+--     state = UltraDB.playerState[characterGUID]
 --   end
 --   -- If no state exists, there's nothing to verify - this is normal for new databases
 --   -- Return true (not tampered) because there's no evidence of tampering
@@ -442,8 +442,8 @@
 --   if not characterGUID then
 --     return nil
 --   end
---   if UltraHardcoreDB.playerState and UltraHardcoreDB.playerState[characterGUID] then
---     return UltraHardcoreDB.playerState[characterGUID]
+--   if UltraDB.playerState and UltraDB.playerState[characterGUID] then
+--     return UltraDB.playerState[characterGUID]
 --   end
 --   return nil
 -- end
@@ -475,10 +475,10 @@
 --   if not characterGUID then
 --     return false
 --   end
---   if not UltraHardcoreDB or not UltraHardcoreDB.playerState or not UltraHardcoreDB.playerState[characterGUID] then
+--   if not UltraDB or not UltraDB.playerState or not UltraDB.playerState[characterGUID] then
 --     return false
 --   end
---   local state = UltraHardcoreDB.playerState[characterGUID]
+--   local state = UltraDB.playerState[characterGUID]
 --   -- If no tamper hash exists, assume clean
 --   if not state.tamperHash then
 --     return false
@@ -524,7 +524,7 @@
 --   end
 --   -- Save if we made any changes
 --   if needsSave then
---     SaveDBData('playerState', UltraHardcoreDB.playerState)
+--     SaveDBData('playerState', UltraDB.playerState)
 --   end
 --   -- Player is clean
 --   return false
@@ -535,24 +535,24 @@
 --   if not characterGUID then
 --     return false
 --   end
---   if not UltraHardcoreDB.playerState then
---     UltraHardcoreDB.playerState = {}
+--   if not UltraDB.playerState then
+--     UltraDB.playerState = {}
 --   end
---   if not UltraHardcoreDB.playerState[characterGUID] then
---     UltraHardcoreDB.playerState[characterGUID] = {}
+--   if not UltraDB.playerState[characterGUID] then
+--     UltraDB.playerState[characterGUID] = {}
 --   end
 --   -- Generate and store hashed tamper flag
 --   local tamperHash = GenerateTamperFlagHash(characterGUID, isTampered)
---   UltraHardcoreDB.playerState[characterGUID].tamperHash = tamperHash
+--   UltraDB.playerState[characterGUID].tamperHash = tamperHash
 --   -- If setting tampered=true, store timestamp (one-way flag)
 --   -- This prevents clearing by editing hash to "false" value
 --   if isTampered then
---     UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = time()
+--     UltraDB.playerState[characterGUID].tamperTimestamp = time()
 --   else
 --     -- Only clear timestamp if explicitly clearing via function (appeals)
---     UltraHardcoreDB.playerState[characterGUID].tamperTimestamp = nil
+--     UltraDB.playerState[characterGUID].tamperTimestamp = nil
 --   end
---   SaveDBData('playerState', UltraHardcoreDB.playerState)
+--   SaveDBData('playerState', UltraDB.playerState)
 --   return true
 -- end
 -- -- Clear tamper flag (for appeals/manual override)
@@ -567,14 +567,14 @@
 --     return false
 --   end
 --   -- Initialize player state database if it doesn't exist
---   if not UltraHardcoreDB then
+--   if not UltraDB then
 --     return false
 --   end
---   if not UltraHardcoreDB.playerState then
---     UltraHardcoreDB.playerState = {}
+--   if not UltraDB.playerState then
+--     UltraDB.playerState = {}
 --   end
---   if not UltraHardcoreDB.playerState[characterGUID] then
---     UltraHardcoreDB.playerState[characterGUID] = {}
+--   if not UltraDB.playerState[characterGUID] then
+--     UltraDB.playerState[characterGUID] = {}
 --   end
 --   local hasChanged = self:HasPlayerStateChanged()
 --   -- If tampering detected, set persistent hashed flag (one-way, never clears)
@@ -583,7 +583,7 @@
 --   end
 --   -- Also check hash integrity and set flag if invalid (one-way, never clears)
 --   -- Only check if we have a previous state - if no state exists, there's nothing to verify
---   local previousStateExists = UltraHardcoreDB.playerState[characterGUID] and UltraHardcoreDB.playerState[characterGUID].hash ~= nil
+--   local previousStateExists = UltraDB.playerState[characterGUID] and UltraDB.playerState[characterGUID].hash ~= nil
 --   if previousStateExists then
 --     local isValid = self:VerifyStateIntegrity()
 --     if not isValid then
@@ -617,8 +617,8 @@
 --   elseif event == 'PLAYERBANKSLOTS_CHANGED' or event == 'PLAYERBANKBAGSLOTS_CHANGED' then
 --     bankIsOpen = true
 --   elseif event == 'PLAYER_ENTERING_WORLD' then
---     if not UltraHardcoreDB then
---       UltraHardcoreDB = {}
+--     if not UltraDB then
+--       UltraDB = {}
 --     end
 --   end
 --   CaptureOnEvent()
@@ -650,12 +650,12 @@
 --   end
 --   local characterGUID = UnitGUID('player')
 --   -- Ensure database is loaded (SavedVariables should be loaded by now, but double-check)
---   if not UltraHardcoreDB then
+--   if not UltraDB then
 --     return false -- Database not loaded yet
 --   end
 --   -- Initialize player state database if it doesn't exist
---   if not UltraHardcoreDB.playerState then
---     UltraHardcoreDB.playerState = {}
+--   if not UltraDB.playerState then
+--     UltraDB.playerState = {}
 --   end
 --   -- Wait for bags to be loaded before capturing state
 --   -- Check if at least one bag has slots (indicating bags are loaded)
@@ -677,11 +677,11 @@
 --       return
 --     end
 --     -- Double-check database is loaded
---     if not UltraHardcoreDB then
+--     if not UltraDB then
 --       return
 --     end
---     if not UltraHardcoreDB.playerState then
---       UltraHardcoreDB.playerState = {}
+--     if not UltraDB.playerState then
+--       UltraDB.playerState = {}
 --     end
 --     -- Check for changes FIRST (for addon re-enable detection)
 --     -- This compares the old state (from SavedVariables) to the current state
@@ -702,18 +702,18 @@
 -- initFrame:RegisterEvent('ADDON_LOADED')
 -- initFrame:SetScript('OnEvent', function(self, event, addonName)
 --   -- Track when addon is loaded
---   if event == 'ADDON_LOADED' and addonName == 'UltraHardcore' then
+--   if event == 'ADDON_LOADED' and addonName == 'Ultra' then
 --     addonLoaded = true
 --     -- Ensure database exists
---     if not UltraHardcoreDB then
---       UltraHardcoreDB = {}
+--     if not UltraDB then
+--       UltraDB = {}
 --     end
---     if not UltraHardcoreDB.playerState then
---       UltraHardcoreDB.playerState = {}
+--     if not UltraDB.playerState then
+--       UltraDB.playerState = {}
 --     end
 --   end
 --   -- Only handle ADDON_LOADED for this addon
---   if event == 'ADDON_LOADED' and addonName ~= 'UltraHardcore' then
+--   if event == 'ADDON_LOADED' and addonName ~= 'Ultra' then
 --     return
 --   end
 --   -- Only initialize once per session

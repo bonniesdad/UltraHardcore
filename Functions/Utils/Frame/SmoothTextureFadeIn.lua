@@ -1,7 +1,7 @@
 -- Smooth fade in for textures
 function SmoothTextureFadeIn(texture, duration)
     if not texture or type(texture) ~= "table" then
-        print("UltraHardcore: Invalid texture provided to SmoothTextureFadeIn")
+        print("Ultra: Invalid texture provided to SmoothTextureFadeIn")
         return
     end
 

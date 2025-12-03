@@ -1,7 +1,7 @@
 -- Make a frame draggable
 function MakeFrameDraggable(frame)
     if not frame or type(frame) ~= "table" then
-        print("UltraHardcore: Invalid frame provided to MakeFrameDraggable")
+        print("Ultra: Invalid frame provided to MakeFrameDraggable")
         return
     end
 

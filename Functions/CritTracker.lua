@@ -8,7 +8,7 @@ CritTracker = {}
 local function PlayRandomCritSound()
   local critSoundNumber = math.random(1, 4)
   local soundFile =
-    'Interface\\AddOns\\UltraHardcore\\Sounds\\xar-crit' .. critSoundNumber .. '.mp3'
+    'Interface\\AddOns\\Ultra\\Sounds\\xar-crit' .. critSoundNumber .. '.mp3'
   PlaySoundFile(soundFile, 'Master')
 end
 

@@ -1,6 +1,6 @@
 --[[
   Preset Sections Configuration
-  Defines the preset categories and their associated settings for the UltraHardcore addon
+  Defines the preset categories and their associated settings for the Ultra addon
   Used across Settings UI, Statistics display, and XP tracking
 ]]
 

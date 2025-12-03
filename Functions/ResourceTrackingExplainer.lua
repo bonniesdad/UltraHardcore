@@ -62,7 +62,7 @@ end
 
 function ShowResourceTrackingExplainer()
   if explainerOpen then return end
-  if UltraHardcoreDB and UltraHardcoreDB.shownResourceTrackingExplainer then return end
+  if UltraDB and UltraDB.shownResourceTrackingExplainer then return end
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideMinimap then return end
 
   explainerOpen = true

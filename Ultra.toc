@@ -1,11 +1,11 @@
 ## Interface: 11508
-## Title: UltraHardcore
-## Version: 1.2.10
+## Title: Ultra
+## Version: 1.0.0
 ## Author: BonniesDad
 ## Notes: Making the game more difficult in various ways.
-## SavedVariables: UltraHardcoreDB
+## SavedVariables: UltraDB
 
-UltraHardcore.lua
+Ultra.lua
 
 ## Libs
 Libs/LibStub/LibStub.lua
@@ -109,7 +109,7 @@ Settings/Settings.lua
 Settings/TabManager.lua
 Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
-Settings/AchievementTab.lua
+Settings/ResourceTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua

@@ -13,9 +13,9 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideTargetFrame',
   tooltip = "Show ULTRA target frame, so you can't see the target's health or level",
 }, {
-  name = 'Hide Target Tooltips',
+  name = 'ULTRA Target Tooltips',
   dbSettingsValueName = 'hideTargetTooltip',
-  tooltip = "Target tooltips are not visible, so you can't see the target's health or level",
+  tooltip = "Target tooltip does not show health or level",
 }, {
   name = 'Disable Nameplates',
   dbSettingsValueName = 'disableNameplateHealth',
@@ -401,9 +401,9 @@ function InitializeSettingsOptionsTab()
 
   local presetIcons =
     {
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
+      'Interface\\AddOns\\Ultra\\textures\\' .. (UltraDB.resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
+      'Interface\\AddOns\\Ultra\\textures\\' .. (UltraDB.resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
+      'Interface\\AddOns\\Ultra\\textures\\' .. (UltraDB.resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
     }
 
   local buttonSize = 100

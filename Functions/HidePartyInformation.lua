@@ -17,11 +17,133 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE =
     'ManaBar',
     'Texture',
     'Background',
+    'PartyMemberOverlay',
     'PetFrameBackground',
     'PetFrameTexture',
     'PetFrameHealthBar',
     'PetFrameManaBar',
   }
+
+local function UHC_GetPartyFrameContainer()
+  if type(PartyFrame) == 'table' then
+    return PartyFrame
+  end
+  return _G['PartyFrame']
+end
+
+function UHC_GetPartyMemberFrame(index)
+  if not index then return nil end
+
+  local candidateNames =
+    {
+      'PartyMemberFrame' .. index,
+      'PartyFrameMemberFrame' .. index,
+    }
+
+  for _, name in ipairs(candidateNames) do
+    local frame = _G[name]
+    if frame then
+      return frame
+    end
+  end
+
+  local container = UHC_GetPartyFrameContainer()
+  if not container then
+    return nil
+  end
+
+  local memberKey = 'MemberFrame' .. index
+  if container[memberKey] then
+    return container[memberKey]
+  end
+
+  if type(container.memberFrames) == 'table' then
+    local member = container.memberFrames[index]
+    if member then
+      return member
+    end
+  end
+
+  if type(container.GetChildren) == 'function' then
+    local children = {container:GetChildren()}
+    for _, child in ipairs(children) do
+      if child then
+        local childName = child.GetName and child:GetName()
+        if childName
+          and (childName == ('PartyFrameMemberFrame' .. index) or childName == ('PartyMemberFrame' .. index))
+        then
+          return child
+        end
+      end
+    end
+  end
+
+  return nil
+end
+
+function UHC_GetPartyMemberSubFrame(index, subFrameName)
+  if not index or not subFrameName then return nil end
+
+  local candidateNames =
+    {
+      'PartyMemberFrame' .. index .. subFrameName,
+      'PartyFrameMemberFrame' .. index .. subFrameName,
+    }
+
+  for _, name in ipairs(candidateNames) do
+    local frame = _G[name]
+    if frame then
+      return frame
+    end
+  end
+
+  local parent = UHC_GetPartyMemberFrame(index)
+  if not parent then
+    return nil
+  end
+
+  if parent[subFrameName] then
+    return parent[subFrameName]
+  end
+
+  local parentName = parent.GetName and parent:GetName()
+  if parentName then
+    local derived = _G[parentName .. subFrameName]
+    if derived then
+      return derived
+    end
+  end
+
+  if subFrameName == 'PetFrame' then
+    local petFrame = parent.PetFrame or parent.petFrame
+    if not petFrame and parentName then
+      petFrame = _G[parentName .. 'PetFrame']
+    end
+    return petFrame
+  end
+
+  if subFrameName:sub(1, 8) == 'PetFrame' then
+    local petFrame = UHC_GetPartyMemberSubFrame(index, 'PetFrame')
+    if petFrame then
+      local suffix = subFrameName:sub(9)
+      if suffix == '' then
+        return petFrame
+      end
+      if petFrame[suffix] then
+        return petFrame[suffix]
+      end
+      local petName = petFrame.GetName and petFrame:GetName()
+      if petName then
+        local derivedPet = _G[petName .. suffix]
+        if derivedPet then
+          return derivedPet
+        end
+      end
+    end
+  end
+
+  return nil
+end
 
 function SetPartyFramesInfo(hideGroupHealth)
   if hideGroupHealth then
@@ -47,7 +169,7 @@ function SetPartyFrameInfo(n)
     HidePartySubFrame(n, subFrame)
 
     -- Move Name subframe down a few pixels to be centered with the portrait
-    local nameFrame = _G['PartyMemberFrame' .. n .. 'Name']
+    local nameFrame = UHC_GetPartyMemberSubFrame(n, 'Name')
 
     if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
       nameFrame:ClearAllPoints()
@@ -56,7 +178,7 @@ function SetPartyFrameInfo(n)
   end
 
   -- Move the entire party frame to the right by 100px and stack vertically
-  local partyFrame = _G['PartyMemberFrame' .. n]
+  local partyFrame = UHC_GetPartyMemberFrame(n)
   if partyFrame and partyFrame.SetPoint and partyFrame.ClearAllPoints then
     -- Clear any existing anchor points to prevent anchor family connection errors
     partyFrame:ClearAllPoints()
@@ -80,7 +202,7 @@ function SetPartyFrameInfo(n)
 end
 
 function HidePartySubFrame(n, subFrame)
-  local frame = _G['PartyMemberFrame' .. n .. subFrame]
+  local frame = UHC_GetPartyMemberSubFrame(n, subFrame)
   if frame then
     ForceHideFrame(frame)
   end

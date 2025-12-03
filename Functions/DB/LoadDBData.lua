@@ -1,25 +1,25 @@
 -- 🟢 Load saved score on login
 function LoadDBData()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {} -- Ensure the table exists
+  if not UltraDB then
+    UltraDB = {} -- Ensure the table exists
   end
 
-  enemiesSlain = UltraHardcoreDB.enemiesSlain or 0
-  elitesSlain = UltraHardcoreDB.elitesSlain or 0
-  lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
-  WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
+  enemiesSlain = UltraDB.enemiesSlain or 0
+  elitesSlain = UltraDB.elitesSlain or 0
+  lowestHealthScore = UltraDB.lowestHealthScore or 100
+  WELCOME_MESSAGE_CLOSED = UltraDB.WELCOME_MESSAGE_CLOSED or false
 
   -- Initialize version tracking if it doesn't exist
-  if not UltraHardcoreDB.lastSeenVersion then
-    UltraHardcoreDB.lastSeenVersion = nil
+  if not UltraDB.lastSeenVersion then
+    UltraDB.lastSeenVersion = nil
   end
 
   -- Get current character's GUID for per-character settings
   local characterGUID = UnitGUID('player')
 
   -- Initialize character settings if they don't exist
-  if not UltraHardcoreDB.characterSettings then
-    UltraHardcoreDB.characterSettings = {}
+  if not UltraDB.characterSettings then
+    UltraDB.characterSettings = {}
   end
 
   -- Default settings for new characters (ordered to match settingsCheckboxOptions)
@@ -119,26 +119,26 @@ function LoadDBData()
   }
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
-  if UltraHardcoreDB.GLOBAL_SETTINGS then
-    if not UltraHardcoreDB.characterSettings[characterGUID] then
-      UltraHardcoreDB.characterSettings[characterGUID] = UltraHardcoreDB.GLOBAL_SETTINGS
+  if UltraDB.GLOBAL_SETTINGS then
+    if not UltraDB.characterSettings[characterGUID] then
+      UltraDB.characterSettings[characterGUID] = UltraDB.GLOBAL_SETTINGS
     end
-    UltraHardcoreDB.GLOBAL_SETTINGS = nil
+    UltraDB.GLOBAL_SETTINGS = nil
   end
 
   -- Initialize settings for current character if they don't exist
-  if not UltraHardcoreDB.characterSettings[characterGUID] then
-    UltraHardcoreDB.characterSettings[characterGUID] = defaultSettings
+  if not UltraDB.characterSettings[characterGUID] then
+    UltraDB.characterSettings[characterGUID] = defaultSettings
   end
 
   -- Iterate over the defaults to see if there are any new settings
   -- we need to add to characters that have an existing DB.
   for settingName, settingValue in pairs(defaultSettings) do
-    if UltraHardcoreDB.characterSettings[characterGUID][settingName] == nil then
-      UltraHardcoreDB.characterSettings[characterGUID][settingName] = settingValue
+    if UltraDB.characterSettings[characterGUID][settingName] == nil then
+      UltraDB.characterSettings[characterGUID][settingName] = settingValue
     end
   end
 
   -- Load current character's settings
-  GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
+  GLOBAL_SETTINGS = UltraDB.characterSettings[characterGUID]
 end

@@ -7,23 +7,23 @@ resourceIndicator:SetClampedToScreen(true)
 
 -- Position persistence
 local function SaveResourceIndicatorPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
   local point, _, relPoint, x, y = resourceIndicator:GetPoint()
-  UltraHardcoreDB.resourceIndicatorPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  UltraDB.resourceIndicatorPosition = { point = point, relPoint = relPoint, x = x, y = y }
   if SaveDBData then
-    SaveDBData('resourceIndicatorPosition', UltraHardcoreDB.resourceIndicatorPosition)
+    SaveDBData('resourceIndicatorPosition', UltraDB.resourceIndicatorPosition)
   end
 end
 
 local function LoadResourceIndicatorPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
-  local pos = UltraHardcoreDB.resourceIndicatorPosition
+  local pos = UltraDB.resourceIndicatorPosition
   resourceIndicator:ClearAllPoints()
   if pos then
     resourceIndicator:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
@@ -44,7 +44,7 @@ resourceIndicator:SetScript('OnDragStop', function(self)
 end)
 local icon = resourceIndicator:CreateTexture(nil, 'OVERLAY')
 icon:SetSize(125, 125) -- Size of the single icon
-icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie0.png') -- Default texture
+icon:SetTexture('Interface\\AddOns\\Ultra\\textures\\bonnie0.png') -- Default texture
 icon:SetAlpha(1) -- Fully visible
 resourceIndicator.icon = icon
 icon:SetPoint('CENTER', resourceIndicator, 'CENTER', 0, 0)
@@ -66,7 +66,7 @@ local function UpdateManaPoints()
   local value = UnitPower('player', Enum.PowerType.Mana)
   local maxValue = UnitPowerMax('player', Enum.PowerType.Mana)
   local manaStep = math.ceil((value / maxValue) * 5) -- Scale 0-100% into 5 thresholds
-  local newTexture = 'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. manaStep .. '.png'
+  local newTexture = 'Interface\\AddOns\\Ultra\\textures\\bonnie' .. manaStep .. '.png'
   SmoothTextureUpdate(newTexture)
 end
 
@@ -75,7 +75,7 @@ local function UpdateEnergyPoints()
   local value = UnitPower('player', Enum.PowerType.Energy)
   local maxValue = UnitPowerMax('player', Enum.PowerType.Energy)
   local energyStep = math.ceil((value / maxValue) * 5) -- Scale 0-100% into 5 thresholds
-  local newTexture = 'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. energyStep .. '.png'
+  local newTexture = 'Interface\\AddOns\\Ultra\\textures\\bonnie' .. energyStep .. '.png'
   SmoothTextureUpdate(newTexture)
 end
 
@@ -84,25 +84,25 @@ local function UpdateRagePoints()
   local value = UnitPower('player', Enum.PowerType.Rage)
   local maxValue = UnitPowerMax('player', Enum.PowerType.Rage)
   local rageStep = math.ceil((value / maxValue) * 5) -- Scale 0-100% into 5 thresholds
-  local newTexture = 'Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. rageStep .. '.png'
+  local newTexture = 'Interface\\AddOns\\Ultra\\textures\\bonnie' .. rageStep .. '.png'
   SmoothTextureUpdate(newTexture)
 end
 
 -- Slash command to toggle the frame
 SLASH_TOGGLEBONNIE1 = '/bonnie'
 SlashCmdList.TOGGLEBONNIE = function()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
   if resourceIndicator:IsShown() then
     resourceIndicator:Hide()
-    UltraHardcoreDB.resourceIndicatorShown = false
+    UltraDB.resourceIndicatorShown = false
   else
     resourceIndicator:Show()
-    UltraHardcoreDB.resourceIndicatorShown = true
+    UltraDB.resourceIndicatorShown = true
   end
   if SaveDBData then
-    SaveDBData('resourceIndicatorShown', UltraHardcoreDB.resourceIndicatorShown)
+    SaveDBData('resourceIndicatorShown', UltraDB.resourceIndicatorShown)
   end
 end
 
@@ -117,18 +117,18 @@ resourceIndicator:SetScript('OnEvent', function(self, event, unit)
     -- Defer loading position/visibility slightly to ensure DB is ready
     C_Timer.After(0.1, function()
       LoadResourceIndicatorPosition()
-      if UltraHardcoreDB and UltraHardcoreDB.resourceIndicatorShown then
+      if UltraDB and UltraDB.resourceIndicatorShown then
         resourceIndicator:Show()
       else
         resourceIndicator:Hide()
       end
     end)
     if powerType == 'ENERGY' then
-      icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 5 .. '.png')
+      icon:SetTexture('Interface\\AddOns\\Ultra\\textures\\bonnie' .. 5 .. '.png')
     elseif powerType == 'RAGE' then
-      icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 0 .. '.png')
+      icon:SetTexture('Interface\\AddOns\\Ultra\\textures\\bonnie' .. 0 .. '.png')
     elseif powerType == 'MANA' then
-      icon:SetTexture('Interface\\AddOns\\UltraHardcore\\textures\\bonnie' .. 5 .. '.png')
+      icon:SetTexture('Interface\\AddOns\\Ultra\\textures\\bonnie' .. 5 .. '.png')
     end
   elseif unit == 'player' and powerType == 'ENERGY' then
     UpdateEnergyPoints()

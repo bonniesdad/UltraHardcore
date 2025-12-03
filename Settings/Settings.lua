@@ -36,15 +36,15 @@ local function initializeTempSettings()
 end
 
 local CLASS_BACKGROUND_MAP = {
-  WARRIOR = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warrior.png',
-  PALADIN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_pally.png',
-  HUNTER = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_hunter.png',
-  ROGUE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_rogue.png',
-  PRIEST = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_priest.png',
-  MAGE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_mage.png',
-  WARLOCK = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warlock.png',
-  DRUID = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_druid.png',
-  SHAMAN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_shaman.png',
+  WARRIOR = 'Interface\\AddOns\\Ultra\\Textures\\bg_warrior.png',
+  PALADIN = 'Interface\\AddOns\\Ultra\\Textures\\bg_pally.png',
+  HUNTER = 'Interface\\AddOns\\Ultra\\Textures\\bg_hunter.png',
+  ROGUE = 'Interface\\AddOns\\Ultra\\Textures\\bg_rogue.png',
+  PRIEST = 'Interface\\AddOns\\Ultra\\Textures\\bg_priest.png',
+  MAGE = 'Interface\\AddOns\\Ultra\\Textures\\bg_mage.png',
+  WARLOCK = 'Interface\\AddOns\\Ultra\\Textures\\bg_warlock.png',
+  DRUID = 'Interface\\AddOns\\Ultra\\Textures\\bg_druid.png',
+  SHAMAN = 'Interface\\AddOns\\Ultra\\Textures\\bg_shaman.png',
 }
 
 local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
@@ -109,7 +109,7 @@ titleBar:SetBackdropBorderColor(0, 0, 0, 1)
 titleBar:SetBackdropColor(0, 0, 0, 0.95)
 local titleBarBackground = titleBar:CreateTexture(nil, 'BACKGROUND')
 titleBarBackground:SetAllPoints()
-titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header.png')
+titleBarBackground:SetTexture('Interface\\AddOns\\Ultra\\Textures\\header.png')
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
@@ -117,7 +117,7 @@ settingsTitleLabel:SetText('ULTRA')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 -- Initialize TBC feature (comment out this line to disable TBC feature)
--- To completely remove: Also remove Settings/TBCFeature.lua from UltraHardcore.toc
+-- To completely remove: Also remove Settings/TBCFeature.lua from Ultra.toc
 if InitializeTBCFeature then
   InitializeTBCFeature(
     titleBar,
@@ -135,7 +135,7 @@ dividerFrame:SetFrameStrata('DIALOG')
 dividerFrame:SetFrameLevel(20)
 local dividerTexture = dividerFrame:CreateTexture(nil, 'ARTWORK')
 dividerTexture:SetAllPoints()
-dividerTexture:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\divider.png')
+dividerTexture:SetTexture('Interface\\AddOns\\Ultra\\Textures\\divider.png')
 dividerTexture:SetTexCoord(0, 1, 0, 1)
 local function initializeTabs()
   if TabManager then
@@ -155,8 +155,8 @@ closeButton:SetScript('OnClick', function()
   initializeTempSettings()
   settingsFrame:Hide()
 end)
-closeButton:SetNormalTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header-x.png')
-closeButton:SetPushedTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header-x.png')
+closeButton:SetNormalTexture('Interface\\AddOns\\Ultra\\Textures\\header-x.png')
+closeButton:SetPushedTexture('Interface\\AddOns\\Ultra\\Textures\\header-x.png')
 closeButton:SetHighlightTexture('Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight', 'ADD')
 local closeButtonTex = closeButton:GetNormalTexture()
 if closeButtonTex then
@@ -247,10 +247,10 @@ end
 initializeTempSettings()
 
 -- Create LibDataBroker object for minimap button
-local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
+local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('Ultra', {
   type = 'data source',
   text = 'ULTRA',
-  icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
+  icon = 'Interface\\AddOns\\Ultra\\Textures\\skull3_100.png',
   OnClick = function(self, btn)
     if btn == 'LeftButton' then
       ToggleSettings()
@@ -264,12 +264,12 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
 
 -- Initialize minimap button settings
 local minimapSettings = { hide = false }
-if UltraHardcoreDB and UltraHardcoreDB.minimapButton then
-  for key, value in pairs(UltraHardcoreDB.minimapButton) do
+if UltraDB and UltraDB.minimapButton then
+  for key, value in pairs(UltraDB.minimapButton) do
     minimapSettings[key] = value
   end
 end
 
 -- Register the minimap button with LibDBIcon
 local addonIcon = LibStub('LibDBIcon-1.0')
-addonIcon:Register('UltraHardcore', addonLDB, minimapSettings)
+addonIcon:Register('Ultra', addonLDB, minimapSettings)

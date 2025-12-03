@@ -112,10 +112,10 @@ end
 local versionUpdateOpen = false
 function ShowVersionUpdateDialog()
   -- Get current version from TOC
-  local currentVersion = GetAddOnMetadata(addonName, 'Version')
+  local currentVersion = (UltraGetAddOnMetadata and UltraGetAddOnMetadata(addonName, 'Version')) or 'unknown'
 
   -- Get last seen version from database
-  local lastSeenVersion = UltraHardcoreDB.lastSeenVersion
+  local lastSeenVersion = UltraDB.lastSeenVersion
 
   -- Only show dialog if version has changed and dialog isn't already open
   if currentVersion ~= lastSeenVersion and not versionUpdateOpen then

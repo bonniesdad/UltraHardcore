@@ -14,9 +14,9 @@ function InitializeInfoTab()
   local philosophyText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   philosophyText:SetPoint('TOP', tabContents[5], 'TOP', 0, -50)
   philosophyText:SetWidth(500)
-  philosophyText:SetText(
-    'UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version')
-  )
+  local addonVersion =
+    (UltraGetAddOnMetadata and UltraGetAddOnMetadata('Ultra', 'Version')) or 'unknown'
+  philosophyText:SetText('Ultra Addon\nVersion: ' .. addonVersion)
   philosophyText:SetJustifyH('CENTER')
   philosophyText:SetNonSpaceWrap(true)
 

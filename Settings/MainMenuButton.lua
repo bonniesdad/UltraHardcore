@@ -20,10 +20,5 @@ GameMenuFrame:HookScript("OnShow", function(self)
     self:SetHeight(currentHeight )  -- Add 65 pixels to accommodate our button
     
     -- Position our button
-    button:SetPoint("TOP", GameMenuFrame, "TOP", 0, -135)
-    
-    -- Adjust other buttons
-    GameMenuButtonLogout:SetPoint("TOP", GameMenuFrame, "TOP", 0, -158)
-    GameMenuButtonQuit:SetPoint("TOP", GameMenuButtonLogout, "BOTTOM", 0, -1)
-    GameMenuButtonContinue:SetPoint("TOP", GameMenuButtonQuit, "BOTTOM", 0, -1)
+    button:SetPoint("TOP", GameMenuFrame, "TOP", 0, -156)
 end) 

@@ -1,5 +1,16 @@
 addonName = ...
-UltraHardcore = CreateFrame('Frame')
+Ultra = CreateFrame('Frame')
+
+-- Unified helper for metadata lookups across Classic/Retail APIs
+if not UltraGetAddOnMetadata then
+  function UltraGetAddOnMetadata(name, field)
+    if C_AddOns and C_AddOns.GetAddOnMetadata then
+      return C_AddOns.GetAddOnMetadata(name, field)
+    elseif GetAddOnMetadata then
+      return GetAddOnMetadata(name, field)
+    end
+  end
+end
 
 -- Temporary feature flag: hide Guild Found UI until phase 2
 _G.UHC_ENABLE_GUILD_FOUND_UI = false
@@ -7,29 +18,29 @@ _G.UHC_ENABLE_GUILD_FOUND_UI = false
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
-UltraHardcore:RegisterEvent('UNIT_AURA')
-UltraHardcore:RegisterEvent('UNIT_HEALTH_FREQUENT')
-UltraHardcore:RegisterEvent('PLAYER_ENTERING_WORLD')
-UltraHardcore:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
-UltraHardcore:RegisterEvent('ADDON_LOADED')
-UltraHardcore:RegisterEvent('QUEST_WATCH_UPDATE')
-UltraHardcore:RegisterEvent('QUEST_LOG_UPDATE')
-UltraHardcore:RegisterEvent('UI_ERROR_MESSAGE')
-UltraHardcore:RegisterEvent('PLAYER_UPDATE_RESTING')
-UltraHardcore:RegisterEvent('PLAYER_LEVEL_UP')
-UltraHardcore:RegisterEvent('GROUP_ROSTER_UPDATE')
-UltraHardcore:RegisterEvent('MIRROR_TIMER_START')
-UltraHardcore:RegisterEvent('MIRROR_TIMER_STOP')
-UltraHardcore:RegisterEvent('UNIT_SPELLCAST_START')
-UltraHardcore:RegisterEvent('UNIT_SPELLCAST_STOP')
-UltraHardcore:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-UltraHardcore:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
-UltraHardcore:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
-UltraHardcore:RegisterEvent('PLAYER_LOGOUT')
-UltraHardcore:RegisterEvent('PLAYER_LOGIN')
+Ultra:RegisterEvent('UNIT_AURA')
+Ultra:RegisterEvent('UNIT_HEALTH_FREQUENT')
+Ultra:RegisterEvent('PLAYER_ENTERING_WORLD')
+Ultra:RegisterEvent('COMBAT_LOG_EVENT_UNFILTERED')
+Ultra:RegisterEvent('ADDON_LOADED')
+Ultra:RegisterEvent('QUEST_WATCH_UPDATE')
+Ultra:RegisterEvent('QUEST_LOG_UPDATE')
+Ultra:RegisterEvent('UI_ERROR_MESSAGE')
+Ultra:RegisterEvent('PLAYER_UPDATE_RESTING')
+Ultra:RegisterEvent('PLAYER_LEVEL_UP')
+Ultra:RegisterEvent('GROUP_ROSTER_UPDATE')
+Ultra:RegisterEvent('MIRROR_TIMER_START')
+Ultra:RegisterEvent('MIRROR_TIMER_STOP')
+Ultra:RegisterEvent('UNIT_SPELLCAST_START')
+Ultra:RegisterEvent('UNIT_SPELLCAST_STOP')
+Ultra:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+Ultra:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
+Ultra:RegisterEvent('CHAT_MSG_SYSTEM') -- Needed for duel winner and loser
+Ultra:RegisterEvent('PLAYER_LOGOUT')
+Ultra:RegisterEvent('PLAYER_LOGIN')
 
 -- 🟢 Event handler to apply all funcitons on login
-UltraHardcore:SetScript('OnEvent', function(self, event, ...)
+Ultra:SetScript('OnEvent', function(self, event, ...)
   -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but these are before all the UI elements are available.  
   -- Switched to PLAYER_LOGIN which happens after ADDON_LOADED and all UI elements are available
   if event == 'PLAYER_LOGIN' then

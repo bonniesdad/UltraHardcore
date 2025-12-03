@@ -7,7 +7,7 @@ end
 
 local resourceBar = CreateFrame('StatusBar', 'UltraHardcoreResourceBar', UIParent)
 if not resourceBar then
-  print('UltraHardcore: Failed to create resource bar')
+  print('Ultra: Failed to create resource bar')
   return
 end
 
@@ -19,13 +19,13 @@ resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 
 -- Position persistence functions
 local function SaveResourceBarPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
   local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
   -- Always save UIParent as the relativeTo frame to avoid reference issues
-  UltraHardcoreDB.resourceBarPosition = {
+  UltraDB.resourceBarPosition = {
     point = point,
     relativeTo = 'UIParent',
     relativePoint = relativePoint,
@@ -33,15 +33,15 @@ local function SaveResourceBarPosition()
     yOfs = yOfs,
   }
 
-  SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
+  SaveDBData('resourceBarPosition', UltraDB.resourceBarPosition)
 end
 
 local function LoadResourceBarPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
-  local pos = UltraHardcoreDB.resourceBarPosition
+  local pos = UltraDB.resourceBarPosition
   -- Clear existing points first to avoid anchor conflicts
   resourceBar:ClearAllPoints()
 
@@ -51,7 +51,7 @@ local function LoadResourceBarPosition()
     resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
     -- Save the default position for future loads
     SaveResourceBarPosition()
-    print('UltraHardcore: Resource bar position initialized to default')
+    print('Ultra: Resource bar position initialized to default')
   else
     -- Always anchor to UIParent to avoid frame reference issues
     resourceBar:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
@@ -80,7 +80,7 @@ local function CreateComboFrame()
   end
 -- Create a frame for the combo points
   if not comboFrame then
-    print('UltraHardcore: Failed to create combo frame')
+    print('Ultra: Failed to create combo frame')
     return
   end
 
@@ -88,13 +88,13 @@ local function CreateComboFrame()
   comboFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 10)
 
   -- Create combo point outlines and fill layers
-  local COMBO_TEXTURE = 'Interface\\AddOns\\UltraHardcore\\textures\\combopoint'
+  local COMBO_TEXTURE = 'Interface\\AddOns\\Ultra\\textures\\combopoint'
   local COMBO_SHADOW_TEXTURE = COMBO_TEXTURE .. '_outline.blp'
 
   for i = 1, 5 do
     local orb = CreateComboPointOrb(comboFrame, i, 5, COMBO_TEXTURE .. '.blp', COMBO_SHADOW_TEXTURE)
     if not orb then
-      print('UltraHardcore: Failed to create combo point orb ' .. i)
+      print('Ultra: Failed to create combo point orb ' .. i)
       return
     end
     resourceOrbs[i] = orb
@@ -113,7 +113,7 @@ local function UpdateComboPoints()
 
   local points = GetComboPoints('player', 'target')
   if not points then
-    print('UltraHardcore: Failed to get combo points')
+    print('Ultra: Failed to get combo points')
     return
   end
 
@@ -139,7 +139,7 @@ end
 -- Add a border around the resource bar
 local border = resourceBar:CreateTexture(nil, 'OVERLAY')
 if not border then
-  print('UltraHardcore: Failed to create resource bar border')
+  print('Ultra: Failed to create resource bar border')
   return
 end
 
@@ -150,7 +150,7 @@ border:SetSize(300, 64)
 -- Create pet resource bar
 local petResourceBar = CreateFrame('StatusBar', 'UltraHardcorePetResourceBar', UIParent)
 if not petResourceBar then
-  print('UltraHardcore: Failed to create pet resource bar')
+  print('Ultra: Failed to create pet resource bar')
   return
 end
 
@@ -161,7 +161,7 @@ petResourceBar:Hide() -- Initially hidden
 -- Add border around pet resource bar
 local petBorder = petResourceBar:CreateTexture(nil, 'OVERLAY')
 if not petBorder then
-  print('UltraHardcore: Failed to create pet resource bar border')
+  print('Ultra: Failed to create pet resource bar border')
   return
 end
 
@@ -185,7 +185,7 @@ end)
 -- Create druid form resource bar (for shapeshifted druids)
 local druidFormResourceBar = CreateFrame('StatusBar', 'UltraHardcoreDruidFormResourceBar', UIParent)
 if not druidFormResourceBar then
-  print('UltraHardcore: Failed to create druid form resource bar')
+  print('Ultra: Failed to create druid form resource bar')
   return
 end
 druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
@@ -195,7 +195,7 @@ druidFormResourceBar:Hide() -- Initially hidden
 -- Add a border around the druid form resource bar
 local druidFormBorder = druidFormResourceBar:CreateTexture(nil, 'OVERLAY')
 if not druidFormBorder then
-  print('UltraHardcore: Failed to create druid form resource bar border')
+  print('Ultra: Failed to create druid form resource bar border')
   return
 end
 druidFormBorder:SetTexture('Interface\\CastingBar\\UI-CastingBar-Border')
@@ -204,12 +204,12 @@ druidFormBorder:SetSize(171, 50)
 
 -- Position persistence functions for druid form resource bar
 local function SaveDruidFormResourceBarPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
   local point, relativeTo, relativePoint, xOfs, yOfs = druidFormResourceBar:GetPoint()
-  UltraHardcoreDB.druidFormResourceBarPosition = {
+  UltraDB.druidFormResourceBarPosition = {
     point = point,
     relativeTo = 'UIParent',
     relativePoint = relativePoint,
@@ -217,15 +217,15 @@ local function SaveDruidFormResourceBarPosition()
     yOfs = yOfs,
   }
 
-  SaveDBData('druidFormResourceBarPosition', UltraHardcoreDB.druidFormResourceBarPosition)
+  SaveDBData('druidFormResourceBarPosition', UltraDB.druidFormResourceBarPosition)
 end
 
 local function LoadDruidFormResourceBarPosition()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+  if not UltraDB then
+    UltraDB = {}
   end
 
-  local pos = UltraHardcoreDB.druidFormResourceBarPosition
+  local pos = UltraDB.druidFormResourceBarPosition
   druidFormResourceBar:ClearAllPoints()
   -- Always anchor to the main resource bar, matching the pet bar
   druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
@@ -756,7 +756,7 @@ local function ResetResourceBarPosition()
   resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
   -- Save the reset position
   SaveResourceBarPosition()
-  print('UltraHardcore: Resource bar position reset to default')
+  print('Ultra: Resource bar position reset to default')
 end
 
 -- Reset druid form resource bar position function

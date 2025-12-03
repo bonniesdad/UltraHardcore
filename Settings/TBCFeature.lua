@@ -1,6 +1,6 @@
 -- ============================================================================
 -- TBC Feature - Easy to remove: Comment out or delete this entire file
--- To disable: Remove this file from UltraHardcore.toc or comment out the
+-- To disable: Remove this file from Ultra.toc or comment out the
 -- InitializeTBCFeature() call in Settings.lua
 -- ============================================================================
 
@@ -30,7 +30,7 @@ titleBar,
   -- TBC button background texture
   local tbcButtonBackground = tbcButton:CreateTexture(nil, 'BACKGROUND')
   tbcButtonBackground:SetAllPoints()
-  tbcButtonBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\tbc.png')
+  tbcButtonBackground:SetTexture('Interface\\AddOns\\Ultra\\Textures\\tbc.png')
   tbcButtonBackground:SetTexCoord(0, 1, 0, 1)
   tbcButtonBackground:SetVertexColor(0.3, 0.3, 0.3, 1) -- Much darker
   local tbcButtonText = tbcButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -62,7 +62,7 @@ titleBar,
   tbcContentFrame:SetBackdropBorderColor(0.1, 0.6, 0.3, 1) -- Green border color
   -- TBC content frame background texture (maintains aspect ratio, no stretching)
   local tbcContentBackground = tbcContentFrame:CreateTexture(nil, 'BACKGROUND')
-  tbcContentBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\tbc.png')
+  tbcContentBackground:SetTexture('Interface\\AddOns\\Ultra\\Textures\\tbc.png')
   tbcContentBackground:SetTexCoord(0, 1, 0, 1)
 
   -- Maintain aspect ratio: fit to frame width, height will scale proportionally

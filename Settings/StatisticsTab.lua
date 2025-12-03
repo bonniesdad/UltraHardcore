@@ -189,7 +189,7 @@ function InitializeStatisticsTab()
       LAYOUT.ROW_INDENT,
       -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT - 2
     )
-    legitStatusIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
+    legitStatusIcon:SetTexture('Interface\\AddOns\\Ultra\\Textures\\circle-with-border.png')
 
     local legitStatusLine1 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
     legitStatusLine1:SetPoint('LEFT', legitStatusIcon, 'RIGHT', 6, 0)
@@ -1560,7 +1560,7 @@ function InitializeStatisticsTab()
 
   -- Update the lowest health display
   local function UpdateLowestHealthDisplay()
-    if not UltraHardcoreDB then
+    if not UltraDB then
       LoadDBData()
     end
     -- Refresh current preset status in case settings changed

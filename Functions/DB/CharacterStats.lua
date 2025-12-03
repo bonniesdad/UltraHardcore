@@ -43,6 +43,8 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
+    playerDeaths = 0,
+    deathHistory = {},
     closeEscapes = 0,
     duelsTotal = 0,
     duelsWon = 0,
@@ -61,11 +63,60 @@ local CharacterStats = {
   },
 }
 
+local function sanitizeDeathRecord(record)
+  if type(record) ~= 'table' then
+    return {
+      killer = 'Unknown',
+      location = 'Unknown',
+      healthText = '',
+      level = nil,
+      timestamp = time(),
+    }
+  end
+
+  return {
+    killer = record.killer or 'Unknown',
+    location = record.location or 'Unknown',
+    healthText = record.healthText or '',
+    level = record.level,
+    timestamp = record.timestamp or time(),
+  }
+end
+
+local function normalizeDeathHistoryEntries(statsTable)
+  if type(statsTable.deathHistory) ~= 'table' then
+    statsTable.deathHistory = copyValue(CharacterStats.defaults.deathHistory)
+    return
+  end
+
+  for index, entry in ipairs(statsTable.deathHistory) do
+    if type(entry) ~= 'table' then
+      statsTable.deathHistory[index] = sanitizeDeathRecord({
+        location = tostring(entry),
+      })
+    else
+      statsTable.deathHistory[index] = sanitizeDeathRecord(entry)
+    end
+  end
+end
+
+local function copyValue(value)
+  if type(value) ~= 'table' then
+    return value
+  end
+
+  local newTable = {}
+  for key, v in pairs(value) do
+    newTable[key] = copyValue(v)
+  end
+  return newTable
+end
+
 -- Reset individual stats to default values for current character
 function CharacterStats:ResetLowestHealth()
   local stats = self:GetCurrentCharacterStats()
   stats.lowestHealth = self.defaults.lowestHealth
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 -- Set lowest health to a specific value
@@ -74,16 +125,16 @@ function CharacterStats:SetLowestHealth(value)
   if numValue and numValue >= 0 and numValue <= 100 then
     local stats = self:GetCurrentCharacterStats()
     if numValue < stats.lowestHealth then
-      print('UltraHardcore: You cannot set a lowest health lower than the current lowest health.')
+      print('Ultra: You cannot set a lowest health lower than the current lowest health.')
       return
     end
     local stats = self:GetCurrentCharacterStats()
     stats.lowestHealth = numValue
-    SaveDBData('characterStats', UltraHardcoreDB.characterStats)
-    print('UltraHardcore: Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
+    SaveDBData('characterStats', UltraDB.characterStats)
+    print('Ultra: Set lowest health to ' .. string.format('%.1f', numValue) .. '%')
   else
     print(
-      'UltraHardcore: Invalid value. Please enter a number between 0 and 100 (e.g., /setLowestHealth 20)'
+      'Ultra: Invalid value. Please enter a number between 0 and 100 (e.g., /setLowestHealth 20)'
     )
   end
 end
@@ -91,122 +142,147 @@ end
 function CharacterStats:ResetLowestHealthThisLevel()
   local stats = self:GetCurrentCharacterStats()
   stats.lowestHealthThisLevel = self.defaults.lowestHealthThisLevel
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetLowestHealthThisSession()
   local stats = self:GetCurrentCharacterStats()
   stats.lowestHealthThisSession = self.defaults.lowestHealthThisSession
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetPetDeaths()
   local stats = self:GetCurrentCharacterStats()
   stats.petDeaths = self.defaults.petDeaths
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetElitesSlain()
   local stats = self:GetCurrentCharacterStats()
   stats.elitesSlain = self.defaults.elitesSlain
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetEnemiesSlain()
   local stats = self:GetCurrentCharacterStats()
   stats.enemiesSlain = self.defaults.enemiesSlain
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 -- Reset survival statistics
 function CharacterStats:ResetHealthPotionsUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.healthPotionsUsed = self.defaults.healthPotionsUsed
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetManaPotionsUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.manaPotionsUsed = self.defaults.manaPotionsUsed
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetBandagesUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.bandagesUsed = self.defaults.bandagesUsed
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetTargetDummiesUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.targetDummiesUsed = self.defaults.targetDummiesUsed
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetGrenadesUsed()
   local stats = self:GetCurrentCharacterStats()
   stats.grenadesUsed = self.defaults.grenadesUsed
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetDuelsTotal()
   local stats = self:GetCurrentCharacterStats()
   stats.duelsTotal = self.defaults.duelsTotal
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetDuelsWon()
   local stats = self:GetCurrentCharacterStats()
   stats.duelsWon = self.defaults.duelsWon
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetDuelsLost()
   local stats = self:GetCurrentCharacterStats()
   stats.duelsLost = self.defaults.duelsLost
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetDuelsWinPercent()
   local stats = self:GetCurrentCharacterStats()
   stats.duelsWinPercent = self.defaults.duelsWinPercent
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetPlayerJumps()
   local stats = self:GetCurrentCharacterStats()
   stats.playerJumps = self.defaults.playerJumps
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetPartyMemberDeaths()
   local stats = self:GetCurrentCharacterStats()
   stats.partyMemberDeaths = self.defaults.partyMemberDeaths
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
+end
+
+function CharacterStats:ResetPlayerDeaths()
+  local stats = self:GetCurrentCharacterStats()
+  stats.playerDeaths = self.defaults.playerDeaths
+  stats.deathHistory = copyValue(self.defaults.deathHistory)
+  SaveDBData('characterStats', UltraDB.characterStats)
+end
+
+function CharacterStats:AddDeathRecord(record)
+  local stats = self:GetCurrentCharacterStats()
+  if type(stats.deathHistory) ~= 'table' then
+    stats.deathHistory = copyValue(self.defaults.deathHistory)
+  end
+
+  local sanitized = sanitizeDeathRecord(record)
+  stats.playerDeaths = (stats.playerDeaths or 0) + 1
+  table.insert(stats.deathHistory, sanitized)
+  SaveDBData('characterStats', UltraDB.characterStats)
+end
+
+function CharacterStats:GetDeathHistory()
+  local stats = self:GetCurrentCharacterStats()
+  normalizeDeathHistoryEntries(stats)
+  return stats.deathHistory
 end
 
 function CharacterStats:ResetHighestCritValue()
   local stats = self:GetCurrentCharacterStats()
   stats.highestCritValue = self.defaults.highestCritValue
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetHighestHealCritValue()
   local stats = self:GetCurrentCharacterStats()
   stats.highestHealCritValue = self.defaults.highestHealCritValue
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetRareElitesSlain()
   local stats = self:GetCurrentCharacterStats()
   stats.rareElitesSlain = self.defaults.rareElitesSlain
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 function CharacterStats:ResetWorldBossesSlain()
   local stats = self:GetCurrentCharacterStats()
   stats.worldBossesSlain = self.defaults.worldBossesSlain
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 -- Deprecated: This function will be removed on a future release
@@ -219,36 +295,37 @@ function CharacterStats:GetCurrentCharacterStats()
   local characterGUID = UnitGUID('player')
 
   if statsInitialized then
-    return UltraHardcoreDB.characterStats[characterGUID]
+    return UltraDB.characterStats[characterGUID]
   end
 
   -- Initialize character stats if they don't exist
-  if not UltraHardcoreDB.characterStats then
-    UltraHardcoreDB.characterStats = {}
+  if not UltraDB.characterStats then
+    UltraDB.characterStats = {}
   end
 
-  if not UltraHardcoreDB.characterStats[characterGUID] then
-    UltraHardcoreDB.characterStats[characterGUID] = self.defaults
+  if not UltraDB.characterStats[characterGUID] then
+    UltraDB.characterStats[characterGUID] = copyValue(self.defaults)
   end
 
   -- Initialize new stats for existing characters (backward compatibility)
   if not statsInitialized then
     for statName, _ in pairs(self.defaults) do
-      if UltraHardcoreDB.characterStats[characterGUID][statName] == nil then
-        UltraHardcoreDB.characterStats[characterGUID][statName] = self.defaults[statName]
+      if UltraDB.characterStats[characterGUID][statName] == nil then
+        UltraDB.characterStats[characterGUID][statName] = copyValue(self.defaults[statName])
       end
     end
+    normalizeDeathHistoryEntries(UltraDB.characterStats[characterGUID])
     statsInitialized = true
   end
 
-  return UltraHardcoreDB.characterStats[characterGUID]
+  return UltraDB.characterStats[characterGUID]
 end
 
 -- Update a specific stat for the current character
 function CharacterStats:UpdateStat(statName, value)
   local stats = self:GetCurrentCharacterStats()
   stats[statName] = value
-  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+  SaveDBData('characterStats', UltraDB.characterStats)
 end
 
 -- Get a specific stat for the current character
@@ -264,20 +341,20 @@ end
 
 -- Get stats for a specific character by GUID
 function CharacterStats:GetCharacterStatsByGUID(characterGUID)
-  if UltraHardcoreDB.characterStats and UltraHardcoreDB.characterStats[characterGUID] then
-    return UltraHardcoreDB.characterStats[characterGUID]
+  if UltraDB.characterStats and UltraDB.characterStats[characterGUID] then
+    return UltraDB.characterStats[characterGUID]
   end
   return self.defaults
 end
 
 -- Get all characters that have stats
 function CharacterStats:GetAllCharacters()
-  if not UltraHardcoreDB.characterStats then
+  if not UltraDB.characterStats then
     return {}
   end
 
   local characters = {}
-  for characterGUID, _ in pairs(UltraHardcoreDB.characterStats) do
+  for characterGUID, _ in pairs(UltraDB.characterStats) do
     table.insert(characters, characterGUID)
   end
   return characters
@@ -389,7 +466,7 @@ function CharacterStats:ShowChatChannelDialog()
   local dialogTitleImage = titleBar:CreateTexture(nil, 'OVERLAY')
   dialogTitleImage:SetSize(300, 40)
   dialogTitleImage:SetPoint('CENTER', titleBar, 'CENTER', 0, 0)
-  dialogTitleImage:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\ultra-hc-title.png')
+  dialogTitleImage:SetTexture('Interface\\AddOns\\Ultra\\Textures\\ultra-hc-title.png')
   dialogTitleImage:SetTexCoord(0, 1, 0, 1)
 
   -- Close button
@@ -696,9 +773,10 @@ end
 SLASH_POSTVERSION1 = '/uhcversion'
 SLASH_POSTVERSION2 = '/uhcv'
 SlashCmdList['POSTVERSION'] = function()
-  local version = GetAddOnMetadata('UltraHardcore', 'Version') or 'Unknown'
+  local version =
+    (UltraGetAddOnMetadata and UltraGetAddOnMetadata('Ultra', 'Version')) or 'Unknown'
   local playerName = UnitName('player')
-  local message = playerName .. ' is using UltraHardcore version ' .. version
+  local message = playerName .. ' is using Ultra version ' .. version
 
   -- Determine the best chat channel to use
   local chatType = nil

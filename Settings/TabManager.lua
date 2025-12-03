@@ -1,5 +1,5 @@
 -- TabManager.lua
--- Handles tab creation, management, and switching for the UltraHardcore settings window
+-- Handles tab creation, management, and switching for the Ultra settings window
 
 local TabManager = {}
 
@@ -42,7 +42,7 @@ local function createTabButton(text, index, parentFrame)
   -- Create the main tab background with the custom texture
   local background = button:CreateTexture(nil, 'BACKGROUND')
   background:SetAllPoints()
-  background:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\tab_texture.png')
+  background:SetTexture('Interface\\AddOns\\Ultra\\Textures\\tab_texture.png')
   button.backgroundTexture = background
   button:SetBackdrop({
     bgFile = nil,
@@ -97,7 +97,7 @@ function TabManager.initializeTabs(settingsFrame)
   -- Create tab buttons
   tabButtons[1] = createTabButton('Statistics', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
-  tabButtons[3] = createTabButton('Achievements', 3, settingsFrame)
+  tabButtons[3] = createTabButton('Resources', 3, settingsFrame)
   tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
   tabButtons[5] = createTabButton('Info', 5, settingsFrame)
   tabButtons[6] = createTabButton('Commands', 6, settingsFrame)
@@ -106,7 +106,7 @@ function TabManager.initializeTabs(settingsFrame)
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
   tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
-  tabContents[3] = createTabContent(3, settingsFrame) -- Achievements tab
+  tabContents[3] = createTabContent(3, settingsFrame) -- Resources tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
   tabContents[6] = createTabContent(6, settingsFrame) -- Commands tab
@@ -195,9 +195,9 @@ function TabManager.switchToTab(index)
     InitializeXFoundModeTab()
   end
 
-  -- Initialize Achievement tab if it's being shown
-  if index == 3 and InitializeAchievementTab then
-    InitializeAchievementTab()
+  -- Initialize Resource tab if it's being shown
+  if index == 3 and InitializeResourceTab then
+    InitializeResourceTab()
   end
 
   -- Initialize Info tab if it's being shown

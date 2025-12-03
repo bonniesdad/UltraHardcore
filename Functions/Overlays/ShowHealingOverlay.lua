@@ -13,13 +13,13 @@ function ShowHealingOverlay()
             if not healingOverlayFrame.texture then return end
             
             healingOverlayFrame.texture:SetAllPoints()
-            healingOverlayFrame.texture:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\healing-overlay.png")
+            healingOverlayFrame.texture:SetTexture("Interface\\AddOns\\Ultra\\Textures\\healing-overlay.png")
             healingOverlayFrame:SetAlpha(0)
             healingOverlayFrame:Hide()
         end)
         
         if not success then
-            print("UltraHardcore: Error creating healing overlay frame:", err)
+            print("Ultra: Error creating healing overlay frame:", err)
             return
         end
     end

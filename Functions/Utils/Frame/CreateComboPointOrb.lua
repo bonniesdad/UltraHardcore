@@ -1,23 +1,23 @@
 -- Create a combo point orb
 function CreateComboPointOrb(parent, index, totalPoints, texturePath, shadowTexturePath)
     if not parent or type(parent) ~= "table" then
-        print("UltraHardcore: Invalid parent frame provided to CreateComboPointOrb")
+        print("Ultra: Invalid parent frame provided to CreateComboPointOrb")
         return nil
     end
 
     if not index or not totalPoints or type(index) ~= "number" or type(totalPoints) ~= "number" then
-        print("UltraHardcore: Invalid index or totalPoints provided to CreateComboPointOrb")
+        print("Ultra: Invalid index or totalPoints provided to CreateComboPointOrb")
         return nil
     end
 
     if not texturePath or not shadowTexturePath or type(texturePath) ~= "string" or type(shadowTexturePath) ~= "string" then
-        print("UltraHardcore: Invalid texture paths provided to CreateComboPointOrb")
+        print("Ultra: Invalid texture paths provided to CreateComboPointOrb")
         return nil
     end
 
     local container = CreateFrame('Frame', nil, parent)
     if not container then
-        print("UltraHardcore: Failed to create combo point container")
+        print("Ultra: Failed to create combo point container")
         return nil
     end
 
@@ -27,7 +27,7 @@ function CreateComboPointOrb(parent, index, totalPoints, texturePath, shadowText
     -- Outline (always visible)
     local outline = container:CreateTexture(nil, 'BACKGROUND')
     if not outline then
-        print("UltraHardcore: Failed to create outline texture")
+        print("Ultra: Failed to create outline texture")
         return nil
     end
 
@@ -38,7 +38,7 @@ function CreateComboPointOrb(parent, index, totalPoints, texturePath, shadowText
     -- Fill (only visible when active)
     local fill = container:CreateTexture(nil, 'ARTWORK')
     if not fill then
-        print("UltraHardcore: Failed to create fill texture")
+        print("Ultra: Failed to create fill texture")
         return nil
     end
 

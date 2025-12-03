@@ -2,8 +2,8 @@
 function RemoveSpecificTunnelVision(blurIntensity)
   local frameName = 'UltraHardcoreTunnelVision_' .. blurIntensity
   
-  if UltraHardcore.tunnelVisionFrames and UltraHardcore.tunnelVisionFrames[frameName] then
-    local frame = UltraHardcore.tunnelVisionFrames[frameName]
+  if Ultra.tunnelVisionFrames and Ultra.tunnelVisionFrames[frameName] then
+    local frame = Ultra.tunnelVisionFrames[frameName]
     if frame and frame:IsShown() and frame:GetAlpha() > 0 then
       local fadeDuration = 0.5 -- Match the fade duration from ShowTunnelVision
       UIFrameFadeOut(frame, fadeDuration, frame:GetAlpha(), 0)
@@ -20,8 +20,8 @@ function RemoveTunnelVision()
   local fadeDuration = 0.5 -- Match the fade duration from ShowTunnelVision
   
   -- Remove all stacked tunnel vision frames with fade out
-  if UltraHardcore.tunnelVisionFrames then
-    for frameName, frame in pairs(UltraHardcore.tunnelVisionFrames) do
+  if Ultra.tunnelVisionFrames then
+    for frameName, frame in pairs(Ultra.tunnelVisionFrames) do
       if frame and frame:IsShown() and frame:GetAlpha() > 0 then
         UIFrameFadeOut(frame, fadeDuration, frame:GetAlpha(), 0)
         C_Timer.After(fadeDuration + 0.1, function()
@@ -34,20 +34,20 @@ function RemoveTunnelVision()
   end
   
   -- Legacy support for old frame system (in case it exists)
-  if UltraHardcore.tunnelVisionFrame then
-    if UltraHardcore.tunnelVisionFrame:IsShown() and UltraHardcore.tunnelVisionFrame:GetAlpha() > 0 then
-      UIFrameFadeOut(UltraHardcore.tunnelVisionFrame, fadeDuration, UltraHardcore.tunnelVisionFrame:GetAlpha(), 0)
+  if Ultra.tunnelVisionFrame then
+    if Ultra.tunnelVisionFrame:IsShown() and Ultra.tunnelVisionFrame:GetAlpha() > 0 then
+      UIFrameFadeOut(Ultra.tunnelVisionFrame, fadeDuration, Ultra.tunnelVisionFrame:GetAlpha(), 0)
       C_Timer.After(fadeDuration + 0.1, function()
-        UltraHardcore.tunnelVisionFrame:Hide()
+        Ultra.tunnelVisionFrame:Hide()
       end)
     end
   end
 
-  if UltraHardcore.backupTunnelVisionFrame then
-    if UltraHardcore.backupTunnelVisionFrame:IsShown() and UltraHardcore.backupTunnelVisionFrame:GetAlpha() > 0 then
-      UIFrameFadeOut(UltraHardcore.backupTunnelVisionFrame, fadeDuration, UltraHardcore.backupTunnelVisionFrame:GetAlpha(), 0)
+  if Ultra.backupTunnelVisionFrame then
+    if Ultra.backupTunnelVisionFrame:IsShown() and Ultra.backupTunnelVisionFrame:GetAlpha() > 0 then
+      UIFrameFadeOut(Ultra.backupTunnelVisionFrame, fadeDuration, Ultra.backupTunnelVisionFrame:GetAlpha(), 0)
       C_Timer.After(fadeDuration + 0.1, function()
-        UltraHardcore.backupTunnelVisionFrame:Hide()
+        Ultra.backupTunnelVisionFrame:Hide()
       end)
     end
   end

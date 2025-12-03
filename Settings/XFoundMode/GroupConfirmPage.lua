@@ -10,7 +10,7 @@ local function CreateGroupConfirmPage(parentFrame)
   local groupBanner = confirmPage:CreateTexture(nil, 'BACKGROUND')
   groupBanner:SetSize(450, 200) -- Match confirmation dialog width
   groupBanner:SetPoint('TOP', confirmPage, 'TOP', 0, -60) -- Behind the title
-  groupBanner:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\group-found-banner.png')
+  groupBanner:SetTexture('Interface\\AddOns\\Ultra\\Textures\\group-found-banner.png')
   
   -- Group Found Banner Border
   local groupBannerBorder = CreateFrame('Frame', nil, confirmPage, 'BackdropTemplate')

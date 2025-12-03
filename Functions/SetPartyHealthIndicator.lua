@@ -3,13 +3,13 @@
 
 -- Use the same health indicator steps as nameplates
 PARTY_HEALTH_INDICATOR_STEPS = {
-  {health = 0, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-black.png'},
-  {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
-  {health = 0.3, alpha = 0.8, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
-  {health = 0.4, alpha = 0.6, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
-  {health = 0.6, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
-  {health = 0.8, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
-  {health = 1, alpha = 0.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 0, alpha = 1.0, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-black.png'},
+  {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-red.png'},
+  {health = 0.3, alpha = 0.8, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-red.png'},
+  {health = 0.4, alpha = 0.6, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-orange.png'},
+  {health = 0.6, alpha = 0.4, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-orange.png'},
+  {health = 0.8, alpha = 0.2, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-yellow.png'},
+  {health = 1, alpha = 0.0, texture = 'Interface\\AddOns\\Ultra\\Textures\\health-icon-yellow.png'},
 }
 
 -- Cache of all party health indicators
@@ -23,6 +23,40 @@ PET_HEALTH_INDICATOR_FRAMES = {}
 
 -- Cache of all pet target highlight frames
 PET_TARGET_HIGHLIGHT_FRAMES = {}
+
+local function GetPartyFrameByIndex(index)
+  if type(UHC_GetPartyMemberFrame) == 'function' then
+    local frame = UHC_GetPartyMemberFrame(index)
+    if frame then
+      return frame
+    end
+  end
+  return _G['PartyMemberFrame' .. index] or _G['PartyFrameMemberFrame' .. index]
+end
+
+local function GetPartySubFrame(index, suffix)
+  if type(UHC_GetPartyMemberSubFrame) == 'function' then
+    local frame = UHC_GetPartyMemberSubFrame(index, suffix)
+    if frame then
+      return frame
+    end
+  end
+  local frame = _G['PartyMemberFrame' .. index .. suffix]
+  if frame then
+    return frame
+  end
+  return _G['PartyFrameMemberFrame' .. index .. suffix]
+end
+
+local function GetPartyPetFrame(index)
+  return GetPartySubFrame(index, 'PetFrame')
+end
+
+local function GetPartyFrameForIndicators(index)
+  return GetPartyFrameByIndex(index)
+    or GetPartySubFrame(index, 'Portrait')
+    or GetPartySubFrame(index, 'HealthBar')
+end
 
 -- Cache of all raid health indicators
 RAID_HEALTH_INDICATOR_FRAMES = {}
@@ -184,16 +218,9 @@ function SetAllRaidHealthIndicators(enabled)
 end
 
 function SetPartyHealthIndicator(enabled, partyIndex)
-  local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then 
-    -- Try alternative party frame names
-    partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
-    if not partyFrame then
-      partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
-    end
-    if not partyFrame then
-      return 
-    end
+  local partyFrame = GetPartyFrameForIndicators(partyIndex)
+  if not partyFrame then
+    return
   end
 
   -- If health indicator is disabled, hide existing indicators
@@ -286,7 +313,7 @@ function SetPetHealthIndicator(enabled, petType, petIndex)
     petFrame = PetFrame
     petUnit = "pet"
   elseif petType == "party" then
-    petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
+    petFrame = GetPartyPetFrame(petIndex)
     petUnit = "partypet" .. petIndex
   end
   
@@ -414,7 +441,7 @@ function SetAllPetHealthIndicators(enabled)
 
   -- Create health indicators for party pets
   for i = 1, 4 do
-    local partyPetFrame = _G['PartyMemberFrame' .. i .. 'PetFrame']
+    local partyPetFrame = GetPartyPetFrame(i)
     if partyPetFrame then
       local healthIndicator = PET_HEALTH_INDICATOR_FRAMES["party" .. i]
       if not healthIndicator then
@@ -457,15 +484,7 @@ function SetAllPartyHealthIndicators(enabled)
 
   -- Create health indicators for all party members and update them based on actual health
   for i = 1, 4 do -- Party members 1-4
-    local partyFrame = _G['PartyMemberFrame' .. i]
-    if not partyFrame then 
-      -- Try alternative party frame names
-      partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
-      if not partyFrame then
-        partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
-      end
-    end
-    
+    local partyFrame = GetPartyFrameForIndicators(i)
     if partyFrame then
       -- Create or get existing health indicator
       local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
@@ -488,15 +507,7 @@ function SetAllPartyHealthIndicators(enabled)
   -- Also try with a delay in case party frames aren't ready yet
   C_Timer.After(0.5, function()
     for i = 1, 4 do -- Party members 1-4
-      local partyFrame = _G['PartyMemberFrame' .. i]
-      if not partyFrame then 
-        -- Try alternative party frame names
-        partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
-        if not partyFrame then
-          partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
-        end
-      end
-      
+      local partyFrame = GetPartyFrameForIndicators(i)
       if partyFrame then
         -- Create or get existing health indicator
         local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
@@ -520,16 +531,9 @@ end
 
 -- Function to create target highlight for a party member
 function CreatePartyTargetHighlight(partyIndex)
-  local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then 
-    -- Try alternative party frame names
-    partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
-    if not partyFrame then
-      partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
-    end
-    if not partyFrame then
-      return 
-    end
+  local partyFrame = GetPartyFrameForIndicators(partyIndex)
+  if not partyFrame then
+    return
   end
 
   local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[partyIndex]
@@ -540,7 +544,7 @@ function CreatePartyTargetHighlight(partyIndex)
     highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
     
     -- Use holy damage texture for a golden glow effect
-    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
+    highlight:SetTexture('Interface\\AddOns\\Ultra\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect
@@ -562,8 +566,10 @@ function CreatePetTargetHighlight(petType)
   if petType == "player" then
     petFrame = PetFrame
   elseif petType:match("^party%d+$") then
-    local petIndex = petType:match("party(%d+)")
-    petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
+    local petIndex = tonumber(petType:match("party(%d+)"))
+    if petIndex then
+      petFrame = GetPartyPetFrame(petIndex)
+    end
   end
   
   if not petFrame then
@@ -585,7 +591,7 @@ function CreatePetTargetHighlight(petType)
     end
     
     -- Use holy damage texture for a golden glow effect
-    highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
+    highlight:SetTexture('Interface\\AddOns\\Ultra\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect
@@ -633,7 +639,7 @@ function UpdatePartyTargetHighlights()
       end
       if highlight then
         -- Ensure highlight is properly positioned
-        local partyFrame = _G['PartyMemberFrame' .. i]
+        local partyFrame = GetPartyFrameForIndicators(i)
         if partyFrame then
           highlight:SetPoint('CENTER', partyFrame, 'CENTER', -40, 0)
         end
@@ -781,7 +787,7 @@ function RepositionAllPartyTargetHighlights()
   for i = 1, 4 do
     local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[i]
     if highlight then
-      local partyFrame = _G['PartyMemberFrame' .. i]
+      local partyFrame = GetPartyFrameForIndicators(i)
       if partyFrame then
         highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
       end

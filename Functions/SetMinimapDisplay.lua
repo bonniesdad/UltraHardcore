@@ -101,7 +101,7 @@ local function LoadClockPosition()
   TimeManagerClockButton:SetParent(UIParent)
   TimeManagerClockButton:ClearAllPoints()
 
-  local pos = UltraHardcoreDB.minimapClockPosition
+  local pos = UltraDB.minimapClockPosition
   if pos then
     TimeManagerClockButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
@@ -118,7 +118,7 @@ local function LoadMailPosition()
   MiniMapMailFrame:SetParent(UIParent)
   MiniMapMailFrame:ClearAllPoints()
 
-  local pos = UltraHardcoreDB.minimapMailPosition
+  local pos = UltraDB.minimapMailPosition
   if pos then
     MiniMapMailFrame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
@@ -157,8 +157,8 @@ function ShowClock()
   TimeManagerClockButton:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     local point, _, relPoint, x, y = self:GetPoint()
-    UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
-    SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
+    UltraDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
+    SaveDBData('minimapClockPosition', UltraDB.minimapClockPosition)
   end)
   showClockInitialized = true
 end
@@ -186,8 +186,8 @@ function ShowMail()
   MiniMapMailFrame:SetScript("OnDragStop", function(self)
     self:StopMovingOrSizing()
     local point, _, relPoint, x, y = self:GetPoint()
-    UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
-    SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
+    UltraDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
+    SaveDBData('minimapMailPosition', UltraDB.minimapMailPosition)
   end)
   showMailInitialized = true
 end
@@ -196,7 +196,7 @@ function HideMinimap()
   -- Ensure no temporary reveal leftovers are active
   ResetMinimapRevealState()
   -- Use custom blip texture to hide party members and objective arrows
-  Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
+  Minimap:SetBlipTexture("Interface\\AddOns\\Ultra\\Textures\\ObjectIconsAtlasRestricted.png")
   -- Hide the player arrow
   Minimap:SetPlayerTexture("")
     
@@ -373,9 +373,9 @@ local function ResetClockPosition()
 
   -- Save the reset position
   local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
-  UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
-  SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
-  print('UltraHardcore: clock position reset to default')
+  UltraDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  SaveDBData('minimapClockPosition', UltraDB.minimapClockPosition)
+  print('Ultra: clock position reset to default')
 end
 
 -- Reset mail position function
@@ -393,9 +393,9 @@ local function ResetMailPosition()
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
-  UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
-  SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
-  print('UltraHardcore: Mail position reset to default')
+  UltraDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  SaveDBData('minimapMailPosition', UltraDB.minimapMailPosition)
+  print('Ultra: Mail position reset to default')
 end
 
 -- Slash command to reset clock position

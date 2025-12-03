@@ -4,7 +4,7 @@ function ShowBreathOverlay(breathPercent)
     return
   end
   -- Initialize breath overlay frame if it doesn't exist
-  if not UltraHardcore.breathOverlayFrame then
+  if not Ultra.breathOverlayFrame then
     local breathOverlayFrame = CreateFrame('Frame', nil, UIParent)
     breathOverlayFrame:SetAllPoints(UIParent)
     
@@ -20,7 +20,7 @@ function ShowBreathOverlay(breathPercent)
     breathOverlayFrame.texture = breathOverlayFrame:CreateTexture(nil, 'BACKGROUND')
     breathOverlayFrame.texture:SetAllPoints()
     breathOverlayFrame.texture:SetColorTexture(0, 0, 0, 0)
-    UltraHardcore.breathOverlayFrame = breathOverlayFrame
+    Ultra.breathOverlayFrame = breathOverlayFrame
   end
   
   -- Calculate greyscale intensity based on breath percentage
@@ -35,18 +35,18 @@ function ShowBreathOverlay(breathPercent)
   
   if alpha > 0 then
     -- Show red-tinted overlay (more dramatic and urgent)
-    UltraHardcore.breathOverlayFrame.texture:SetColorTexture(0.8, 0.2, 0.2, alpha)
-    UltraHardcore.breathOverlayFrame:Show()
+    Ultra.breathOverlayFrame.texture:SetColorTexture(0.8, 0.2, 0.2, alpha)
+    Ultra.breathOverlayFrame:Show()
   else
     -- Hide overlay when breath is full
-    UltraHardcore.breathOverlayFrame:Hide()
+    Ultra.breathOverlayFrame:Hide()
   end
 end
 
 -- 🟢 Function to remove breath overlay
 function RemoveBreathOverlay()
-  if UltraHardcore.breathOverlayFrame then
-    UltraHardcore.breathOverlayFrame:Hide()
+  if Ultra.breathOverlayFrame then
+    Ultra.breathOverlayFrame:Hide()
   end
 end
 
@@ -93,8 +93,8 @@ end
 -- 🟢 Function to start breath monitoring
 function OnBreathStart()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
-    if UltraHardcore and UltraHardcore.breathOverlayFrame then
-      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    if Ultra and Ultra.breathOverlayFrame then
+      Ultra.breathOverlayFrame:SetScript("OnUpdate", nil)
     end
     if RemoveBreathOverlay then
       RemoveBreathOverlay()
@@ -104,9 +104,9 @@ function OnBreathStart()
   -- Initialize the overlay frame first
   ShowBreathOverlay(100) -- Start with full breath
   
-  if UltraHardcore.breathOverlayFrame then
-    UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
-    UltraHardcore.breathOverlayFrame:Show() -- Make sure frame is visible
+  if Ultra.breathOverlayFrame then
+    Ultra.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
+    Ultra.breathOverlayFrame:Show() -- Make sure frame is visible
   end
 
   -- Hide only the BREATH mirror timer (once) without affecting fatigue (EXHAUSTION)
@@ -122,8 +122,8 @@ end
 -- 🟢 Function to stop breath monitoring
 function OnBreathStop()
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideBreathIndicator then
-    if UltraHardcore and UltraHardcore.breathOverlayFrame then
-      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    if Ultra and Ultra.breathOverlayFrame then
+      Ultra.breathOverlayFrame:SetScript("OnUpdate", nil)
     end
     if RemoveBreathOverlay then
       RemoveBreathOverlay()
@@ -133,14 +133,14 @@ function OnBreathStop()
   -- If still in water, keep the overlay active until we actually leave the water
   if IsSwimming and IsSwimming() then
     ShowBreathOverlay(0)
-    if UltraHardcore.breathOverlayFrame then
-      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
-      UltraHardcore.breathOverlayFrame:Show()
+    if Ultra.breathOverlayFrame then
+      Ultra.breathOverlayFrame:SetScript("OnUpdate", OnBreathUpdate)
+      Ultra.breathOverlayFrame:Show()
     end
   else
     RemoveBreathOverlay()
-    if UltraHardcore.breathOverlayFrame then
-      UltraHardcore.breathOverlayFrame:SetScript("OnUpdate", nil)
+    if Ultra.breathOverlayFrame then
+      Ultra.breathOverlayFrame:SetScript("OnUpdate", nil)
     end
   end
 end

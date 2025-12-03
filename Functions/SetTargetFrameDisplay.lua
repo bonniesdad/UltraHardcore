@@ -209,20 +209,65 @@ local function ApplyMask()
   PositionAuras()
 end
 
--- Hook Blizzard update functions
-hooksecurefunc("TargetFrame_CheckClassification", ApplyMask)
-hooksecurefunc("TargetFrame_Update", ApplyMask)
-hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
-hooksecurefunc("TargetofTarget_Update", function()
-  HideSubFrames("TargetFrameToT")
-  HideTextureRegions(TargetFrameToTTextureFrame)
-  HideToTAuras()
-  ShowToT()
+-- Defer hook installation until Blizzard's target frame code is loaded
+local targetHooksInitialized = false
+local hookInitFrame = CreateFrame("Frame")
+
+local function TryInitializeTargetHooks()
+  if targetHooksInitialized then
+    return true
+  end
+
+  if type(TargetFrame_CheckClassification) ~= "function"
+    or type(TargetFrame_Update) ~= "function"
+    or type(TargetFrame_UpdateAuras) ~= "function"
+    or type(TargetofTarget_Update) ~= "function" then
+    return false
+  end
+
+  hooksecurefunc("TargetFrame_CheckClassification", ApplyMask)
+  hooksecurefunc("TargetFrame_Update", ApplyMask)
+  hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
+  hooksecurefunc("TargetofTarget_Update", function()
+    HideSubFrames("TargetFrameToT")
+    HideTextureRegions(TargetFrameToTTextureFrame)
+    HideToTAuras()
+    ShowToT()
+  end)
+
+  targetHooksInitialized = true
+  return true
+end
+
+local function StopHookInitializer()
+  if not hookInitFrame then
+    return
+  end
+
+  hookInitFrame:UnregisterAllEvents()
+  hookInitFrame:SetScript("OnEvent", nil)
+end
+
+hookInitFrame:SetScript("OnEvent", function(_, event, addon)
+  if event == "ADDON_LOADED" and addon ~= "Blizzard_TargetFrame" then
+    return
+  end
+
+  if TryInitializeTargetHooks() then
+    StopHookInitializer()
+  end
 end)
 
+if not TryInitializeTargetHooks() then
+  hookInitFrame:RegisterEvent("ADDON_LOADED")
+  hookInitFrame:RegisterEvent("PLAYER_LOGIN")
+else
+  StopHookInitializer()
+end
 
 -- Main API
 function SetTargetFrameDisplay(mask)
+  TryInitializeTargetHooks()
   -- ensure mask is always a table
   if type(mask) ~= "table" then mask = {} end
   targetFrameMask = mask

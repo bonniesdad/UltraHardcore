@@ -90,7 +90,7 @@ local function UpdateXPTracking(levelUp)
     --[[if statsChanged > 0 then
       -- Instead of repeatedly calling UpdateStat in the loop above (which resaves CharacterStats over and over)
       -- Call SaveDBData once at the end
-      SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+      SaveDBData('characterStats', UltraDB.characterStats)
     end]]
 
     lastXPValue = AddonXPTracking:NewLastXPValue(levelUp, currentXP)
@@ -138,7 +138,7 @@ xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
     UpdateXPTracking(true)
   elseif event == 'PLAYER_LOGIN' then
     InitializeXPTracking()
-  elseif event == 'ADDON_LOADED' and select(1, ...) == 'UltraHardcore' then
+  elseif event == 'ADDON_LOADED' and select(1, ...) == 'Ultra' then
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking
     C_Timer.After(3.0, function()

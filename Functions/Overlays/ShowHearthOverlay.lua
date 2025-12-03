@@ -14,11 +14,11 @@ function ShowHearthingOverlay()
             if not hearthingOverlayFrame.texture then return end
             
             hearthingOverlayFrame.texture:SetAllPoints()
-            hearthingOverlayFrame.texture:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\RoachOverlay.png")
+            hearthingOverlayFrame.texture:SetTexture("Interface\\AddOns\\Ultra\\Textures\\RoachOverlay.png")
         end)
 
         if not success then
-            print("UltraHardcore: Error creating hearthing overlay frame:", err)
+            print("Ultra: Error creating hearthing overlay frame:", err)
             return
         end
     end

@@ -195,6 +195,20 @@ function DeathDetails.HandlePlayerDeath(destGUID)
       healthText
     )
 
+  -- Track death history for Resource tab
+  if CharacterStats and CharacterStats.AddDeathRecord then
+    CharacterStats:AddDeathRecord({
+      killer = killerName,
+      location = location,
+      healthText = healthText,
+      level = UnitLevel('player'),
+      timestamp = time(),
+    })
+    if type(UpdateResourceTabDeathCounter) == 'function' then
+      UpdateResourceTabDeathCounter()
+    end
+  end
+
   -- Always print to chat frame first (works even when dead)
   DEFAULT_CHAT_FRAME:AddMessage('|cFFFF0000[ULTRA]|r ' .. message, 1, 0, 0)
 

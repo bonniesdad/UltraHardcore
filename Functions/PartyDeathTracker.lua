@@ -68,7 +68,7 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   if destGUID == playerGUID then
     -- Player death sound
     if GLOBAL_SETTINGS.playPlayerDeathSoundbite then
-      PlaySoundFile('Interface\\AddOns\\UltraHardcore\\Sounds\\PlayerDeath.ogg', 'SFX')
+      PlaySoundFile('Interface\\AddOns\\Ultra\\Sounds\\PlayerDeath.ogg', 'SFX')
     end
     return
   end
@@ -90,7 +90,7 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
       local randomNumber = random(1, 4)
       -- Play sound file on party death
       PlaySoundFile(
-        'Interface\\AddOns\\UltraHardcore\\Sounds\\PartyDeath' .. randomNumber .. '.ogg',
+        'Interface\\AddOns\\Ultra\\Sounds\\PartyDeath' .. randomNumber .. '.ogg',
         'SFX'
       )
     end

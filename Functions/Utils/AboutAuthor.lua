@@ -30,7 +30,7 @@ function UHC_CreateAboutAuthorSection(parent, point, relativeTo, relativePoint, 
   local profilePicture = profilePictureFrame:CreateTexture(nil, 'ARTWORK')
   profilePicture:SetSize(100, 100)
   profilePicture:SetPoint('CENTER', profilePictureFrame, 'CENTER', 0, 0)
-  profilePicture:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\profile-picture.png')
+  profilePicture:SetTexture('Interface\\AddOns\\Ultra\\Textures\\profile-picture.png')
   profilePicture:SetTexCoord(0, 1, 0, 1)
 
   -- About the Author title (first row, right of profile picture, bigger font)

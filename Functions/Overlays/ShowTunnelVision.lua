@@ -1,6 +1,6 @@
 -- Initialize the tunnel vision frames table if it doesn't exist
-if not UltraHardcore.tunnelVisionFrames then
-  UltraHardcore.tunnelVisionFrames = {}
+if not Ultra.tunnelVisionFrames then
+  Ultra.tunnelVisionFrames = {}
 end
 
 -- Table defining seasonal themes with date ranges and texture prefixes
@@ -50,8 +50,8 @@ function ShowTunnelVision(blurIntensity)
   local frameName = 'UltraHardcoreTunnelVision_' .. blurIntensity
   
   -- Check if frame already exists and is visible
-  if UltraHardcore.tunnelVisionFrames[frameName] and UltraHardcore.tunnelVisionFrames[frameName]:IsShown() then
-    local existingFrame = UltraHardcore.tunnelVisionFrames[frameName]
+  if Ultra.tunnelVisionFrames[frameName] and Ultra.tunnelVisionFrames[frameName]:IsShown() then
+    local existingFrame = Ultra.tunnelVisionFrames[frameName]
     local currentAlpha = existingFrame:GetAlpha() or 0
     -- If it's mid-fade-out (shown but alpha < 1), cancel fade-out and fade back in immediately
     if currentAlpha < 1 then
@@ -64,7 +64,7 @@ function ShowTunnelVision(blurIntensity)
   end
   
   -- Create the frame if it doesn't exist
-  if not UltraHardcore.tunnelVisionFrames[frameName] then
+  if not Ultra.tunnelVisionFrames[frameName] then
     local tunnelVisionFrame = CreateFrame('Frame', frameName, UIParent)
     tunnelVisionFrame:SetAllPoints(UIParent)
     
@@ -82,14 +82,14 @@ function ShowTunnelVision(blurIntensity)
     tunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
     
     -- Store the frame reference
-    UltraHardcore.tunnelVisionFrames[frameName] = tunnelVisionFrame
+    Ultra.tunnelVisionFrames[frameName] = tunnelVisionFrame
   end
   
-  local frame = UltraHardcore.tunnelVisionFrames[frameName]
+  local frame = Ultra.tunnelVisionFrames[frameName]
   
   -- Determine the texture based on active seasonal theme
   local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and "halloween_foggy_" or "tunnel_vision_" -- Fallback to default texture
-  local texturePath = 'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format(blurIntensity) .. '.png'
+  local texturePath = 'Interface\\AddOns\\Ultra\\textures\\' .. texturePrefix .. string.format(blurIntensity) .. '.png'
   
   frame.texture:SetTexture(texturePath)
   frame:SetAlpha(0)

@@ -3,13 +3,13 @@
 function CanGainComboPoints(unit)
     unit = unit or 'player'
     if not UnitExists(unit) then
-        print("UltraHardcore: Invalid unit provided to CanGainComboPoints")
+        print("Ultra: Invalid unit provided to CanGainComboPoints")
         return false
     end
 
     local _, playerClass = UnitClass(unit)
     if not playerClass then
-        print("UltraHardcore: Failed to get unit class")
+        print("Ultra: Failed to get unit class")
         return false
     end
 

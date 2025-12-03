@@ -1,4 +1,4 @@
--- XP Bar Module for UltraHardcore
+-- XP Bar Module for Ultra
 -- Creates a customizable experience bar at the top of the screen
 
 local UHC_XPBar = {}
@@ -64,7 +64,7 @@ function UHC_XPBar:Initialize()
     xpBarDot = xpBarFrame:CreateTexture(nil, "OVERLAY")
     xpBarDot:SetSize(GetBarHeight()*2, GetBarHeight()*2) -- Slightly larger to see texture detail
     -- Use your custom circular PNG texture
-    xpBarDot:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png")
+    xpBarDot:SetTexture("Interface\\AddOns\\Ultra\\Textures\\circle-with-border.png")
     -- Don't crop the texture coordinates since your PNG should already be circular
     -- xpBarDot:SetTexCoord(0.25, 0.75, 0.25, 0.75)
     -- Don't set vertex color initially - let the texture show as-is first

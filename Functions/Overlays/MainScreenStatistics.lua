@@ -528,7 +528,7 @@ end
 
 -- Function to update all statistics
 function UpdateStatistics()
-  if not UltraHardcoreDB then
+  if not UltraDB then
     LoadDBData()
   end
 
@@ -687,11 +687,11 @@ end)
 
 -- Slash command to reset statistics frame to its saved position
 local function ResetStatsFrameToSavedPosition()
-  if not UltraHardcoreDB then
+  if not UltraDB then
     LoadDBData()
   end
   statsFrame:ClearAllPoints()
-  local pos = UltraHardcoreDB and UltraHardcoreDB.statsFramePosition or nil
+  local pos = UltraDB and UltraDB.statsFramePosition or nil
   if pos then
     local point = pos.point or 'TOPLEFT'
     local relPoint = pos.relPoint or pos.relativePoint or 'TOPLEFT'
@@ -701,7 +701,7 @@ local function ResetStatsFrameToSavedPosition()
   else
     statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
   end
-  print('UltraHardcore: Statistics panel moved to saved position')
+  print('Ultra: Statistics panel moved to saved position')
 end
 
 SLASH_UHCSTATSRESET1 = '/uhcstatsreset'

@@ -10,7 +10,7 @@ local function CreateGuildConfirmPage(parentFrame)
   local guildBanner = confirmPage:CreateTexture(nil, 'BACKGROUND')
   guildBanner:SetSize(450, 200) -- Match confirmation dialog width
   guildBanner:SetPoint('TOP', confirmPage, 'TOP', 0, -60) -- Behind the title
-  guildBanner:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\guild-found-banner.png')
+  guildBanner:SetTexture('Interface\\AddOns\\Ultra\\Textures\\guild-found-banner.png')
   
   -- Guild Found Banner Border
   local guildBannerBorder = CreateFrame('Frame', nil, confirmPage, 'BackdropTemplate')

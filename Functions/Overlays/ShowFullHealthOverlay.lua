@@ -13,13 +13,13 @@ function ShowFullHealthOverlay()
             if not fullHealthOverlayFrame.texture then return end
             
             fullHealthOverlayFrame.texture:SetAllPoints()
-            fullHealthOverlayFrame.texture:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\full-health-overlay.png")
+            fullHealthOverlayFrame.texture:SetTexture("Interface\\AddOns\\Ultra\\Textures\\full-health-overlay.png")
             fullHealthOverlayFrame:SetAlpha(0)
             fullHealthOverlayFrame:Hide()
         end)
         
         if not success then
-            print("UltraHardcore: Error creating full health overlay frame:", err)
+            print("Ultra: Error creating full health overlay frame:", err)
             return
         end
     end

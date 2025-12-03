@@ -30,7 +30,7 @@ local function CreateIntroPage(parentFrame)
   local guildBannerTexture = guildFoundButton:CreateTexture(nil, 'BACKGROUND')
   guildBannerTexture:SetAllPoints()
   guildBannerTexture:SetTexture(
-    'Interface\\AddOns\\UltraHardcore\\Textures\\guild-found-banner.png'
+    'Interface\\AddOns\\Ultra\\Textures\\guild-found-banner.png'
   )
 
   -- Guild Found Button Styling
@@ -73,7 +73,7 @@ local function CreateIntroPage(parentFrame)
   local groupBannerTexture = groupFoundButton:CreateTexture(nil, 'BACKGROUND')
   groupBannerTexture:SetAllPoints()
   groupBannerTexture:SetTexture(
-    'Interface\\AddOns\\UltraHardcore\\Textures\\group-found-banner.png'
+    'Interface\\AddOns\\Ultra\\Textures\\group-found-banner.png'
   )
 
   -- Group Found Button Styling

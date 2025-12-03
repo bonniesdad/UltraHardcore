@@ -3,8 +3,8 @@
 > A World of Warcraft Classic addon that enhances the solo player experience by adding extreme difficulty modifiers and immersive hardcore mechanics.
 
 [![WoW Classic Era](https://img.shields.io/badge/WoW-Classic%20Era-orange)](https://worldofwarcraft.com/en-us/wowclassic)
-[![Interface](https://img.shields.io/badge/Interface-11507-blue)](https://github.com/bonniesdad/UltraHardcore)
-[![Version](https://img.shields.io/badge/Version-1.2.0-green)](https://github.com/bonniesdad/UltraHardcore/releases)
+[![Interface](https://img.shields.io/badge/Interface-11507-blue)](https://github.com/bonniesdad/Ultra)
+[![Version](https://img.shields.io/badge/Version-1.2.0-green)](https://github.com/bonniesdad/Ultra/releases)
 [![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
 
 Ultra Hardcore is a comprehensive World of Warcraft Classic addon designed to push the boundaries of the already challenging hardcore mode. By systematically removing critical UI elements and introducing punishing visual effects, this addon creates an authentic old-school gaming experience where every decision matters and death lurks around every corner.
@@ -76,13 +76,13 @@ Ultra Hardcore supports multiple installation methods to accommodate different u
    cd "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns"
    
    # Download and extract the latest release
-   # Visit: https://github.com/bonniesdad/UltraHardcore/releases
+   # Visit: https://github.com/bonniesdad/Ultra/releases
    ```
 
 2. **Extract to AddOns Directory**
    - Extract the downloaded ZIP file directly into your `Interface\AddOns` folder
-   - Ensure the folder structure is: `Interface\AddOns\UltraHardcore\`
-   - The main addon file should be located at: `Interface\AddOns\UltraHardcore\UltraHardcore.lua`
+   - Ensure the folder structure is: `Interface\AddOns\Ultra\`
+   - The main addon file should be located at: `Interface\AddOns\Ultra\Ultra.lua`
 
 3. **Enable in Game**
    - Launch World of Warcraft Classic Era
@@ -99,13 +99,13 @@ Ultra Hardcore supports multiple installation methods to accommodate different u
    cd "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns"
    
    # Download and extract the latest release
-   # Visit: https://github.com/bonniesdad/UltraHardcore/releases
+   # Visit: https://github.com/bonniesdad/Ultra/releases
    ```
 
 2. **Extract to AddOns Directory**
    - Extract the downloaded ZIP file directly into your `Interface\AddOns` folder
-   - Ensure the folder structure is: `Interface\AddOns\UltraHardcore\`
-   - The main addon file should be located at: `Interface\AddOns\UltraHardcore\UltraHardcore.lua`
+   - Ensure the folder structure is: `Interface\AddOns\Ultra\`
+   - The main addon file should be located at: `Interface\AddOns\Ultra\Ultra.lua`
 
 3. **Enable in Game**
    - Launch World of Warcraft Classic Era
@@ -121,7 +121,7 @@ Ultra Hardcore supports multiple installation methods to accommodate different u
 cd "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns"
 
 # Clone the repository
-git clone https://github.com/bonniesdad/UltraHardcore.git
+git clone https://github.com/bonniesdad/Ultra.git
 
 # The addon will be automatically available in-game
 ```
@@ -129,7 +129,7 @@ git clone https://github.com/bonniesdad/UltraHardcore.git
 ### Method 4: Manual File Copy
 
 1. Download the repository as a ZIP file from GitHub
-2. Extract all files to a new folder named `UltraHardcore`
+2. Extract all files to a new folder named `Ultra`
 3. Copy this folder to your `Interface\AddOns` directory
 4. Restart World of Warcraft if it's currently running
 
@@ -144,7 +144,7 @@ After installation, verify the addon is working correctly:
 
 ### Common Installation Issues
 
-**Addon Not Appearing in List**: Ensure the folder name exactly matches "UltraHardcore" and contains the `.toc` file. The folder structure should be `Interface\AddOns\UltraHardcore\UltraHardcore.toc`.
+**Addon Not Appearing in List**: Ensure the folder name exactly matches "Ultra" and contains the `.toc` file. The folder structure should be `Interface\AddOns\Ultra\Ultra.toc`.
 
 **Interface Version Mismatch**: If you receive out-of-date warnings, the addon will still function correctly. Ultra Hardcore is designed to be forward-compatible with minor interface updates.
 
@@ -164,7 +164,7 @@ After installation, verify the addon is working correctly:
 
 Upon first launch, Ultra Hardcore initializes with default settings optimized for maximum difficulty. However, you may want to customize certain aspects:
 
-1. **Saved Variables**: Your preferences are automatically saved to `WTF\Account\[AccountName]\SavedVariables\UltraHardcoreDB.lua`
+1. **Saved Variables**: Your preferences are automatically saved to `WTF\Account\[AccountName]\SavedVariables\UltraDB.lua`
 2. **Character-Specific Settings**: Some preferences are saved per-character for maximum flexibility
 
 The addon requires no additional configuration to function at its core difficulty level, but advanced users can modify settings through the in-game interface or by editing the saved variables file directly.
@@ -175,10 +175,10 @@ The addon utilizes an event-driven architecture centered around a main frame obj
 
 ```lua
 -- Core frame initialization
-UltraHardcore = CreateFrame('Frame')
-UltraHardcore:RegisterEvent('ADDON_LOADED')
-UltraHardcore:RegisterEvent('PLAYER_ENTERING_WORLD')
-UltraHardcore:RegisterEvent('UNIT_HEALTH_FREQUENT')
+Ultra = CreateFrame('Frame')
+Ultra:RegisterEvent('ADDON_LOADED')
+Ultra:RegisterEvent('PLAYER_ENTERING_WORLD')
+Ultra:RegisterEvent('UNIT_HEALTH_FREQUENT')
 ```
 
 The main event handler implements a dispatch system that routes events to appropriate handler functions based on event type and current game state. This approach allows for clean code organization and efficient event processing.
@@ -188,8 +188,8 @@ The main event handler implements a dispatch system that routes events to approp
 The addon follows a hierarchical file organization that promotes maintainability and code reuse:
 
 **Core Files**:
-- `UltraHardcore.lua`: Main entry point and event dispatcher
-- `UltraHardcore.toc`: Addon metadata and file loading order
+- `Ultra.lua`: Main entry point and event dispatcher
+- `Ultra.toc`: Addon metadata and file loading order
 
 **Modular Components**:
 - `Functions/`: Core functionality modules
@@ -222,7 +222,7 @@ The addon implements a saved variables system that persists user preferences and
 
 ```lua
 -- Database structure
-UltraHardcoreDB = {
+UltraDB = {
     global = {
         settings = { ... },
         statistics = { ... }
@@ -350,12 +350,12 @@ local restedZones = {
 Ultra Hardcore automatically persists configuration changes through World of Warcraft's saved variables system. The configuration file is located at:
 
 ```
-WTF\Account\[AccountName]\SavedVariables\UltraHardcoreDB.lua
+WTF\Account\[AccountName]\SavedVariables\UltraDB.lua
 ```
 
 **Configuration File Structure**:
 ```lua
-UltraHardcoreDB = {
+UltraDB = {
     ["global"] = {
         ["settings"] = {
             ["difficultyLevel"] = 3,
@@ -483,20 +483,20 @@ Setting up a development environment for Ultra Hardcore requires familiarity wit
 1. **Fork and Clone the Repository**
    ```bash
    # Fork the repository on GitHub first
-   git clone https://github.com/yourusername/UltraHardcore.git
-   cd UltraHardcore
+   git clone https://github.com/yourusername/Ultra.git
+   cd Ultra
    
    # Set up upstream remote
-   git remote add upstream https://github.com/bonniesdad/UltraHardcore.git
+   git remote add upstream https://github.com/bonniesdad/Ultra.git
    ```
 
 2. **Create Development Symlink**
    ```bash
    # Create symlink in WoW AddOns directory (Windows)
-   mklink /D "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns\UltraHardcore" "C:\path\to\your\UltraHardcore"
+   mklink /D "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns\Ultra" "C:\path\to\your\Ultra"
    
    # Create symlink on macOS/Linux
-   ln -s /path/to/your/UltraHardcore "/Applications/World of Warcraft/_classic_era_/Interface/AddOns/UltraHardcore"
+   ln -s /path/to/your/Ultra "/Applications/World of Warcraft/_classic_era_/Interface/AddOns/Ultra"
    ```
 
 3. **Install Development Tools**
@@ -678,12 +678,12 @@ Ultra Hardcore exposes an API that allows other addons to integrate with its har
 
 ### Core API Functions
 
-**UltraHardcore.GetSettings()**
+**Ultra.GetSettings()**
 Returns the current global settings configuration object.
 
 ```lua
 -- Usage example
-local settings = UltraHardcore.GetSettings()
+local settings = Ultra.GetSettings()
 if settings.hidePlayerFrame then
     print("Health bar is currently hidden")
 end
@@ -697,7 +697,7 @@ end
 }
 ```
 
-**UltraHardcore.UpdateSetting(key, value)**
+**Ultra.UpdateSetting(key, value)**
 Safely updates a specific setting with validation and error handling.
 
 ```lua
@@ -706,8 +706,8 @@ Safely updates a specific setting with validation and error handling.
 -- value (any): New value for the setting
 
 -- Usage examples
-UltraHardcore.UpdateSetting("hidePlayerFrame", false)
-UltraHardcore.UpdateSetting("deathIndicatorSensitivity", 0.8)
+Ultra.UpdateSetting("hidePlayerFrame", false)
+Ultra.UpdateSetting("deathIndicatorSensitivity", 0.8)
 
 -- Return values:
 -- true: Setting updated successfully
@@ -715,12 +715,12 @@ UltraHardcore.UpdateSetting("deathIndicatorSensitivity", 0.8)
 -- nil: Setting update failed due to restrictions
 ```
 
-**UltraHardcore.GetPlayerStatus()**
+**Ultra.GetPlayerStatus()**
 Retrieves comprehensive information about the player's current hardcore status.
 
 ```lua
 -- Usage example
-local status = UltraHardcore.GetPlayerStatus()
+local status = Ultra.GetPlayerStatus()
 print(string.format("Health: %d%%, Deaths: %d", status.healthPercent, status.deathCount))
 
 -- Return value structure
@@ -737,7 +737,7 @@ print(string.format("Health: %d%%, Deaths: %d", status.healthPercent, status.dea
 
 ### Event System API
 
-**UltraHardcore.RegisterCallback(event, callback)**
+**Ultra.RegisterCallback(event, callback)**
 Registers a callback function to be executed when specific Ultra Hardcore events occur.
 
 ```lua
@@ -748,7 +748,7 @@ Registers a callback function to be executed when specific Ultra Hardcore events
 -- "HARDCORE_MODE_TOGGLED" - Addon enabled/disabled
 
 -- Usage example
-UltraHardcore.RegisterCallback("CRITICAL_HIT_RECEIVED", function(damage, source)
+Ultra.RegisterCallback("CRITICAL_HIT_RECEIVED", function(damage, source)
     print(string.format("Critical hit for %d damage from %s", damage, source))
 end)
 
@@ -759,7 +759,7 @@ end)
 -- HARDCORE_MODE_TOGGLED: function(enabled, reason)
 ```
 
-**UltraHardcore.UnregisterCallback(event, callback)**
+**Ultra.UnregisterCallback(event, callback)**
 Removes a previously registered callback function.
 
 ```lua
@@ -768,14 +768,14 @@ local myCallback = function(intensity, healthPercent)
     -- Handle death indicator changes
 end
 
-UltraHardcore.RegisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
+Ultra.RegisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
 -- Later...
-UltraHardcore.UnregisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
+Ultra.UnregisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
 ```
 
 ### Visual Effects API
 
-**UltraHardcore.ApplyCustomOverlay(overlayConfig)**
+**Ultra.ApplyCustomOverlay(overlayConfig)**
 Creates custom visual overlays using the Ultra Hardcore overlay system.
 
 ```lua
@@ -793,7 +793,7 @@ local customOverlay = {
     blendMode = "BLEND"
 }
 
-UltraHardcore.ApplyCustomOverlay(customOverlay)
+Ultra.ApplyCustomOverlay(customOverlay)
 
 -- Configuration options:
 -- name (string): Unique identifier for the overlay
@@ -805,24 +805,24 @@ UltraHardcore.ApplyCustomOverlay(customOverlay)
 -- blendMode (string): Texture blending mode
 ```
 
-**UltraHardcore.RemoveCustomOverlay(name)**
+**Ultra.RemoveCustomOverlay(name)**
 Removes a custom overlay by name.
 
 ```lua
 -- Usage example
-UltraHardcore.RemoveCustomOverlay("MyCustomEffect")
+Ultra.RemoveCustomOverlay("MyCustomEffect")
 
 -- Return values:
 -- true: Overlay removed successfully
 -- false: Overlay not found
 ```
 
-**UltraHardcore.GetActiveOverlays()**
+**Ultra.GetActiveOverlays()**
 Returns information about all currently active overlays.
 
 ```lua
 -- Usage example
-local overlays = UltraHardcore.GetActiveOverlays()
+local overlays = Ultra.GetActiveOverlays()
 for name, config in pairs(overlays) do
     print(string.format("Active overlay: %s (alpha: %.2f)", name, config.alpha))
 end
@@ -830,7 +830,7 @@ end
 
 ### Statistics and Tracking API
 
-**UltraHardcore.GetStatistics(scope)**
+**Ultra.GetStatistics(scope)**
 Retrieves statistical data about hardcore gameplay.
 
 ```lua
@@ -838,9 +838,9 @@ Retrieves statistical data about hardcore gameplay.
 -- scope (string): "session", "character", or "account"
 
 -- Usage examples
-local sessionStats = UltraHardcore.GetStatistics("session")
-local characterStats = UltraHardcore.GetStatistics("character")
-local accountStats = UltraHardcore.GetStatistics("account")
+local sessionStats = Ultra.GetStatistics("session")
+local characterStats = Ultra.GetStatistics("character")
+local accountStats = Ultra.GetStatistics("account")
 
 -- Return value structure
 {
@@ -856,7 +856,7 @@ local accountStats = UltraHardcore.GetStatistics("account")
 }
 ```
 
-**UltraHardcore.RecordCustomEvent(eventName, eventData)**
+**Ultra.RecordCustomEvent(eventName, eventData)**
 Records custom events for statistical tracking.
 
 ```lua
@@ -865,7 +865,7 @@ Records custom events for statistical tracking.
 -- eventData (table): Event-specific data
 
 -- Usage example
-UltraHardcore.RecordCustomEvent("BOSS_ENCOUNTER", {
+Ultra.RecordCustomEvent("BOSS_ENCOUNTER", {
     bossName = "Ragnaros",
     duration = 180,
     outcome = "victory",
@@ -875,12 +875,12 @@ UltraHardcore.RecordCustomEvent("BOSS_ENCOUNTER", {
 
 ### Integration API
 
-**UltraHardcore.IsCompatibleAddon(addonName)**
+**Ultra.IsCompatibleAddon(addonName)**
 Checks if a specific addon is compatible with Ultra Hardcore.
 
 ```lua
 -- Usage example
-if UltraHardcore.IsCompatibleAddon("Details") then
+if Ultra.IsCompatibleAddon("Details") then
     print("Details addon is compatible")
 else
     print("Details addon may conflict with Ultra Hardcore")
@@ -892,7 +892,7 @@ end
 -- nil: Compatibility unknown
 ```
 
-**UltraHardcore.RequestFeatureDisable(featureName, reason)**
+**Ultra.RequestFeatureDisable(featureName, reason)**
 Allows other addons to request temporary disabling of specific Ultra Hardcore features.
 
 ```lua
@@ -901,7 +901,7 @@ Allows other addons to request temporary disabling of specific Ultra Hardcore fe
 -- reason (string): Reason for the request
 
 -- Usage example
-UltraHardcore.RequestFeatureDisable("hidePlayerFrame", "Raid healing interface needed")
+Ultra.RequestFeatureDisable("hidePlayerFrame", "Raid healing interface needed")
 
 -- Available features:
 -- "hidePlayerFrame", "hideMinimap", "hideTargetFrame"
@@ -912,17 +912,17 @@ UltraHardcore.RequestFeatureDisable("hidePlayerFrame", "Raid healing interface n
 -- false: Request denied (feature is core to hardcore experience)
 ```
 
-**UltraHardcore.RestoreFeature(featureName)**
+**Ultra.RestoreFeature(featureName)**
 Restores a previously disabled feature.
 
 ```lua
 -- Usage example
-UltraHardcore.RestoreFeature("hidePlayerFrame")
+Ultra.RestoreFeature("hidePlayerFrame")
 ```
 
 ### Advanced Configuration API
 
-**UltraHardcore.CreateCustomChallenge(challengeConfig)**
+**Ultra.CreateCustomChallenge(challengeConfig)**
 Creates custom hardcore challenges with tracking and achievement integration.
 
 ```lua
@@ -953,21 +953,21 @@ local customChallenge = {
     }
 }
 
-UltraHardcore.CreateCustomChallenge(customChallenge)
+Ultra.CreateCustomChallenge(customChallenge)
 ```
 
-**UltraHardcore.GetChallengeProgress(challengeName)**
+**Ultra.GetChallengeProgress(challengeName)**
 Retrieves progress information for a specific challenge.
 
 ```lua
 -- Usage example
-local progress = UltraHardcore.GetChallengeProgress("No Healing Challenge")
+local progress = Ultra.GetChallengeProgress("No Healing Challenge")
 print(string.format("Progress: %d/%d conditions met", progress.completed, progress.total))
 ```
 
 ### Error Handling and Debugging API
 
-**UltraHardcore.EnableDebugMode(level)**
+**Ultra.EnableDebugMode(level)**
 Enables debug logging with specified verbosity level.
 
 ```lua
@@ -975,7 +975,7 @@ Enables debug logging with specified verbosity level.
 -- level (number): Debug level (1-5, higher = more verbose)
 
 -- Usage example
-UltraHardcore.EnableDebugMode(3)
+Ultra.EnableDebugMode(3)
 
 -- Debug levels:
 -- 1: Errors only
@@ -985,12 +985,12 @@ UltraHardcore.EnableDebugMode(3)
 -- 5: All messages including trace
 ```
 
-**UltraHardcore.GetLastError()**
+**Ultra.GetLastError()**
 Retrieves information about the most recent error.
 
 ```lua
 -- Usage example
-local error = UltraHardcore.GetLastError()
+local error = Ultra.GetLastError()
 if error then
     print(string.format("Last error: %s at %s", error.message, error.timestamp))
 end
@@ -1105,7 +1105,7 @@ Ultra Hardcore is designed to be robust and reliable, but the complex nature of 
 **Addon Not Loading**
 If Ultra Hardcore doesn't appear in your addon list or fails to load, follow these diagnostic steps:
 
-1. **Verify File Structure**: Ensure the addon folder is named exactly "UltraHardcore" and contains the `UltraHardcore.toc` file. The complete path should be `Interface\AddOns\UltraHardcore\UltraHardcore.toc`.
+1. **Verify File Structure**: Ensure the addon folder is named exactly "Ultra" and contains the `Ultra.toc` file. The complete path should be `Interface\AddOns\Ultra\Ultra.toc`.
 
 2. **Check Interface Version**: While Ultra Hardcore is designed to be forward-compatible, significant game updates may require interface version updates. The addon will still function with "out of date" warnings.
 
@@ -1122,7 +1122,7 @@ When specific Ultra Hardcore features fail to activate:
 
 3. **Test Core Commands**: Use `/bonnie` to verify basic addon functionality. If this command doesn't work, the addon isn't properly loaded.
 
-4. **Review Saved Variables**: Corrupted saved variables can prevent proper initialization. Delete `UltraHardcoreDB.lua` from your SavedVariables folder to reset to defaults.
+4. **Review Saved Variables**: Corrupted saved variables can prevent proper initialization. Delete `UltraDB.lua` from your SavedVariables folder to reset to defaults.
 
 ### Performance and Compatibility Issues
 
@@ -1182,7 +1182,7 @@ Configuration changes that don't persist between sessions:
 
 1. **File Permissions**: Ensure World of Warcraft has write permissions to the SavedVariables directory
 2. **Disk Space**: Insufficient disk space can prevent saved variable updates
-3. **File Corruption**: Delete and recreate the UltraHardcoreDB.lua file to resolve corruption issues
+3. **File Corruption**: Delete and recreate the UltraDB.lua file to resolve corruption issues
 4. **Multiple WoW Installations**: Verify you're modifying settings in the correct WoW installation directory
 
 **Command Not Recognized**
@@ -1216,7 +1216,7 @@ Monitor addon memory usage to identify potential memory leaks:
 
 ```lua
 -- Check addon memory usage
-/run local mem = GetAddOnMemoryUsage("UltraHardcore"); print("UHC Memory: " .. mem .. " KB")
+/run local mem = GetAddOnMemoryUsage("Ultra"); print("UHC Memory: " .. mem .. " KB")
 ```
 
 **Event Debugging**
@@ -1224,8 +1224,8 @@ Monitor specific events to diagnose event-related issues:
 
 ```lua
 -- Enable event debugging for specific events
-/run UltraHardcore:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-/run UltraHardcore.debugEvents = true
+/run Ultra:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+/run Ultra.debugEvents = true
 ```
 
 ### Getting Help
@@ -1295,9 +1295,9 @@ Ultra Hardcore is released under the MIT License, which provides maximum freedom
 
 ## Links and Resources
 
-- **GitHub Repository**: [https://github.com/bonniesdad/UltraHardcore](https://github.com/bonniesdad/UltraHardcore)
+- **GitHub Repository**: [https://github.com/bonniesdad/Ultra](https://github.com/bonniesdad/Ultra)
 - **Discord Community**: Join our Discord server for real-time support and community discussion
 - **Development YouTube Series**: [https://www.youtube.com/@Bonnies-Dad](https://www.youtube.com/@Bonnies-Dad)
-- **Issue Tracker**: [https://github.com/bonniesdad/UltraHardcore/issues](https://github.com/bonniesdad/UltraHardcore/issues)
+- **Issue Tracker**: [https://github.com/bonniesdad/Ultra/issues](https://github.com/bonniesdad/Ultra/issues)
 - **CurseForge Page**: [https://www.curseforge.com/wow/addons/ultra-hardcore](https://www.curseforge.com/wow/addons/ultra-hardcore)
 - **World of Warcraft Classic**: [https://worldofwarcraft.com/en-us/wowclassic](https://worldofwarcraft.com/en-us/wowclassic)
