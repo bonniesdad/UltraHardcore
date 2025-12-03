@@ -108,6 +108,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showOnScreenStatistics',
   tooltip = 'Show important ULTRA statistics on the screen at all times',
 }, {
+  name = 'Use Custom Combo Frame',
+  dbSettingsValueName = 'useCustomComboFrame',
+  tooltip = 'Use a custom combo frame instead of the default Blizzard combo frame',
+}, {
   name = 'Announce Level Up to Guild',
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
