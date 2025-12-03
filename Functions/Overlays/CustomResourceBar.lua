@@ -1,3 +1,10 @@
+
+local function ShouldHideComboFrame()
+  return GLOBAL_SETTINGS and (
+    GLOBAL_SETTINGS.useCustomComboFrame
+    and not GLOBAL_SETTINGS.hideCustomResourceBar)
+end
+
 local resourceBar = CreateFrame('StatusBar', 'UltraHardcoreResourceBar', UIParent)
 if not resourceBar then
   print('UltraHardcore: Failed to create resource bar')
@@ -64,28 +71,34 @@ resourceBar:SetScript('OnDragStop', function(self)
   SaveResourceBarPosition()
 end)
 
--- Create a frame for the combo points
 local comboFrame = CreateFrame('Frame', 'UltraHardcoreComboFrame', UIParent)
-if not comboFrame then
-  print('UltraHardcore: Failed to create combo frame')
-  return
-end
-
-comboFrame:SetSize(200, 32)
-comboFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 10)
-
--- Create combo point outlines and fill layers
 local resourceOrbs = {}
-local COMBO_TEXTURE = 'Interface\\AddOns\\UltraHardcore\\textures\\combopoint'
-local COMBO_SHADOW_TEXTURE = COMBO_TEXTURE .. '_outline.blp'
 
-for i = 1, 5 do
-  local orb = CreateComboPointOrb(comboFrame, i, 5, COMBO_TEXTURE .. '.blp', COMBO_SHADOW_TEXTURE)
-  if not orb then
-    print('UltraHardcore: Failed to create combo point orb ' .. i)
+local function CreateComboFrame()
+  if not ShouldHideComboFrame() then
     return
   end
-  resourceOrbs[i] = orb
+-- Create a frame for the combo points
+  if not comboFrame then
+    print('UltraHardcore: Failed to create combo frame')
+    return
+  end
+
+  comboFrame:SetSize(200, 32)
+  comboFrame:SetPoint('BOTTOM', resourceBar, 'TOP', 0, 10)
+
+  -- Create combo point outlines and fill layers
+  local COMBO_TEXTURE = 'Interface\\AddOns\\UltraHardcore\\textures\\combopoint'
+  local COMBO_SHADOW_TEXTURE = COMBO_TEXTURE .. '_outline.blp'
+
+  for i = 1, 5 do
+    local orb = CreateComboPointOrb(comboFrame, i, 5, COMBO_TEXTURE .. '.blp', COMBO_SHADOW_TEXTURE)
+    if not orb then
+      print('UltraHardcore: Failed to create combo point orb ' .. i)
+      return
+    end
+    resourceOrbs[i] = orb
+  end
 end
 
 -- Function to update combo points
@@ -107,7 +120,6 @@ local function UpdateComboPoints()
   for i = 1, 5 do
     local orb = resourceOrbs[i]
     if not orb then
-      print('UltraHardcore: Missing combo point orb ' .. i)
       return
     end
 
@@ -582,12 +594,18 @@ druidFormResourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 druidFormResourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
 druidFormResourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 
+
+local function HideComboFrame()
 -- Hide the default combo points (Blizzard UI)
-if ComboFrame then
-  ComboFrame:Hide()
-  ComboFrame:UnregisterAllEvents()
-  ComboFrame:SetScript('OnUpdate', nil)
+  if ComboFrame then
+    if ShouldHideComboFrame() then
+      ComboFrame:Hide()
+      ComboFrame:UnregisterAllEvents()
+      ComboFrame:SetScript('OnUpdate', nil)
+    end
+  end
 end
+
 
 -- Function to reposition player buff bar
 local function RepositionPlayerBuffBar()
@@ -637,7 +655,9 @@ end
 resourceBar:SetScript('OnEvent', function(self, event, unit)
   if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
     resourceBar:Hide()
-    comboFrame:Hide()
+    if ShouldHideComboFrame() then
+      comboFrame:Hide()
+    end
     petResourceBar:Hide()
     druidFormResourceBar:Hide()
     return
@@ -659,6 +679,10 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     UpdatePetResourcePoints()
     UpdateDruidFormResourceBar()
     HandleBuffBarSettingChange()
+
+    HideComboFrame()
+    CreateComboFrame()
+
     -- Load saved position after database is available
     C_Timer.After(0.1, function()
       LoadResourceBarPosition()
@@ -675,6 +699,8 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     if unit == 'player' then
       UpdateResourcePoints()
       UpdateDruidShiftResourcePoints()
+      HideComboPointsForNonUsers()
+      UpdateComboPoints()
     end
   elseif event == 'UPDATE_SHAPESHIFT_FORM' then
     -- Update resource bar and combo points when shapeshifting
