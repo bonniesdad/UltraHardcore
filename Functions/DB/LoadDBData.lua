@@ -49,10 +49,13 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
+    showTargetOfTarget = false,
     showTargetBuffs = false,
     showTargetDebuffs = false,
     showTargetRaidIcon = false,
     -- Misc Settings
+    showTargetOfTargetPosition = {},
+    showTargetOfTargetScale = 1.0,
     showOnScreenStatistics = true,
     minimapClockPosition = {},
     minimapMailPosition = {},

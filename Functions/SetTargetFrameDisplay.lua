@@ -141,18 +141,6 @@ local function ApplyRaidIcon()
   end
 end
 
--- Showing Buffs/Debuffs on ToT can be a bit too much
-local function HideToTAuras()
-  for i = 1, maxBuffs do
-    local buff = _G["TargetFrameToTBuff"..i]
-    if buff then buff:SetAlpha(0) end
-  end
-  for i = 1, maxDebuffs do
-    local debuff = _G["TargetFrameToTDebuff"..i]
-    if debuff then debuff:SetAlpha(0) end
-  end
-end
-
 -- Apply the full mask (combat-safe with alpha instead of Show/Hide)
 local function ApplyMask()
   if TargetFrame then TargetFrame:SetAlpha(1) end
@@ -175,50 +163,8 @@ local function ApplyMask()
   PositionAuras()
 end
 
-local function SetupHooks()
-  -- Hook Blizzard update functions
-  hooksecurefunc("TargetFrame_Update", ApplyMask)
-  hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
-    -- Target of Target hook (NO existence checks, NO visibility logic)
-  hooksecurefunc("TargetofTarget_Update", function()
-    -- Always allow default alpha/visibility
-    if not TargetFrameToT:IsProtected() then
-      TargetFrameToT:SetAlpha(1)
-    end
-
-    -- Strip subframes/texture
-    HideSubFrames("TargetFrameToT")
-
-    if TargetFrameToTTextureFrame then
-      HideTextureRegions(TargetFrameToTTextureFrame)
-    end
-    -- Always hide auras (regardless of ToT existence)
-    HideToTAuras()
-  end)
-end
-
-local function InitToTPostSetup()
-  if TargetFrameToT and not TargetFrameToT:IsProtected() then
-      TargetFrameToT:SetAlpha(1)
-  end
-  if TargetFrameToTTextureFrame and not TargetFrameToTTextureFrame:IsProtected() then
-      TargetFrameToTTextureFrame:SetAlpha(1)
-  end
-end
-
--- Run *after* Blizzard finishes secure frame creation
-local f = CreateFrame("Frame")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:SetScript("OnEvent", function(self)
-     -- Delayed to ensure frame is properly setup
-    C_Timer.After(1, function()
-      -- Safe because Blizzard has finished secure setup
-      InitToTPostSetup()
-      SetupHooks()
-    end)
-    self:UnregisterEvent("PLAYER_ENTERING_WORLD") -- only needed once
-end)
-
+hooksecurefunc("TargetFrame_Update", ApplyMask)
+hooksecurefunc("TargetFrame_UpdateAuras", ApplyMask)
 
 -- Main API
 function SetTargetFrameDisplay(mask)

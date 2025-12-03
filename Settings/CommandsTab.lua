@@ -135,6 +135,8 @@ function InitializeCommandsTab()
       { '/resetclockposition, /rcp', 'Reset the minimap clock to the default position.' },
       { '/resetmailposition, /rmp', 'Reset the minimap mail icon to the default position.' },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
+      { '/ultra reset tot', 'Reset the Target of Target frame to its default position.' },
+
     },
   } }
 
