@@ -184,10 +184,10 @@ local function SetupHooks()
     -- Always allow default alpha/visibility
     if not TargetFrameToT:IsProtected() then
       TargetFrameToT:SetAlpha(1)
+      -- Strip subframes/texture
+      HideSubFrames("TargetFrameToT")
     end
-    -- Strip subframes/texture
-    HideSubFrames("TargetFrameToT")
-    if TargetFrameToTTextureFrame then
+    if TargetFrameToTTextureFrame and not TargetFrameToTTextureFrame:IsProtected() then
       HideTextureRegions(TargetFrameToTTextureFrame)
     end
     -- Always hide auras (regardless of ToT existence)
@@ -196,10 +196,10 @@ local function SetupHooks()
 end
 
 local function InitToTPostSetup()
-  if TargetFrameToT then
+  if TargetFrameToT and not TargetFrameToT:IsProtected() then
       TargetFrameToT:SetAlpha(1)
   end
-  if TargetFrameToTTextureFrame then
+  if TargetFrameToTTextureFrame and not TargetFrameToTTextureFrame:IsProtected() then
       TargetFrameToTTextureFrame:SetAlpha(1)
   end
 end
@@ -209,8 +209,8 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", function(self)
     -- Safe because Blizzard has finished secure setup
-    SetupHooks()
     InitToTPostSetup()
+    SetupHooks()
     self:UnregisterEvent("PLAYER_ENTERING_WORLD") -- only needed once
 end)
 
