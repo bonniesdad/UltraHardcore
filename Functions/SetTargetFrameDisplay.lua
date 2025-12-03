@@ -210,9 +210,12 @@ end
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent", function(self)
-    -- Safe because Blizzard has finished secure setup
-    InitToTPostSetup()
-    SetupHooks()
+     -- Delayed to ensure frame is properly setup
+    C_Timer.After(1, function()
+      -- Safe because Blizzard has finished secure setup
+      InitToTPostSetup()
+      SetupHooks()
+    end)
     self:UnregisterEvent("PLAYER_ENTERING_WORLD") -- only needed once
 end)
 
