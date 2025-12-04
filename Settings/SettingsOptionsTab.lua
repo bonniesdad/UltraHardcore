@@ -91,6 +91,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
 }, {
+  name = 'Show Target of Target Frame',
+  dbSettingsValueName = 'showTargetOfTarget',
+  tooltip = 'Shows a Target of Target portrait only frame',
+}, {
   name = 'Show Target Buffs',
   dbSettingsValueName = 'showTargetBuffs',
   tooltip = 'Show buffs on the target frame',
@@ -1696,13 +1700,13 @@ function InitializeSettingsOptionsTab()
 
   addUIRow(opacityRow, 'statistics background opacity transparency', statsSubHeader)
 
-  -- Minimap Clock Scale subheader
-  local clockSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
+  -- Scale subheader
+  local scaleSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   -- Position will be handled by reflow
-  clockSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
-  clockSubHeader:SetText('Minimap Clock Scale')
-  clockSubHeader:SetTextColor(0.922, 0.871, 0.761)
-  addUIHeader(clockSubHeader)
+  scaleSubHeader:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', -14, -12)
+  scaleSubHeader:SetText('Scaling')
+  scaleSubHeader:SetTextColor(0.922, 0.871, 0.761)
+  addUIHeader(scaleSubHeader)
 
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
@@ -1717,7 +1721,7 @@ function InitializeSettingsOptionsTab()
   minimapClockScaleLabel:SetPoint('LEFT', minimapClockScaleRow, 'LEFT', 0, 0)
   minimapClockScaleLabel:SetWidth(LABEL_WIDTH2)
   minimapClockScaleLabel:SetJustifyH('LEFT')
-  minimapClockScaleLabel:SetText('Minimap Clock Scale')
+  minimapClockScaleLabel:SetText('Clock Scale')
 
   if tempSettings.minimapClockScale == nil then
     tempSettings.minimapClockScale = GLOBAL_SETTINGS.minimapClockScale or 1.0
@@ -1763,15 +1767,8 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapClockScaleRow, 'minimap clock scale size', clockSubHeader)
 
-  -- Minimap mail Scale subheader
-  local mailSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
-  -- Position will be handled by reflow
-  mailSubHeader:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', -14, -12)
-  mailSubHeader:SetText('Minimap Mail Scale')
-  mailSubHeader:SetTextColor(0.922, 0.871, 0.761)
-  addUIHeader(mailSubHeader)
 
-  local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleRow)
+  local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleSlider)
   minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
   minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
@@ -1781,7 +1778,7 @@ function InitializeSettingsOptionsTab()
   minimapMailScaleLabel:SetPoint('LEFT', minimapMailScaleRow, 'LEFT', 0, 0)
   minimapMailScaleLabel:SetWidth(LABEL_WIDTH2)
   minimapMailScaleLabel:SetJustifyH('LEFT')
-  minimapMailScaleLabel:SetText('Minimap Mail Scale')
+  minimapMailScaleLabel:SetText('Mail Indicator Scale')
 
   if tempSettings.minimapMailScale == nil then
     tempSettings.minimapMailScale = GLOBAL_SETTINGS.minimapMailScale or 1.0
@@ -1820,6 +1817,56 @@ function InitializeSettingsOptionsTab()
     tempSettings.minimapMailScale = steps / 10
   end)
   addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
+
+  local ultraToTScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
+  ultraToTScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
+  -- Position will be handled by reflow
+  ultraToTScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+
+  local ultraToTScaleLabel =
+    ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  ultraToTScaleLabel:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', 0, 0)
+  ultraToTScaleLabel:SetWidth(LABEL_WIDTH2)
+  ultraToTScaleLabel:SetJustifyH('LEFT')
+  ultraToTScaleLabel:SetText('Target of Target Scale')
+
+  if tempSettings.showTargetOfTargetScale == nil then
+    tempSettings.showTargetOfTargetScale = GLOBAL_SETTINGS.showTargetOfTargetScale or 1.0
+  end
+
+  local ultraToTScalePercent =
+    ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  ultraToTScalePercent:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
+  ultraToTScalePercent:SetWidth(40)
+  ultraToTScalePercent:SetJustifyH('LEFT')
+  ultraToTScalePercent:SetText(
+    tostring(math.floor((tempSettings.showTargetOfTargetScale or 1.0) * 100)) .. '%'
+  )
+
+  local ultraToTScaleSlider =
+    CreateFrame('Slider', nil, ultraToTScaleRow, 'OptionsSliderTemplate')
+  ultraToTScaleSlider:SetPoint('LEFT', ultraToTScalePercent, 'RIGHT', 10, 0)
+  ultraToTScaleSlider:SetSize(180, 16)
+  ultraToTScaleSlider:SetMinMaxValues(10, 20)
+  ultraToTScaleSlider:SetValueStep(1)
+  ultraToTScaleSlider:SetObeyStepOnDrag(true)
+  ultraToTScaleSlider:SetValue(math.floor(((tempSettings.showTargetOfTargetScale or 1.0) * 10) + 0.5))
+  if ultraToTScaleSlider.Low then
+    ultraToTScaleSlider.Low:SetText('100%')
+  end
+  if ultraToTScaleSlider.High then
+    ultraToTScaleSlider.High:SetText('200%')
+  end
+  if ultraToTScaleSlider.Text then
+    ultraToTScaleSlider.Text:SetText('')
+  end
+
+  ultraToTScaleSlider:SetScript('OnValueChanged', function(self, val)
+    local steps = math.floor(val + 0.5)
+    ultraToTScalePercent:SetText((steps * 10) .. '%')
+    tempSettings.showTargetOfTargetScale = steps / 10
+  end)
+  addUIRow(ultraToTScaleRow, 'Target of Target scale size', minimapMailScaleRow)
 
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
