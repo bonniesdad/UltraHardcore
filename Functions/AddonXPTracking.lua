@@ -165,28 +165,26 @@ function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
   local xpWithoutAddon = 0
   local totalXP = 0
 
---  if forceReset ~= nil or self:ShouldRecalculateXPGainedWithAddon() then
-    local lowestXP = self:GetLowestXpGainedStat() or nil
-    local highestXP = self:GetHighestXpGainedStat() or nil
+  local lowestXP = self:GetLowestXpGainedStat() or nil
+  local highestXP = self:GetHighestXpGainedStat() or nil
 
-    if lowestXP < self.highXpMark then
-      totalXP = self:CalculateTotalXPGained()
-      local anyStat = self:GetHighestNonHealthStat()
+  if lowestXP < self.highXpMark then
+    totalXP = self:CalculateTotalXPGained()
+    local anyStat = self:GetHighestNonHealthStat()
 
-      if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
-        self:XPTrackingDebug("All high stats are 0, player level is " .. playerLevel)
-        -- This player looks to have just turned ultra on so all their XP is without addon
-        xpDiff = 0
-      else
-        xpDiff = totalXP - lowestXP
-      end
-      xpWithoutAddon = totalXP - xpDiff
-
-      self:UpdateStat("xpGWA", xpDiff)
-      self:UpdateStat("xpGWOA", xpWithoutAddon)
-      self:UpdateStat("xpTotal", totalXP)
+    if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
+      self:XPTrackingDebug("All high stats are 0, player level is " .. playerLevel)
+      -- This player looks to have just turned ultra on so all their XP is without addon
+      xpDiff = 0
+    else
+      xpDiff = totalXP - lowestXP
     end
-  -- end
+    xpWithoutAddon = totalXP - xpDiff
+
+    self:UpdateStat("xpGWA", xpDiff)
+    self:UpdateStat("xpGWOA", xpWithoutAddon)
+    self:UpdateStat("xpTotal", totalXP)
+  end
 end
 
 function AddonXPTracking:ForceSave()
@@ -216,10 +214,6 @@ function AddonXPTracking:Initialize(lastXPValue)
 
     if playerLevel == 1 and lastXPValue == 0 then
       self:UpdateStat("xpTotal", 0)
-      self:UpdateStat("xpGWA", 0)
-      self:UpdateStat("xpGWOA", 0)
-    elseif self:ShouldRecalculateXPGainedWithAddon() == true then
-      self:ResetXPGainedWithAddon(true)
     end
     self.trackingInitialized = true
   end
@@ -298,9 +292,10 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
 end
 
 function AddonXPTracking:IsAddonXPValid(currentLevel) 
-  local stats = self:Stats()
+  --[[local stats = self:Stats()
   local xpForLevel = self:GetMinXPForLevel(currentLevel)
-  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel
+  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel]]
+  return true
 end
 
 function AddonXPTracking:ValidateTotalStoredXP()
@@ -308,33 +303,23 @@ function AddonXPTracking:ValidateTotalStoredXP()
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
+  --[[
     local totalXP = self:GetTotalXP()
     local storedTotalXP = self:TotalXP()
     print(msgPrefix .. redTextColour .. "WARNING!|r Detected " .. yellowTextColour ..  totalXP - storedTotalXP .. "|r missing XP!")
+    ]]
 end
 
 function AddonXPTracking:XPReport()
+  --[[
   local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
 
   print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
   print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
   print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
   print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
-  if AddonXPTracking:ValidateTotalStoredXP() ~= true then
-    AddonXPTracking:PrintXPVerificationWarning()
-  end
+  ]]
 end 
-
-
--- REMOVE BEFORE RELEASE
---[[SLASH_DEVRESETXP1 = '/uhcresettracking'
-SlashCmdList['DEVRESETXP'] = function()
-  AddonXPTracking:UpdateStat("xpTotal", nil)
-  AddonXPTracking:UpdateStat("xpGWA", nil)
-  AddonXPTracking:UpdateStat("xpGWOA", nil)
-  AddonXPTracking:ResetXPGainedWithAddon(true)
-  print(msgPrefix .. yellowTextColour ..  "ADDON XP RESET.|r Please do " .. redTextColour .. "/reload|r now")
-end]]
 
 SLASH_XPFORLEVEL1 = '/uhcxpforlevel'
 SlashCmdList['XPFORLEVEL'] = function(msg)
@@ -348,16 +333,6 @@ SlashCmdList['XPFORLEVEL'] = function(msg)
         .. "|r character has at least " 
         .. redTextColour .. formatNumberWithCommas(totalXP) 
         .. "|r XP")
-end
-
-SLASH_FORCESAVE1 = '/uhcforcesave'
-SlashCmdList['FORCESAVE'] = function()
-  AddonXPTracking:ForceSave()
-end
-
-SLASH_XPGWAREPORT1 = '/uhcxpreport'
-SlashCmdList['XPGWAREPORT'] = function() 
-  AddonXPTracking:XPReport()
 end
 
 _G.AddonXPTracking = AddonXPTracking

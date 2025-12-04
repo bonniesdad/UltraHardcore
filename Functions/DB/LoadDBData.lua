@@ -118,8 +118,6 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
-    showMainStatisticsPanelXpGWA = false,
-    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
