@@ -277,11 +277,46 @@ function InitializeStatisticsTab()
         legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
       end
 
-      if not passedTamperCheck then
-        legitStatusLine3:SetText('Character changes have been identified since the last session')
-        legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
+    if not passedTamperCheck then
+      -- Get change table and format it into readable messages
+      local changeTable = nil
+      local changeMessages = {}
+      if PlayerStateSnapshot and PlayerStateSnapshot.GetChangeTable then
+        changeTable = PlayerStateSnapshot:GetChangeTable()
       end
+      
+      if changeTable and PlayerStateSnapshot and PlayerStateSnapshot.FormatChangeTable then
+        changeMessages = PlayerStateSnapshot:FormatChangeTable(changeTable)
+      end
+      
+      -- Always show generic message in red
+      legitStatusLine3:SetText('Character changes have been identified since the last session')
+      legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
+      
+      -- Add tooltip to show all changes on hover (only if we have messages)
+      if changeMessages and #changeMessages > 0 then
+        legitStatusLine3:SetScript('OnEnter', function()
+          GameTooltip:SetOwner(legitStatusLine3, 'ANCHOR_RIGHT')
+          GameTooltip:SetText('Character Changes Detected:', 1, 1, 1, 1, true)
+          for i, msg in ipairs(changeMessages) do
+            GameTooltip:AddLine(string.format('%d. %s', i, msg), 1, 0.35, 0.35, true)
+          end
+          GameTooltip:Show()
+        end)
+        legitStatusLine3:SetScript('OnLeave', function()
+          GameTooltip:Hide()
+        end)
+      else
+        -- Clear tooltip handlers if no changes
+        legitStatusLine3:SetScript('OnEnter', nil)
+        legitStatusLine3:SetScript('OnLeave', nil)
+      end
+    else
+      -- Clear tooltip handlers when passed
+      legitStatusLine3:SetScript('OnEnter', nil)
+      legitStatusLine3:SetScript('OnLeave', nil)
     end
+  end
 
     -- Helper to update the current preset display
     UpdateCurrentPresetDisplay = function()

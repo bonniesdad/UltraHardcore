@@ -42,6 +42,9 @@ function IsAllowedByGuildList(name)
     _G.UHC_RequestGuildRoster()
   end
 
+  -- Request guild roster information from the server
+  GuildRoster()
+
   local numGuildMembers = GetNumGuildMembers and GetNumGuildMembers() or 0
   for j = 1, numGuildMembers do
     local guildName = GetGuildRosterInfo(j)
@@ -165,17 +168,15 @@ local function BuildOverlayMessage()
   end
   local pending = {}
   if not currentTradeValidation.gfVerified then
-    table.insert(pending, 'Guild Found Handshake')
+    table.insert(pending, 'Guild Found handshake')
   end
   if currentTradeValidation.requiresTamper and not currentTradeValidation.tamperVerified then
-    table.insert(pending, 'Tamper Status')
+    table.insert(pending, 'Tamper status')
   end
   if #pending == 0 then
     return nil
   end
-
-  local message = 'Validating:\n' .. table.concat(pending, '\n')
-  return message
+  return 'Validating:\n\n' .. table.concat(pending, '\n\n')
 end
 
 local function UpdateTradeOverlayStatus()
@@ -338,7 +339,7 @@ frame:SetScript('OnEvent', function(self, event, ...)
       end
     end
   elseif event == 'TRADE_SHOW' then
-    -- ResetTradeValidation()
+    ResetTradeValidation()
 
     -- Get the trade target name using the correct Classic WoW API
     local targetName = GetUnitName('npc', true)
@@ -361,39 +362,36 @@ frame:SetScript('OnEvent', function(self, event, ...)
         return
       end
     end
-  -- -- Sending messages
-  -- EnsureTradeValidationState(targetName, inGuildFound, inGuildFound or inGroupFound)
-  -- StartTamperVerification(targetName)
 
-  -- if inGuildFound then
-  --   if IsPartnerVerifiedGF(targetName) then
-  --     MarkGuildVerificationComplete(targetName)
+    EnsureTradeValidationState(targetName, inGuildFound, inGuildFound or inGroupFound)
+    StartTamperVerification(targetName)
 
-  --     HideTradeOverlay()
-  --   end
-  --   -- else
-  --     -- UpdateTradeOverlayStatus()
-  --     -- local pingSent = SendGuildFoundPing(targetName)
-  --     -- if not pingSent then
-  --     --   CancelTradeForReason(
-  --     --     'Trade with ' .. targetName .. ' cancelled - unable to initiate Guild Found verification.'
-  --     --   )
-  --     --   return
-  --     -- end
-  --     -- local normalizedName = NormalizeTradeTarget(targetName)
-  --     -- C_Timer.After(REQUEST_TIMEOUT, function()
-  --     --   if
-  --     --     currentTradeValidation
-  --     --     and currentTradeValidation.target == normalizedName
-  --     --     and not currentTradeValidation.gfVerified
-  --     --   then
-  --     --     CancelTradeForReason(
-  --     --       'Trade with ' .. targetName .. ' cancelled - other player not using Guild Found.'
-  --     --     )
-  --     --   end
-  --     -- end)
-  --   -- end
-  -- end
+    if inGuildFound then
+      if IsPartnerVerifiedGF(targetName) then
+        MarkGuildVerificationComplete(targetName)
+      else
+        UpdateTradeOverlayStatus()
+        local pingSent = SendGuildFoundPing(targetName)
+        if not pingSent then
+          CancelTradeForReason(
+            'Trade with ' .. targetName .. ' cancelled - unable to initiate Guild Found verification.'
+          )
+          return
+        end
+        local normalizedName = NormalizeTradeTarget(targetName)
+        C_Timer.After(1, function()
+          if
+            currentTradeValidation
+            and currentTradeValidation.target == normalizedName
+            and not currentTradeValidation.gfVerified
+          then
+            CancelTradeForReason(
+              'Trade with ' .. targetName .. ' cancelled - other player not using Guild Found.'
+            )
+          end
+        end)
+      end
+    end
   elseif event == 'AUCTION_HOUSE_SHOW' then
     local modeLabel = inGuildFound and 'Guild Found' or 'Group Found'
     print(
