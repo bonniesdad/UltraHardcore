@@ -97,11 +97,6 @@ local function HidePlayerFrameHealthMana()
     PetAttackModeTexture:SetAlpha(0)
   end
 
-  -- Hide target frame health/mana bars
-  if TargetFrameToT then
-    TargetFrameToT:SetAlpha(0)
-  end
-
   -- Keep main XP bar normal (no modifications)
 
   -- Hide HP/mana text in character panel that overlaps with our XP bars
@@ -167,11 +162,6 @@ local function ShowPlayerFrameHealthMana()
   -- Restore pet attack mode texture
   if PetAttackModeTexture then
     RestoreAndShowFrame(PetAttackModeTexture)
-  end
-
-  -- Show target frame health/mana bars
-  if TargetFrameToT then
-    RestoreAndShowFrame(TargetFrameToT)
   end
 
   -- Keep main XP bar normal (no modifications needed)
@@ -241,11 +231,6 @@ function CompletelyHidePlayerFrame()
   if PetFrame then
     ForceHideFrame(PetFrame)
   end
-
-  -- Hide target of target frame
-  if TargetFrameToT then
-    ForceHideFrame(TargetFrameToT)
-  end
 end
 
 function CompletelyShowPlayerFrame()
@@ -257,11 +242,6 @@ function CompletelyShowPlayerFrame()
   -- Show pet frame as well
   if PetFrame then
     RestoreAndShowFrame(PetFrame)
-  end
-
-  -- Show target of target frame
-  if TargetFrameToT then
-    RestoreAndShowFrame(TargetFrameToT)
   end
 end
 

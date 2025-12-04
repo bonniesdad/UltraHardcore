@@ -36,6 +36,7 @@ local PRESET_SECTIONS = { {
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
+    'showTargetOfTarget',
     'showTargetBuffs',
     'showTargetDebuffs',
     'showTargetRaidIcon',
