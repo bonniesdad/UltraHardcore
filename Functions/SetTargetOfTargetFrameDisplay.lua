@@ -1,5 +1,26 @@
 local UltraToTFrame = nil
 
+-- TODO:  Is there a better way to make a context menu??
+local dropdown = CreateFrame("Frame", "UltraToTDropdown", UIParent, "UIDropDownMenuTemplate")
+dropdown.displaymode = "MENU"
+
+-- Ensure the menu closes if something else causes it to hide
+dropdown:SetScript("OnHide", function(self)
+  CloseDropDownMenus()
+end)
+
+-- Create a click-catcher frame that covers the whole screen when the menu is open
+-- if you click somewhere other than the menu we will close the context menu
+local clickCatcher = CreateFrame("Frame", nil, UIParent)
+clickCatcher:SetAllPoints(UIParent)
+clickCatcher:Hide()
+clickCatcher:EnableMouse(true)
+clickCatcher:SetScript("OnMouseDown", function()
+  CloseDropDownMenus()
+  clickCatcher:Hide()
+end)
+
+-- Save position in settings
 local function SaveUltraToTPosition()
   if not UltraToTFrame then return end
   -- Save position
@@ -12,6 +33,41 @@ local function SaveUltraToTPosition()
     y = yOfs
   }
   SaveCharacterSettings(GLOBAL_SETTINGS)
+end
+
+-- Reset ToT position in case you threw it away
+local function ResetToTPosition()
+  if not UltraToTFrame then return end
+  -- Clear existing points first
+  UltraToTFrame:ClearAllPoints()
+  -- Set to default position
+  UltraToTFrame:SetPoint("TOPRIGHT", TargetFrame, "BOTTOM", 20, 22) -- adjust position as desired
+  -- Reset scale
+  GLOBAL_SETTINGS.showTargetOfTargetScale = 1
+  UltraToTFrame:SetScale(GLOBAL_SETTINGS.showTargetOfTargetScale)
+  SaveUltraToTPosition()
+end
+
+-- Setup a dropdown on the ToT frame with some options
+-- TODO:  Is there a better way to create context menus?
+local function InitializeToTMenu(self, level)
+  local info = UIDropDownMenu_CreateInfo()
+  info.notCheckable = true  -- no radio/check button
+  info.keepShownOnClick = false  -- auto-hide after click
+  
+  -- Lock/Unlock toggle
+  info.text = GLOBAL_SETTINGS.showTargetOfTargetLocked and "Unlock Frame" or "Lock Frame"
+  info.func = function()
+    GLOBAL_SETTINGS.showTargetOfTargetLocked = not GLOBAL_SETTINGS.showTargetOfTargetLocked
+    UltraToTFrame:UpdateMovableState()
+  end
+  UIDropDownMenu_AddButton(info, level)
+  -- Reset Position
+  info.text = "Reset Position/Scale"
+  info.func = function()
+    ResetToTPosition()
+  end
+  UIDropDownMenu_AddButton(info, level)
 end
 
 -- Custom ToT Frame (portrait only)
@@ -35,7 +91,7 @@ local function CreateUltraToTFrame()
   UltraToTFrame:SetClampedToScreen(true)
 
   UltraToTFrame:SetScript("OnDragStart", function(self)
-    if not InCombatLockdown() then
+    if not InCombatLockdown() and not GLOBAL_SETTINGS.showTargetOfTargetLocked then
       self:StartMoving()
     end
   end)
@@ -46,6 +102,30 @@ local function CreateUltraToTFrame()
       SaveUltraToTPosition()
     end
   end)
+
+  -- Right-click handler
+  UltraToTFrame:SetScript("OnMouseUp", function(self, button)
+    if button == "RightButton" then
+      CloseDropDownMenus() -- close any existing menus first
+      UIDropDownMenu_Initialize(dropdown, InitializeToTMenu, "MENU")
+      ToggleDropDownMenu(1, nil, dropdown, "cursor", 0, 0)
+      clickCatcher:Show()  -- enable click-catcher to close menu immediately
+    end
+  end)
+
+  function UltraToTFrame:UpdateMovableState()
+    if GLOBAL_SETTINGS.showTargetOfTargetLocked then
+      self:SetMovable(false)
+      self:EnableMouse(true)
+      self:RegisterForDrag()
+    else
+      self:SetMovable(true)
+      self:EnableMouse(true)
+      self:RegisterForDrag("LeftButton")
+    end
+    -- save locked/unlocked state
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
 end
 
 -- Restore position on login
@@ -58,7 +138,6 @@ local function RestoreUltraToTPosition()
     UltraToTFrame:SetScale(GLOBAL_SETTINGS.showTargetOfTargetScale or 1.0)
   end
 end
-
 
 -- Update portrait visibility
 local function UpdateUltraToT()
@@ -92,19 +171,6 @@ local function HideBlizzardToT()
   end
 end
 
--- Reset ToT position function
-local function ResetToTPosition()
-  if not UltraToTFrame then return end
-  -- Clear existing points first
-  UltraToTFrame:ClearAllPoints()
-  -- Set to default position
-  UltraToTFrame:SetPoint("TOPRIGHT", TargetFrame, "BOTTOM", 20, 22) -- adjust position as desired
-  -- Reset scale
-  GLOBAL_SETTINGS.showTargetOfTargetScale = 1
-  UltraToTFrame:SetScale(GLOBAL_SETTINGS.showTargetOfTargetScale)
-  SaveUltraToTPosition()
-end
-
 -- Event handler
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -122,6 +188,7 @@ initFrame:SetScript("OnEvent", function()
     CreateUltraToTFrame()
     RestoreUltraToTPosition()
     UpdateUltraToT()
+    UIDropDownMenu_Initialize(dropdown, InitializeToTMenu, "MENU")
   end)
   initFrame:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end)

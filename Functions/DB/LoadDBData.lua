@@ -56,6 +56,7 @@ function LoadDBData()
     -- Misc Settings
     showTargetOfTargetPosition = {},
     showTargetOfTargetScale = 1.0,
+    showTargetOfTargetLocked = false,
     showOnScreenStatistics = true,
     minimapClockPosition = {},
     minimapMailPosition = {},
