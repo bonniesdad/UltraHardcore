@@ -49,12 +49,17 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
+    showTargetOfTarget = false,
     showTargetBuffs = false,
     showTargetDebuffs = false,
     showTargetRaidIcon = false,
     -- Misc Settings
+    showTargetOfTargetPosition = {},
+    showTargetOfTargetScale = 1.0,
+    showTargetOfTargetLocked = false,
     showOnScreenStatistics = true,
     showVitalsOverlay = false,
+    useCustomComboFrame = true,
     minimapClockPosition = {},
     minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,
@@ -114,8 +119,6 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
-    showMainStatisticsPanelXpGWA = false,
-    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists

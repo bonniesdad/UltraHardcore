@@ -102,10 +102,10 @@ function InitializeCommandsTab()
   local commandGroups = { {
     header = 'General',
     items = {
-      { '/uhc', 'Open the Ultra Hardcore settings window.' },
+      { '/uhc', 'Open the ULTRA settings window.' },
       {
         '/uhcversion, /uhcv',
-        'Post your UltraHardcore version to your current chat (auto-detects context).',
+        'Post your ULTRA version to your current chat (auto-detects context).',
       },
     },
   }, {
@@ -125,16 +125,13 @@ function InitializeCommandsTab()
       },
     },
   }, {
-    header = 'XP Tracking',
-    items = {
-      { '/uhcxpreport', 'Print a verification report of your XP (verified vs unverified).' },
-    },
-  }, {
     header = 'UI & Minimap',
     items = {
       { '/resetclockposition, /rcp', 'Reset the minimap clock to the default position.' },
       { '/resetmailposition, /rmp', 'Reset the minimap mail icon to the default position.' },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
+      { '/ultra reset tot', 'Reset the Target of Target frame to its default position.' },
+
     },
   } }
 

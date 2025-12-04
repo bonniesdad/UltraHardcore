@@ -97,7 +97,7 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
 
     -- Optional: Print a message to chat
     DEFAULT_CHAT_FRAME:AddMessage(
-      '|cFFFF0000[UHC]|r Party member ' .. deadPlayerName .. ' has died. Total party deaths: ' .. newCount,
+      '|cFFFF0000[ULTRA]|r Party member ' .. deadPlayerName .. ' has died. Total party deaths: ' .. newCount,
       1,
       0,
       0
@@ -105,7 +105,7 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
   else
     -- Optional: Print a message indicating feign death was detected
     DEFAULT_CHAT_FRAME:AddMessage(
-      '|cFFFF8000[UHC]|r Party member ' .. deadPlayerName .. ' is feigning death - death count not incremented.',
+      '|cFFFF8000[ULTRA]|r Party member ' .. deadPlayerName .. ' is feigning death - death count not incremented.',
       1,
       0.5,
       0

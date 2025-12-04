@@ -30,8 +30,6 @@ local STATISTIC_TOOLTIPS = {
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
-  xpGWA = 'XP gained with addon enabled.',
-  xpGWOA = 'XP gained with addon disabled or on another device.',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
   totalHP = 'Your maximum possible health with current gear and buffs',
   totalMana = 'Your maximum possible mana with current gear and buffs',
@@ -53,6 +51,20 @@ local function AddStatisticTooltip(label, tooltipKey)
   label:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
+end
+
+-- Extracting this logic so it can be called outside of the original function
+local function IsTampered() 
+  local isTampered = false
+  if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
+    local success, result = pcall(function()
+      return PlayerStateSnapshot:IsTampered()
+    end)
+    if success then
+      isTampered = result
+    end
+  end
+  return isTampered
 end
 -- Initialize Statistics Tab when called
 function InitializeStatisticsTab()
@@ -210,31 +222,9 @@ function InitializeStatisticsTab()
     legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
 
     UpdateLegitStatusText = function()
-      local isTampered = false
-      if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
-        local success, result = pcall(function()
-          return PlayerStateSnapshot:IsTampered()
-        end)
-        if success then
-          isTampered = result
-        end
-      end
+      local isTampered = IsTampered()
 
-      local xpWithoutAddon = 1
-      if CharacterStats and CharacterStats.ReportXPWithoutAddon then
-        local reported = CharacterStats:ReportXPWithoutAddon()
-        if type(reported) == 'number' then
-          xpWithoutAddon = reported
-        end
-      end
-
-      -- Get total XP gained with addon
-      local xpWithAddon = 0
-      if CharacterStats and CharacterStats.GetStat then
-        xpWithAddon = CharacterStats:GetStat('xpGainedWithAddon') or 0
-      end
-
-      -- Check if character has any UHC settings enabled
+      -- Check if character has any ULTRA settings enabled
       local hasUHCSettings = false
       local sections = GetPresetSections('simple', false)
       for _, section in ipairs(sections) do
@@ -249,20 +239,13 @@ function InitializeStatisticsTab()
         end
       end
 
-      -- Level 1 character with no XP gained at all should be considered verified only if they have UHC settings enabled
-      local playerLevel = UnitLevel('player') or 1
-      local isLevelOneWithNoXP =
-        (playerLevel == 1 and xpWithAddon == 0 and xpWithoutAddon == 0 and hasUHCSettings)
-      local passedXPCheck = (xpWithoutAddon == 0 or isLevelOneWithNoXP)
       local passedTamperCheck = not isTampered
-      local overallPass = passedXPCheck and passedTamperCheck
 
-      legitStatusLine2:SetText('No XP was gained while the addon was inactive')
-      legitStatusLine3:SetText('No character changes have been identified since the last session')
+      legitStatusLine2:SetText('No character changes have been identified since the last session')
       legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
       legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
 
-      if overallPass then
+      if passedTamperCheck then
         legitStatusLine1:SetText('Verified Ultra status')
         legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
         legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
@@ -272,14 +255,9 @@ function InitializeStatisticsTab()
         legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
       end
 
-      if not passedXPCheck then
-        legitStatusLine2:SetText('XP was gained while the addon was inactive')
-        legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
-      end
-
       if not passedTamperCheck then
-        legitStatusLine3:SetText('Character changes have been identified since the last session')
-        legitStatusLine3:SetTextColor(1.0, 0.35, 0.35)
+        legitStatusLine2:SetText('Character changes have been identified since the last session')
+        legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
       end
     end
 
@@ -311,15 +289,7 @@ function InitializeStatisticsTab()
         presetLevel = 'Lite'
       end
 
-      local xpWithoutAddon = 1
-      if CharacterStats and CharacterStats.ReportXPWithoutAddon then
-        local reported = CharacterStats:ReportXPWithoutAddon()
-        if type(reported) == 'number' then
-          xpWithoutAddon = reported
-        end
-      end
-
-      if presetLevel and xpWithoutAddon == 0 then
+      if presetLevel and not IsTampered() then
         -- Only color the preset name in green; keep the rest at normal highlight color
         local text =
           'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
@@ -1310,14 +1280,6 @@ function InitializeStatisticsTab()
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
   }, {
-    key = 'xpGWA',
-    label = 'Verified XP:',
-    tooltipKey = 'xpGWA',
-  }, {
-    key = 'xpGWOA',
-    label = 'Unverified XP:',
-    tooltipKey = 'xpGWOA',
-  }, {
     key = 'mapKeyPressesWhileMapBlocked',
     label = 'Blocked Map Opens (Route Planner):',
     tooltipKey = 'mapKeyPressesWhileMapBlocked',
@@ -1439,7 +1401,7 @@ function InitializeStatisticsTab()
     hideTargetTooltip = 'Hide Target Tooltips',
     disableNameplateHealth = 'Disable Nameplates',
     showDazedEffect = 'Show Dazed Effect',
-    hideGroupHealth = 'Use UHC Party Frames',
+    hideGroupHealth = 'Use ULTRA Party Frames',
     hideMinimap = 'Hide Minimap',
     -- Extreme section
     petsDiePermanently = 'Pets Die Permanently',
@@ -1447,11 +1409,11 @@ function InitializeStatisticsTab()
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
     routePlanner = 'Route Planner',
     -- Experimental section
-    hideBreathIndicator = 'Use UHC Breath Indicator',
-    showCritScreenMoveEffect = 'Use UHC Incoming Crit Effect',
-    showFullHealthIndicator = 'Use UHC Full Health Indicator',
+    hideBreathIndicator = 'Use ULTRA Breath Indicator',
+    showCritScreenMoveEffect = 'Use ULTRA Incoming Crit Effect',
+    showFullHealthIndicator = 'Use ULTRA Full Health Indicator',
     hideCustomResourceBar = 'Hide Custom Resource Bar',
-    showHealingIndicator = 'Use UHC Incoming Healing Effect',
+    showHealingIndicator = 'Use ULTRA Incoming Healing Effect',
   }
 
   -- Define preset sections with their settings (limit to up to Extreme)
@@ -1715,7 +1677,7 @@ function InitializeStatisticsTab()
   -- Add tooltip
   shareButton:SetScript('OnEnter', function()
     GameTooltip:SetOwner(shareButton, 'ANCHOR_RIGHT')
-    GameTooltip:SetText('Share UHC Stats to Chat')
+    GameTooltip:SetText('Share ULTRA Stats to Chat')
     GameTooltip:Show()
   end)
   shareButton:SetScript('OnLeave', function()
@@ -1726,7 +1688,7 @@ function InitializeStatisticsTab()
     if CharacterStats and CharacterStats.LogStatsToChat then
       CharacterStats:LogStatsToChat()
     else
-      print('UHC - CharacterStats not available. Please reload UI.')
+      print('ULTRA - CharacterStats not available. Please reload UI.')
     end
   end)
 

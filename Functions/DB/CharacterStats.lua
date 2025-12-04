@@ -32,8 +32,6 @@ local CharacterStats = {
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
     xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
-    xpGWA = 0, -- Used to track XP gained with the addon
-    xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing
     xpTotal = 0,
     xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
@@ -211,7 +209,9 @@ end
 
 -- Deprecated: This function will be removed on a future release
 function CharacterStats:ReportXPWithoutAddon()
-  return AddonXPTracking:WithoutAddon()
+  -- XP verification is being removed
+  return 0
+  -- return AddonXPTracking:WithoutAddon()
 end
 
 -- Get the current character's stats
