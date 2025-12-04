@@ -134,6 +134,22 @@ local function LoadMailPosition()
   MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale or 1.0)
 end
 
+local function LoadTrackingPosition()
+  if not MiniMapTracking then return end
+
+  MiniMapTracking:SetParent(UIParent)
+  MiniMapTracking:ClearAllPoints()
+
+  local pos = UltraHardcoreDB.MiniMapTrackingPosition
+  if pos then
+    MiniMapTracking:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+  else
+    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+  end
+
+  MiniMapTracking:SetFrameStrata("HIGH")
+end
+
 -- Take the given frame and disable the mouse and hide for all children
 local function DisableMouseAndHideChildren(f)
   for _, child in ipairs({ f:GetChildren() }) do
@@ -141,10 +157,34 @@ local function DisableMouseAndHideChildren(f)
     if child.EnableMouseWheel then child:EnableMouseWheel(false) end
     if child and child:IsShown() then
       -- Uncomment to debug which children are being hidden
-      -- print("UltraHardcore: Hiding child:", child:GetName())
       child:Hide()
     end
   end
+end
+
+function ShowTrackingButton()
+  if not MiniMapTracking then
+    print("MiniMapTracking not found!")
+    return
+  end
+  -- Load the saved position for the tracking
+  LoadTrackingPosition()
+  MiniMapTracking:Show()
+
+  --Make the tracking movable and save the position
+  MiniMapTracking:SetMovable(true)
+  MiniMapTracking:EnableMouse(true)
+  MiniMapTracking:RegisterForDrag("LeftButton")
+  MiniMapTracking:SetScript("OnDragStart", function(self)
+    self:StartMoving()
+  end)
+  MiniMapTracking:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local point, _, relPoint, x, y = self:GetPoint()
+    UltraHardcoreDB.MiniMapTrackingPosition = { point = point, relPoint = relPoint, x = x, y = y }
+    SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+  end)
+  showTrackingInitialized = true
 end
 
 function ShowClock()
@@ -266,12 +306,6 @@ function HideMinimap()
 end
 
 function RevealMinimapForTracking(isAlwaysOn)
-  if isAlwaysOn then
-    print("UltraHardcore: Minimap reveal triggered - Always On mode")
-  else
-    print("UltraHardcore: Minimap reveal triggered - Standard mode")
-  end
-
   -- Reset any existing reveal state to ensure we capture the true 'base' state
   ResetMinimapRevealState()
 
@@ -313,7 +347,6 @@ function RevealMinimapForTracking(isAlwaysOn)
   -- Only hide child frames for temporary reveal (not Always On mode)
   -- This prevents addon buttons (like MinimapButtonButton) from being hidden permanently
   if isAlwaysOn then
-    DisableMouseAndHideChildren(Minimap)
     minimapCleanupTicker = C_Timer.NewTicker(5, function()
       DisableMouseAndHideChildren(Minimap)
     end)

@@ -46,6 +46,7 @@ local PRESET_SECTIONS = { {
   settings = {
     'alwaysShowResourceMap',
     'showPlayerArrowOnResourceMap',
+    'showTrackingButtonEvenWhenMapHidden',
   },
 }, {
   title = 'Misc:',

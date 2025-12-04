@@ -205,6 +205,11 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showPlayerArrowOnResourceMap',
   tooltip = 'Display the player arrow on the resource tracking map',
   dependsOn = 'alwaysShowResourceMap',
+}, {
+  name = 'Show Tracking Button When Minimap is Hidden',
+  dbSettingsValueName = 'showTrackingButtonEvenWhenMapHidden',
+  tooltip = 'If Hide Minimap is enabled, keep the tracking button on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 } }
 
 -- XP Bar Settings
