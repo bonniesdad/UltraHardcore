@@ -131,10 +131,12 @@ local settingsCheckboxOptions = { {
   name = 'Show Clock When Minimap is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 }, {
   name = 'Show Mail Indicator When Minimap is Hidden',
   dbSettingsValueName = 'showMailEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the mail indicator on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 }, {
   name = 'Announce Party Deaths on Group Join',
   dbSettingsValueName = 'announcePartyDeathsOnGroupJoin',
@@ -207,8 +209,8 @@ local settingsCheckboxOptions = { {
   dependsOn = 'alwaysShowResourceMap',
 }, {
   name = 'Show Tracking Button When Minimap is Hidden',
-  dbSettingsValueName = 'showTrackingButtonEvenWhenMapHidden',
-  tooltip = 'If Hide Minimap is enabled, keep the tracking button on display instead of hiding it',
+  dbSettingsValueName = 'showTrackingWhenMapHidden',
+  tooltip = 'If Always On Resource Map is enabled, keep the tracking button on display instead of hiding it',
   dependsOn = 'hideMinimap',
 } }
 

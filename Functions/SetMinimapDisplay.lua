@@ -156,7 +156,6 @@ local function DisableMouseAndHideChildren(f)
     if child.EnableMouse then child:EnableMouse(false) end
     if child.EnableMouseWheel then child:EnableMouseWheel(false) end
     if child and child:IsShown() then
-      -- Uncomment to debug which children are being hidden
       child:Hide()
     end
   end
@@ -264,9 +263,7 @@ function HideMinimap()
       Minimap:SetPlayerTexture("")
     end
 
-    C_Timer.After(3, function()
-      RevealMinimapForTracking(isAlwaysOn)
-    end)
+    RevealMinimapForTracking(isAlwaysOn)
   else
     -- Standard hide mode
     Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
@@ -344,15 +341,7 @@ function RevealMinimapForTracking(isAlwaysOn)
     Minimap:SetScale(8.0)
   end
 
-  -- Only hide child frames for temporary reveal (not Always On mode)
-  -- This prevents addon buttons (like MinimapButtonButton) from being hidden permanently
-  if isAlwaysOn then
-    minimapCleanupTicker = C_Timer.NewTicker(5, function()
-      DisableMouseAndHideChildren(Minimap)
-    end)
-  else
-    DisableMouseAndHideChildren(Minimap)
-  end
+  DisableMouseAndHideChildren(Minimap)
 
   -- Hide extra minimap adornments while revealing
   minimapRevealState.toggledFrames = {}
@@ -364,9 +353,10 @@ function RevealMinimapForTracking(isAlwaysOn)
     end
   end
 
-  hideTemp(_G.MiniMapTracking)
+  -- TODO: Delete these, they don't seem to actually do anything
+  -- hideTemp(_G.MiniMapTracking)
   hideTemp(_G.GameTimeFrame)
-  hideTemp(_G.MiniMapMailFrame)
+  -- hideTemp(_G.MiniMapMailFrame)
   hideTemp(_G.MinimapBorder)
   hideTemp(_G.MinimapBackdrop)
   hideTemp(_G.MinimapBorderTop)
@@ -490,6 +480,25 @@ local function ResetMailPosition()
   print('UltraHardcore: Mail position reset to default')
 end
 
+-- Reset tracking position function
+local function ResetTrackingPosition()
+  if not MiniMapTracking then
+    print("MiniMapTracking not found!")
+    return
+  end
+
+  -- Clear existing points first
+  MiniMapTracking:ClearAllPoints()
+  -- Reset to default position (top right)
+  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -50)
+
+  -- Save the reset position
+  local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
+  UltraHardcoreDB.MiniMapTrackingPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+  print('UltraHardcore: Tracking position reset to default')
+end
+
 -- Slash command to reset clock position
 SLASH_RESETCLOCKPOSITION1 = '/resetclockposition'
 SLASH_RESETCLOCKPOSITION2 = '/rcp'
@@ -499,3 +508,8 @@ SlashCmdList['RESETCLOCKPOSITION'] = ResetClockPosition
 SLASH_RESETMAILPOSITION1 = '/resetmailposition'
 SLASH_RESETMAILPOSITION2 = '/rmp'
 SlashCmdList['RESETMAILPOSITION'] = ResetMailPosition
+
+-- Slash command to reset tracking position
+SLASH_RESETTRACKINGPOSITION1 = '/resettrackingposition'
+SLASH_RESETTRACKINGPOSITION2 = '/rtp'
+SlashCmdList['RESETTRACKINGPOSITION'] = ResetTrackingPosition
