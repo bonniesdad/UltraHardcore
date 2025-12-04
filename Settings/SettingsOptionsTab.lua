@@ -31,7 +31,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Hide Minimap',
   dbSettingsValueName = 'hideMinimap',
-  tooltip = 'Makes gathering resources a lot more challenging by hiding the minimap',
+  tooltip = 'Hides the minimap. See Maps section for additional resource tracking options',
 }, {
   -- Extreme Preset Settings {
   name = 'Pets Die Permanently',
@@ -195,6 +195,16 @@ local settingsCheckboxOptions = { {
   name = 'ULTRA Show Druid Manabar',
   dbSettingsValueName = 'showDruidFormResourceBar',
   tooltip = 'Show a separate resource bar when shapeshifted as a druid',
+}, {
+  name = 'Always Show Resource Map',
+  dbSettingsValueName = 'alwaysShowResourceMap',
+  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
+  dependsOn = 'hideMinimap',
+}, {
+  name = 'Show Player Arrow on Resource Map',
+  dbSettingsValueName = 'showPlayerArrowOnResourceMap',
+  tooltip = 'Display the player arrow on the resource tracking map',
+  dependsOn = 'alwaysShowResourceMap',
 } }
 
 -- XP Bar Settings
@@ -350,6 +360,10 @@ function InitializeSettingsOptionsTab()
           isChecked = false
         end
         checkbox:SetChecked(isChecked)
+        -- Update dependency state
+        if checkbox._updateDependency then
+          checkbox._updateDependency()
+        end
       end
     end
     if _G.updateSectionCounts then
@@ -916,11 +930,37 @@ function InitializeSettingsOptionsTab()
           local k = checkboxItem.dbSettingsValueName or ''
           checkbox._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
 
+          -- Handle dependencies: grey out and disable if dependency is not met
+          local function updateDependencyState()
+            if checkboxItem.dependsOn then
+              local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
+              if not dependencyEnabled then
+                checkbox:Disable()
+                checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
+                checkbox:SetChecked(false)
+                tempSettings[checkboxItem.dbSettingsValueName] = false
+              else
+                checkbox:Enable()
+                checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
+              end
+            end
+          end
+
+          -- Check dependency on creation
+          updateDependencyState()
+
           checkboxes[checkboxItem.dbSettingsValueName] = checkbox
           table.insert(sectionChildren[sectionIndex], checkbox)
           table.insert(sectionChildSettingNames[sectionIndex], checkboxItem.dbSettingsValueName)
 
+          -- Store dependency update function for later use
+          checkbox._updateDependency = updateDependencyState
+
           checkbox:SetScript('OnClick', function(self)
+            -- Prevent clicking if dependency is not met
+            if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then
+              return
+            end
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
 
             if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
@@ -943,12 +983,57 @@ function InitializeSettingsOptionsTab()
               end
             end
 
+            -- Apply always-on resource map setting immediately
+            if checkboxItem.dbSettingsValueName == 'alwaysShowResourceMap' then
+              -- Apply immediately to GLOBAL_SETTINGS so it takes effect
+              GLOBAL_SETTINGS.alwaysShowResourceMap = self:GetChecked()
+            end
+            
+            -- Apply player arrow setting immediately
+            if checkboxItem.dbSettingsValueName == 'showPlayerArrowOnResourceMap' then
+              GLOBAL_SETTINGS.showPlayerArrowOnResourceMap = self:GetChecked()
+              -- Update the player texture immediately if resource map is active
+              if GLOBAL_SETTINGS.alwaysShowResourceMap then
+                if self:GetChecked() then
+                  Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
+                else
+                  Minimap:SetPlayerTexture("")
+                end
+              end
+            end
+
+            -- Update any checkboxes that depend on this one
+            for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
+              if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
+                local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
+                if otherCheckbox and otherCheckbox._updateDependency then
+                  otherCheckbox._updateDependency()
+                end
+              end
+            end
+
             updateSectionCount(sectionIndex)
           end)
 
           checkbox:SetScript('OnEnter', function(self)
             GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            GameTooltip:SetText(checkboxItem.tooltip)
+            local tooltipText = checkboxItem.tooltip
+            if checkboxItem.dependsOn then
+              local dependencyName = nil
+              for _, item in ipairs(settingsCheckboxOptions) do
+                if item.dbSettingsValueName == checkboxItem.dependsOn then
+                  dependencyName = item.name
+                  break
+                end
+              end
+              if dependencyName then
+                local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
+                if not dependencyEnabled then
+                  tooltipText = tooltipText .. '\n\n|cFFFF0000Requires: ' .. dependencyName .. '|r'
+                end
+              end
+            end
+            GameTooltip:SetText(tooltipText)
             GameTooltip:Show()
           end)
 
