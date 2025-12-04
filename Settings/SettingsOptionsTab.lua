@@ -200,7 +200,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
-  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)\n*Addons that add icons to the minimap could create mouseover issues.',
+  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only).',
   dependsOn = 'hideMinimap',
 }, {
   name = 'Show Player Arrow on Resource Map',
@@ -946,6 +946,16 @@ function InitializeSettingsOptionsTab()
                 checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
                 checkbox:SetChecked(false)
                 tempSettings[checkboxItem.dbSettingsValueName] = false
+                
+                -- Cascade: update any checkboxes that depend on this one
+                for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
+                  if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
+                    local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
+                    if otherCheckbox and otherCheckbox._updateDependency then
+                      otherCheckbox._updateDependency()
+                    end
+                  end
+                end
               else
                 checkbox:Enable()
                 checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
