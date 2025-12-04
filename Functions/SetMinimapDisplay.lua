@@ -195,23 +195,34 @@ end
 function HideMinimap()
   -- Ensure no temporary reveal leftovers are active
   ResetMinimapRevealState()
-  -- Use custom blip texture to hide party members and objective arrows
-  Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
-  -- Hide the player arrow
-  Minimap:SetPlayerTexture("")
-    
-  -- Make the minimap invisible
-  Minimap:SetAlpha(0)
 
-  -- Hide it completely by default
+  -- Set blip texture based on Always On mode
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap then
+    Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted-AlwaysOn.png")
+    -- Show player arrow if setting is enabled
+    if GLOBAL_SETTINGS.showPlayerArrowOnResourceMap then
+      Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
+    else
+      Minimap:SetPlayerTexture("")
+    end
+  else
+    -- Standard hide mode
+    Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
+    Minimap:SetPlayerTexture("")
+  end
+
+  -- Make the minimap invisible by default
+  Minimap:SetAlpha(0)
   Minimap:Hide()
   MinimapCluster:Hide()
 
-  -- Show it for 5 seconds after casting particular spells
+  -- Register spell event handler
   Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
   Minimap:SetScript("OnEvent", function(self, event, ...)
     local unit, _, spellId = ...
     local initialZoom = Minimap:GetZoom()
+
+    -- Tracking spells that should trigger the resource map reveal
     local trackingSpellIDs = {
       [2580] = true, -- Find Minerals
       [2383] = true, -- Find Herbs
@@ -231,9 +242,15 @@ function HideMinimap()
       [5124] = true, -- Elemental Tracker
     }
 
-    if unit == 'player' and trackingSpellIDs[spellId] then
+    local isAlwaysOn = GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap
+
+    if (unit == 'player' and trackingSpellIDs[spellId]) or isAlwaysOn then
+      -- Reset any existing reveal state to ensure we capture the true 'base' state
+      ResetMinimapRevealState()
+
       -- Temporarily make the minimap rotate with the user
       SetCVar("RotateMinimap", true)
+
       -- Allow clicks through minimap while this is up
       Minimap:EnableMouse(false)
       -- Prevent zooming when showing our tracking
@@ -255,12 +272,22 @@ function HideMinimap()
       Minimap:SetParent(UIParent)
 
       Minimap:ClearAllPoints()
-      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-      Minimap:SetScale(8.0)
-      -- Minimap:SetAlpha(1)
 
-      -- This should hide and disable the mouse for all child frames, like QuestieFrameXXX
-      DisableMouseAndHideChildren(Minimap)
+      if isAlwaysOn then
+        -- Normal position/scale for Always On mode
+        Minimap:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -20, -20)
+        Minimap:SetScale(1.0)
+      else
+        -- Giant/Center for standard reveal
+        Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+        Minimap:SetScale(8.0)
+      end
+
+      -- Only hide child frames for temporary reveal (not Always On mode)
+      -- This prevents addon buttons (like MinimapButtonButton) from being hidden permanently
+      if not isAlwaysOn then
+        DisableMouseAndHideChildren(Minimap)
+      end
 
       -- Hide extra minimap adornments while revealing
       minimapRevealState.toggledFrames = {}
@@ -306,21 +333,34 @@ function HideMinimap()
       if minimapHideTimer then
         minimapHideTimer:Cancel()
       end
-      
-      -- After a few seconds, hide the minimap again
-      minimapHideTimer = C_Timer.NewTimer(5, function()
-        -- Restore any temporary reveal state
-        ResetMinimapRevealState()
-        -- Then ensure minimap stays hidden if the setting is enabled
-        if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideMinimap then
-          Minimap:Hide()
-          MinimapCluster:Hide()
-          Minimap:SetAlpha(0)
-        end
-      end)
+
+      -- Only set timer if NOT in Always On mode
+      if not isAlwaysOn then
+        -- After a few seconds, hide the minimap again
+        minimapHideTimer = C_Timer.NewTimer(5, function()
+          -- Restore any temporary reveal state
+          ResetMinimapRevealState()
+          -- Then ensure minimap stays hidden if the setting is enabled
+          if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideMinimap then
+            Minimap:Hide()
+            MinimapCluster:Hide()
+            Minimap:SetAlpha(0)
+          end
+        end)
+      end
     end
   end)
 
+  -- If Always On mode is enabled, manually trigger the reveal immediately
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap then
+    C_Timer.After(0.1, function()
+      local handler = Minimap:GetScript("OnEvent")
+      if handler then
+        -- Trigger with a fake spell ID (use Find Herbs as trigger)
+        handler(Minimap, "UNIT_SPELLCAST_SUCCEEDED", "player", "", 2383)
+      end
+    end)
+  end
 end
 
 function ShowMinimap()
