@@ -200,7 +200,7 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
-  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
+  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)\n*Addons that add icons to the minimap could create mouseover issues.',
   dependsOn = 'hideMinimap',
 }, {
   name = 'Show Player Arrow on Resource Map',

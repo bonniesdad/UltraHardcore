@@ -339,9 +339,11 @@ function RevealMinimapForTracking(isAlwaysOn)
     -- Giant/Center for standard reveal
     Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
     Minimap:SetScale(8.0)
+
+    DisableMouseAndHideChildren(Minimap)
   end
 
-  DisableMouseAndHideChildren(Minimap)
+  
 
   -- Hide extra minimap adornments while revealing
   minimapRevealState.toggledFrames = {}
