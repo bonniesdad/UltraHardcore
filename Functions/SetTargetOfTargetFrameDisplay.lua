@@ -133,6 +133,10 @@ local function RestoreUltraToTPosition()
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showTargetOfTargetPosition then
     local p = GLOBAL_SETTINGS.showTargetOfTargetPosition
     local rel = _G[p.relativeTo] or UIParent
+    if not p.point then
+      ResetToTPosition()
+      return
+    end
     UltraToTFrame:ClearAllPoints()
     UltraToTFrame:SetPoint(p.point, rel, p.relativePoint, p.x, p.y)
     UltraToTFrame:SetScale(GLOBAL_SETTINGS.showTargetOfTargetScale or 1.0)
