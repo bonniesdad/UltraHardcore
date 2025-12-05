@@ -653,14 +653,19 @@ local function HandleBuffBarSettingChange()
 end
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
-  if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
-    resourceBar:Hide()
-    if ShouldHideComboFrame() then
-      comboFrame:Hide()
+  -- Skip visibility check for pet events - they should only affect pet bar, not player bar
+  local isPetEvent = event == 'UNIT_PET' or event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP'
+  
+  if not isPetEvent then
+    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
+      resourceBar:Hide()
+      if ShouldHideComboFrame() then
+        comboFrame:Hide()
+      end
+      petResourceBar:Hide()
+      druidFormResourceBar:Hide()
+      return
     end
-    petResourceBar:Hide()
-    druidFormResourceBar:Hide()
-    return
   end
 
   if event == 'PLAYER_LOGIN' and unit == 'Blizzard_BuffFrame' then
