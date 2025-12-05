@@ -139,15 +139,37 @@ titleBar,
     twitchMessageText:SetJustifyH('CENTER')
     twitchMessageText:SetNonSpaceWrap(true)
     twitchMessageText:SetTextColor(0.1, 0.6, 0.3) -- Darker green color
+    local questionnaireText =
+      textBackgroundPanel:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightLarge')
+    questionnaireText:SetPoint('TOP', twitchMessageText, 'BOTTOM', 0, -12)
+    questionnaireText:SetWidth(540)
+    questionnaireText:SetText(
+      'Please fill out this short questionnaire to help the developers decide the path for TBC.'
+    )
+    questionnaireText:SetJustifyH('CENTER')
+    questionnaireText:SetNonSpaceWrap(true)
+    questionnaireText:SetTextColor(0.922, 0.871, 0.761)
+    local questionnaireButton =
+      UHC_CreateTBCQuestionnaireButton(
+        textBackgroundPanel,
+        'TOP',
+        questionnaireText,
+        'BOTTOM',
+        0,
+        -15,
+        220,
+        28,
+        'TBC Questionnaire'
+      )
     -- Discord invite button
     local discordButton =
       UHC_CreateDiscordInviteButton(
         textBackgroundPanel,
         'TOP',
-        twitchMessageText,
+        questionnaireButton,
         'BOTTOM',
         0,
-        -15,
+        -10,
         220,
         24,
         'Discord Invite Link'
@@ -171,7 +193,7 @@ titleBar,
     local topPadding = 20
     local bottomPadding = 20
     local panelHeight =
-      topPadding + (questionText:GetHeight() or 0) + 12 + (twitchMessageText:GetHeight() or 0) + 15 + 24 + 0 + 28 + bottomPadding
+      topPadding + (questionText:GetHeight() or 0) + 12 + (twitchMessageText:GetHeight() or 0) + 12 + (questionnaireText:GetHeight() or 0) + 15 + (questionnaireButton:GetHeight() or 0) + 0 + (discordButton:GetHeight() or 0) + 0 + (twitchButton:GetHeight() or 0) + bottomPadding
     textBackgroundPanel:SetHeight(panelHeight)
 
     -- Back button
