@@ -54,7 +54,7 @@ local function AddStatisticTooltip(label, tooltipKey)
 end
 
 -- Extracting this logic so it can be called outside of the original function
-local function IsTampered() 
+local function IsTampered()
   local isTampered = false
   if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
     local success, result = pcall(function()
@@ -106,225 +106,105 @@ function InitializeStatisticsTab()
   statsScrollFrame:SetScrollChild(statsScrollChild)
   local totalHPText
   local totalManaText
-
-  -- Ultra guild membership and local updaters for the Ultra Status section
-  local isUltraMember = IsUltraGuildMember and IsUltraGuildMember()
-  local UpdateCurrentPresetDisplay
-  local UpdateLegitStatusText
-  local ultraSectionContent  -- used as an anchor target if Ultra section is shown
   local resourceEventFrame
-  -- Current Character section (header)
-  if isUltraMember then
-    local currentHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    currentHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-    currentHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
-    -- Modern WoW row styling with rounded corners and greyish background
-    currentHeader:SetBackdrop({
-      bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-      edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-      tile = true,
-      tileSize = 32,
-      edgeSize = 16,
-      insets = {
-        left = 4,
-        right = 4,
-        top = 4,
-        bottom = 4,
-      },
-    })
-    currentHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
-    currentHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-    -- Header text
-    local currentHeaderLabel = currentHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    currentHeaderLabel:SetPoint('LEFT', currentHeader, 'LEFT', 12, 0)
-    currentHeaderLabel:SetText('Ultra Status (BETA)')
 
-    -- Current Character section (content)
-    local currentContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-    currentContent:SetSize(550, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
-    currentContent:SetPoint(
-      'TOPLEFT',
-      currentHeader,
-      'BOTTOMLEFT',
-      LAYOUT.CONTENT_INDENT,
-      -LAYOUT.CONTENT_PADDING
-    )
-    currentContent:Show()
-    currentContent:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-      edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-      tile = true,
-      tileSize = 16,
-      edgeSize = 8,
-      insets = {
-        left = 4,
-        right = 4,
-        top = 4,
-        bottom = 4,
-      },
-    })
-    -- expose as anchor for following sections
-    ultraSectionContent = currentContent
+  -- Track all sections for dynamic positioning
+  local sections = {}
+  local function addSection(header, content, name)
+    local section = {
+      header = header,
+      content = content,
+      name = name,
+      collapsed = GLOBAL_SETTINGS.collapsedStatsSections and GLOBAL_SETTINGS.collapsedStatsSections[name] or false,
+    }
+    table.insert(sections, section)
+    return section
+  end
 
-    -- "Preset:" label and dynamic value
-    local currentPresetLabel = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    currentPresetLabel:SetPoint(
-      'TOPLEFT',
-      currentContent,
-      'TOPLEFT',
-      LAYOUT.ROW_INDENT,
-      -LAYOUT.CONTENT_PADDING
-    )
-    currentPresetLabel:SetText('')
-    currentPresetLabel:Hide()
-    local currentPresetText = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    currentPresetText:ClearAllPoints()
-    currentPresetText:SetPoint(
-      'TOPLEFT',
-      currentContent,
-      'TOPLEFT',
-      LAYOUT.ROW_INDENT,
-      -LAYOUT.CONTENT_PADDING
-    )
-    currentPresetText:SetJustifyH('LEFT')
-    currentPresetText:SetText('')
-    currentPresetText:SetShadowOffset(1, -1)
-    currentPresetText:SetShadowColor(0, 0, 0, 0.8)
-
-    -- Legitimacy message below preset
-    local legitStatusIcon = currentContent:CreateTexture(nil, 'OVERLAY')
-    legitStatusIcon:SetSize(14, 14)
-    legitStatusIcon:SetPoint(
-      'TOPLEFT',
-      currentContent,
-      'TOPLEFT',
-      LAYOUT.ROW_INDENT,
-      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT - 2
-    )
-    legitStatusIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
-
-    local legitStatusLine1 = currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    legitStatusLine1:SetPoint('LEFT', legitStatusIcon, 'RIGHT', 6, 0)
-    legitStatusLine1:SetShadowOffset(1, -1)
-    legitStatusLine1:SetShadowColor(0, 0, 0, 0.8)
-
-    local legitStatusLine2 =
-      currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    legitStatusLine2:SetPoint('TOPLEFT', legitStatusLine1, 'BOTTOMLEFT', 0, -2)
-    legitStatusLine2:SetShadowOffset(1, -1)
-    legitStatusLine2:SetShadowColor(0, 0, 0, 0.8)
-
-    -- Static items verification line (hard-coded, no checks)
-    local legitStatusLine3 =
-      currentContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    legitStatusLine3:SetPoint('TOPLEFT', legitStatusLine2, 'BOTTOMLEFT', 0, -2)
-    legitStatusLine3:SetShadowOffset(1, -1)
-    legitStatusLine3:SetShadowColor(0, 0, 0, 0.8)
-
-    UpdateLegitStatusText = function()
-      local isTampered = IsTampered()
-
-      -- Check if character has any ULTRA settings enabled
-      local hasUHCSettings = false
-      local sections = GetPresetSections('simple', false)
-      for _, section in ipairs(sections) do
-        for _, settingName in ipairs(section.settings or {}) do
-          if GLOBAL_SETTINGS and GLOBAL_SETTINGS[settingName] then
-            hasUHCSettings = true
-            break
-          end
-        end
-        if hasUHCSettings then
-          break
-        end
-      end
-
-      local passedTamperCheck = not isTampered
-
-      legitStatusLine2:SetText('No character changes have been identified since the last session')
-      legitStatusLine2:SetTextColor(0.7, 1.0, 0.7)
-      legitStatusLine3:SetTextColor(0.7, 1.0, 0.7)
-
-      if passedTamperCheck then
-        legitStatusLine1:SetText('Verified Ultra status')
-        legitStatusLine1:SetTextColor(0.2, 0.95, 0.3)
-        legitStatusIcon:SetVertexColor(0.2, 0.95, 0.3)
+  -- Function to update section positions based on collapsed state
+  local function updateSectionPositions()
+    for i, section in ipairs(sections) do
+      -- Position header
+      section.header:ClearAllPoints()
+      if i == 1 then
+        section.header:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
       else
-        legitStatusLine1:SetText('Ultra status failed verification')
-        legitStatusLine1:SetTextColor(1.0, 0.35, 0.35)
-        legitStatusIcon:SetVertexColor(1.0, 0.35, 0.35)
+        -- Anchor to the previous section's header if collapsed, otherwise to its content
+        local previousSection = sections[i - 1]
+        local anchorFrame =
+          previousSection.collapsed and previousSection.header or previousSection.content
+        section.header:SetPoint(
+          'TOPLEFT',
+          anchorFrame,
+          'BOTTOMLEFT',
+          previousSection.collapsed and 0 or -LAYOUT.CONTENT_INDENT,
+          -LAYOUT.SECTION_SPACING
+        )
       end
 
-      if not passedTamperCheck then
-        legitStatusLine2:SetText('Character changes have been identified since the last session')
-        legitStatusLine2:SetTextColor(1.0, 0.35, 0.35)
-      end
-    end
-
-    -- Helper to update the current preset display
-    UpdateCurrentPresetDisplay = function()
-      local sections = GetPresetSections('simple', false) -- Exclude Misc
-      local function allTrueForSettings(settingsList)
-        for _, settingName in ipairs(settingsList or {}) do
-          if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS[settingName] then
-            return false
-          end
-        end
-        return true
-      end
-      local lite = sections[1] and sections[1].settings or {}
-      local recommended = sections[2] and sections[2].settings or {}
-      local extreme = sections[3] and sections[3].settings or {}
-
-      local liteOk = allTrueForSettings(lite)
-      local recOk = liteOk and allTrueForSettings(recommended)
-      local extOk = recOk and allTrueForSettings(extreme)
-
-      local presetLevel = nil
-      if extOk then
-        presetLevel = 'Extreme'
-      elseif recOk then
-        presetLevel = 'Recommended'
-      elseif liteOk then
-        presetLevel = 'Lite'
-      end
-
-      if presetLevel and not IsTampered() then
-        -- Only color the preset name in green; keep the rest at normal highlight color
-        local text =
-          'This character is a certified ' .. '|cff33F24C' .. presetLevel .. '|r' .. ' Ultra.'
-        currentPresetText:SetText(text)
-        currentPresetText:SetTextColor(0.922, 0.871, 0.761)
+      -- Show/hide content based on collapsed state
+      if section.collapsed then
+        section.content:Hide()
       else
-        currentPresetText:SetText('This character is not a legitimate Ultra.')
-        currentPresetText:SetTextColor(1.0, 0.35, 0.35) -- refined red
+        section.content:Show()
+        section.content:ClearAllPoints()
+        section.content:SetPoint(
+          'TOPLEFT',
+          section.header,
+          'BOTTOMLEFT',
+          LAYOUT.CONTENT_INDENT,
+          -LAYOUT.CONTENT_PADDING
+        )
       end
-    end
-
-    -- Initialize the preset display once
-    if UpdateCurrentPresetDisplay then
-      UpdateCurrentPresetDisplay()
-    end
-    if UpdateLegitStatusText then
-      UpdateLegitStatusText()
     end
   end
 
-  -- Create modern WoW-style lowest health section (no accordion functionality)
+  -- Helper function to create a collapsible header
+  local function makeHeaderClickable(header, content, sectionName, section)
+    -- Add collapse icon
+    local collapseIcon = header:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+    collapseIcon:SetPoint('LEFT', header, 'LEFT', 10, 0)
+    collapseIcon:SetTextColor(1, 1, 1, 0.8)
+
+    -- Function to update icon
+    local function updateIcon(collapsed)
+      collapseIcon:SetText(collapsed and '+' or '-')
+    end
+
+    -- Enable mouse interaction
+    header:EnableMouse(true)
+    header:SetScript('OnMouseDown', function(self, button)
+      if button == 'LeftButton' and section then
+        section.collapsed = not section.collapsed
+        -- Save state
+        if not GLOBAL_SETTINGS.collapsedStatsSections then
+          GLOBAL_SETTINGS.collapsedStatsSections = {}
+        end
+        GLOBAL_SETTINGS.collapsedStatsSections[sectionName] = section.collapsed
+        -- Update icon
+        updateIcon(section.collapsed)
+        -- Update all positions
+        updateSectionPositions()
+      end
+    end)
+
+    -- Add hover effect
+    header:SetScript('OnEnter', function(self)
+      self:SetBackdropColor(0.25, 0.25, 0.25, 0.95)
+    end)
+    header:SetScript('OnLeave', function(self)
+      self:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+    end)
+
+    -- Set initial icon state
+    if section then
+      updateIcon(section.collapsed)
+    end
+  end
+
+  -- Create modern WoW-style lowest health section (collapsible)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below Current Character content when visible, otherwise to top
-  if ultraSectionContent then
-    lowestHealthHeader:SetPoint(
-      'TOPLEFT',
-      ultraSectionContent,
-      'BOTTOMLEFT',
-      -LAYOUT.CONTENT_INDENT,
-      -LAYOUT.SECTION_SPACING
-    )
-  else
-    lowestHealthHeader:SetPoint('TOPLEFT', statsScrollChild, 'TOPLEFT', 0, -5)
-  end
 
   -- Modern WoW row styling with rounded corners and greyish background
   lowestHealthHeader:SetBackdrop({
@@ -342,23 +222,19 @@ function InitializeStatisticsTab()
   })
   lowestHealthHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9) -- Dark greyish background
   lowestHealthHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
-  -- Create header text
+  -- Create header text (offset to make room for collapse icon)
   local lowestHealthLabel = lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 12, 0)
+  lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 24, 0)
   lowestHealthLabel:SetText('Lowest Health')
 
   -- Create content frame for Lowest Health breakdown
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   lowestHealthContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
-  -- Position content directly under its header with consistent padding
-  lowestHealthContent:SetPoint(
-    'TOPLEFT',
-    lowestHealthHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   lowestHealthContent:Show() -- Show by default
+  -- Register section and make header clickable
+  local lowestHealthSection = addSection(lowestHealthHeader, lowestHealthContent, 'lowestHealth')
+  makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
   -- Modern content frame styling
   lowestHealthContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -572,13 +448,7 @@ function InitializeStatisticsTab()
   -- Create Total HP & Mana section
   local resourcesHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   resourcesHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  resourcesHeader:SetPoint(
-    'TOPLEFT',
-    lowestHealthContent,
-    'BOTTOMLEFT',
-    -LAYOUT.CONTENT_INDENT,
-    -LAYOUT.SECTION_SPACING
-  )
+  -- Position will be set by updateSectionPositions
   resourcesHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -596,19 +466,17 @@ function InitializeStatisticsTab()
   resourcesHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
 
   local resourcesLabel = resourcesHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  resourcesLabel:SetPoint('LEFT', resourcesHeader, 'LEFT', 12, 0)
+  resourcesLabel:SetPoint('LEFT', resourcesHeader, 'LEFT', 24, 0)
   resourcesLabel:SetText('Total HP & Mana')
 
   local resourcesContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   resourcesContent:SetSize(550, 2 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
-  resourcesContent:SetPoint(
-    'TOPLEFT',
-    resourcesHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   resourcesContent:Show()
+
+  -- Register section and make header clickable
+  local resourcesSection = addSection(resourcesHeader, resourcesContent, 'resources')
+  makeHeaderClickable(resourcesHeader, resourcesContent, 'resources', resourcesSection)
   resourcesContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
     edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -644,7 +512,8 @@ function InitializeStatisticsTab()
   )
   totalHPText:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
 
-  local showStatsTotalHPRadio = CreateFrame('CheckButton', nil, resourcesContent, 'UIRadioButtonTemplate')
+  local showStatsTotalHPRadio =
+    CreateFrame('CheckButton', nil, resourcesContent, 'UIRadioButtonTemplate')
   showStatsTotalHPRadio:SetPoint('LEFT', totalHPLabel, 'LEFT', -20, 0)
   showStatsTotalHPRadio:SetChecked(false)
   radioButtons.showMainStatisticsPanelTotalHP = showStatsTotalHPRadio
@@ -691,17 +560,10 @@ function InitializeStatisticsTab()
     end
   end)
 
-  -- Create modern WoW-style enemies slain section (no accordion functionality)
+  -- Create modern WoW-style enemies slain section (collapsible)
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below the Lowest Health content to avoid overlap on different UI scales
-  enemiesSlainHeader:SetPoint(
-    'TOPLEFT',
-    resourcesContent,
-    'BOTTOMLEFT',
-    -LAYOUT.CONTENT_INDENT,
-    -LAYOUT.SECTION_SPACING
-  )
+  -- Position will be set by updateSectionPositions
 
   -- Modern WoW row styling with rounded corners and greyish background
   enemiesSlainHeader:SetBackdrop({
@@ -721,21 +583,17 @@ function InitializeStatisticsTab()
   enemiesSlainHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
   -- Create header text
   local enemiesSlainLabel = enemiesSlainHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesSlainLabel:SetPoint('LEFT', enemiesSlainHeader, 'LEFT', 12, 0)
+  enemiesSlainLabel:SetPoint('LEFT', enemiesSlainHeader, 'LEFT', 24, 0)
   enemiesSlainLabel:SetText('Enemies Slain')
 
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   enemiesSlainContent:SetSize(550, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
-  -- Position content directly under its header with consistent padding
-  enemiesSlainContent:SetPoint(
-    'TOPLEFT',
-    enemiesSlainHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   enemiesSlainContent:Show() -- Show by default
+  -- Register section and make header clickable
+  local enemiesSlainSection = addSection(enemiesSlainHeader, enemiesSlainContent, 'enemiesSlain')
+  makeHeaderClickable(enemiesSlainHeader, enemiesSlainContent, 'enemiesSlain', enemiesSlainSection)
   -- Modern content frame styling
   enemiesSlainContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -1060,17 +918,10 @@ function InitializeStatisticsTab()
     end
   end)
 
-  -- Create modern WoW-style Survival section (no accordion functionality)
+  -- Create modern WoW-style Survival section (collapsible)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below the Enemies Slain content to avoid overlap on different UI scales
-  survivalHeader:SetPoint(
-    'TOPLEFT',
-    enemiesSlainContent,
-    'BOTTOMLEFT',
-    -LAYOUT.CONTENT_INDENT,
-    -LAYOUT.SECTION_SPACING
-  )
+  -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -1089,21 +940,17 @@ function InitializeStatisticsTab()
   survivalHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
   -- Create header text
   local survivalLabel = survivalHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  survivalLabel:SetPoint('LEFT', survivalHeader, 'LEFT', 12, 0)
+  survivalLabel:SetPoint('LEFT', survivalHeader, 'LEFT', 24, 0)
   survivalLabel:SetText('Survival')
 
-  -- Create content frame for Survival breakdown (always visible)
+  -- Create content frame for Survival breakdown
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   survivalContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
-  -- Position content directly under its header with consistent padding
-  survivalContent:SetPoint(
-    'TOPLEFT',
-    survivalHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   survivalContent:Show() -- Always show
+  -- Register section and make header clickable
+  local survivalSection = addSection(survivalHeader, survivalContent, 'survival')
+  makeHeaderClickable(survivalHeader, survivalContent, 'survival', survivalSection)
   -- Modern content frame styling
   survivalContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -1198,17 +1045,10 @@ function InitializeStatisticsTab()
   local survivalRows = #survivalStats
   survivalContent:SetSize(550, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
-  -- Create modern WoW-style Misc section (no accordion functionality)
+  -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   miscHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below the Survival content to avoid overlap on different UI scales
-  miscHeader:SetPoint(
-    'TOPLEFT',
-    survivalContent,
-    'BOTTOMLEFT',
-    -LAYOUT.CONTENT_INDENT,
-    -LAYOUT.SECTION_SPACING
-  )
+  -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   miscHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -1227,21 +1067,18 @@ function InitializeStatisticsTab()
   miscHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
   -- Create header text
   local miscLabel = miscHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  miscLabel:SetPoint('LEFT', miscHeader, 'LEFT', 12, 0)
+  miscLabel:SetPoint('LEFT', miscHeader, 'LEFT', 24, 0)
   miscLabel:SetText('Misc')
 
-  -- Create content frame for Misc breakdown (always visible)
+  -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   miscContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
-  -- Position content directly under its header with consistent padding
-  miscContent:SetPoint(
-    'TOPLEFT',
-    miscHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   miscContent:Show()
+
+  -- Register section and make header clickable
+  local miscSection = addSection(miscHeader, miscContent, 'misc')
+  makeHeaderClickable(miscHeader, miscContent, 'misc', miscSection)
   -- Modern content frame styling
   miscContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -1327,17 +1164,10 @@ function InitializeStatisticsTab()
   local miscRows = #miscStats
   miscContent:SetSize(550, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
-  -- Create modern WoW-style XP gained section (no accordion functionality)
+  -- Create modern WoW-style XP gained section (collapsible)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
-  -- Anchor directly below Survival content to avoid overlap
-  xpGainedHeader:SetPoint(
-    'TOPLEFT',
-    miscContent,
-    'BOTTOMLEFT',
-    -LAYOUT.CONTENT_INDENT,
-    -LAYOUT.SECTION_SPACING
-  )
+  -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -1356,21 +1186,17 @@ function InitializeStatisticsTab()
   xpGainedHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
   -- Create header text
   local xpGainedLabel = xpGainedHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  xpGainedLabel:SetPoint('LEFT', xpGainedHeader, 'LEFT', 12, 0)
+  xpGainedLabel:SetPoint('LEFT', xpGainedHeader, 'LEFT', 24, 0)
   xpGainedLabel:SetText('XP Gained Without Option Breakdown')
 
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedContent:SetSize(550, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
-  -- Position content directly under its header with consistent padding
-  xpGainedContent:SetPoint(
-    'TOPLEFT',
-    xpGainedHeader,
-    'BOTTOMLEFT',
-    LAYOUT.CONTENT_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
+  -- Position will be set by updateSectionPositions
   xpGainedContent:Show() -- Show by default
+  -- Register section and make header clickable
+  local xpGainedSection = addSection(xpGainedHeader, xpGainedContent, 'xpGained')
+  makeHeaderClickable(xpGainedHeader, xpGainedContent, 'xpGained', xpGainedSection)
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
     bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
@@ -1462,7 +1288,8 @@ function InitializeStatisticsTab()
   end
 
   -- Set initial positioning after all statistics are created
-  -- All sections are always visible
+  -- Update all section positions now that all sections are registered
+  updateSectionPositions()
 
   -- Function to update XP breakdown display
   local function UpdateXPBreakdown()
@@ -1523,10 +1350,6 @@ function InitializeStatisticsTab()
   local function UpdateLowestHealthDisplay()
     if not UltraHardcoreDB then
       LoadDBData()
-    end
-    -- Refresh current preset status in case settings changed
-    if UpdateCurrentPresetDisplay then
-      UpdateCurrentPresetDisplay()
     end
 
     -- Update level display
@@ -1659,9 +1482,7 @@ function InitializeStatisticsTab()
   resourceEventFrame:RegisterEvent('UNIT_MAXHEALTH')
   resourceEventFrame:RegisterEvent('UNIT_MAXPOWER')
   resourceEventFrame:SetScript('OnEvent', function(_, event, unit)
-    if (event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER') and unit ~= 'player' then
-      return
-    end
+    if (event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER') and unit ~= 'player' then return end
     if UpdateLowestHealthDisplay then
       UpdateLowestHealthDisplay()
     end
