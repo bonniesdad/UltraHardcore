@@ -112,6 +112,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'useCustomComboFrame',
   tooltip = 'Use a custom combo frame instead of the default Blizzard combo frame',
 }, {
+  name = 'Show Vitals Overlay',
+  dbSettingsValueName = 'showVitalsOverlay',
+  tooltip = 'Show maximum health and mana on the character panel',
+}, {
   name = 'Announce Level Up to Guild',
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
@@ -401,6 +405,10 @@ function InitializeSettingsOptionsTab()
       tempSettings.hidePlayerFrame or false,
       tempSettings.completelyRemovePlayerFrame or false
     )
+
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(tempSettings.showVitalsOverlay or false)
+    end
 
     updateCheckboxes()
     updateSliders()
@@ -966,6 +974,12 @@ function InitializeSettingsOptionsTab()
             if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
               if _G.UltraHardcoreHandleBuffBarSettingChange then
                 _G.UltraHardcoreHandleBuffBarSettingChange()
+              end
+            end
+
+            if checkboxItem.dbSettingsValueName == 'showVitalsOverlay' then
+              if SetVitalsOverlayEnabled then
+                SetVitalsOverlayEnabled(self:GetChecked())
               end
             end
 
