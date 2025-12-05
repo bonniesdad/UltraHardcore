@@ -40,7 +40,6 @@ function LoadDBData()
     tunnelVisionMaxStrata = false,
     routePlanner = false,
     -- Experimental Preset Settings
-    hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,

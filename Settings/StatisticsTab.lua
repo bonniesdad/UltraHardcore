@@ -1409,7 +1409,6 @@ function InitializeStatisticsTab()
     tunnelVisionMaxStrata = 'Tunnel Vision Covers Everything',
     routePlanner = 'Route Planner',
     -- Experimental section
-    hideBreathIndicator = 'Use ULTRA Breath Indicator',
     showCritScreenMoveEffect = 'Use ULTRA Incoming Crit Effect',
     showFullHealthIndicator = 'Use ULTRA Full Health Indicator',
     hideCustomResourceBar = 'Hide Custom Resource Bar',
