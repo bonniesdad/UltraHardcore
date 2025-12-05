@@ -54,6 +54,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
     end
     
+    if GLOBAL_SETTINGS.showTrackingWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
+        ShowTrackingButton()
+    end
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowMail()
     end

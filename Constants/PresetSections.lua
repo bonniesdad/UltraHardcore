@@ -57,6 +57,7 @@ local PRESET_SECTIONS = { {
     'hideUIErrors',
     'showClockEvenWhenMapHidden',
     'showMailEvenWhenMapHidden',
+    'showTrackingWhenMapHidden',
     'announcePartyDeathsOnGroupJoin',
     'announceDungeonsCompletedOnGroupJoin',
     'buffBarOnResourceBar',
