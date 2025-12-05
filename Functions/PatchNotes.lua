@@ -1,5 +1,27 @@
 -- Patch notes data structure - update this for each release
-PATCH_NOTES = { {
+PATCH_NOTES = { { 
+  version = '1.3.0',
+  date = '2025-12-05',
+  notes = { 
+    'NEW FEATURES:',
+    '• Permanent resource tracking minimap',
+    '• Vitals Overlay',
+    '  • Displays your max health in character screen.',
+    '• Target of Target',
+    '• Target Buffs',
+    '• Target Debuffs',
+    '• Target Raid Icon',
+    '• Class colour on raid frames',
+    '',
+    'BUG FIXES:', 
+    '• Fix: Raid frames showing on nameplates when enabled.',
+    '• Fix: Shaman UI image missing from settings menu.',
+    '',
+    'OTHER:',
+    '• Remove Custom Breath Indicator',
+    '• Rebrand to ULTRA from UltraHardcore',
+  },
+}, {
   version = '1.2.10',
   date = '2025-11-20',
   notes = { 'BUG FIXES:', '• Fix: Route planner blocking map in combat even when disabled.' },
