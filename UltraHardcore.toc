@@ -52,6 +52,7 @@ Functions/TradeRestriction.lua
 Functions/AddonXPTracking.lua
 
 Functions/Statistics/TrackLowestHealth.lua
+Functions/Statistics/TrackLowestHPHealed.lua
 Functions/Statistics/TrackXPPerSetting.lua
 Functions/Statistics/TrackJumps.lua
 
