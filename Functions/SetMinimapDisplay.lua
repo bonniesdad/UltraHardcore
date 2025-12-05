@@ -453,7 +453,7 @@ local function ResetClockPosition()
   -- Clear existing points first
   TimeManagerClockButton:ClearAllPoints()
   -- Reset to default position (top right)
-  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -50, -50)
+  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -30, 0)
 
   -- Save the reset position
   local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
@@ -473,7 +473,7 @@ local function ResetMailPosition()
   -- Clear existing points first
   MiniMapMailFrame:ClearAllPoints()
   -- Reset to default position (top right)
-  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -50)
+  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -17, -7)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
@@ -492,7 +492,7 @@ local function ResetTrackingPosition()
   -- Clear existing points first
   MiniMapTracking:ClearAllPoints()
   -- Reset to default position (top right)
-  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -50)
+  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -134, -5)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
