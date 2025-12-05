@@ -58,6 +58,7 @@ function LoadDBData()
     showTargetOfTargetScale = 1.0,
     showTargetOfTargetLocked = false,
     showOnScreenStatistics = true,
+    showVitalsOverlay = true,
     useCustomComboFrame = true,
     minimapClockPosition = {},
     minimapMailPosition = {},
