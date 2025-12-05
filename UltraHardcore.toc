@@ -40,7 +40,6 @@ Functions/JoinUHCChannel.lua
 Functions/FullHealthReachedIndicator.lua
 Functions/HealingIndicator.lua
 Functions/PetsDiePermenantly.lua
-Functions/SetBreathBarDisplay.lua
 Functions/HidePlayerMapIndicators.lua
 Functions/AnnounceLevelUpToGuild.lua
 Functions/FirstPersonCamera.lua
@@ -97,7 +96,6 @@ Functions/DazedEffectHandler.lua
 
 Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
-Functions/Overlays/ShowBreathOverlay.lua
 Functions/Overlays/UpdateResourceIndicator.lua
 Functions/Overlays/CustomResourceBar.lua
 Functions/Overlays/MainScreenStatistics.lua

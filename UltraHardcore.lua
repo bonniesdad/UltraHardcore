@@ -76,7 +76,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
-    SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
@@ -159,19 +158,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
           SetAllGroupIndicators()
         end
       end)
-    end
-  elseif event == 'MIRROR_TIMER_START' then
-    -- Start breath monitoring when underwater
-    -- Mirror timer events pass timerName as the first parameter after event
-    local timerName = ...
-    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
-      OnBreathStart()
-    end
-  elseif event == 'MIRROR_TIMER_STOP' then
-    -- Stop breath monitoring when surfacing
-    local timerName = ...
-    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
-      OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
     -- Hide player cast bar if setting is enabled

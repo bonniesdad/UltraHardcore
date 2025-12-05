@@ -21,7 +21,6 @@ local settingToXPVariable = {
   showDazedEffect = 'xpGainedWithoutOptionShowDazedEffect',
   hideGroupHealth = 'xpGainedWithoutOptionHideGroupHealth',
   hideMinimap = 'xpGainedWithoutOptionHideMinimap',
-  hideBreathIndicator = 'xpGainedWithoutOptionHideBreathIndicator',
   -- Experimental Preset Settings
   showCritScreenMoveEffect = 'xpGainedWithoutOptionShowCritScreenMoveEffect',
   hideActionBars = 'xpGainedWithoutOptionHideActionBars',

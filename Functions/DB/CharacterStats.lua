@@ -25,7 +25,6 @@ local CharacterStats = {
     xpGainedWithoutOptionHideMinimap = 0,
     xpGainedWithoutOptionHideQuestFrame = 0,
     xpGainedWithoutOptionHideBuffFrame = 0,
-    xpGainedWithoutOptionHideBreathIndicator = 0,
     xpGainedWithoutOptionShowCritScreenMoveEffect = 0,
     xpGainedWithoutOptionHideActionBars = 0,
     xpGainedWithoutOptionPetsDiePermanently = 0,

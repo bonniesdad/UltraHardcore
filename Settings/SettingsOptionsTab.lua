@@ -51,10 +51,6 @@ local settingsCheckboxOptions = { {
   tooltip = 'The map is only usable near campfire or when resting. Your location marker on the map is also hidden.',
 }, {
   -- Experimental Preset Settings
-  name = 'ULTRA Breath Indicator',
-  dbSettingsValueName = 'hideBreathIndicator',
-  tooltip = 'Replace the breath bar with a increasingly red screen overlay when underwater',
-}, {
   name = 'ULTRA Incoming Crit Effect',
   dbSettingsValueName = 'showCritScreenMoveEffect',
   tooltip = 'A red screen rotation effect appears when you take a critical hit',
