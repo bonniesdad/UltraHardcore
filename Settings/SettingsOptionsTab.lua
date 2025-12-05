@@ -131,10 +131,12 @@ local settingsCheckboxOptions = { {
   name = 'Show Clock When Minimap is Hidden',
   dbSettingsValueName = 'showClockEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the clock on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 }, {
   name = 'Show Mail Indicator When Minimap is Hidden',
   dbSettingsValueName = 'showMailEvenWhenMapHidden',
   tooltip = 'If Hide Minimap is enabled, keep the mail indicator on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 }, {
   name = 'Announce Party Deaths on Group Join',
   dbSettingsValueName = 'announcePartyDeathsOnGroupJoin',
@@ -198,13 +200,18 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
-  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
+  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only).',
   dependsOn = 'hideMinimap',
 }, {
   name = 'Show Player Arrow on Resource Map',
   dbSettingsValueName = 'showPlayerArrowOnResourceMap',
   tooltip = 'Display the player arrow on the resource tracking map',
   dependsOn = 'alwaysShowResourceMap',
+}, {
+  name = 'Show Tracking Button When Minimap is Hidden',
+  dbSettingsValueName = 'showTrackingWhenMapHidden',
+  tooltip = 'If Always On Resource Map is enabled, keep the tracking button on display instead of hiding it',
+  dependsOn = 'hideMinimap',
 } }
 
 -- XP Bar Settings
@@ -943,6 +950,16 @@ function InitializeSettingsOptionsTab()
                 checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
                 checkbox:SetChecked(false)
                 tempSettings[checkboxItem.dbSettingsValueName] = false
+                
+                -- Cascade: update any checkboxes that depend on this one
+                for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
+                  if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
+                    local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
+                    if otherCheckbox and otherCheckbox._updateDependency then
+                      otherCheckbox._updateDependency()
+                    end
+                  end
+                end
               else
                 checkbox:Enable()
                 checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
