@@ -35,17 +35,13 @@ local PRESET_SECTIONS = { {
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
     'routePlannerCompass',
-    'showTargetOfTarget',
     'showTargetBuffs',
     'showTargetDebuffs',
     'showTargetRaidIcon',
   },
 }, {
   title = 'Maps:',
-  settings = {
-    'alwaysShowResourceMap',
-    'showPlayerArrowOnResourceMap',
-  },
+  settings = { 'alwaysShowResourceMap', 'showPlayerArrowOnResourceMap' },
 }, {
   title = 'Misc:',
   settings = {

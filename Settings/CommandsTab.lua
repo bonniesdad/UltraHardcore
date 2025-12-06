@@ -156,7 +156,6 @@ function InitializeCommandsTab()
         'Reset the minimap tracking button to the default position.',
       },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
-      { '/ultra reset tot', 'Reset the Target of Target frame to its default position.' },
     },
   } }
 
