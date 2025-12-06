@@ -18,6 +18,7 @@ Libs/AceSerializer-3.0/AceSerializer-3.0.xml
 ## Functions
 Functions/PlayerComm.lua
 Functions/SetPlayerFrameDisplay.lua
+Functions/SetPetFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
 Functions/SetTargetFrameDisplay.lua
 Functions/SetTargetTooltipDisplay.lua
