@@ -11,6 +11,9 @@ MIN_LEVEL_HIDE_ACTION_BARS = 6
 ACTIOBAR_FRAMES_TO_HIDE =
   { MainMenuBar, MultiBarBottomLeft, MultiBarBottomRight, MultiBarLeft, MultiBarRight }
 
+-- Store original alpha values for restoration
+local ORIGINAL_ACTION_BAR_ALPHAS = {}
+
 --[[
   Main functions
 ]]
@@ -33,13 +36,24 @@ end
 
 function HideActionBars()
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
-    ForceHideFrame(frame)
+    if frame and frame.SetAlpha then
+      -- Store original alpha if not already stored
+      if ORIGINAL_ACTION_BAR_ALPHAS[frame] == nil then
+        ORIGINAL_ACTION_BAR_ALPHAS[frame] = frame:GetAlpha()
+      end
+      -- Hide using alpha instead of ForceHideFrame for better performance
+      frame:SetAlpha(0)
+    end
   end
 end
 
 function ShowActionBars()
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
-    RestoreAndShowFrame(frame)
+    if frame and frame.SetAlpha then
+      -- Restore original alpha or default to 1.0
+      local originalAlpha = ORIGINAL_ACTION_BAR_ALPHAS[frame] or 1.0
+      frame:SetAlpha(originalAlpha)
+    end
   end
 end
 

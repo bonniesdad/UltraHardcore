@@ -10,16 +10,29 @@ local maxDebuffs = DEBUFF_MAX_DISPLAY or 16
 local HIDEABLE_SUBFRAMES =
   { 'HealthBar', 'ManaBar', 'Name', 'NameBackground', 'HealthBarText', 'ManaBarText', 'Background' }
 
+-- Cache commonly accessed frames
+local TargetFrame, TargetFrameTextureFrame, TargetFramePortrait
+local TargetFrameToT, TargetFrameToTTextureFrame, TargetFrameToTPortrait
+local TargetFrameTextureFrameRaidTargetIcon
+
+-- Update cached frame references
+local function UpdateCachedFrames()
+  TargetFrame = _G.TargetFrame
+  TargetFrameTextureFrame = _G.TargetFrameTextureFrame
+  TargetFramePortrait = _G.TargetFramePortrait
+  TargetFrameToT = _G.TargetFrameToT
+  TargetFrameToTTextureFrame = _G.TargetFrameToTTextureFrame
+  TargetFrameToTPortrait = _G.TargetFrameToTPortrait
+  TargetFrameTextureFrameRaidTargetIcon = _G.TargetFrameTextureFrameRaidTargetIcon
+end
+
 -- Hide all texture regions inside frame except portrait, raid icon
 local function HideTextureRegions(frame)
-  if not frame then return end
-  if targetFrameMask.all then
-    -- Don't hide if we are trying to show all frames, like when in lite mode
-    return
-  end
+  if not frame or targetFrameMask.all then return end
 
-  for i = 1, select('#', frame:GetRegions()) do
-    local region = select(i, frame:GetRegions())
+  local regions = { frame:GetRegions() }
+  for i = 1, #regions do
+    local region = regions[i]
     if region and not region:IsProtected() then
       region:SetAlpha(0)
     end
@@ -27,14 +40,11 @@ local function HideTextureRegions(frame)
 end
 
 -- Apply alpha to hide subframes
-local function HideSubFrames(frame)
-  if targetFrameMask.all then
-    -- don't hide anything if we are trying to show all
-    return
-  end
+local function HideSubFrames(framePrefix)
+  if targetFrameMask.all then return end
 
-  for _, name in ipairs(HIDEABLE_SUBFRAMES) do
-    local f = _G[frame .. name]
+  for i = 1, #HIDEABLE_SUBFRAMES do
+    local f = _G[framePrefix .. HIDEABLE_SUBFRAMES[i]]
     if f and not f:IsProtected() then
       f:SetAlpha(0)
     end
@@ -50,17 +60,20 @@ end
 
 -- Show/hide buffs/debuffs
 local function ApplyAuras()
+  local showBuffs = targetFrameMask.buffs
+  local showDebuffs = targetFrameMask.debuffs
+
   for i = 1, maxBuffs do
     local buff = _G['TargetFrameBuff' .. i]
     if buff then
-      buff:SetAlpha(targetFrameMask.buffs and 1 or 0)
+      buff:SetAlpha(showBuffs and 1 or 0)
     end
   end
 
   for i = 1, maxDebuffs do
     local debuff = _G['TargetFrameDebuff' .. i]
     if debuff then
-      debuff:SetAlpha(targetFrameMask.debuffs and 1 or 0)
+      debuff:SetAlpha(showDebuffs and 1 or 0)
     end
   end
 end
@@ -135,10 +148,7 @@ end
 
 -- Hide all target of target frames (but keep portrait like target frame)
 local function HideTargetOfTargetFrames()
-  if targetFrameMask.all then
-    -- Don't hide if we are trying to show all frames, like when in lite mode
-    return
-  end
+  if targetFrameMask.all then return end
 
   -- Keep the main TargetFrameToT frame visible (same as target frame)
   if TargetFrameToT then
@@ -148,9 +158,38 @@ local function HideTargetOfTargetFrames()
   -- Hide all TargetFrameToT subframes
   HideSubFrames('TargetFrameToT')
 
+  -- Explicitly hide TargetFrameToTBackground
+  local totBackground = _G.TargetFrameToTBackground
+  if totBackground and not totBackground:IsProtected() then
+    totBackground:SetAlpha(0)
+  end
+
+  -- Hide health and mana bar backgrounds (semi-transparent black backgrounds)
+  local totHealthBar = _G.TargetFrameToTHealthBar
+  if totHealthBar then
+    HideTextureRegions(totHealthBar)
+    local healthBarBg = _G.TargetFrameToTHealthBarBackground
+    if healthBarBg and not healthBarBg:IsProtected() then
+      healthBarBg:SetAlpha(0)
+    end
+  end
+
+  local totManaBar = _G.TargetFrameToTManaBar
+  if totManaBar then
+    HideTextureRegions(totManaBar)
+    local manaBarBg = _G.TargetFrameToTManaBarBackground
+    if manaBarBg and not manaBarBg:IsProtected() then
+      manaBarBg:SetAlpha(0)
+    end
+  end
+
   -- Hide texture regions but preserve portrait (same as target frame)
   if TargetFrameToTTextureFrame then
     HideTextureRegions(TargetFrameToTTextureFrame)
+    local totTexture = _G.TargetFrameToTTextureFrameTexture
+    if totTexture and not totTexture:IsProtected() then
+      totTexture:SetAlpha(0)
+    end
   end
 
   -- Show/hide portrait based on mask (same as target frame)
@@ -161,6 +200,9 @@ end
 
 -- Apply the full mask (combat-safe with alpha instead of Show/Hide)
 local function ApplyMask()
+  -- Update cached frames in case they changed
+  UpdateCachedFrames()
+
   if TargetFrame then
     TargetFrame:SetAlpha(1)
   end
@@ -170,7 +212,6 @@ local function ApplyMask()
 
   -- If mask is set to show all, do nothing (show Blizzard default frames)
   if targetFrameMask.all then
-    -- Restore target of target frames when showing all
     if TargetFrameToT then
       TargetFrameToT:SetAlpha(1)
     end
@@ -184,7 +225,6 @@ local function ApplyMask()
     if TargetFrameTextureFrame then
       TargetFrameTextureFrame:SetAlpha(0)
     end
-    -- Also hide target of target when no target exists
     if TargetFrameToT then
       TargetFrameToT:SetAlpha(0)
     end
@@ -220,13 +260,20 @@ function SetTargetFrameDisplay(mask)
     targetFrameEventFrame = CreateFrame('Frame')
     targetFrameEventFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
     targetFrameEventFrame:RegisterEvent('GROUP_ROSTER_UPDATE')
-    targetFrameEventFrame:SetScript('OnEvent', function(_, event, unit)
+    targetFrameEventFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
+    targetFrameEventFrame:SetScript('OnEvent', function(_, event)
       if event == 'PLAYER_TARGET_CHANGED' or event == 'GROUP_ROSTER_UPDATE' then
         ApplyMask()
+      elseif event == 'PLAYER_REGEN_DISABLED' then
+        -- Reapply mask immediately when entering combat
+        ApplyMask()
+        -- Also reapply after a small delay to catch any UI updates
+        C_Timer.After(0.1, ApplyMask)
       end
     end)
   end
 
-  -- Apply mask immediately
+  -- Update cached frames and apply mask immediately
+  UpdateCachedFrames()
   ApplyMask()
 end
