@@ -14,7 +14,9 @@ function InitializeCommandsTab()
   local title = parent:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   title:SetPoint('TOP', parent, 'TOP', 0, -58)
   title:SetText('Commands')
-  title:SetTextColor(0.922, 0.871, 0.761)
+  title:SetTextColor(0.9, 0.85, 0.75, 1) -- Warmer, more readable color
+  title:SetShadowOffset(1, -1)
+  title:SetShadowColor(0, 0, 0, 0.8)
 
   -- Short explainer
   local explainer = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -24,11 +26,29 @@ function InitializeCommandsTab()
   explainer:SetNonSpaceWrap(true)
   explainer:SetText('Use these slash commands in chat.')
 
+  -- Create main container frame with background (similar to StatisticsTab and SettingsOptionsTab)
+  local commandsFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
+  commandsFrame:SetPoint('TOPLEFT', explainer, 'BOTTOMLEFT', -12, -10)
+  commandsFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -28, 12)
+  commandsFrame:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 64,
+    edgeSize = 16,
+    insets = {
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
+    },
+  })
+  commandsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
+  commandsFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8) -- Softer border
   -- Scroll frame container
-  local scrollFrame = CreateFrame('ScrollFrame', nil, parent, 'UIPanelScrollFrameTemplate')
-  scrollFrame:SetPoint('TOPLEFT', parent, 'TOPLEFT', 12, -136)
-  scrollFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -28, 12)
-
+  local scrollFrame = CreateFrame('ScrollFrame', nil, commandsFrame, 'UIPanelScrollFrameTemplate')
+  scrollFrame:SetPoint('TOPLEFT', commandsFrame, 'TOPLEFT', 10, -10)
+  scrollFrame:SetPoint('BOTTOMRIGHT', commandsFrame, 'BOTTOMRIGHT', -30, 10) -- Leave room for scrollbar on right
   -- Scroll child
   local scrollChild = CreateFrame('Frame', nil, scrollFrame)
   scrollChild:SetSize(1, 1) -- width will be updated on size change
@@ -47,9 +67,9 @@ function InitializeCommandsTab()
 
   -- Styling helpers
   local SECTION_TITLE_COLOR = {
-    r = 0.922,
-    g = 0.871,
-    b = 0.761,
+    r = 0.9,
+    g = 0.85,
+    b = 0.75,
   }
   local COMMAND_COLOR = {
     r = 1,
@@ -71,7 +91,9 @@ function InitializeCommandsTab()
     local fs = parentFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
     fs:SetPoint('TOPLEFT', parentFrame, 'TOPLEFT', leftPadding, currentYOffset)
     fs:SetText(text)
-    fs:SetTextColor(SECTION_TITLE_COLOR.r, SECTION_TITLE_COLOR.g, SECTION_TITLE_COLOR.b)
+    fs:SetTextColor(SECTION_TITLE_COLOR.r, SECTION_TITLE_COLOR.g, SECTION_TITLE_COLOR.b, 1)
+    fs:SetShadowOffset(1, -1)
+    fs:SetShadowColor(0, 0, 0, 0.8)
     currentYOffset = currentYOffset - 22
   end
 
@@ -129,10 +151,12 @@ function InitializeCommandsTab()
     items = {
       { '/resetclockposition, /rcp', 'Reset the minimap clock to the default position.' },
       { '/resetmailposition, /rmp', 'Reset the minimap mail icon to the default position.' },
-      { '/resettrackingposition, /rtp', 'Reset the minimap tracking button to the default position.' },
+      {
+        '/resettrackingposition, /rtp',
+        'Reset the minimap tracking button to the default position.',
+      },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
       { '/ultra reset tot', 'Reset the Target of Target frame to its default position.' },
-
     },
   } }
 
