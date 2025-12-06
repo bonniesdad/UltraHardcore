@@ -48,9 +48,9 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
-    showTargetBuffs = false,
-    showTargetDebuffs = false,
-    showTargetRaidIcon = false,
+    showTargetBuffs = true,
+    showTargetDebuffs = true,
+    showTargetRaidIcon = true,
     -- Misc Settings
     showOnScreenStatistics = true,
     showVitalsOverlay = true,
