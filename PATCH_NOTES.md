@@ -2,6 +2,10 @@
 
 ## Version 1.3.0 - 2025-12-05
 
+### UI Improvements
+
+- New improved UI for Stats and Options tabs
+
 ### New Features
 
 - Permanent resource tracking minimap

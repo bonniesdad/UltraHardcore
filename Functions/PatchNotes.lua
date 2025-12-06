@@ -3,6 +3,9 @@ PATCH_NOTES = { {
   version = '1.3.0',
   date = '2025-12-05',
   notes = {
+    'UI IMPROVEMENTS:',
+    '• New improved UI for Stats and Options tabs',
+    '',
     'NEW FEATURES:',
     '• Permanent resource tracking minimap',
     '• Vitals Overlay',
