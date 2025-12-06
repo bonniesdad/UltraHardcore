@@ -111,6 +111,7 @@ Settings/TabManager.lua
 Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
+Settings/LivesTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua

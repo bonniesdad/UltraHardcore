@@ -2,20 +2,20 @@
 -- Initialize Credits Tab when called
 function InitializeCreditsTab()
   -- Check if tabContents[7] exists
-  if not tabContents or not tabContents[7] then return end
+  if not tabContents or not tabContents[8] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[7].initialized then return end
+  if tabContents[8].initialized then return end
 
   -- Mark as initialized
-  tabContents[7].initialized = true
+  tabContents[8].initialized = true
 
   -- Background frame with border for all content
-  local contentBackground = CreateFrame('Frame', nil, tabContents[7], 'BackdropTemplate')
-  contentBackground:SetPoint('TOP', tabContents[7], 'TOP', 0, -50)
-  contentBackground:SetPoint('LEFT', tabContents[7], 'LEFT', 10, 0)
-  contentBackground:SetPoint('RIGHT', tabContents[7], 'RIGHT', -10, 0)
-  contentBackground:SetPoint('BOTTOM', tabContents[7], 'BOTTOM', 0, -20)
+  local contentBackground = CreateFrame('Frame', nil, tabContents[8], 'BackdropTemplate')
+  contentBackground:SetPoint('TOP', tabContents[8], 'TOP', 0, -50)
+  contentBackground:SetPoint('LEFT', tabContents[8], 'LEFT', 10, 0)
+  contentBackground:SetPoint('RIGHT', tabContents[8], 'RIGHT', -10, 0)
+  contentBackground:SetPoint('BOTTOM', tabContents[8], 'BOTTOM', 0, -20)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -102,7 +102,7 @@ function InitializeCreditsTab()
   -- Center the button horizontally in the tab
   discordButton:ClearAllPoints()
   discordButton:SetPoint('TOP', joinDeveloperText, 'BOTTOM', 0, -10)
-  discordButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+  discordButton:SetPoint('CENTER', tabContents[8], 'CENTER', 0, 0)
 
   -- Twitch invite button (centered in tab)
   local twitchButton =
@@ -120,7 +120,7 @@ function InitializeCreditsTab()
   -- Center the button horizontally in the tab
   twitchButton:ClearAllPoints()
   twitchButton:SetPoint('TOP', discordButton, 'BOTTOM', 0, 0)
-  twitchButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+  twitchButton:SetPoint('CENTER', tabContents[8], 'CENTER', 0, 0)
 
   -- Donate button (centered in tab)
   local donateButton =
@@ -138,5 +138,5 @@ function InitializeCreditsTab()
   -- Center the button horizontally in the tab
   donateButton:ClearAllPoints()
   donateButton:SetPoint('TOP', twitchButton, 'BOTTOM', 0, 0)
-  donateButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+  donateButton:SetPoint('CENTER', tabContents[8], 'CENTER', 0, 0)
 end

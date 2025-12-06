@@ -2,17 +2,17 @@
 -- Initialize Info Tab when called
 function InitializeInfoTab()
   -- Check if tabContents[5] exists
-  if not tabContents or not tabContents[5] then return end
+  if not tabContents or not tabContents[6] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[5].initialized then return end
+  if tabContents[6].initialized then return end
 
   -- Mark as initialized
-  tabContents[5].initialized = true
+  tabContents[6].initialized = true
 
   -- Philosophy text (at top, moved down by 30)
-  local philosophyText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  philosophyText:SetPoint('TOP', tabContents[5], 'TOP', 0, -50)
+  local philosophyText = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  philosophyText:SetPoint('TOP', tabContents[6], 'TOP', 0, -50)
   philosophyText:SetWidth(500)
   philosophyText:SetText(
     'UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version')
@@ -21,7 +21,7 @@ function InitializeInfoTab()
   philosophyText:SetNonSpaceWrap(true)
 
   -- Bug report text
-  local bugReportText = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local bugReportText = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   bugReportText:SetPoint('TOP', philosophyText, 'BOTTOM', 0, -10)
   bugReportText:SetText(
     'Found a bug or have suggestions?\n\nJoin the developers discord community to have your say on the future of this addon!'
@@ -34,7 +34,7 @@ function InitializeInfoTab()
   -- Discord invite button (re-usable helper)
   local discordButton =
     UHC_CreateDiscordInviteButton(
-      tabContents[5],
+      tabContents[6],
       'TOP',
       bugReportText,
       'BOTTOM',
@@ -46,14 +46,14 @@ function InitializeInfoTab()
     )
 
   -- Patch Notes Section (at bottom, bigger to fill space)
-  local patchNotesTitle = tabContents[5]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  local patchNotesTitle = tabContents[6]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   patchNotesTitle:SetPoint('TOP', discordButton, 'BOTTOM', 0, -30)
   patchNotesTitle:SetText('Patch Notes')
   patchNotesTitle:SetJustifyH('CENTER')
   patchNotesTitle:SetTextColor(1, 1, 0.5)
 
   -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
-  local patchNotesFrame = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
+  local patchNotesFrame = CreateFrame('Frame', nil, tabContents[6], 'BackdropTemplate')
   patchNotesFrame:SetSize(600, 420)
   patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -5)
   patchNotesFrame:SetBackdrop({
@@ -71,7 +71,4 @@ function InitializeInfoTab()
   })
   patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
   patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
-
-  -- Create patch notes display using reusable component (larger to fill new space)
-  local patchNotesScrollFrame = CreatePatchNotesDisplay(patchNotesFrame, 560, 400, 10, -10)
 end
