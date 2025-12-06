@@ -87,10 +87,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
 }, {
-  name = 'Show Target of Target Frame',
-  dbSettingsValueName = 'showTargetOfTarget',
-  tooltip = 'Shows a Target of Target portrait only frame',
-}, {
   name = 'Show Target Buffs',
   dbSettingsValueName = 'showTargetBuffs',
   tooltip = 'Show buffs on the target frame',
@@ -1992,56 +1988,6 @@ function InitializeSettingsOptionsTab()
     tempSettings.minimapMailScale = steps / 10
   end)
   addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
-
-  local ultraToTScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
-  ultraToTScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
-  -- Position will be handled by reflow
-  ultraToTScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
-
-  local ultraToTScaleLabel = ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  ultraToTScaleLabel:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', 0, 0)
-  ultraToTScaleLabel:SetWidth(LABEL_WIDTH2)
-  ultraToTScaleLabel:SetJustifyH('LEFT')
-  ultraToTScaleLabel:SetText('Target of Target Scale')
-
-  if tempSettings.showTargetOfTargetScale == nil then
-    tempSettings.showTargetOfTargetScale = GLOBAL_SETTINGS.showTargetOfTargetScale or 1.0
-  end
-
-  local ultraToTScalePercent =
-    ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  ultraToTScalePercent:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
-  ultraToTScalePercent:SetWidth(40)
-  ultraToTScalePercent:SetJustifyH('LEFT')
-  ultraToTScalePercent:SetText(
-    tostring(math.floor((tempSettings.showTargetOfTargetScale or 1.0) * 100)) .. '%'
-  )
-
-  local ultraToTScaleSlider = CreateFrame('Slider', nil, ultraToTScaleRow, 'OptionsSliderTemplate')
-  ultraToTScaleSlider:SetPoint('LEFT', ultraToTScalePercent, 'RIGHT', 10, 0)
-  ultraToTScaleSlider:SetSize(180, 16)
-  ultraToTScaleSlider:SetMinMaxValues(10, 20)
-  ultraToTScaleSlider:SetValueStep(1)
-  ultraToTScaleSlider:SetObeyStepOnDrag(true)
-  ultraToTScaleSlider:SetValue(
-    math.floor(((tempSettings.showTargetOfTargetScale or 1.0) * 10) + 0.5)
-  )
-  if ultraToTScaleSlider.Low then
-    ultraToTScaleSlider.Low:SetText('100%')
-  end
-  if ultraToTScaleSlider.High then
-    ultraToTScaleSlider.High:SetText('200%')
-  end
-  if ultraToTScaleSlider.Text then
-    ultraToTScaleSlider.Text:SetText('')
-  end
-
-  ultraToTScaleSlider:SetScript('OnValueChanged', function(self, val)
-    local steps = math.floor(val + 0.5)
-    ultraToTScalePercent:SetText((steps * 10) .. '%')
-    tempSettings.showTargetOfTargetScale = steps / 10
-  end)
-  addUIRow(ultraToTScaleRow, 'Target of Target scale size', minimapMailScaleRow)
 
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
