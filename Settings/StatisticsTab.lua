@@ -82,27 +82,26 @@ function InitializeStatisticsTab()
   statsFrame:SetPoint('TOP', tabContents[1], 'TOP', 0, -55) -- Moved up 10px
   statsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
     tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
     },
   })
-
+  statsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
+  statsFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8) -- Softer border
   -- Create scroll frame for statistics content
   local statsScrollFrame = CreateFrame('ScrollFrame', nil, statsFrame, 'UIPanelScrollFrameTemplate')
-  statsScrollFrame:SetSize(440, 410) -- Increased width and height to match new layout
   statsScrollFrame:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -10)
-  statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 10)
-
+  statsScrollFrame:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -30, 10) -- Leave room for scrollbar on right
   -- Create scroll child frame
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
-  statsScrollChild:SetSize(600, 300) -- Increased width to match new layout
+  statsScrollChild:SetSize(560, 300) -- Width matches section header width
   statsScrollFrame:SetScrollChild(statsScrollChild)
   local totalHPText
   local totalManaText
@@ -164,7 +163,9 @@ function InitializeStatisticsTab()
     -- Add collapse icon
     local collapseIcon = header:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
     collapseIcon:SetPoint('LEFT', header, 'LEFT', 10, 0)
-    collapseIcon:SetTextColor(1, 1, 1, 0.8)
+    collapseIcon:SetTextColor(0.9, 0.85, 0.75, 1)
+    collapseIcon:SetShadowOffset(1, -1)
+    collapseIcon:SetShadowColor(0, 0, 0, 0.8)
 
     -- Function to update icon
     local function updateIcon(collapsed)
@@ -190,10 +191,12 @@ function InitializeStatisticsTab()
 
     -- Add hover effect
     header:SetScript('OnEnter', function(self)
-      self:SetBackdropColor(0.25, 0.25, 0.25, 0.95)
+      self:SetBackdropColor(0.2, 0.2, 0.28, 0.95)
+      self:SetBackdropBorderColor(0.6, 0.6, 0.75, 1)
     end)
     header:SetScript('OnLeave', function(self)
-      self:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
+      self:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+      self:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
     end)
 
     -- Set initial icon state
@@ -204,32 +207,36 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style lowest health section (collapsible)
   local lowestHealthHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  lowestHealthHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
 
   -- Modern WoW row styling with rounded corners and greyish background
   lowestHealthHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  lowestHealthHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9) -- Dark greyish background
-  lowestHealthHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
+  lowestHealthHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85) -- Darker blue-tinted background
+  lowestHealthHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9) -- Softer blue-tinted border
   -- Create header text (offset to make room for collapse icon)
-  local lowestHealthLabel = lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local lowestHealthLabel =
+    lowestHealthHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   lowestHealthLabel:SetPoint('LEFT', lowestHealthHeader, 'LEFT', 24, 0)
   lowestHealthLabel:SetText('Lowest Health')
+  lowestHealthLabel:SetTextColor(0.9, 0.85, 0.75, 1) -- Warmer, more readable color
+  lowestHealthLabel:SetShadowOffset(1, -1)
+  lowestHealthLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create content frame for Lowest Health breakdown
   local lowestHealthContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  lowestHealthContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
+  lowestHealthContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 5 rows + padding
   -- Position will be set by updateSectionPositions
   lowestHealthContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -237,19 +244,20 @@ function InitializeStatisticsTab()
   makeHeaderClickable(lowestHealthHeader, lowestHealthContent, 'lowestHealth', lowestHealthSection)
   -- Modern content frame styling
   lowestHealthContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-
+  lowestHealthContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6) -- Very subtle dark background
+  lowestHealthContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5) -- Subtle border
   -- Create the level text display
   local levelLabel = lowestHealthContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   levelLabel:SetPoint(
@@ -447,30 +455,33 @@ function InitializeStatisticsTab()
 
   -- Create Total HP & Mana section
   local resourcesHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  resourcesHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  resourcesHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   resourcesHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  resourcesHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
-  resourcesHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  resourcesHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  resourcesHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
 
-  local resourcesLabel = resourcesHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local resourcesLabel = resourcesHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   resourcesLabel:SetPoint('LEFT', resourcesHeader, 'LEFT', 24, 0)
   resourcesLabel:SetText('Total HP & Mana')
+  resourcesLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  resourcesLabel:SetShadowOffset(1, -1)
+  resourcesLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local resourcesContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  resourcesContent:SetSize(550, 2 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  resourcesContent:SetSize(540, 2 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
   -- Position will be set by updateSectionPositions
   resourcesContent:Show()
 
@@ -478,18 +489,20 @@ function InitializeStatisticsTab()
   local resourcesSection = addSection(resourcesHeader, resourcesContent, 'resources')
   makeHeaderClickable(resourcesHeader, resourcesContent, 'resources', resourcesSection)
   resourcesContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
+  resourcesContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  resourcesContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   local totalHPLabel = resourcesContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   totalHPLabel:SetPoint(
@@ -562,33 +575,37 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style enemies slain section (collapsible)
   local enemiesSlainHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  enemiesSlainHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
 
   -- Modern WoW row styling with rounded corners and greyish background
   enemiesSlainHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  enemiesSlainHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9) -- Dark greyish background
-  enemiesSlainHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
+  enemiesSlainHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  enemiesSlainHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   -- Create header text
-  local enemiesSlainLabel = enemiesSlainHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local enemiesSlainLabel =
+    enemiesSlainHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   enemiesSlainLabel:SetPoint('LEFT', enemiesSlainHeader, 'LEFT', 24, 0)
   enemiesSlainLabel:SetText('Enemies Slain')
+  enemiesSlainLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  enemiesSlainLabel:SetShadowOffset(1, -1)
+  enemiesSlainLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create content frame for Enemies Slain breakdown
   local enemiesSlainContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  enemiesSlainContent:SetSize(550, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
+  enemiesSlainContent:SetSize(540, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- 8 rows + padding (added rare elites, world bosses, and highest heal crit)
   -- Position will be set by updateSectionPositions
   enemiesSlainContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -596,18 +613,20 @@ function InitializeStatisticsTab()
   makeHeaderClickable(enemiesSlainHeader, enemiesSlainContent, 'enemiesSlain', enemiesSlainSection)
   -- Modern content frame styling
   enemiesSlainContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
+  enemiesSlainContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  enemiesSlainContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create the total text display (indented)
   local enemiesSlainTotalLabel =
@@ -920,32 +939,35 @@ function InitializeStatisticsTab()
 
   -- Create modern WoW-style Survival section (collapsible)
   local survivalHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  survivalHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   survivalHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  survivalHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9) -- Dark greyish background
-  survivalHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
+  survivalHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  survivalHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   -- Create header text
-  local survivalLabel = survivalHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local survivalLabel = survivalHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   survivalLabel:SetPoint('LEFT', survivalHeader, 'LEFT', 24, 0)
   survivalLabel:SetText('Survival')
+  survivalLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  survivalLabel:SetShadowOffset(1, -1)
+  survivalLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create content frame for Survival breakdown
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  survivalContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   survivalContent:Show() -- Always show
   -- Register section and make header clickable
@@ -953,18 +975,20 @@ function InitializeStatisticsTab()
   makeHeaderClickable(survivalHeader, survivalContent, 'survival', survivalSection)
   -- Modern content frame styling
   survivalContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
+  survivalContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  survivalContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create survival statistics display inside the content frame
   local survivalTexts = {}
@@ -1043,36 +1067,39 @@ function InitializeStatisticsTab()
 
   -- Correct survival content height now that we know the total rows
   local survivalRows = #survivalStats
-  survivalContent:SetSize(550, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  survivalContent:SetSize(540, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
   -- Create modern WoW-style Misc section (collapsible)
   local miscHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  miscHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   miscHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  miscHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9)
-  miscHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  miscHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  miscHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   -- Create header text
-  local miscLabel = miscHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local miscLabel = miscHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   miscLabel:SetPoint('LEFT', miscHeader, 'LEFT', 24, 0)
   miscLabel:SetText('Misc')
+  miscLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  miscLabel:SetShadowOffset(1, -1)
+  miscLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(550, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
+  miscContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   miscContent:Show()
 
@@ -1081,18 +1108,20 @@ function InitializeStatisticsTab()
   makeHeaderClickable(miscHeader, miscContent, 'misc', miscSection)
   -- Modern content frame styling
   miscContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
+  miscContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  miscContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create misc statistics display inside the content frame
   local miscTexts = {}
@@ -1162,36 +1191,39 @@ function InitializeStatisticsTab()
 
   -- Correct misc content height now that we know the total rows
   local miscRows = #miscStats
-  miscContent:SetSize(550, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
+  miscContent:SetSize(540, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2)
 
   -- Create modern WoW-style XP gained section (collapsible)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedHeader:SetSize(570, LAYOUT.SECTION_HEADER_HEIGHT)
+  xpGainedHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
   -- Position will be set by updateSectionPositions
   -- Modern WoW row styling with rounded corners and greyish background
   xpGainedHeader:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
-    edgeSize = 16,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  xpGainedHeader:SetBackdropColor(0.2, 0.2, 0.2, 0.9) -- Dark greyish background
-  xpGainedHeader:SetBackdropBorderColor(0.6, 0.6, 0.6, 1) -- Light grey border
+  xpGainedHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  xpGainedHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   -- Create header text
-  local xpGainedLabel = xpGainedHeader:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  local xpGainedLabel = xpGainedHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   xpGainedLabel:SetPoint('LEFT', xpGainedHeader, 'LEFT', 24, 0)
   xpGainedLabel:SetText('XP Gained Without Option Breakdown')
+  xpGainedLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  xpGainedLabel:SetShadowOffset(1, -1)
+  xpGainedLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create collapsible content frame for XP breakdown
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedContent:SetSize(550, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
+  xpGainedContent:SetSize(540, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 40) -- Added 40px extra gap at bottom
   -- Position will be set by updateSectionPositions
   xpGainedContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -1199,18 +1231,20 @@ function InitializeStatisticsTab()
   makeHeaderClickable(xpGainedHeader, xpGainedContent, 'xpGained', xpGainedSection)
   -- Modern content frame styling
   xpGainedContent:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\UI-Listbox-Empty',
-    edgeFile = 'Interface\\Buttons\\UI-Listbox-Empty',
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 16,
-    edgeSize = 8,
+    tileSize = 8,
+    edgeSize = 10,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
+  xpGainedContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  xpGainedContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create XP breakdown display inside the content frame
   local xpBreakdownLabels = {}
