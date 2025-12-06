@@ -37,10 +37,8 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
-    SetPlayerFrameDisplay(
-      GLOBAL_SETTINGS.hidePlayerFrame or false,
-      GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
+
     if SetVitalsOverlayEnabled then
       SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
     end

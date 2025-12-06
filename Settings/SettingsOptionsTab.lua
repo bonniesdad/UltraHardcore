@@ -399,15 +399,8 @@ function InitializeSettingsOptionsTab()
     tempSettings.selectedDifficulty = difficultyNames[presetIndex]
     GLOBAL_SETTINGS.selectedDifficulty = difficultyNames[presetIndex]
 
-    if tempSettings.hidePlayerFrame then
-      SetCVar('statusText', '0')
-    end
-
     -- Apply the new completely remove settings immediately when presets are applied
-    SetPlayerFrameDisplay(
-      tempSettings.hidePlayerFrame or false,
-      tempSettings.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
 
     if SetVitalsOverlayEnabled then
       SetVitalsOverlayEnabled(tempSettings.showVitalsOverlay or false)
@@ -1017,10 +1010,6 @@ function InitializeSettingsOptionsTab()
             if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
 
-            if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
-              SetCVar('statusText', '0')
-            end
-
             if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
               if _G.UltraHardcoreHandleBuffBarSettingChange then
                 _G.UltraHardcoreHandleBuffBarSettingChange()
@@ -1284,15 +1273,8 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS[key] = value
     end
 
-    if GLOBAL_SETTINGS.hidePlayerFrame then
-      SetCVar('statusText', '0')
-    end
-
     -- Apply the new completely remove settings immediately
-    SetPlayerFrameDisplay(
-      GLOBAL_SETTINGS.hidePlayerFrame or false,
-      GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
 
     -- Set target frame accordingly
     if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
