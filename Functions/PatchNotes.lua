@@ -1,8 +1,8 @@
 -- Patch notes data structure - update this for each release
-PATCH_NOTES = { { 
+PATCH_NOTES = { {
   version = '1.3.0',
   date = '2025-12-05',
-  notes = { 
+  notes = {
     'NEW FEATURES:',
     '• Permanent resource tracking minimap',
     '• Vitals Overlay',
@@ -13,7 +13,7 @@ PATCH_NOTES = { {
     '• Target Raid Icon',
     '• Class colour on raid frames',
     '',
-    'BUG FIXES:', 
+    'BUG FIXES:',
     '• Fix: Raid frames showing on nameplates when enabled.',
     '• Fix: Shaman UI image missing from settings menu.',
     '',
@@ -106,6 +106,7 @@ PATCH_NOTES = { {
     '• Player jumps.',
     '',
     'UI IMPROVEMENTS:',
+    '• Revamp the settings menu UI.',
     '• Add collapseable sections to the settings menu.',
     '• Show selection count on each option section header.',
     '• Escape key now closes the settings menu.',
