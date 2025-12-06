@@ -1,8 +1,5 @@
-
 local function ShouldHideComboFrame()
-  return GLOBAL_SETTINGS and (
-    GLOBAL_SETTINGS.useCustomComboFrame
-    and not GLOBAL_SETTINGS.hideCustomResourceBar)
+  return GLOBAL_SETTINGS and (GLOBAL_SETTINGS.useCustomComboFrame and not GLOBAL_SETTINGS.hideCustomResourceBar)
 end
 
 local resourceBar = CreateFrame('StatusBar', 'UltraHardcoreResourceBar', UIParent)
@@ -75,10 +72,8 @@ local comboFrame = CreateFrame('Frame', 'UltraHardcoreComboFrame', UIParent)
 local resourceOrbs = {}
 
 local function CreateComboFrame()
-  if not ShouldHideComboFrame() then
-    return
-  end
--- Create a frame for the combo points
+  if not ShouldHideComboFrame() then return end
+  -- Create a frame for the combo points
   if not comboFrame then
     print('UltraHardcore: Failed to create combo frame')
     return
@@ -119,9 +114,7 @@ local function UpdateComboPoints()
 
   for i = 1, 5 do
     local orb = resourceOrbs[i]
-    if not orb then
-      return
-    end
+    if not orb then return end
 
     if i <= points then
       if not orb.isFilled then
@@ -271,6 +264,11 @@ local function UpdateResourcePoints()
   resourceBar:SetMinMaxValues(0, maxValue)
   resourceBar:SetValue(value)
   resourceBar:SetStatusBarColor(GetPowerTypeColor(powerType))
+
+  -- Ensure the resource bar is visible when updating (unless settings say otherwise)
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and not GLOBAL_SETTINGS.hideCustomResourceBar then
+    resourceBar:Show()
+  end
 end
 
 -- Function to update pet resource points
@@ -484,23 +482,38 @@ local function CenterPlayerBuffBar()
         buffOffset = 0
         rowIconsMoved = 0
       end
-
     end
 
-    local hasMainHandEnchant, mainHandExpiration, mainHandCharges, mainHandEnchantID,
-      hasOffHandEnchant, offHandExpiration, offHandCharges, offHandEnchantID,
-      hasRangedEnchant, rangedExpiration, rangedCharges, rangedEnchantID = GetWeaponEnchantInfo()
+    local hasMainHandEnchant,
+      mainHandExpiration,
+      mainHandCharges,
+      mainHandEnchantID,
+      hasOffHandEnchant,
+      offHandExpiration,
+      offHandCharges,
+      offHandEnchantID,
+      hasRangedEnchant,
+      rangedExpiration,
+      rangedCharges,
+      rangedEnchantID
+    = GetWeaponEnchantInfo()
 
-    if hasMainHandEnchant == true then tempEnchantCount = tempEnchantCount + 1 end
-    if hasOffHandEnchant == true then tempEnchantCount = tempEnchantCount + 1 end
-    if hasRangedEnchant == true then tempEnchantCount = tempEnchantCount + 1 end
+    if hasMainHandEnchant == true then
+      tempEnchantCount = tempEnchantCount + 1
+    end
+    if hasOffHandEnchant == true then
+      tempEnchantCount = tempEnchantCount + 1
+    end
+    if hasRangedEnchant == true then
+      tempEnchantCount = tempEnchantCount + 1
+    end
 
     if tempEnchantCount > 0 then
       -- We need to increase the buff count for temp enchants
       buffCount = buffCount + tempEnchantCount
       local enchantIndex = 1
 
-      if buffsMoved % buffsPerRow ~= 0 then 
+      if buffsMoved % buffsPerRow ~= 0 then
         -- This is necessary because buffCount did not include temp enchants in the loop above so iconspacing did not get added
         buffOffset = buffOffset + iconSpacing
       end
@@ -594,9 +607,8 @@ druidFormResourceBar:RegisterEvent('PLAYER_ENTERING_WORLD')
 druidFormResourceBar:RegisterEvent('UNIT_POWER_FREQUENT')
 druidFormResourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 
-
 local function HideComboFrame()
--- Hide the default combo points (Blizzard UI)
+  -- Hide the default combo points (Blizzard UI)
   if ComboFrame then
     if ShouldHideComboFrame() then
       ComboFrame:Hide()
@@ -605,7 +617,6 @@ local function HideComboFrame()
     end
   end
 end
-
 
 -- Function to reposition player buff bar
 local function RepositionPlayerBuffBar()
@@ -663,6 +674,9 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     return
   end
 
+  -- Ensure resource bar is visible when conditions are met
+  resourceBar:Show()
+
   if event == 'PLAYER_LOGIN' and unit == 'Blizzard_BuffFrame' then
     HookBuffFrame()
     HandleBuffBarSettingChange()
@@ -715,10 +729,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
     -- Update pet resource when pet starts/stops attacking
     UpdatePetResourcePoints()
-  elseif unit == 'player' and event == 'UNIT_AURA'
-          or event == 'GROUP_ROSTER_UPDATE'
-          or event == 'GROUP_JOINED'
-          or event == 'GROUP_LEFT' then
+  elseif unit == 'player' and event == 'UNIT_AURA' or event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'GROUP_LEFT' then
     CenterPlayerBuffBar()
   elseif unit == 'player' and event == 'UNIT_INVENTORY_CHANGED' then
     -- This event triggers based on inventory items changing so it needs a small delay
