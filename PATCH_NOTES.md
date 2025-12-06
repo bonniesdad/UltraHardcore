@@ -1,5 +1,29 @@
 # Patch Notes
 
+## Version 1.3.0 - 2025-12-05
+
+### New Features
+
+- Permanent resource tracking minimap
+- Vitals Overlay
+  - Displays your max health in character screen.
+- Target of Target
+- Target Buffs
+- Target Debuffs
+- Target Raid Icon
+- Class colour on raid frames
+
+### Bug Fixes
+
+- Fix: Raid frames showing on nameplates when enabled.
+- Fix: Shaman UI image missing from settings menu.
+
+### Other
+
+- Remove Custom Breath Indicator
+- Rebrand to ULTRA from UltraHardcore
+- Preview for Lives feature
+
 ## Version 1.2.10 - 2025-11-20
 
 - ### Bug Fixes

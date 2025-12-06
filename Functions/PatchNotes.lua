@@ -20,6 +20,7 @@ PATCH_NOTES = { {
     'OTHER:',
     '• Remove Custom Breath Indicator',
     '• Rebrand to ULTRA from UltraHardcore',
+    '• Preview for Lives feature',
   },
 }, {
   version = '1.2.10',

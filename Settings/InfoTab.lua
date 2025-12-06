@@ -71,4 +71,7 @@ function InitializeInfoTab()
   })
   patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
   patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+
+  -- Create patch notes display using reusable component (larger to fill new space)
+  CreatePatchNotesDisplay(patchNotesFrame, 560, 400, 10, -10)
 end
