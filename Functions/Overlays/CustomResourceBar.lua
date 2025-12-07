@@ -148,7 +148,7 @@ if not petResourceBar then
 end
 
 petResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
-petResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+petResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -7)
 petResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 petResourceBar:Hide() -- Initially hidden
 -- Add border around pet resource bar
@@ -182,7 +182,7 @@ if not druidFormResourceBar then
   return
 end
 druidFormResourceBar:SetSize(125, PlayerFrameManaBar:GetHeight() - 5)
-druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -7)
 druidFormResourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 druidFormResourceBar:Hide() -- Initially hidden
 -- Add a border around the druid form resource bar
@@ -221,7 +221,7 @@ local function LoadDruidFormResourceBarPosition()
   local pos = UltraHardcoreDB.druidFormResourceBarPosition
   druidFormResourceBar:ClearAllPoints()
   -- Always anchor to the main resource bar, matching the pet bar
-  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -7)
 end
 
 -- Make the druid form resource bar draggable with position saving
@@ -775,7 +775,7 @@ local function ResetDruidFormResourceBarPosition()
   -- Clear existing points first
   druidFormResourceBar:ClearAllPoints()
   -- Anchor to the main resource bar, matching the pet bar
-  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -5)
+  druidFormResourceBar:SetPoint('TOP', resourceBar, 'BOTTOM', 0, -7)
 end
 
 -- Slash command to reset resource bar position
