@@ -156,6 +156,10 @@ function InitializeCommandsTab()
         'Reset the minimap tracking button to the default position.',
       },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
+      {
+        '/resetui, /rui',
+        'Reset all draggable UI element positions to default (clock, mail, tracking, resource bar, resource indicator, soulshard indicator, and statistics panel).',
+      },
     },
   } }
 

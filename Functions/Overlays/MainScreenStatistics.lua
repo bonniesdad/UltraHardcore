@@ -666,6 +666,22 @@ local function ResetStatsFrameToSavedPosition()
   print('UltraHardcore: Statistics panel moved to saved position')
 end
 
+-- Reset statistics frame to default position
+local function ResetStatsFramePosition()
+  statsFrame:ClearAllPoints()
+  statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
+  if UltraHardcoreDB then
+    UltraHardcoreDB.statsFramePosition = nil
+  end
+  if SaveDBData then
+    SaveDBData('statsFramePosition', nil)
+  end
+  print('|cfff44336[ULTRA]|r Statistics panel position reset to default.')
+end
+
+-- Make ResetStatsFramePosition globally accessible for combined reset commands
+_G.ResetStatsFramePosition = ResetStatsFramePosition
+
 SLASH_UHCSTATSRESET1 = '/uhcstatsreset'
 SLASH_UHCSTATSRESET2 = '/uhcsr'
 SlashCmdList['UHCSTATSRESET'] = ResetStatsFrameToSavedPosition

@@ -75,6 +75,7 @@ Functions/Utils/TwitchInvite.lua
 Functions/Utils/KofiInvite.lua
 Functions/Utils/TbcQuestionnaire.lua
 Functions/Utils/AboutAuthor.lua
+Functions/Utils/ResetUI.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
