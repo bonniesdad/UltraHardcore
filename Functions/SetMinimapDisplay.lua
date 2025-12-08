@@ -111,14 +111,17 @@ local function LoadClockPosition()
   if pos then
     TimeManagerClockButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
+    -- Scale-adjusted default position: maintains visual position relative to mail/tracking icons
+    -- when clock scale changes. Uses divisor pattern to calculate offset.
+    -- Calibrated values: 100% scale = -60, 150% scale = -30, 200% scale = -15
     local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
     local divisor
     if scale <= 1.0 then
-      divisor = 1.0
+      divisor = 1.0  -- 100% scale: offset = -60 / 1.0 = -60
     elseif scale <= 1.5 then
-      divisor = 1.0 + (scale - 1.0) * 2.0
+      divisor = 1.0 + (scale - 1.0) * 2.0  -- Linear interpolation: 1.0 to 2.0 (100% to 150%)
     else
-      divisor = 2.0 + (scale - 1.5) * 4.0
+      divisor = 2.0 + (scale - 1.5) * 4.0  -- Linear interpolation: 2.0 to 4.0 (150% to 200%)
     end
     TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60 / divisor, 0)
   end
@@ -137,14 +140,17 @@ local function LoadMailPosition()
   if pos then
     MiniMapMailFrame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
+    -- Scale-adjusted default position: maintains visual position relative to clock/tracking icons
+    -- when mail scale changes. Uses linear interpolation between calibrated breakpoints.
+    -- Calibrated values: 100% scale = -20, 150% scale = -5, 200% scale = 0
     local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
     local offsetX
     if scale <= 1.0 then
-      offsetX = -20
+      offsetX = -20  -- 100% scale: -20
     elseif scale <= 1.5 then
-      offsetX = -20 + (scale - 1.0) * 30  -- linear: -20 to -5
+      offsetX = -20 + (scale - 1.0) * 30  -- Linear interpolation: -20 to -5 (100% to 150%)
     else
-      offsetX = -5 + (scale - 1.5) * 10  -- linear: -5 to 0
+      offsetX = -5 + (scale - 1.5) * 10  -- Linear interpolation: -5 to 0 (150% to 200%)
     end
     MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", offsetX, -7)
   end
@@ -163,10 +169,24 @@ local function LoadTrackingPosition()
   if pos then
     MiniMapTracking:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -200, -7)
+    -- Scale-adjusted default position: maintains visual position relative to clock/mail icons
+    -- when tracking scale changes. Uses linear interpolation between calibrated breakpoints.
+    -- Calibrated values: 90% scale = -145, 150% scale = -85, 200% scale = -65
+    -- Note: Default scale is 90% (0.9), not 100%
+    local scale = GLOBAL_SETTINGS.minimapTrackingScale or 0.9
+    local offsetX
+    if scale <= 0.9 then
+      offsetX = -145  -- 90% scale (default): -145
+    elseif scale <= 1.5 then
+      offsetX = -145 + (scale - 0.9) * 100  -- Linear interpolation: -145 to -85 (90% to 150%)
+    else
+      offsetX = -85 + (scale - 1.5) * 40  -- Linear interpolation: -85 to -65 (150% to 200%)
+    end
+    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", offsetX, -7)
   end
 
   MiniMapTracking:SetFrameStrata("HIGH")
+  MiniMapTracking:SetScale(GLOBAL_SETTINGS.minimapTrackingScale or 0.9)
 end
 
 -- Take the given frame and disable the mouse and hide for all children
@@ -471,15 +491,16 @@ local function ResetClockPosition()
 
   -- Clear existing points first
   TimeManagerClockButton:ClearAllPoints()
-  -- Reset to default position (top right)
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadClockPosition() for detailed comments on the scaling logic
   local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
   local divisor
   if scale <= 1.0 then
-    divisor = 1.0
+    divisor = 1.0  -- 100% scale: offset = -60 / 1.0 = -60
   elseif scale <= 1.5 then
-    divisor = 1.0 + (scale - 1.0) * 2.0
+    divisor = 1.0 + (scale - 1.0) * 2.0  -- Linear interpolation: 1.0 to 2.0 (100% to 150%)
   else
-    divisor = 2.0 + (scale - 1.5) * 4.0
+    divisor = 2.0 + (scale - 1.5) * 4.0  -- Linear interpolation: 2.0 to 4.0 (150% to 200%)
   end
   TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -60 / divisor, 0)
 
@@ -500,15 +521,16 @@ local function ResetMailPosition()
 
   -- Clear existing points first
   MiniMapMailFrame:ClearAllPoints()
-  -- Reset to default position (top right)
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadMailPosition() for detailed comments on the scaling logic
   local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
   local offsetX
   if scale <= 1.0 then
-    offsetX = -20
+    offsetX = -20  -- 100% scale: -20
   elseif scale <= 1.5 then
-    offsetX = -20 + (scale - 1.0) * 30  -- linear: -20 to -5
+    offsetX = -20 + (scale - 1.0) * 30  -- Linear interpolation: -20 to -5 (100% to 150%)
   else
-    offsetX = -5 + (scale - 1.5) * 10  -- linear: -5 to 0
+    offsetX = -5 + (scale - 1.5) * 10  -- Linear interpolation: -5 to 0 (150% to 200%)
   end
   MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', offsetX, -5)
 
@@ -528,8 +550,18 @@ local function ResetTrackingPosition()
 
   -- Clear existing points first
   MiniMapTracking:ClearAllPoints()
-  -- Reset to default position (top right)
-  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -130, -7)
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadTrackingPosition() for detailed comments on the scaling logic
+  local scale = GLOBAL_SETTINGS.minimapTrackingScale or 0.9
+  local offsetX
+  if scale <= 0.9 then
+    offsetX = -145  -- 90% scale (default): -145
+  elseif scale <= 1.5 then
+    offsetX = -145 + (scale - 0.9) * 100  -- Linear interpolation: -145 to -85 (90% to 150%)
+  else
+    offsetX = -85 + (scale - 1.5) * 40  -- Linear interpolation: -85 to -65 (150% to 200%)
+  end
+  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', offsetX, -5)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
