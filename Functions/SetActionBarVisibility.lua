@@ -33,6 +33,7 @@ end
 
 function HideActionBars()
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
+    -- Force Hide will unregister to avoid protected function errors
     ForceHideFrame(frame)
   end
 end

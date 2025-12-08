@@ -17,10 +17,11 @@ Libs/AceSerializer-3.0/AceSerializer-3.0.xml
 
 ## Functions
 Functions/PlayerComm.lua
+Functions/CanGetSoulshard.lua
 Functions/SetPlayerFrameDisplay.lua
+Functions/SetPetFrameDisplay.lua
 Functions/SetMinimapDisplay.lua
 Functions/SetTargetFrameDisplay.lua
-Functions/SetTargetOfTargetFrameDisplay.lua
 Functions/SetTargetTooltipDisplay.lua
 Functions/SetUIErrorsDisplay.lua
 Functions/TunnelVision.lua
@@ -111,6 +112,7 @@ Settings/TabManager.lua
 Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
+Settings/LivesTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua

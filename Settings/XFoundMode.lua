@@ -31,7 +31,7 @@ local function CreatePhase2PlaceholderPage(parentFrame)
   betaText2:SetText('Contact Bonnies Dad if you would like to join the BETA test.')
   if UHC_CreateDiscordInviteButton then
     UHC_CreateDiscordInviteButton(
-    page,
+      page,
       'TOP',
       betaText2,
       'BOTTOM',
@@ -157,12 +157,12 @@ end
 
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
-  -- Check if tabContents[4] exists
-  if not tabContents or not tabContents[4] then return end
+  -- Check if tabContents[5] exists
+  if not tabContents or not tabContents[5] then return end
 
   -- Ensure parent frame is set
   if not XFoundModeManager.parentFrame then
-    XFoundModeManager.parentFrame = tabContents[4]
+    XFoundModeManager.parentFrame = tabContents[5]
   end
 
   -- If the X Found UI is disabled, show only the placeholder and return

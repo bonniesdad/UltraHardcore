@@ -86,22 +86,22 @@ local settingsCheckboxOptions = { {
   name = 'Completely Remove Target Frame',
   dbSettingsValueName = 'completelyRemoveTargetFrame',
   tooltip = 'Completely remove the target frame',
-}, {
-  name = 'Show Target of Target Frame',
-  dbSettingsValueName = 'showTargetOfTarget',
-  tooltip = 'Shows a Target of Target portrait only frame',
+  dependsOn = 'hideTargetFrame',
 }, {
   name = 'Show Target Buffs',
   dbSettingsValueName = 'showTargetBuffs',
   tooltip = 'Show buffs on the target frame',
+  dependsOn = 'hideTargetFrame',
 }, {
   name = 'Show Target Debuffs',
   dbSettingsValueName = 'showTargetDebuffs',
   tooltip = 'Show debuffs on the target frame',
+  dependsOn = 'hideTargetFrame',
 }, {
   name = 'Show Target Raid Icon',
   dbSettingsValueName = 'showTargetRaidIcon',
   tooltip = 'Show raid icon on the target frame',
+  dependsOn = 'hideTargetFrame',
 }, {
   -- Misc Settings (no preset button)
   name = 'On Screen Statistics',
@@ -197,6 +197,10 @@ local settingsCheckboxOptions = { {
   name = 'ULTRA Show Druid Manabar',
   dbSettingsValueName = 'showDruidFormResourceBar',
   tooltip = 'Show a separate resource bar when shapeshifted as a druid',
+}, {
+  name = 'Show Soulshard Indicator',
+  dbSettingsValueName = 'showSoulshardIndicator',
+  tooltip = 'Display an icon when the current target will drop a soulshard upon defeat (Warlocks only)',
 }, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
@@ -403,15 +407,8 @@ function InitializeSettingsOptionsTab()
     tempSettings.selectedDifficulty = difficultyNames[presetIndex]
     GLOBAL_SETTINGS.selectedDifficulty = difficultyNames[presetIndex]
 
-    if tempSettings.hidePlayerFrame then
-      SetCVar('statusText', '0')
-    end
-
     -- Apply the new completely remove settings immediately when presets are applied
-    SetPlayerFrameDisplay(
-      tempSettings.hidePlayerFrame or false,
-      tempSettings.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
 
     if SetVitalsOverlayEnabled then
       SetVitalsOverlayEnabled(tempSettings.showVitalsOverlay or false)
@@ -754,10 +751,28 @@ function InitializeSettingsOptionsTab()
     end
   end)
 
-  local scrollFrame = CreateFrame('ScrollFrame', nil, tabContents[2], 'UIPanelScrollFrameTemplate')
-  scrollFrame:SetPoint('TOPLEFT', searchBox, 'BOTTOMLEFT', -15, -10)
-  scrollFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
-
+  -- Create main container frame with background (similar to StatisticsTab)
+  local optionsFrame = CreateFrame('Frame', nil, tabContents[2], 'BackdropTemplate')
+  optionsFrame:SetPoint('TOPLEFT', searchBox, 'BOTTOMLEFT', -6, -10)
+  optionsFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
+  optionsFrame:SetBackdrop({
+    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 64,
+    edgeSize = 16,
+    insets = {
+      left = 5,
+      right = 5,
+      top = 5,
+      bottom = 5,
+    },
+  })
+  optionsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
+  optionsFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8) -- Softer border
+  local scrollFrame = CreateFrame('ScrollFrame', nil, optionsFrame, 'UIPanelScrollFrameTemplate')
+  scrollFrame:SetPoint('TOPLEFT', optionsFrame, 'TOPLEFT', 10, -10)
+  scrollFrame:SetPoint('BOTTOMRIGHT', optionsFrame, 'BOTTOMRIGHT', -30, 10) -- Leave room for scrollbar on right
   local scrollChild = CreateFrame('Frame')
   scrollFrame:SetScrollChild(scrollChild)
   -- Initial size; will be recalculated dynamically as sections expand/collapse
@@ -841,7 +856,7 @@ function InitializeSettingsOptionsTab()
     for sectionIndex, section in ipairs(presetSections) do
       sectionTitles[sectionIndex] = section.title
       -- Container for the whole section so collapsing reflows subsequent sections
-      local sectionFrame = CreateFrame('Frame', nil, scrollChild)
+      local sectionFrame = CreateFrame('Frame', nil, scrollChild, 'BackdropTemplate')
       sectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
       if prevSectionFrame then
         sectionFrame:SetPoint('TOPLEFT', prevSectionFrame, 'BOTTOMLEFT', 0, -SECTION_GAP)
@@ -850,7 +865,22 @@ function InitializeSettingsOptionsTab()
         sectionFrame:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, -10)
         sectionFrame:SetPoint('TOPRIGHT', scrollChild, 'TOPRIGHT', 0, -10)
       end
-
+      -- Modern content frame styling (similar to StatisticsTab)
+      sectionFrame:SetBackdrop({
+        bgFile = 'Interface\\Buttons\\WHITE8X8',
+        edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+        tile = true,
+        tileSize = 8,
+        edgeSize = 10,
+        insets = {
+          left = 3,
+          right = 3,
+          top = 3,
+          bottom = 3,
+        },
+      })
+      sectionFrame:SetBackdropColor(0.08, 0.08, 0.1, 0.6) -- Very subtle dark background
+      sectionFrame:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5) -- Subtle border
       -- Clickable header inside the section container
       local sectionHeaderButton = CreateFrame('Button', nil, sectionFrame, 'BackdropTemplate')
       sectionHeaderButton:SetPoint('TOPLEFT', sectionFrame, 'TOPLEFT', 0, 0)
@@ -859,28 +889,34 @@ function InitializeSettingsOptionsTab()
       sectionHeaderButton:SetBackdrop({
         bgFile = 'Interface\\Buttons\\WHITE8X8',
         edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-        edgeSize = 8,
+        tile = true,
+        tileSize = 8,
+        edgeSize = 12,
         insets = {
-          left = 1,
-          right = 1,
-          top = 1,
-          bottom = 1,
+          left = 3,
+          right = 3,
+          top = 3,
+          bottom = 3,
         },
       })
-      sectionHeaderButton:SetBackdropColor(0, 0, 0, 0.35)
-      sectionHeaderButton:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+      sectionHeaderButton:SetBackdropColor(0.15, 0.15, 0.2, 0.85) -- Darker blue-tinted background
+      sectionHeaderButton:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9) -- Softer blue-tinted border
       sectionHeaderButton:SetScript('OnEnter', function(self)
-        self:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+        self:SetBackdropColor(0.2, 0.2, 0.28, 0.95)
+        self:SetBackdropBorderColor(0.6, 0.6, 0.75, 1)
       end)
       sectionHeaderButton:SetScript('OnLeave', function(self)
-        self:SetBackdropColor(0, 0, 0, 0.35)
+        self:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+        self:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
       end)
 
       local sectionHeader =
         sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
       sectionHeader:SetPoint('LEFT', sectionHeaderButton, 'LEFT', 4, 0)
       sectionHeader:SetText(section.title)
-      sectionHeader:SetTextColor(0.922, 0.871, 0.761)
+      sectionHeader:SetTextColor(0.9, 0.85, 0.75, 1) -- Warmer, more readable color
+      sectionHeader:SetShadowOffset(1, -1)
+      sectionHeader:SetShadowColor(0, 0, 0, 0.8)
 
       local headerIcon = sectionHeaderButton:CreateTexture(nil, 'ARTWORK')
       local headerCountText = sectionHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -950,7 +986,7 @@ function InitializeSettingsOptionsTab()
                 checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
                 checkbox:SetChecked(false)
                 tempSettings[checkboxItem.dbSettingsValueName] = false
-                
+
                 -- Cascade: update any checkboxes that depend on this one
                 for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
                   if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
@@ -979,14 +1015,8 @@ function InitializeSettingsOptionsTab()
 
           checkbox:SetScript('OnClick', function(self)
             -- Prevent clicking if dependency is not met
-            if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then
-              return
-            end
+            if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
-
-            if checkboxItem.dbSettingsValueName == 'hidePlayerFrame' and self:GetChecked() then
-              SetCVar('statusText', '0')
-            end
 
             if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
               if _G.UltraHardcoreHandleBuffBarSettingChange then
@@ -1015,16 +1045,16 @@ function InitializeSettingsOptionsTab()
               -- Apply immediately to GLOBAL_SETTINGS so it takes effect
               GLOBAL_SETTINGS.alwaysShowResourceMap = self:GetChecked()
             end
-            
+
             -- Apply player arrow setting immediately
             if checkboxItem.dbSettingsValueName == 'showPlayerArrowOnResourceMap' then
               GLOBAL_SETTINGS.showPlayerArrowOnResourceMap = self:GetChecked()
               -- Update the player texture immediately if resource map is active
               if GLOBAL_SETTINGS.alwaysShowResourceMap then
                 if self:GetChecked() then
-                  Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
+                  Minimap:SetPlayerTexture('Interface\\Minimap\\MinimapArrow')
                 else
-                  Minimap:SetPlayerTexture("")
+                  Minimap:SetPlayerTexture('')
                 end
               end
             end
@@ -1251,15 +1281,8 @@ function InitializeSettingsOptionsTab()
       GLOBAL_SETTINGS[key] = value
     end
 
-    if GLOBAL_SETTINGS.hidePlayerFrame then
-      SetCVar('statusText', '0')
-    end
-
     -- Apply the new completely remove settings immediately
-    SetPlayerFrameDisplay(
-      GLOBAL_SETTINGS.hidePlayerFrame or false,
-      GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
 
     -- Set target frame accordingly
     if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
@@ -1312,7 +1335,7 @@ function InitializeSettingsOptionsTab()
   local LOCK_ROW_HEIGHT = 24
   local LOCK_ROW_GAP = 8
 
-  local colorSectionFrame = CreateFrame('Frame', nil, scrollChild)
+  local colorSectionFrame = CreateFrame('Frame', nil, scrollChild, 'BackdropTemplate')
   colorSectionFrame:SetWidth(LAYOUT.PAGE_WIDTH) -- Increased width to match new layout
   if lastSectionFrame then
     colorSectionFrame:SetPoint('TOPLEFT', lastSectionFrame, 'BOTTOMLEFT', 0, -10)
@@ -1321,7 +1344,22 @@ function InitializeSettingsOptionsTab()
     colorSectionFrame:SetPoint('TOPLEFT', scrollChild, 'TOPLEFT', 10, -10)
     colorSectionFrame:SetPoint('TOPRIGHT', scrollChild, 'TOPRIGHT', 0, -10)
   end
-
+  -- Modern content frame styling (similar to StatisticsTab)
+  colorSectionFrame:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  colorSectionFrame:SetBackdropColor(0.08, 0.08, 0.1, 0.6) -- Very subtle dark background
+  colorSectionFrame:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5) -- Subtle border
   local colorHeaderButton = CreateFrame('Button', nil, colorSectionFrame, 'BackdropTemplate')
   colorHeaderButton:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 0, 0)
   colorHeaderButton:SetPoint('TOPRIGHT', colorSectionFrame, 'TOPRIGHT', 0, 0)
@@ -1329,26 +1367,32 @@ function InitializeSettingsOptionsTab()
   colorHeaderButton:SetBackdrop({
     bgFile = 'Interface\\Buttons\\WHITE8X8',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    edgeSize = 8,
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
     insets = {
-      left = 1,
-      right = 1,
-      top = 1,
-      bottom = 1,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  colorHeaderButton:SetBackdropColor(0, 0, 0, 0.35)
-  colorHeaderButton:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  colorHeaderButton:SetBackdropColor(0.15, 0.15, 0.2, 0.85) -- Darker blue-tinted background
+  colorHeaderButton:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9) -- Softer blue-tinted border
   colorHeaderButton:SetScript('OnEnter', function(self)
-    self:SetBackdropColor(0.1, 0.1, 0.1, 0.5)
+    self:SetBackdropColor(0.2, 0.2, 0.28, 0.95)
+    self:SetBackdropBorderColor(0.6, 0.6, 0.75, 1)
   end)
   colorHeaderButton:SetScript('OnLeave', function(self)
-    self:SetBackdropColor(0, 0, 0, 0.35)
+    self:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+    self:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
   end)
   local colorHeaderText = colorHeaderButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   colorHeaderText:SetPoint('LEFT', colorHeaderButton, 'LEFT', 4, 0)
   colorHeaderText:SetText('Ultra UI Settings')
-  colorHeaderText:SetTextColor(0.922, 0.871, 0.761)
+  colorHeaderText:SetTextColor(0.9, 0.85, 0.75, 1) -- Warmer, more readable color
+  colorHeaderText:SetShadowOffset(1, -1)
+  colorHeaderText:SetShadowColor(0, 0, 0, 0.8)
   local colorHeaderIcon = colorHeaderButton:CreateTexture(nil, 'ARTWORK')
   colorHeaderIcon:SetPoint('RIGHT', colorHeaderButton, 'RIGHT', -6, 0)
   colorHeaderIcon:SetSize(16, 16)
@@ -1375,7 +1419,13 @@ function InitializeSettingsOptionsTab()
   local lockResourceBarCheckbox =
     CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
   -- Position will be handled by reflow
-  lockResourceBarCheckbox:SetPoint('TOPLEFT', colorSectionFrame, 'TOPLEFT', 10, -(HEADER_HEIGHT + HEADER_CONTENT_GAP))
+  lockResourceBarCheckbox:SetPoint(
+    'TOPLEFT',
+    colorSectionFrame,
+    'TOPLEFT',
+    10,
+    -(HEADER_HEIGHT + HEADER_CONTENT_GAP)
+  )
   lockResourceBarCheckbox.Text:SetText('Lock Resource Bar Position')
   lockResourceBarCheckbox.Text:SetPoint('LEFT', lockResourceBarCheckbox, 'RIGHT', 5, 0)
   lockResourceBarCheckbox:SetChecked(tempSettings.lockResourceBar)
@@ -1879,7 +1929,6 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapClockScaleRow, 'minimap clock scale size', clockSubHeader)
 
-
   local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleSlider)
   minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
@@ -1930,6 +1979,7 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
 
+<<<<<<< HEAD
   local minimapTrackingScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
   minimapTrackingScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
   minimapTrackingScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
@@ -1979,56 +2029,8 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', mailSubHeader)
 
-  local ultraToTScaleRow = CreateFrame('Frame', nil, minimapTrackingScaleSlider)
-  ultraToTScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
-  -- Position will be handled by reflow
-  ultraToTScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
-
-  local ultraToTScaleLabel =
-    ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  ultraToTScaleLabel:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', 0, 0)
-  ultraToTScaleLabel:SetWidth(LABEL_WIDTH2)
-  ultraToTScaleLabel:SetJustifyH('LEFT')
-  ultraToTScaleLabel:SetText('Target of Target Scale')
-
-  if tempSettings.showTargetOfTargetScale == nil then
-    tempSettings.showTargetOfTargetScale = GLOBAL_SETTINGS.showTargetOfTargetScale or 1.0
-  end
-
-  local ultraToTScalePercent =
-    ultraToTScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  ultraToTScalePercent:SetPoint('LEFT', ultraToTScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
-  ultraToTScalePercent:SetWidth(40)
-  ultraToTScalePercent:SetJustifyH('LEFT')
-  ultraToTScalePercent:SetText(
-    tostring(math.floor((tempSettings.showTargetOfTargetScale or 1.0) * 100)) .. '%'
-  )
-
-  local ultraToTScaleSlider =
-    CreateFrame('Slider', nil, ultraToTScaleRow, 'OptionsSliderTemplate')
-  ultraToTScaleSlider:SetPoint('LEFT', ultraToTScalePercent, 'RIGHT', 10, 0)
-  ultraToTScaleSlider:SetSize(180, 16)
-  ultraToTScaleSlider:SetMinMaxValues(10, 20)
-  ultraToTScaleSlider:SetValueStep(1)
-  ultraToTScaleSlider:SetObeyStepOnDrag(true)
-  ultraToTScaleSlider:SetValue(math.floor(((tempSettings.showTargetOfTargetScale or 1.0) * 10) + 0.5))
-  if ultraToTScaleSlider.Low then
-    ultraToTScaleSlider.Low:SetText('100%')
-  end
-  if ultraToTScaleSlider.High then
-    ultraToTScaleSlider.High:SetText('200%')
-  end
-  if ultraToTScaleSlider.Text then
-    ultraToTScaleSlider.Text:SetText('')
-  end
-
-  ultraToTScaleSlider:SetScript('OnValueChanged', function(self, val)
-    local steps = math.floor(val + 0.5)
-    ultraToTScalePercent:SetText((steps * 10) .. '%')
-    tempSettings.showTargetOfTargetScale = steps / 10
-  end)
-  addUIRow(ultraToTScaleRow, 'Target of Target scale size', minimapMailScaleRow)
-
+=======
+>>>>>>> develop
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
   local function reflowUISettings(filterQuery)
