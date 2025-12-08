@@ -1,84 +1,65 @@
--- Table to store original frame show functions
-local ORIGINAL_FRAME_SHOW_FUNCTIONS = {}
+local driverQueue = {}
+local inCombat = false
 
----Forcefully hides a frame and prevents it from being shown
----@param frame Frame The frame to hide
+local function ApplyDriver(frame, state)
+    if type(frame.SetAttribute) ~= "function" then
+        -- not a secure frame, safe fallback to standard hide/show
+        if state == "hide" then 
+            frame:Hide()
+        else
+            frame:Show()
+        end
+        return
+    end
+
+    -- Change visiblity of a secure frame
+    UnregisterStateDriver(frame, "visibility")
+    RegisterStateDriver(frame, "visibility", state)
+end
+
+local function QueueDriver(frame, state)
+    table.insert(driverQueue, {frame = frame, state = state})
+end
+
+local function ProcessQueuedDrivers()
+    for _, job in ipairs(driverQueue) do
+        ApplyDriver(job.frame, job.state)
+    end
+    driverQueue = {}
+end
+
+-- Event handler for combat state
+local combatWatcher = CreateFrame("Frame")
+combatWatcher:RegisterEvent("PLAYER_REGEN_DISABLED")
+combatWatcher:RegisterEvent("PLAYER_REGEN_ENABLED")
+
+combatWatcher:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_REGEN_DISABLED" then
+        inCombat = true
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        inCombat = false
+        ProcessQueuedDrivers()
+    end
+end)
+
+-- Safely hides ANY frame
 function ForceHideFrame(frame)
-    if type(frame) ~= "table" or not frame.Show then
-        return
-    end
+    if not frame then return end
 
-    -- Check if we're in combat lockdown before hiding protected frames
-    if InCombatLockdown() then
-        -- Defer hiding until combat ends
-        local eventFrame = CreateFrame("Frame")
-        eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        eventFrame:SetScript("OnEvent", function(self, event)
-            if event == "PLAYER_REGEN_ENABLED" then
-                -- Combat ended, now safe to hide
-                ForceHideFrame(frame)
-                self:UnregisterAllEvents()
-            end
-        end)
-        return
-    end
-
-    -- Store original function only if not already stored
-    if not ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] then
-        ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] = frame.Show
-    end
-
-    -- Use pcall to safely attempt hiding protected frames
-    local success, err = pcall(function()
-        frame.Show = function() end -- Prevent others from showing the frame
-        frame:Hide()
-    end)
-    
-    -- If the operation failed (protected frame in protected context), defer it
-    if not success then
-        C_Timer.After(0.5, function()
-            if not InCombatLockdown() then
-                ForceHideFrame(frame)
-            end
-        end)
+    if inCombat then
+        QueueDriver(frame, "hide")
+    else
+        ApplyDriver(frame, "hide")
     end
 end
 
----Restores and shows a previously hidden frame
----@param frame Frame The frame to restore and show
+-- Safely shows ANY frame
 function RestoreAndShowFrame(frame)
-    if type(frame) ~= "table" or not frame.Show then
-        return
-    end
+    if not frame then return end
 
-    -- Check if we're in combat lockdown before showing protected frames
-    if InCombatLockdown() then
-        -- Defer showing until combat ends
-        local eventFrame = CreateFrame("Frame")
-        eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        eventFrame:SetScript("OnEvent", function(self, event)
-            if event == "PLAYER_REGEN_ENABLED" then
-                -- Combat ended, now safe to show
-                RestoreAndShowFrame(frame)
-                self:UnregisterAllEvents()
-            end
-        end)
-        return
-    end
-
-    if ORIGINAL_FRAME_SHOW_FUNCTIONS[frame] then
-        local success, err = pcall(function()
-            frame.Show = ORIGINAL_FRAME_SHOW_FUNCTIONS[frame]
-            frame:Show()
-        end)
-        
-        -- If the operation failed, defer it
-        if not success then
-            C_Timer.After(0.5, function()
-                if not InCombatLockdown() then
-                    RestoreAndShowFrame(frame)
-                end
-            end)
-        end
+    if inCombat then
+        QueueDriver(frame, "show")
+    else
+        ApplyDriver(frame, "show")
     end
 end
