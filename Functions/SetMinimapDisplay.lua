@@ -111,7 +111,16 @@ local function LoadClockPosition()
   if pos then
     TimeManagerClockButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+    local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
+    local divisor
+    if scale <= 1.0 then
+      divisor = 1.0
+    elseif scale <= 1.5 then
+      divisor = 1.0 + (scale - 1.0) * 2.0
+    else
+      divisor = 2.0 + (scale - 1.5) * 4.0
+    end
+    TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60 / divisor, 0)
   end
 
   TimeManagerClockButton:SetFrameStrata("HIGH")
@@ -128,7 +137,16 @@ local function LoadMailPosition()
   if pos then
     MiniMapMailFrame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -23, -7)
+    local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
+    local offsetX
+    if scale <= 1.0 then
+      offsetX = -20
+    elseif scale <= 1.5 then
+      offsetX = -20 + (scale - 1.0) * 30  -- linear: -20 to -5
+    else
+      offsetX = -5 + (scale - 1.5) * 10  -- linear: -5 to 0
+    end
+    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", offsetX, -7)
   end
 
   MiniMapMailFrame:SetFrameStrata("HIGH")
@@ -454,7 +472,16 @@ local function ResetClockPosition()
   -- Clear existing points first
   TimeManagerClockButton:ClearAllPoints()
   -- Reset to default position (top right)
-  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -30, 0)
+  local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
+  local divisor
+  if scale <= 1.0 then
+    divisor = 1.0
+  elseif scale <= 1.5 then
+    divisor = 1.0 + (scale - 1.0) * 2.0
+  else
+    divisor = 2.0 + (scale - 1.5) * 4.0
+  end
+  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -60 / divisor, 0)
 
   -- Save the reset position
   local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
@@ -474,7 +501,16 @@ local function ResetMailPosition()
   -- Clear existing points first
   MiniMapMailFrame:ClearAllPoints()
   -- Reset to default position (top right)
-  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -7)
+  local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
+  local offsetX
+  if scale <= 1.0 then
+    offsetX = -20
+  elseif scale <= 1.5 then
+    offsetX = -20 + (scale - 1.0) * 30  -- linear: -20 to -5
+  else
+    offsetX = -5 + (scale - 1.5) * 10  -- linear: -5 to 0
+  end
+  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', offsetX, -5)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
