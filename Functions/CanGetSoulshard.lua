@@ -8,8 +8,6 @@ soulshardsFrame:SetClampedToScreen(true)
 soulshardsFrame:EnableMouse(true)
 soulshardsFrame:SetMovable(true)
 soulshardsFrame:RegisterForDrag("LeftButton")
-soulshardsFrame:SetScript("OnDragStart", soulshardsFrame.StartMoving)
-soulshardsFrame:SetScript("OnDragStop", soulshardsFrame.StopMovingOrSizing)
 
 local soulshardsIcon = soulshardsFrame:CreateTexture(nil, "ARTWORK")
 soulshardsIcon:SetAllPoints()
@@ -18,25 +16,81 @@ soulshardsFrame.icon = soulshardsIcon
 
 -- Tooltip for soulshard icon
 soulshardsFrame:SetScript("OnEnter", function(self)
-	GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	GameTooltip:SetText("Soulshard Harvestable", 1, 1, 1)
-	GameTooltip:AddLine("This enemy will grant a soulshard upon defeat", 0.7, 0.7, 0.7)
-	GameTooltip:Show()
+    GameTooltip:SetOwner(self, "ANCHOR_TOP")
+    GameTooltip:SetText("Soulshard Harvestable", 1, 1, 1)
+    GameTooltip:AddLine("This enemy will grant a soulshard upon defeat", 0.7, 0.7, 0.7)
+    GameTooltip:Show()
 end)
 
 soulshardsFrame:SetScript("OnLeave", function(self)
-	GameTooltip:Hide()
+    GameTooltip:Hide()
 end)
+
+-- Position persistence functions
+local function SaveSoulshardPosition()
+    if not UltraHardcoreDB then
+        UltraHardcoreDB = {}
+    end
+
+    local point, _, relPoint, x, y = soulshardsFrame:GetPoint()
+    UltraHardcoreDB.soulshardPosition = { point = point, relPoint = relPoint, x = x, y = y }
+end
+
+local function LoadSoulshardPosition()
+    if not UltraHardcoreDB then
+        UltraHardcoreDB = {}
+    end
+
+    local pos = UltraHardcoreDB.soulshardPosition
+    soulshardsFrame:ClearAllPoints()
+    if pos then
+        local point = pos.point or "BOTTOM"
+        local relPoint = pos.relPoint or "BOTTOM"
+        local x = pos.x or 0
+        local y = pos.y or 215
+        soulshardsFrame:SetPoint(point, UIParent, relPoint, x, y)
+    else
+        soulshardsFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 215)
+    end
+end
+
+local function ResetSoulshardPosition()
+    soulshardsFrame:ClearAllPoints()
+    soulshardsFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 215)
+    if UltraHardcoreDB then
+        UltraHardcoreDB.soulshardPosition = nil
+    end
+    print("|cfff44336[ULTRA]|r Soulshard Indicator position reset.")
+end
+
+-- Drag handlers with lock support
+soulshardsFrame:SetScript("OnDragStart", function(self)
+    if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.lockSoulshardPosition then
+        self:StartMoving()
+    end
+end)
+
+soulshardsFrame:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    SaveSoulshardPosition()
+end)
+
+-- Load position on initialization
+LoadSoulshardPosition()
+
+
 
 
 -- You can change this to anything. I used the felmending icon for visibility.
 local SOULSHARD_ICON_PATH = "Interface\\Icons\\spell_shadow_felmending"
 
--- Function to check if player is a warlock
+--[[ 
+commented out because of suggestion by @tulhur
+Function to check if player is a warlock
 local function IsPlayerWarlock()
 	local _, classToken = UnitClass("player")
 	return classToken == "WARLOCK"
-end
+end ]]
 
 --[[ Function to check if player can gain experience from target
     If we already have a function like this elsewhere, we can reuse it.
@@ -67,10 +121,13 @@ local function CanGainXPFromTarget()
 
 	local playerLevel = UnitLevel("player")
 
-	-- For levels below 10, consider all enemies valid, the player doesn't have soul siphon spell yet
-	if playerLevel < 10 then
-		return true
-	end
+    -- Check if player knows the Drain Soul spell (required for soulshard harvesting)
+    local playerKnowsDrainSoul = isSpellKnown(1120) 
+    if not playerKnowsDrainSoul then
+        return false
+    end
+
+
 
 	-- For level 10+, check the level difference threshold
 	-- This varies by expansion, but we use this formula based on WoW mechanics -> Thanks to @tulhur for the table reference
@@ -93,7 +150,7 @@ local function CanGainXPFromTarget()
 
 	-- Target is trivial only if it's MORE than levelDifference levels below
 	-- So a target at (playerLevel - levelDifference) is still worth XP
-	if targetLevel < (playerLevel - levelDifference) then
+	if targetLevel < (playerLevel - levelDifference) and not playerKnowsDrainSoul then
 		return false
 	end
 
@@ -103,15 +160,21 @@ end
 -- Function to check if player can get a soulshard from current target
 -- This checks both conditions: is warlock AND can gain XP from target
 function CanGetSoulshardFromTarget()
-	return IsPlayerWarlock() and CanGainXPFromTarget()
+	-- return IsPlayerWarlock() and CanGainXPFromTarget()
+	return CanGainXPFromTarget()
 end
 
 -- Function to update soulshard icon visibility
 local function UpdateSoulshardsIcon()
-	if CanGetSoulshardFromTarget() then
+    if not GLOBAL_SETTINGS.showSoulshardIndicator then
+        soulshardsFrame:Hide()
+        return
+	elseif CanGetSoulshardFromTarget() then
 		soulshardsFrame:Show()
+        return
 	else
 		soulshardsFrame:Hide()
+        return
 	end
 end
 
@@ -143,8 +206,14 @@ updateFrame:SetScript("OnEvent", function(self, event, unit)
 	end
 end)
 
+-- Slash commands for soulshard position reset
+SLASH_ULTRAHARDCORESOULSHARDRESET1 = "/uhcresetsoulshardindicator"
+SLASH_ULTRAHARDCORESOULSHARDRESET2 = "/uhcsi"
+SlashCmdList["ULTRAHARDCORESOULSHARDRESET"] = function(msg)
+    ResetSoulshardPosition()
+end
 
 -- Export functions globally so other modules can use them
 _G.CanGetSoulshardFromTarget = CanGetSoulshardFromTarget
-_G.IsPlayerWarlock = IsPlayerWarlock
+-- _G.IsPlayerWarlock = IsPlayerWarlock
 _G.CanGainXPFromTarget = CanGainXPFromTarget

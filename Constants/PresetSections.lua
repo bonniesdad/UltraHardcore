@@ -65,6 +65,7 @@ local PRESET_SECTIONS = { {
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
+    'showSoulshardIndicator',
   },
 }, {
   title = 'XP Bar:',

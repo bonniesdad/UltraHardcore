@@ -76,6 +76,7 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     showDruidFormResourceBar = true,
+    showSoulshardIndicator = true,
     -- XP Bar
     showExpBar = false,
     showXpBarToolTip = false,
