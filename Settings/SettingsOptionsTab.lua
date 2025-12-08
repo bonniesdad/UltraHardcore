@@ -198,6 +198,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showDruidFormResourceBar',
   tooltip = 'Show a separate resource bar when shapeshifted as a druid',
 }, {
+  name = 'Show Soulshard Indicator',
+  dbSettingsValueName = 'showSoulshardIndicator',
+  tooltip = 'Display an icon when the current target will drop a soulshard upon defeat (Warlocks only)',
+}, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
   tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only).',
