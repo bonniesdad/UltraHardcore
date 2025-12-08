@@ -170,6 +170,11 @@ local function ShowPlayerFrameHealthMana()
   ShowCharacterPanelText()
 end
 
+--[[
+  completelyRemove BUGS:
+  - In combat, ToT turns on during certain combat events when
+--]]
+
 function SetPlayerFrameDisplay(minimalFrameDisplay, completelyRemove)
   if minimalFrameDisplay then
     if completelyRemove then
