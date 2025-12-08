@@ -1272,10 +1272,21 @@ function InitializeSettingsOptionsTab()
     _G.__UHC_SectionTitles = sectionTitles
   end
 
+  -- Create buttons centered at the bottom
+  local resetUIButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  resetUIButton:SetSize(140, 30)
+  resetUIButton:SetText('Reset Positions')
+  resetUIButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', -77.5, -40)
+
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
-  saveButton:SetSize(120, 30)
-  saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
+  saveButton:SetSize(150, 30)
   saveButton:SetText('Save and Reload')
+  saveButton:SetPoint('LEFT', resetUIButton, 'RIGHT', 10, 0)
+  resetUIButton:SetScript('OnClick', function()
+    if SlashCmdList['RESETUI'] then
+      SlashCmdList['RESETUI']()
+    end
+  end)
   saveButton:SetScript('OnClick', function()
     for key, value in pairs(tempSettings) do
       GLOBAL_SETTINGS[key] = value
