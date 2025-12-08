@@ -2,6 +2,7 @@ local minimapHideTimer = nil
 local minimapCleanupTicker = nil
 local initialRotateMinimap = GetCVar("RotateMinimap") or false
 
+
 -- Track temporary reveal state so we can restore cleanly on any event
 local minimapRevealState = {
   active = false,
@@ -127,7 +128,7 @@ local function LoadMailPosition()
   if pos then
     MiniMapMailFrame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -23, -7)
   end
 
   MiniMapMailFrame:SetFrameStrata("HIGH")
@@ -144,7 +145,7 @@ local function LoadTrackingPosition()
   if pos then
     MiniMapTracking:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -200, -7)
   end
 
   MiniMapTracking:SetFrameStrata("HIGH")
@@ -473,7 +474,7 @@ local function ResetMailPosition()
   -- Clear existing points first
   MiniMapMailFrame:ClearAllPoints()
   -- Reset to default position (top right)
-  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -17, -7)
+  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -7)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
@@ -492,7 +493,7 @@ local function ResetTrackingPosition()
   -- Clear existing points first
   MiniMapTracking:ClearAllPoints()
   -- Reset to default position (top right)
-  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -134, -5)
+  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -130, -7)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
