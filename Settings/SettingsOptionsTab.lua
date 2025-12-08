@@ -1979,7 +1979,6 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
 
-<<<<<<< HEAD
   local minimapTrackingScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
   minimapTrackingScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
   minimapTrackingScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
@@ -2029,8 +2028,6 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', mailSubHeader)
 
-=======
->>>>>>> develop
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
   local function reflowUISettings(filterQuery)
