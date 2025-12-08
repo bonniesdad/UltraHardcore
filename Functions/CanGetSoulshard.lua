@@ -94,45 +94,34 @@ end
 
 local function playerLevelRange(playerLevel)
 	--[[
-	ZD =  5, when Char Level =  1 -  7
-	ZD =  6, when Char Level =  8 -  9
-	ZD =  7, when Char Level = 10 - 11
-	ZD =  8, when Char Level = 12 - 15
-	ZD =  9, when Char Level = 16 - 19 
-	ZD = 11, when Char Level = 20 - 29
-	ZD = 12, when Char Level = 30 - 39
-	ZD = 13, when Char Level = 40 - 44
-	ZD = 14, when Char Level = 45 - 49
-	ZD = 15, when Char Level = 50 - 54
-	ZD = 16, when Char Level = 55 - 59
-	ZD = 17, when Char Level = 60 - 84
+		Credit to Tulhur for providing this level range table:
+		1-10  ┃ Playerlevel-4
+		10-19 ┃ Playerlevel-5
+		20-29 ┃ Playerlevel-6
+		30-39 ┃ Playerlevel-7
+		40-44 ┃ Playerlevel-8
+		45-49 ┃ Playerlevel-10
+		50-55 ┃ Playerlevel-11
+		56-60 ┃ Playerlevel-12
 	]]--
 
 	local levelDifference = 0
-	if playerLevel >= 1 and playerLevel <= 7 then
+	if playerLevel >= 1 and playerLevel <= 9 then
+		levelDifference = 4
+	elseif playerLevel >= 10 and playerLevel <= 19 then
 		levelDifference = 5
-	elseif playerLevel >= 8 and playerLevel <= 9 then
-		levelDifference = 6
-	elseif playerLevel >= 10 and playerLevel <= 11 then
-		levelDifference = 7
-	elseif playerLevel >= 12 and playerLevel <= 15 then
-		levelDifference = 8
-	elseif playerLevel >= 16 and playerLevel <= 19 then
-		levelDifference = 9
 	elseif playerLevel >= 20 and playerLevel <= 29 then
-		levelDifference = 11
+		levelDifference = 6
 	elseif playerLevel >= 30 and playerLevel <= 39 then
-		levelDifference = 12
+		levelDifference = 7
 	elseif playerLevel >= 40 and playerLevel <= 44 then
-		levelDifference = 13
+		levelDifference = 8
 	elseif playerLevel >= 45 and playerLevel <= 49 then
-		levelDifference = 14
-	elseif playerLevel >= 50 and playerLevel <= 54 then
-		levelDifference = 15
-	elseif playerLevel >= 55 and playerLevel <= 59 then
-		levelDifference = 16
-	elseif playerLevel >= 60 and playerLevel <= 84 then
-		levelDifference = 17
+		levelDifference = 10
+	elseif playerLevel >= 50 and playerLevel <= 55 then
+		levelDifference = 11
+	elseif playerLevel >= 56 and playerLevel <= 60 then
+		levelDifference = 12
 	end
 	return levelDifference
 end
