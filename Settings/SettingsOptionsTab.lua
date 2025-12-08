@@ -1979,6 +1979,55 @@ function InitializeSettingsOptionsTab()
   end)
   addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
 
+  local minimapTrackingScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
+  minimapTrackingScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
+  minimapTrackingScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+
+  local minimapTrackingScaleLabel =
+    minimapTrackingScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapTrackingScaleLabel:SetPoint('LEFT', minimapTrackingScaleRow, 'LEFT', 0, 0)
+  minimapTrackingScaleLabel:SetWidth(LABEL_WIDTH2)
+  minimapTrackingScaleLabel:SetJustifyH('LEFT')
+  minimapTrackingScaleLabel:SetText('Tracking Icon Scale')
+
+  if tempSettings.minimapTrackingScale == nil then
+    tempSettings.minimapTrackingScale = GLOBAL_SETTINGS.minimapTrackingScale or 0.9
+  end
+
+  local minimapTrackingScalePercentText =
+    minimapTrackingScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  minimapTrackingScalePercentText:SetPoint('LEFT', minimapTrackingScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
+  minimapTrackingScalePercentText:SetWidth(40)
+  minimapTrackingScalePercentText:SetJustifyH('LEFT')
+  minimapTrackingScalePercentText:SetText(
+    tostring(math.floor((tempSettings.minimapTrackingScale or 0.9) * 100)) .. '%'
+  )
+
+  local minimapTrackingScaleSlider =
+    CreateFrame('Slider', nil, minimapTrackingScaleRow, 'OptionsSliderTemplate')
+  minimapTrackingScaleSlider:SetPoint('LEFT', minimapTrackingScalePercentText, 'RIGHT', 10, 0)
+  minimapTrackingScaleSlider:SetSize(180, 16)
+  minimapTrackingScaleSlider:SetMinMaxValues(9, 20)
+  minimapTrackingScaleSlider:SetValueStep(1)
+  minimapTrackingScaleSlider:SetObeyStepOnDrag(true)
+  minimapTrackingScaleSlider:SetValue(math.floor(((tempSettings.minimapTrackingScale or 0.9) * 10) + 0.5))
+  if minimapTrackingScaleSlider.Low then
+    minimapTrackingScaleSlider.Low:SetText('90%')
+  end
+  if minimapTrackingScaleSlider.High then
+    minimapTrackingScaleSlider.High:SetText('200%')
+  end
+  if minimapTrackingScaleSlider.Text then
+    minimapTrackingScaleSlider.Text:SetText('')
+  end
+
+  minimapTrackingScaleSlider:SetScript('OnValueChanged', function(self, val)
+    local steps = math.floor(val + 0.5)
+    minimapTrackingScalePercentText:SetText((steps * 10) .. '%')
+    tempSettings.minimapTrackingScale = steps / 10
+  end)
+  addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', mailSubHeader)
+
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
   local function reflowUISettings(filterQuery)
