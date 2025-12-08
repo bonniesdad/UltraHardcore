@@ -85,7 +85,7 @@ local SOULSHARD_ICON_PATH = "Interface\\Icons\\spell_shadow_felmending"
 
 local function playerKnowsDrainSoul()
 	    -- Check if player knows the Drain Soul spell (required for soulshard harvesting)
-    local playerKnowsDrainSoul = isSpellKnown(1120) 
+    local playerKnowsDrainSoul = IsSpellKnown(1120) 
     if not playerKnowsDrainSoul then
         return false
 	end
@@ -196,6 +196,11 @@ updateFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 updateFrame:RegisterEvent("UNIT_HEALTH")
 
 updateFrame:SetScript("OnEvent", function(self, event, unit)
+	local playerKnowsDrainSoul = playerKnowsDrainSoul()
+	if not playerKnowsDrainSoul then
+		return
+	end
+
 	-- Always update on target change and login events
 	if event == "PLAYER_TARGET_CHANGED" or event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" then
 		UpdateSoulshardsIcon()
