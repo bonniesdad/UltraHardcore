@@ -95,6 +95,11 @@ f:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_ENTERING_WORLD' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_CONTROL_LOST' then
+    -- We need a slight delay after getting on a taxi before UnitOnTaxi will return true
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0.2, function()
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+      end)
+    end
   end
 end)
