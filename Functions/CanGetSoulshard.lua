@@ -8,6 +8,7 @@ soulshardsFrame:SetClampedToScreen(true)
 soulshardsFrame:EnableMouse(true)
 soulshardsFrame:SetMovable(true)
 soulshardsFrame:RegisterForDrag("LeftButton")
+soulshardsFrame:Hide()
 
 local soulshardsIcon = soulshardsFrame:CreateTexture(nil, "ARTWORK")
 soulshardsIcon:SetAllPoints()
