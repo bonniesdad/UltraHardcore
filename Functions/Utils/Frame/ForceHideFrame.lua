@@ -1,20 +1,44 @@
 local driverQueue = {}
 local inCombat = false
 
+-- A dummy frame we can re-parent other frames to when hiding
+local UltraHiddenParent = CreateFrame("Frame", "UltraHiddenParent", UIParent)
+UltraHiddenParent:Hide()                 -- fully hidden
+UltraHiddenParent:SetAlpha(0)            -- invisible
+UltraHiddenParent:EnableMouse(false)     -- can't be interacted with
+UltraHiddenParent:EnableMouseWheel(false)
+UltraHiddenParent:SetIgnoreParentScale(true)
+UltraHiddenParent:SetIgnoreParentAlpha(true)
+
+
 local function ApplyDriver(frame, state)
-    if type(frame.SetAttribute) ~= "function" then
-        -- not a secure frame, safe fallback to standard hide/show
-        if state == "hide" then 
-            frame:Hide()
-        else
-            frame:Show()
+    if not frame then return end
+
+    -- Reparent-hide: safest way to kill visibility & mouse input
+    if state == "hide" then
+        if not frame._UltraOriginalParent then
+            frame._UltraOriginalParent = frame:GetParent()
         end
+
+        -- Detach from all secure visibility systems
+        UnregisterStateDriver(frame, "visibility")
+
+        -- Reparent to the hidden dummy
+        frame:SetParent(UltraHiddenParent)
+        frame:Hide()
         return
     end
 
-    -- Change visiblity of a secure frame
-    UnregisterStateDriver(frame, "visibility")
-    RegisterStateDriver(frame, "visibility", state)
+    -- Restore original parent
+    if state == "show" then
+        if frame._UltraOriginalParent then
+            frame:SetParent(frame._UltraOriginalParent)
+        end
+
+        frame:Show()
+        return
+    end
+
 end
 
 local function QueueDriver(frame, state)
