@@ -1277,41 +1277,89 @@ function InitializeSettingsOptionsTab()
   saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
   saveButton:SetText('Save and Reload')
   saveButton:SetScript('OnClick', function()
-    for key, value in pairs(tempSettings) do
-      GLOBAL_SETTINGS[key] = value
-    end
+    if ShowConfirmationDialog then
+      ShowConfirmationDialog(
+        'Save and Reload',
+        'Are you sure you want to save your settings and reload the UI?',
+        function()
+          for key, value in pairs(tempSettings) do
+            GLOBAL_SETTINGS[key] = value
+          end
 
-    -- Apply the new completely remove settings immediately
-    SetPlayerFrameDisplay()
+          -- Apply the new completely remove settings immediately
+          SetPlayerFrameDisplay()
 
-    -- Set target frame accordingly
-    if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
-      SetTargetFrameDisplay({})
-    end
+          -- Set target frame accordingly
+          if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+            SetTargetFrameDisplay({})
+          end
 
-    -- Handle XP Bar settings
-    if GLOBAL_SETTINGS.showExpBar then
-      InitializeExpBar()
+          -- Handle XP Bar settings
+          if GLOBAL_SETTINGS.showExpBar then
+            InitializeExpBar()
+          else
+            HideExpBar()
+          end
+
+          if GLOBAL_SETTINGS.hideDefaultExpBar then
+            HideDefaultExpBar()
+          else
+            ShowDefaultExpBar()
+          end
+
+          -- Update XP bar color and height if it exists
+          if _G.UpdateExpBarColor then
+            UpdateExpBarColor()
+          end
+          if _G.UpdateExpBarHeight then
+            UpdateExpBarHeight()
+          end
+
+          SaveCharacterSettings(GLOBAL_SETTINGS)
+          ReloadUI()
+        end,
+        nil,
+        'Save and Reload',
+        'Cancel'
+      )
     else
-      HideExpBar()
-    end
+      -- Fallback if confirmation dialog isn't loaded
+      for key, value in pairs(tempSettings) do
+        GLOBAL_SETTINGS[key] = value
+      end
 
-    if GLOBAL_SETTINGS.hideDefaultExpBar then
-      HideDefaultExpBar()
-    else
-      ShowDefaultExpBar()
-    end
+      -- Apply the new completely remove settings immediately
+      SetPlayerFrameDisplay()
 
-    -- Update XP bar color and height if it exists
-    if _G.UpdateExpBarColor then
-      UpdateExpBarColor()
-    end
-    if _G.UpdateExpBarHeight then
-      UpdateExpBarHeight()
-    end
+      -- Set target frame accordingly
+      if GLOBAL_SETTINGS.hideTargetFrame or GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+        SetTargetFrameDisplay({})
+      end
 
-    SaveCharacterSettings(GLOBAL_SETTINGS)
-    ReloadUI()
+      -- Handle XP Bar settings
+      if GLOBAL_SETTINGS.showExpBar then
+        InitializeExpBar()
+      else
+        HideExpBar()
+      end
+
+      if GLOBAL_SETTINGS.hideDefaultExpBar then
+        HideDefaultExpBar()
+      else
+        ShowDefaultExpBar()
+      end
+
+      -- Update XP bar color and height if it exists
+      if _G.UpdateExpBarColor then
+        UpdateExpBarColor()
+      end
+      if _G.UpdateExpBarHeight then
+        UpdateExpBarHeight()
+      end
+
+      SaveCharacterSettings(GLOBAL_SETTINGS)
+      ReloadUI()
+    end
   end)
 
   _G.updateCheckboxes = updateCheckboxes
@@ -2141,8 +2189,24 @@ function InitializeSettingsOptionsTab()
   resetUIButton:SetText('Reset Positions')
   resetUIButton:SetPoint('BOTTOM', colorSectionFrame, 'BOTTOM', 0, 10)
   resetUIButton:SetScript('OnClick', function()
-    if SlashCmdList['RESETUI'] then
-      SlashCmdList['RESETUI']()
+    if ShowConfirmationDialog then
+      ShowConfirmationDialog(
+        'Reset UI Positions',
+        'Are you sure you want to reset all UI element positions to their defaults?',
+        function()
+          if SlashCmdList['RESETUI'] then
+            SlashCmdList['RESETUI']()
+          end
+        end,
+        nil,
+        'Reset',
+        'Cancel'
+      )
+    else
+      -- Fallback if confirmation dialog isn't loaded
+      if SlashCmdList['RESETUI'] then
+        SlashCmdList['RESETUI']()
+      end
     end
   end)
   resetUIButton:SetScript('OnEnter', function(self)
