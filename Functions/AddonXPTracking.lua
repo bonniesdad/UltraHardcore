@@ -45,7 +45,7 @@ function AddonXPTracking:GetTotalXP()
 end
 
 function AddonXPTracking:CalculateTotalXPGained()
-    Printing:Debug("Calculating Total XP for " .. Colours:Red(UnitGUID("player")))
+    Printing:Debug("Calculating Total XP for " .. Colours:R(UnitGUID("player")))
     local stats = self:Stats()
     local totalXP = self:GetTotalXP()
     Printing:Debug("Total XP is " .. totalXP)
@@ -71,6 +71,8 @@ function AddonXPTracking:ShouldCheckStat(statName)
                   and statName ~= "playerJumps"
                   and statName ~= "lastSessionXP"
                   and statName ~= "LastReloadedAt"
+                  and statName ~= "playerLives"
+                  and statName ~= "deathHistory"
                   and string.find(statName, "lowestHealth") == nil
   --Printing:Debug("Should we count stats for " .. statName .. "? " .. tostring(result))
   return result                  
@@ -227,11 +229,19 @@ function AddonXPTracking:WithoutAddon()
 end
 
 function AddonXPTracking:PercentXPTracked()
-  return (1 - (self:WithAddon() / self:GetTotalXP())) * 100
+  if self:GetTotalXP() == 0 then return 100 end
+  return (self:WithAddon() / self:GetTotalXP()) * 100
 end
 
 function AddonXPTracking:PercentXPMissing()
-  return (1 - (self:WithoutAddon() / self:GetTotalXP())) * 100
+  if self:GetTotalXP() == 0 then return 0 end
+  local untracked = self:WithoutAddon()
+
+  if untracked > 0 then
+    return (untracked / self:GetTotalXP()) * 100
+  else
+    return 0
+  end
 end
 
 function AddonXPTracking:XPIsVerified()
@@ -309,18 +319,18 @@ function AddonXPTracking:PrintXPVerificationWarning()
 end
 
 function AddonXPTracking:XPReport()
-  Printing:P(Colours:Yellow("Total XP: ") .. tostring(AddonXPTracking:TotalXP()))
-  Printing:P(Colours:Yellow("XP Gained With Addon: ") .. Colours:Green(tostring(AddonXPTracking:WithAddon())))
+  Printing:P(Colours:Y("Total XP: ") .. tostring(AddonXPTracking:TotalXP()))
+  Printing:P(Colours:Y("XP Tracked: ") .. Colours:G(tostring(AddonXPTracking:WithAddon())))
 
   local pctMissing = self:PercentXPMissing()
 
   if pctMissing > 0 then 
-    Printing:P(Colours:Yellow("The addon could not track ") .. Colours:ByName("Indigo", pctMissing .. "%") .. Colours:Yellow(" of your XP."))
+    Printing:P(Colours:Y("The addon could not track ") .. Colours:ByName("Indigo", string.format("%.2f", pctMissing) .. "%") .. Colours:Y(" of your XP."))
     local level = UnitLevel("player")
 
     local isValid = self:IsAddonXPValid(level)
     if isValid then 
-      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:Green("LOW"))
+      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:G("LOW"))
     else
       Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:ByName("OrangeRed", "HIGH"))
     end
@@ -336,7 +346,7 @@ SlashCmdList['XPFORLEVEL'] = function(msg)
       totalXP = totalXP + xp
     end
   end
-  Printing:P("A level " .. Colours:Green(msg)
+  Printing:P("A level " .. Colours:G(msg)
         .. " character has at least " 
         .. Colours:ByName("Cyan", formatNumberWithCommas(totalXP)) 
         .. " XP")
