@@ -1202,7 +1202,7 @@ function InitializeSettingsOptionsTab()
           local dropdown = CreateFrame('Frame', nil, row, 'UIDropDownMenuTemplate')
           dropdown:SetPoint('LEFT', label, 'RIGHT', 10, -2)
 
-  local function GetDisplayTextForChannel(value)
+          local function GetDisplayTextForChannel(value)
             for _, opt in ipairs(CHANNEL_OPTIONS) do
               if opt.value == value then
                 return opt.text
