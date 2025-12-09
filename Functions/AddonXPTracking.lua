@@ -56,8 +56,8 @@ end
 function AddonXPTracking:ShouldRecalculateXPGainedWithAddon()
   local stats = self:Stats()
   local playerLevel = UnitLevel("player")
-  if stats.xpGWA == nil then
-    Printing:Debug("Recalculating because xpGWA is nil")
+  if stats.xpTrackedByAddon == nil then
+    Printing:Debug("Recalculating because xpTrackedByAddon is nil")
     return true
   else
     Printing:Debug("Addon XP should not be recalculated")
@@ -67,7 +67,7 @@ end
 
 function AddonXPTracking:ShouldCheckStat(statName)
   local result = statName ~= "xpTotal"
-                  and statName ~= "xpGWA"
+                  and statName ~= "xpTrackedByAddon"
                   and statName ~= "playerJumps"
                   and statName ~= "lastSessionXP"
                   and statName ~= "LastReloadedAt"
@@ -157,7 +157,7 @@ function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
     xpDiff = totalXP - lowestXP
   end
 
-  self:UpdateStat("xpGWA", xpDiff)
+  self:UpdateStat("xpTrackedByAddon", xpDiff)
   self:UpdateStat("xpTotal", totalXP)
 end
 
@@ -166,16 +166,21 @@ function AddonXPTracking:ForceSave()
   local totalXP = self:CalculateTotalXPGained()
 
   self:UpdateStat("xpTotal", totalXP)
-  self.UpdateStat("xpGWA", stats.xpGWA)
+  self.UpdateStat("xpTrackedByAddon", stats.xpTrackedByAddon)
   AddonXPTracking:XPTrackingDebug("Setting XP values: " .. totalXP 
-                                  .. " - " .. stats.xpGWA
+                                  .. " - " .. stats.xpTrackedByAddon
                                   .. " = " .. self:WithoutAddon()
                                 )
 end
 
 function AddonXPTracking:Initialize(lastXPValue)
   if self.trackingInitialized ~= true then
+    -- Because we disabled XP tracking, xpGWA is no longer valid so lets get rid of it
+    self:UpdateStat("xpGWA", nil)
+
+    -- This sets the last reload time
     ReloadReminder:Touch()
+
     local playerLevel = UnitLevel("player")
     if lastXPValue == 0 and playerLevel > 1 then
       -- This shouldn't happen but just in case, don't run until later
@@ -188,7 +193,7 @@ function AddonXPTracking:Initialize(lastXPValue)
 
     if playerLevel == 1 and lastXPValue == 0 then
       self:UpdateStat("xpTotal", 0)
-      self:UpdateStat("xpGWA", 0)
+      self:UpdateStat("xpTrackedByAddon", 0)
     elseif self:ShouldRecalculateXPGainedWithAddon() == true then
       self:ResetXPGainedWithAddon(true)
     end
@@ -201,7 +206,7 @@ function AddonXPTracking:ShouldStoreStat(xpVariable)
 end
 
 function AddonXPTracking:ShouldTrackStat(xpVariable)
-  if xpVariable == "xpGWA" then
+  if xpVariable == "xpTrackedByAddon" then
     return true
   else
     return false
@@ -213,9 +218,10 @@ function AddonXPTracking:TotalXP()
 end
 
 function AddonXPTracking:WithAddon()
-  return self:Stats()["xpGWA"]
+  return self:Stats()["xpTrackedByAddon"]
 end
 
+-- xpGWOA is no longer a thing.  We always calculate this value.
 function AddonXPTracking:WithoutAddon()
   return self:GetTotalXP() - self:WithAddon()
 end

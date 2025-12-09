@@ -8,7 +8,7 @@
 local settingToXPVariable = {
   -- Total XP, not tied to settings
   xpTotal = 'xpTotal', 
-  xpGWA = 'xpGWA',
+  xpTrackedByAddon = 'xpTrackedByAddon',
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
