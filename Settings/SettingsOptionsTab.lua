@@ -1601,7 +1601,7 @@ function InitializeSettingsOptionsTab()
 
     local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
     local SWATCH_WIDTH = 60
-    local SWATCH_HEIGHT = 20
+    local SWATCH_HEIGHT = 16
     local GAP = 12
 
     -- Label
