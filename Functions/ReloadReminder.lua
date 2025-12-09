@@ -1,47 +1,50 @@
-local reloadReminder = {
-    RemindInterval = 3600,
+local ReloadReminder = {
+    ReminderInterval = 3600,
 }
 
-local function PrintReminder()
+function ReloadReminder:PrintReminder()
     local elapsedTime = self:TimeSinceSave()
-    Printing:P("Addon data not saved for " .. Colours.ByName("Cyan", SecondsToTime(elapsedTime)) .. ".  Reloading is recommended.")
+    local timeInPlainText = SecondsToTime(elapsedTime)
+    Printing:P(Colours:ByName("Silver", "Addon data not saved for ")
+                .. Colours:ByName("Cyan", tostring(timeInPlainText))
+                .. Colours:ByName("Silver", ".  Reload when safe to save your stats."))
 
     -- If we haven't reloaded, keep halfing the time until the next reminder
     -- until 15 minutes, then remind every 5
     if self.ReminderInterval > 900 then 
-        self.RemindInterval = self.ReminderInterval / 2
+        self.ReminderInterval = self.ReminderInterval / 2
     elseif self.ReminderInterval > 300 then 
         self.ReminderInterval = self.ReminderInterval - 300
     end
 end
 
-local function ShowReminderButton()
+function ReloadReminder:ShowReminderButton()
 
 end
 
-local function HideReminderButton()
+function ReloadReminder:HideReminderButton()
 
 end
 
-function Touch() 
+function ReloadReminder:Touch() 
     local stats = CharacterStats:GetCurrentCharacterStats()
     stats["LastReloadedAt"] = GetServerTime()
 end
 
-function DoReload()
+function ReloadReminder:DoReload()
     self:Touch()
     self.ReminderInterval = 3600
     self:HideReminderButton()
 end
 
-local function TimeSinceSave()
+function ReloadReminder:TimeSinceSave()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastReload = stats["LastReloadedAt"]
     local serverTime = GetServerTime()
     return (serverTime - lastReload)
 end
 
-local function CheckLastReloadTime()
+function ReloadReminder:CheckLastReloadTime()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastReload = stats["LastReloadedAt"]
 
@@ -49,8 +52,9 @@ local function CheckLastReloadTime()
         stats["LastReloadedAt"] = GetServerTime()
     else
         local diff = self:TimeSinceSave()
+        Printing:Debug("Last reloaded " .. SecondsToTime(diff) .. " ago")
 
-        if diff > self.RemindInterval then 
+        if diff > self.ReminderInterval then 
             self:PrintReminder()
         end
     end
@@ -63,6 +67,8 @@ reloadReminderFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 reloadReminderFrame:SetScript('OnEvent', function(self, event, ...)
     if event == "PLAYER_REGEN_ENABLED" then
-        CheckLastReloadTime()
+        ReloadReminder:CheckLastReloadTime()
     end
 end)
+
+_G.ReloadReminder = ReloadReminder
