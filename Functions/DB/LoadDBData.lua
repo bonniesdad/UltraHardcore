@@ -40,7 +40,6 @@ function LoadDBData()
     tunnelVisionMaxStrata = false,
     routePlanner = false,
     -- Experimental Preset Settings
-    hideBreathIndicator = false,
     showCritScreenMoveEffect = false,
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,
@@ -49,11 +48,13 @@ function LoadDBData()
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,
     routePlannerCompass = false,
-    showTargetBuffs = false,
-    showTargetDebuffs = false,
-    showTargetRaidIcon = false,
+    showTargetBuffs = true,
+    showTargetDebuffs = true,
+    showTargetRaidIcon = true,
     -- Misc Settings
     showOnScreenStatistics = true,
+    showVitalsOverlay = true,
+    useCustomComboFrame = true,
     minimapClockPosition = {},
     minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,
@@ -75,6 +76,7 @@ function LoadDBData()
     guildSelfFound = false,
     groupSelfFound = false,
     showDruidFormResourceBar = true,
+    showSoulshardIndicator = true,
     -- XP Bar
     showExpBar = false,
     showXpBarToolTip = false,
@@ -113,8 +115,6 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
-    showMainStatisticsPanelXpGWA = false,
-    showMainStatisticsPanelXpGWOA = false,
   }
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists

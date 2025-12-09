@@ -70,7 +70,24 @@ end)
 settingsFrame:SetScript('OnDragStop', function(self)
   self:StopMovingOrSizing()
 end)
+settingsFrame:SetScript('OnHide', function(self)
+  -- Close confirmation dialog if open when settings window is hidden
+  if _G.HideConfirmationDialog then
+    _G.HideConfirmationDialog()
+  end
+end)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30)
+
+-- Reset ULTRA Menu frame to default position
+local function ResetULTRAMenuFramesPosition()
+  settingsFrame:ClearAllPoints()
+  settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30)
+  -- WoW will automatically save this position via UISpecialFrames
+  print('|cfff44336[ULTRA]|r ULTRA Menu position reset to default.')
+end
+
+-- Make ResetULTRAMenuFramesPosition globally accessible for combined reset commands
+_G.ResetULTRAMenuFramesPosition = ResetULTRAMenuFramesPosition
 settingsFrame:Hide()
 settingsFrame:SetFrameStrata('DIALOG')
 settingsFrame:SetFrameLevel(15)
@@ -113,7 +130,7 @@ titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\heade
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
-settingsTitleLabel:SetText('Ultra Hardcore')
+settingsTitleLabel:SetText('ULTRA')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
 -- Initialize TBC feature (comment out this line to disable TBC feature)
@@ -153,6 +170,10 @@ closeButton:SetScript('OnClick', function()
     _G.tbcContentFrame:Hide()
   end
   initializeTempSettings()
+  -- Close confirmation dialog if open
+  if _G.HideConfirmationDialog then
+    _G.HideConfirmationDialog()
+  end
   settingsFrame:Hide()
 end)
 closeButton:SetNormalTexture('Interface\\AddOns\\UltraHardcore\\Textures\\header-x.png')
@@ -174,6 +195,10 @@ function ToggleSettings()
     end
     if _G.tbcContentFrame then
       _G.tbcContentFrame:Hide()
+    end
+    -- Close confirmation dialog if open
+    if _G.HideConfirmationDialog then
+      _G.HideConfirmationDialog()
     end
     settingsFrame:Hide()
   else
@@ -249,7 +274,7 @@ initializeTempSettings()
 -- Create LibDataBroker object for minimap button
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   type = 'data source',
-  text = 'Ultra Hardcore',
+  text = 'ULTRA',
   icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
   OnClick = function(self, btn)
     if btn == 'LeftButton' then
@@ -258,7 +283,7 @@ local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   end,
   OnTooltipShow = function(tooltip)
     if not tooltip or not tooltip.AddLine then return end
-    tooltip:AddLine('|cffffffffUltra Hardcore|r\n\nLeft-click to open settings', nil, nil, nil, nil)
+    tooltip:AddLine('|cffffffffULTRA|r\n\nLeft-click to open settings', nil, nil, nil, nil)
   end,
 })
 
