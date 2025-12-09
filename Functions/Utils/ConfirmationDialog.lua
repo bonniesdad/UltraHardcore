@@ -78,6 +78,10 @@ function ShowConfirmationDialog(title, message, onConfirm, onCancel, confirmText
     confirmationDialog.cancelButton = cancelButton
   end
 
+  -- Reset position to center each time (in case user moved it somewhere weird)
+  confirmationDialog:ClearAllPoints()
+  confirmationDialog:SetPoint('CENTER', UIParent, 'CENTER', 0, 0)
+
   -- Update dialog content
   confirmationDialog.titleText:SetText(title)
   confirmationDialog.messageText:SetText(message)
