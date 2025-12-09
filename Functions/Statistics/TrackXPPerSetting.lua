@@ -117,14 +117,15 @@ xpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
 xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_XP_UPDATE' then
-    AddonXPTracking:XPTrackingDebug('PLAYER_XP_UPDATE event fired')
+    Printing:Debug('PLAYER_XP_UPDATE event fired')
     UpdateXPTracking(false)
   elseif event == 'PLAYER_LEVEL_UP' then
-    AddonXPTracking:XPTrackingDebug('PLAYER_LEVEL_UP event fired')
+    Printing:Debug('PLAYER_LEVEL_UP event fired')
     UpdateXPTracking(true)
   elseif event == 'PLAYER_LOGIN' then
     InitializeXPTracking()
   elseif event == 'ADDON_LOADED' and select(1, ...) == 'UltraHardcore' then
+    Printing:EnableDebug()
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking
     C_Timer.After(3.0, function()
