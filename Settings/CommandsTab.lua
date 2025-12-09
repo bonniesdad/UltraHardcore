@@ -158,7 +158,7 @@ function InitializeCommandsTab()
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
       {
         '/resetui, /rui',
-        'Reset all draggable UI element positions to default (clock, mail, tracking, resource bar, resource indicator, soulshard indicator, and statistics panel).',
+        'Reset all draggable UI element positions to default (ULTRA Menu, clock, mail, tracking, resource bar, resource indicator, soulshard indicator, and statistics panel).',
       },
     },
   } }

@@ -71,6 +71,17 @@ settingsFrame:SetScript('OnDragStop', function(self)
   self:StopMovingOrSizing()
 end)
 settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30)
+
+-- Reset ULTRA Menu frame to default position
+local function ResetULTRAMenuFramesPosition()
+  settingsFrame:ClearAllPoints()
+  settingsFrame:SetPoint('CENTER', UIParent, 'CENTER', 0, 30)
+  -- WoW will automatically save this position via UISpecialFrames
+  print('|cfff44336[ULTRA]|r ULTRA Menu position reset to default.')
+end
+
+-- Make ResetULTRAMenuFramesPosition globally accessible for combined reset commands
+_G.ResetULTRAMenuFramesPosition = ResetULTRAMenuFramesPosition
 settingsFrame:Hide()
 settingsFrame:SetFrameStrata('DIALOG')
 settingsFrame:SetFrameLevel(15)
