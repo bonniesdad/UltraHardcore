@@ -15,6 +15,7 @@ local resourceEvents = {
   PLAYER_EQUIPMENT_CHANGED = true,
   PLAYER_TALENT_UPDATE = true,
   UPDATE_SHAPESHIFT_FORM = true,
+  UNIT_PET = true, -- respond when pet is summoned/desummoned
 }
 
 local function formatValue(number)
@@ -27,32 +28,88 @@ end
 local function updateOverlayText()
   if not overlayFrame or not overlayFrame.healthText then return end
 
+  -- Player max health
   local maxHealth = UnitHealthMax('player') or 0
   overlayFrame.healthText:SetText(formatValue(maxHealth))
 
-  -- Show power resource (mana, rage, or energy) based on power type
+  -- Player power resource (mana/rage/energy)
   if overlayFrame.manaText then
     local powerType = UnitPowerType('player')
-    if powerType == 0 then -- 0 = Mana
+    if powerType == 0 then -- Mana
       local maxMana = UnitPowerMax('player', 0) or 0
       overlayFrame.manaText:SetText(formatValue(maxMana))
-      overlayFrame.manaText:SetTextColor(0, 0.78, 1) -- Blue for mana
+      overlayFrame.manaText:SetTextColor(0, 0.78, 1) -- Blue
       overlayFrame.manaText:Show()
-	  overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png")
-    elseif powerType == 1 then -- 1 = Rage
+      overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png")
+      overlayFrame.manaIcon:Show()
+    elseif powerType == 1 then -- Rage
       local maxRage = UnitPowerMax('player', 1) or 0
       overlayFrame.manaText:SetText(formatValue(maxRage))
-      overlayFrame.manaText:SetTextColor(1, 0.18, 0.18) -- Red for rage
+      overlayFrame.manaText:SetTextColor(1, 0.18, 0.18) -- Red
       overlayFrame.manaText:Show()
-	  overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\rage64.png")
-    elseif powerType == 3 then -- 3 = Energy
+      overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\rage64.png")
+      overlayFrame.manaIcon:Show()
+    elseif powerType == 3 then -- Energy
       local maxEnergy = UnitPowerMax('player', 3) or 0
       overlayFrame.manaText:SetText(formatValue(maxEnergy))
-      overlayFrame.manaText:SetTextColor(0.98, 1, 0) -- Yellow for energy
+      overlayFrame.manaText:SetTextColor(0.98, 1, 0) -- Yellow
       overlayFrame.manaText:Show()
-	  overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\energy64.png")
+      overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\energy64.png")
+      overlayFrame.manaIcon:Show()
     else
       overlayFrame.manaText:Hide()
+      overlayFrame.manaIcon:Hide()
+    end
+  end
+
+  -- Pet: update its max health and max power (parented to PetFrame or fallback)
+  if overlayFrame.petHealthText and overlayFrame.petManaText and overlayFrame._petParent then
+    local petParent = overlayFrame._petParent
+    if overlayEnabled and UnitExists('pet') and petParent:IsShown() then
+      -- pet max health
+      local petMaxHealth = UnitHealthMax('pet') or 0
+      overlayFrame.petHealthText:SetText(formatValue(petMaxHealth))
+      overlayFrame.petHealthText:Show()
+      overlayFrame.petHealthIcon:Show()
+
+      -- pet power type and max
+      local petPowerType = UnitPowerType('pet')
+      if petPowerType == 0 then -- Mana
+        local petMaxMana = UnitPowerMax('pet', 0) or 0
+        overlayFrame.petManaText:SetText(formatValue(petMaxMana))
+        overlayFrame.petManaText:SetTextColor(0, 0.78, 1)
+        overlayFrame.petManaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png")
+        overlayFrame.petManaText:Show()
+        overlayFrame.petManaIcon:Show()
+      elseif petPowerType == 1 then -- Rage
+        local petMaxRage = UnitPowerMax('pet', 1) or 0
+        overlayFrame.petManaText:Hide()
+        overlayFrame.petManaIcon:Hide()
+
+      elseif petPowerType == 2 then -- Focus
+        overlayFrame.petManaText:Hide()
+        overlayFrame.petManaIcon:Hide()
+      elseif petPowerType == 3 then -- Energy
+        local petMaxEnergy = UnitPowerMax('pet', 3) or 0
+        overlayFrame.petManaText:Hide()
+        overlayFrame.petManaIcon:Hide()
+      else
+        -- fallback for Focus/other power types
+        local petMaxPower = UnitPowerMax('pet') or 0
+        if petMaxPower and petMaxPower > 0 then
+          overlayFrame.petManaText:Hide()
+          overlayFrame.petManaIcon:Hide()
+        else
+          overlayFrame.petManaText:Hide()
+          overlayFrame.petManaIcon:Hide()
+        end
+      end
+    else
+      -- hide pet overlays when no pet or pet frame hidden
+      overlayFrame.petHealthText:Hide()
+      overlayFrame.petHealthIcon:Hide()
+      overlayFrame.petManaText:Hide()
+      overlayFrame.petManaIcon:Hide()
     end
   end
 end
@@ -60,13 +117,32 @@ end
 local function updateOverlayVisibility()
   if not overlayFrame or not overlayFrame.healthText then return end
 
+  -- Player overlays remain tied to CharacterFrame visibility
   if overlayEnabled and CharacterFrame and CharacterFrame:IsShown() then
     overlayFrame.healthText:Show()
-    updateOverlayText() -- This will handle showing/hiding power resource (mana/rage/energy) based on power type
+    overlayFrame.healthIcon:Show()
+    overlayFrame.manaText:Show() -- text visibility may be corrected in updateOverlayText
+    overlayFrame.manaIcon:Show()
   else
     overlayFrame.healthText:Hide()
+    overlayFrame.healthIcon:Hide()
     if overlayFrame.manaText then
       overlayFrame.manaText:Hide()
+      overlayFrame.manaIcon:Hide()
+    end
+  end
+
+  -- Pet overlays: show only if pet exists and the pet parent frame is shown
+  if overlayFrame.petHealthText and overlayFrame.petManaText and overlayFrame._petParent then
+    local petParent = overlayFrame._petParent
+    if overlayEnabled and UnitExists('pet') and petParent:IsShown() then
+      -- updateOverlayText will show the actual pet elements
+      updateOverlayText()
+    else
+      overlayFrame.petHealthText:Hide()
+      overlayFrame.petHealthIcon:Hide()
+      overlayFrame.petManaText:Hide()
+      overlayFrame.petManaIcon:Hide()
     end
   end
 end
@@ -82,9 +158,11 @@ local function hookCharacterFrame()
     if overlayFrame then
       if overlayFrame.healthText then
         overlayFrame.healthText:Hide()
+        overlayFrame.healthIcon:Hide()
       end
       if overlayFrame.manaText then
         overlayFrame.manaText:Hide()
+        overlayFrame.manaIcon:Hide()
       end
     end
   end)
@@ -96,59 +174,119 @@ local function createOverlayFrame()
   if not CharacterFrame then return end
 
   local characterModelFrame = _G.CharacterModelFrame
-  local parentFrame = characterModelFrame or CharacterFrame
+  local playerParent = characterModelFrame or CharacterFrame
+
+  -- Determine pet parent: prefer PetFrame, fallback to characterModelFrame then CharacterFrame
+  local petModelFrame = _G.PetModelFrame
+  local petParent = petModelFrame
 
   if overlayFrame then
+    -- If switching from using fallback parent references, reparent player elements if needed
     if characterModelFrame and overlayFrame.__usesFallbackParent then
       if overlayFrame.healthText then
         overlayFrame.healthText:SetParent(characterModelFrame)
         overlayFrame.healthText:ClearAllPoints()
-        overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34)
+        overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 34)
+        overlayFrame.healthIcon:SetParent(characterModelFrame)
+        overlayFrame.healthIcon:ClearAllPoints()
+        overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34)
       end
 
       if overlayFrame.manaText then
         overlayFrame.manaText:SetParent(characterModelFrame)
         overlayFrame.manaText:ClearAllPoints()
-        overlayFrame.manaText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 18)
+        overlayFrame.manaText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 18)
+        overlayFrame.manaIcon:SetParent(characterModelFrame)
+        overlayFrame.manaIcon:ClearAllPoints()
+        overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 18)
       end
 
-      overlayFrame.__usesFallbackParent = false
+      if overlayFrame.petHealthText then
+        overlayFrame.petHealthText:SetParent(petModelFrame)
+        overlayFrame.petHealthText:ClearAllPoints()
+        -- position similar to before but relative to petParent
+        overlayFrame.petHealthText:SetPoint('BOTTOMLEFT', petModelFrame, 'BOTTOMLEFT', 20, 6)
+        overlayFrame.petHealthIcon:SetParent(petModelFrame)
+        overlayFrame.petHealthIcon:ClearAllPoints()
+        overlayFrame.petHealthIcon:SetPoint('BOTTOMLEFT', petModelFrame, 'BOTTOMLEFT', 6, 6)
+      end
+
+      if overlayFrame.petManaText then
+        overlayFrame.petManaText:SetParent(petModelFrame)
+        overlayFrame.petManaText:ClearAllPoints()
+        overlayFrame.petManaText:SetPoint('BOTTOMLEFT', petModelFrame, 'BOTTOMLEFT', 20, -10)
+        overlayFrame.petManaIcon:SetParent(petModelFrame)
+        overlayFrame.petManaIcon:ClearAllPoints()
+        overlayFrame.petManaIcon:SetPoint('BOTTOMLEFT', petModelFrame, 'BOTTOMLEFT', 6, -10)
+      end
+
     end
     return
   end
 
-  -- Create a container frame (for organization, but text will be positioned independently)
-  overlayFrame = CreateFrame('Frame', 'UltraVitalsOverlay', parentFrame)
-  overlayFrame:SetSize(1, 1) -- Minimal size since we're positioning text directly
+  -- Create container frame for player elements
+  overlayFrame = CreateFrame('Frame', 'UltraVitalsOverlay', playerParent)
+  overlayFrame:SetSize(1, 1)
   overlayFrame:EnableMouse(false)
-  overlayFrame.__usesFallbackParent = (parentFrame ~= characterModelFrame)
+  overlayFrame.__usesFallbackParent = (playerParent ~= characterModelFrame)
 
-  -- Health text in bottom left
-  overlayFrame.healthIcon = parentFrame:CreateTexture(nil, 'OVERLAY')
+  -- Player health icon + text (bottom-left)
+  overlayFrame.healthIcon = playerParent:CreateTexture(nil, 'OVERLAY')
   overlayFrame.healthIcon:SetSize(12, 12)
-  overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', parentFrame, 'BOTTOMLEFT', 6, 34)
+  overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 34)
   overlayFrame.healthIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\health64.png")
-  overlayFrame.healthText = parentFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  overlayFrame.healthText:SetPoint('BOTTOMLEFT', parentFrame, 'BOTTOMLEFT', 20, 34)
+  overlayFrame.healthText = playerParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  overlayFrame.healthText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 34)
   overlayFrame.healthText:SetJustifyH('LEFT')
   overlayFrame.healthText:SetJustifyV('BOTTOM')
   overlayFrame.healthText:SetTextColor(0.04, 0.84, 0.13)
-  -- FontStrings inherit frame strata/level from their parent frame
 
-  -- Power resource text (mana/rage/energy)
-  overlayFrame.manaIcon = parentFrame:CreateTexture(nil, 'OVERLAY')
+  -- Player power icon + text (bottom-left under health)
+  overlayFrame.manaIcon = playerParent:CreateTexture(nil, 'OVERLAY')
   overlayFrame.manaIcon:SetSize(12, 12)
-  overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', parentFrame, 'BOTTOMLEFT', 6, 18)
+  overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 18)
   overlayFrame.manaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png")
-  overlayFrame.manaText = parentFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  overlayFrame.manaText:SetPoint('BOTTOMLEFT', parentFrame, 'BOTTOMLEFT', 20, 18)
-  overlayFrame.manaText:SetJustifyH('RIGHT')
+  overlayFrame.manaText = playerParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  overlayFrame.manaText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 18)
+  overlayFrame.manaText:SetJustifyH('LEFT')
   overlayFrame.manaText:SetJustifyV('BOTTOM')
   overlayFrame.manaText:SetTextColor(0.5, 0.8, 1)
-  -- FontStrings inherit frame strata/level from their parent frame
 
+  -- Create pet elements parented to the actual pet frame (or fallback)
+  overlayFrame._petParent = petParent
+
+  -- Pet health icon + text (attached to petParent)
+  overlayFrame.petHealthIcon = petParent:CreateTexture(nil, 'OVERLAY')
+  overlayFrame.petHealthIcon:SetSize(12, 12)
+  -- position at bottom-left area of pet frame (adjust as desired)
+  overlayFrame.petHealthIcon:SetPoint('BOTTOMLEFT', petParent, 'BOTTOMLEFT', 50, 6)
+  overlayFrame.petHealthIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\health64.png")
+  overlayFrame.petHealthText = petParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  overlayFrame.petHealthText:SetPoint('BOTTOMLEFT', petParent, 'BOTTOMLEFT', 64, 6)
+  overlayFrame.petHealthText:SetJustifyH('LEFT')
+  overlayFrame.petHealthText:SetJustifyV('BOTTOM')
+  overlayFrame.petHealthText:SetTextColor(0.04, 0.84, 0.13)
+
+  -- Pet power icon + text (below/under pet health)
+  overlayFrame.petManaIcon = petParent:CreateTexture(nil, 'OVERLAY')
+  overlayFrame.petManaIcon:SetSize(12, 12)
+  overlayFrame.petManaIcon:SetPoint('BOTTOMRIGHT', petParent, 'BOTTOMRIGHT', -50, 6)
+  overlayFrame.petManaIcon:SetTexture("Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png")
+  overlayFrame.petManaText = petParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  overlayFrame.petManaText:SetPoint('BOTTOMRIGHT', petParent, 'BOTTOMRIGHT', -64, 6)
+  overlayFrame.petManaText:SetJustifyH('LEFT')
+  overlayFrame.petManaText:SetJustifyV('BOTTOM')
+  overlayFrame.petManaText:SetTextColor(0.5, 0.8, 1)
+
+  -- Initially hide everything until the overlay is enabled/frames shown
   overlayFrame.healthText:Hide()
+  overlayFrame.healthIcon:Hide()
   overlayFrame.manaText:Hide()
+  overlayFrame.manaIcon:Hide()
+  overlayFrame.petHealthText:Hide()
+  overlayFrame.petHealthIcon:Hide()
+  overlayFrame.petManaText:Hide()
+  overlayFrame.petManaIcon:Hide()
 end
 
 local function tryInitializeOverlay()
@@ -182,9 +320,9 @@ overlayEventFrame:SetScript('OnEvent', function(_, event, ...)
 
   if not overlayEnabled then return end
 
-  if event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER' or event == 'UNIT_DISPLAYPOWER' then
+  if event == 'UNIT_MAXHEALTH' or event == 'UNIT_MAXPOWER' or event == 'UNIT_DISPLAYPOWER' or event == 'UNIT_PET' then
     local unit = ...
-    if unit == 'player' then
+    if unit == 'player' or unit == 'pet' or unit == nil then
       updateOverlayText()
     end
   elseif
@@ -208,6 +346,14 @@ function SetVitalsOverlayEnabled(shouldEnable)
       if overlayFrame.manaText then
         overlayFrame.manaText:Hide()
         overlayFrame.manaIcon:Hide()
+      end
+      if overlayFrame.petHealthText then
+        overlayFrame.petHealthText:Hide()
+        overlayFrame.petHealthIcon:Hide()
+      end
+      if overlayFrame.petManaText then
+        overlayFrame.petManaText:Hide()
+        overlayFrame.petManaIcon:Hide()
       end
     end
     return
