@@ -508,7 +508,7 @@ local function ResetClockPosition()
   local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
   UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
   SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
-  print('UltraHardcore: clock position reset to default')
+  print('|cfff44336[ULTRA]|r Clock position reset to default.')
 end
 
 -- Reset mail position function
@@ -538,7 +538,7 @@ local function ResetMailPosition()
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
   UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
   SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
-  print('UltraHardcore: Mail position reset to default')
+  print('|cfff44336[ULTRA]|r Mail position reset to default.')
 end
 
 -- Reset tracking position function
@@ -567,7 +567,7 @@ local function ResetTrackingPosition()
   local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
   UltraHardcoreDB.MiniMapTrackingPosition = { point = point, relPoint = relPoint, x = x, y = y }
   SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
-  print('UltraHardcore: Tracking position reset to default')
+  print('|cfff44336[ULTRA]|r Tracking position reset to default.')
 end
 
 -- Slash command to reset clock position

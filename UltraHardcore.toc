@@ -31,6 +31,7 @@ Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
 Functions/ResourceTrackingExplainer.lua
+Functions/Utils/AudioUtils.lua
 Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
@@ -78,6 +79,8 @@ Functions/Utils/TbcQuestionnaire.lua
 Functions/Utils/AboutAuthor.lua
 Functions/Utils/Colours.lua
 Functions/Utils/Printing.lua
+Functions/Utils/ConfirmationDialog.lua
+Functions/Utils/ResetUI.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
