@@ -342,4 +342,10 @@ SlashCmdList['XPFORLEVEL'] = function(msg)
         .. " XP")
 end
 
+SLASH_XPGWAREPORT1 = '/uhcxpreport'
+SlashCmdList['XPGWAREPORT'] = function() 
+  AddonXPTracking:XPReport()
+end
+
+
 _G.AddonXPTracking = AddonXPTracking
