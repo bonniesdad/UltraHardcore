@@ -1,13 +1,12 @@
-local printing = {
-    DEBUG = false
+local Printing = {
+    DEBUG = false,
+    Prefix = Colours:Y("[") .. Colours:R("ULTRA") .. Colours:Y("]") .. " "
 }
 
-local msgPrefix = Colours:Yellow("[") .. Colours:Red("ULTRA") .. Colours:Yellow("]") .. " "
-
-function EnableDebug()
+function Printing:EnableDebug()
   self.DEBUG = true
 end
-function DisableDebug()
+function Printing:DisableDebug()
   self.DEBUG = false
 end
 
@@ -15,11 +14,11 @@ function Printing:Debug(msg)
   if self.DEBUG ~= true then
     return
   end
-  print(msgPrefix .. "(" .. Colours:Yellow("DEBUG") .. ") " .. msg)
+  print(self.Prefix .. "(" .. Colours:ByName("Orange", "DEBUG") .. ") " .. msg)
 end
 
 function Printing:P(msg)
-  print(msgPrefix .. msg)
+  print(self.Prefix .. msg)
 end
 
 function Printing:Print(msg)
@@ -30,4 +29,4 @@ function Printing:Msg(msg)
   return self:P(msg)
 end
 
-_G.Printing = printing
+_G.Printing = Printing
