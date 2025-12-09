@@ -1272,21 +1272,10 @@ function InitializeSettingsOptionsTab()
     _G.__UHC_SectionTitles = sectionTitles
   end
 
-  -- Create buttons centered at the bottom
-  local resetUIButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
-  resetUIButton:SetSize(140, 30)
-  resetUIButton:SetText('Reset Positions')
-  resetUIButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', -77.5, -40)
-
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
-  saveButton:SetSize(150, 30)
+  saveButton:SetSize(120, 30)
+  saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
   saveButton:SetText('Save and Reload')
-  saveButton:SetPoint('LEFT', resetUIButton, 'RIGHT', 10, 0)
-  resetUIButton:SetScript('OnClick', function()
-    if SlashCmdList['RESETUI'] then
-      SlashCmdList['RESETUI']()
-    end
-  end)
   saveButton:SetScript('OnClick', function()
     for key, value in pairs(tempSettings) do
       GLOBAL_SETTINGS[key] = value
@@ -2146,6 +2135,36 @@ function InitializeSettingsOptionsTab()
     end
   end
 
+  -- Add reset button at the bottom of UI settings section
+  local resetUIButton = CreateFrame('Button', nil, colorSectionFrame, 'UIPanelButtonTemplate')
+  resetUIButton:SetSize(140, 30)
+  resetUIButton:SetText('Reset Positions')
+  resetUIButton:SetPoint('BOTTOM', colorSectionFrame, 'BOTTOM', 0, 10)
+  resetUIButton:SetScript('OnClick', function()
+    if SlashCmdList['RESETUI'] then
+      SlashCmdList['RESETUI']()
+    end
+  end)
+  resetUIButton:SetScript('OnEnter', function(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_TOP')
+    GameTooltip:SetText('Reset Positions', 1, 1, 1)
+    GameTooltip:AddLine('Resets the following to default positions:', 1, 1, 1, true)
+    GameTooltip:AddLine('• Clock', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Mail Icon', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Tracking Icon', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Resource Bar', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Resource Indicator', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Soulshard Indicator', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Statistics Panel', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• ULTRA Menu', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine(' ')
+    GameTooltip:AddLine('Note: This does not reset scale settings.', 1, 0.5, 0.5)
+    GameTooltip:Show()
+  end)
+  resetUIButton:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+
   local function toggleUICollapsing(forceCollapse)
     if forceCollapse ~= nil then
       colorCollapsed = forceCollapse
@@ -2156,18 +2175,27 @@ function InitializeSettingsOptionsTab()
       for _, item in ipairs(uiSettingsRows) do
         item:Hide()
       end
+      resetUIButton:Hide()
       colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-PlusButton-Up')
       colorSectionFrame:SetHeight(LAYOUT.HEADER_HEIGHT)
     else
       -- Reflow will show correct children
       local h = reflowUISettings(_G.__UHC_CurrentSearchQuery)
+      resetUIButton:Show()
       colorHeaderIcon:SetTexture('Interface\\Buttons\\UI-MinusButton-Up')
-      colorSectionFrame:SetHeight(h)
+      colorSectionFrame:SetHeight(h + 50) -- Add space for button
     end
   end
 
   _G.__UHC_ToggleUISettingsCollapse = function(val)
     toggleUICollapsing(val)
+  end
+
+  -- Set initial button visibility based on collapsed state
+  if colorCollapsed then
+    resetUIButton:Hide()
+  else
+    resetUIButton:Show()
   end
 
   toggleUICollapsing(colorCollapsed)

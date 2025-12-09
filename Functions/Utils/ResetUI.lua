@@ -36,6 +36,11 @@ local function ResetUI()
     _G.ResetStatsFramePosition()
   end
   
+  -- Reset ULTRA Menu frame
+  if _G.ResetULTRAMenuFramesPosition then
+    _G.ResetULTRAMenuFramesPosition()
+  end
+  
   print('|cfff44336[ULTRA]|r All UI element positions reset to default.')
 end
 
