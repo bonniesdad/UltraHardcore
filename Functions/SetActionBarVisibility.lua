@@ -91,12 +91,7 @@ f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
-    -- Defer action bar visibility changes when entering/leaving combat to avoid protected frame errors
-    if C_Timer and C_Timer.After then
-      C_Timer.After(0.5, function()
-        SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
-      end)
-    end
+    SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_ENTERING_WORLD' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
   elseif event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_CONTROL_LOST' then
