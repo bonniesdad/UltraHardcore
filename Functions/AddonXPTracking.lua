@@ -60,22 +60,14 @@ function AddonXPTracking:CalculateTotalXPGained()
     local totalXP = self:GetTotalXP()
     self:XPTrackingDebug("Total XP is " .. totalXP)
     stats["xpTotal"] = totalXP
-    if stats.xpGWA ~= nil and stats.xpGWA > 0 then
-      local xpGWOA = totalXP - stats.xpGWA
-      stats["xpGWOA"] = xpGWOA
-      self:XPTrackingDebug("XP Gained without Addon is " .. xpGWOA)
-    end
     return totalXP
 end
 
 function AddonXPTracking:ShouldRecalculateXPGainedWithAddon()
   local stats = self:Stats()
   local playerLevel = UnitLevel("player")
-  if stats.xpGWA == nil and stats.xpGWOA == nil then
-    self:XPTrackingDebug("Recalculating because xpGWA and xpGWOA are both nil")
-    return true
-  elseif stats.xpGWA == 0 and stats.xpGWOA == 0 and stats.xpTotal > 0 then
-    self:XPTrackingDebug("Recalculating because xpGWA and xpGWOA are both 0, xpTotal is " .. stats.xpTotal)
+  if stats.xpGWA == nil then
+    self:XPTrackingDebug("Recalculating because xpGWA is nil")
     return true
   else
     self:XPTrackingDebug("Addon XP should not be recalculated")
@@ -86,9 +78,9 @@ end
 function AddonXPTracking:ShouldCheckStat(statName)
   local result = statName ~= "xpTotal"
                   and statName ~= "xpGWA"
-                  and statName ~= "xpGWOA"
                   and statName ~= "playerJumps"
                   and statName ~= "lastSessionXP"
+                  and statName ~= "LastReloadedAt"
                   and string.find(statName, "lowestHealth") == nil
   --self:XPTrackingDebug("Should we count stats for " .. statName .. "? " .. tostring(result))
   return result                  
@@ -162,29 +154,21 @@ end
 function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
   local playerLevel = UnitLevel("player")
   local xpDiff = 0
-  local xpWithoutAddon = 0
-  local totalXP = 0
-
+  local totalXP = self:GetTotalXP()
   local lowestXP = self:GetLowestXpGainedStat() or nil
   local highestXP = self:GetHighestXpGainedStat() or nil
+  local anyStat = self:GetHighestNonHealthStat()
 
-  if lowestXP < self.highXpMark then
-    totalXP = self:CalculateTotalXPGained()
-    local anyStat = self:GetHighestNonHealthStat()
-
-    if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
-      self:XPTrackingDebug("All high stats are 0, player level is " .. playerLevel)
-      -- This player looks to have just turned ultra on so all their XP is without addon
-      xpDiff = 0
-    else
-      xpDiff = totalXP - lowestXP
-    end
-    xpWithoutAddon = totalXP - xpDiff
-
-    self:UpdateStat("xpGWA", xpDiff)
-    self:UpdateStat("xpGWOA", xpWithoutAddon)
-    self:UpdateStat("xpTotal", totalXP)
+  if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
+    self:XPTrackingDebug("All high stats are 0, player level is " .. playerLevel)
+    -- This player looks to have just turned ultra on so all their XP is without addon
+    xpDiff = 0
+  else
+    xpDiff = totalXP - lowestXP
   end
+
+  self:UpdateStat("xpGWA", xpDiff)
+  self:UpdateStat("xpTotal", totalXP)
 end
 
 function AddonXPTracking:ForceSave()
@@ -193,15 +177,15 @@ function AddonXPTracking:ForceSave()
 
   self:UpdateStat("xpTotal", totalXP)
   self.UpdateStat("xpGWA", stats.xpGWA)
-  self.UpdateStat("xpGWOA", totalXP - stats.xpGWA)
   AddonXPTracking:XPTrackingDebug("Setting XP values: " .. totalXP 
                                   .. " - " .. stats.xpGWA
-                                  .. " = " .. stats.xpGWOA
+                                  .. " = " .. self:WithoutAddon()
                                 )
 end
 
 function AddonXPTracking:Initialize(lastXPValue)
   if self.trackingInitialized ~= true then
+    self:UpdateStat("LastReloadedAt", GetServerTime())
     local playerLevel = UnitLevel("player")
     if lastXPValue == 0 and playerLevel > 1 then
       -- This shouldn't happen but just in case, don't run until later
@@ -214,26 +198,28 @@ function AddonXPTracking:Initialize(lastXPValue)
 
     if playerLevel == 1 and lastXPValue == 0 then
       self:UpdateStat("xpTotal", 0)
+      self:UpdateStat("xpGWA", 0)
+    elseif self:ShouldRecalculateXPGainedWithAddon() == true then
+      self:ResetXPGainedWithAddon(true)
     end
     self.trackingInitialized = true
   end
 end
 
 function AddonXPTracking:ShouldStoreStat(xpVariable)
-  return xpVariable ~= "xpGWOA" and xpVariable ~= "xpTotal"
+  return xpVariable ~= "xpTotal"
 end
 
 function AddonXPTracking:ShouldTrackStat(xpVariable)
-  if xpVariable == "xpGWA" or xpVariable == "xpGWOA" then
+  if xpVariable == "xpGWA" then
     return true
   else
     return false
   end
 end
 
--- This function returns the storged total XP value from CharacterStats
 function AddonXPTracking:TotalXP()
-  return self:Stats()["xpTotal"]
+  return self:GetTotalXP()
 end
 
 function AddonXPTracking:WithAddon()
@@ -241,14 +227,17 @@ function AddonXPTracking:WithAddon()
 end
 
 function AddonXPTracking:WithoutAddon()
-  return self:Stats()["xpGWOA"]
+  return self:GetTotalXP() - self:WithAddon()
+end
+
+function AddonXPTracking:PercentXPMissing()
+  return (1 - (self:WithoutAddon() / self:GetTotalXP())) * 100
 end
 
 function AddonXPTracking:XPIsVerified()
-  local stats = self:Stats()
-  local isVerified = stats.xpGWA == stats.xpTotal and stats.xpGWOA == 0
-  self:XPTrackingDebug("Addon XP verification status: " .. tostring(isVerified))
-  return isVerified
+  local result = self:IsAddonXPValid(UnitLevel('player'))
+  self:XPTrackingDebug("Addon XP verification status: " .. tostring(result))
+  return result
 end
 
 function AddonXPTracking:XPForLevel(level)
@@ -292,14 +281,23 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
 end
 
 function AddonXPTracking:IsAddonXPValid(currentLevel) 
-  --[[local stats = self:Stats()
-  local xpForLevel = self:GetMinXPForLevel(currentLevel)
-  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel]]
-  return true
-end
-
-function AddonXPTracking:ValidateTotalStoredXP()
-  return self:GetTotalXP() == self:TotalXP()
+  local pctMissing = self:PercentXPMissing()
+  self:XPTrackingDebug("Percent XP untracked: " .. pctMissing .. "%")
+  local result = false
+  if currentLevel <= 10 and pctMissing <= 10 then
+    result = true
+  elseif currentLevel <= 20 and pctMissing <= 11 then
+    result = true  
+  elseif currentLevel <= 30 and pctMissing <= 12 then
+    result = true  
+  elseif currentLevel <= 40 and pctMissing <= 13 then
+    result = true  
+  elseif currentLevel <= 50 and pctMissing <= 14 then
+    result = true  
+  elseif currentLevel <= 20 and pctMissing <= 15 then
+    result = true  
+  end
+  return result
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
