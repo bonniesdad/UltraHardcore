@@ -8,6 +8,7 @@
 local settingToXPVariable = {
   -- Total XP, not tied to settings
   xpTotal = 'xpTotal', 
+  xpGWA = 'xpGWA',
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
@@ -68,11 +69,13 @@ local function UpdateXPTracking(levelUp)
       local isSettingEnabled = GLOBAL_SETTINGS[settingName]
 
       -- For boolean settings, if they're false, we're gaining XP "without" that option
-      if not isSettingEnabled then
+      if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
         -- Access character stats directly from our local variable to minimize calls
-        local currentXPForSetting = stats[xpVariable] or 0
-        local newXPForSetting = currentXPForSetting + xpGained
-        stats[xpVariable] = newXPForSetting
+        if AddonXPTracking:ShouldStoreStat(xpVariable) then
+          local currentXPForSetting = stats[xpVariable] or 0
+          local newXPForSetting = currentXPForSetting + xpGained
+          stats[xpVariable] = newXPForSetting
+        end
       end
     end
 
