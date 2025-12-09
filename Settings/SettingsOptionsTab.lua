@@ -806,7 +806,7 @@ function InitializeSettingsOptionsTab()
     local HEADER_HEIGHT = LAYOUT.HEADER_HEIGHT
     local ROW_HEIGHT = LAYOUT.ROW_HEIGHT
     local SECTION_GAP = LAYOUT.SECTION_GAP
-  local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
+    local HEADER_CONTENT_GAP = LAYOUT.HEADER_CONTENT_GAP
     local prevSectionFrame = nil
 
     local sectionChildren = {}
@@ -1026,7 +1026,7 @@ function InitializeSettingsOptionsTab()
 
             if checkboxItem.dbSettingsValueName == 'showVitalsOverlay' then
               if SetVitalsOverlayEnabled then
-            SetVitalsOverlayEnabled(self:GetChecked())
+                SetVitalsOverlayEnabled(self:GetChecked())
               end
             end
 
@@ -1092,7 +1092,7 @@ function InitializeSettingsOptionsTab()
             end
             GameTooltip:SetText(tooltipText)
             GameTooltip:Show()
-         end)
+          end)
 
           checkbox:SetScript('OnLeave', function(self)
             GameTooltip:Hide()
@@ -1130,7 +1130,7 @@ function InitializeSettingsOptionsTab()
           valueLabel:SetPoint('RIGHT', sliderFrame, 'RIGHT', -10, 0)
           valueLabel:SetText(tostring(math.floor(slider:GetValue())))
 
-    -- Precompute search blob for fast filtering
+          -- Precompute search blob for fast filtering
           local n = sliderItem.name or ''
           local t = sliderItem.tooltip or ''
           local k = sliderItem.dbSettingsValueName or ''
@@ -1138,7 +1138,7 @@ function InitializeSettingsOptionsTab()
 
           sliders[sliderItem.dbSettingsValueName] = slider
           table.insert(sectionChildren[sectionIndex], sliderFrame)
-       table.insert(sectionChildSettingNames[sectionIndex], sliderItem.dbSettingsValueName)
+          table.insert(sectionChildSettingNames[sectionIndex], sliderItem.dbSettingsValueName)
 
           -- Handle slider value changes
           slider:SetScript('OnValueChanged', function(self, value)
@@ -1163,7 +1163,7 @@ function InitializeSettingsOptionsTab()
           sliderFrame:SetScript('OnLeave', function(self)
             GameTooltip:Hide()
           end)
-  elseif settingName == 'soundbiteChannel' then
+        elseif settingName == 'soundbiteChannel' then
           -- Special-case: Soundbite channel dropdown row (not a simple checkbox/slider)
           numRows = numRows + 1
 
@@ -1181,7 +1181,7 @@ function InitializeSettingsOptionsTab()
           label:SetPoint('LEFT', row, 'LEFT', 0, 0)
           label:SetText('Soundbite Channel')
 
-  -- Available sound channels (aligned with in-game Sound options)
+          -- Available sound channels (aligned with in-game Sound options)
           local CHANNEL_OPTIONS = {
             { text = 'Master', value = 'Master' },
             { text = 'Music', value = 'Music' },
@@ -1221,7 +1221,7 @@ function InitializeSettingsOptionsTab()
               info.text = opt.text
               info.func = function()
                 tempSettings.soundbiteChannel = opt.value
-              UIDropDownMenu_SetText(dropdown, opt.text)
+                UIDropDownMenu_SetText(dropdown, opt.text)
                 updateSectionCount(sectionIndex)
               end
               info.checked = (tempSettings.soundbiteChannel == opt.value)
@@ -1309,7 +1309,7 @@ function InitializeSettingsOptionsTab()
         infoFrame:SetPoint('TOPRIGHT', sectionFrame, 'BOTTOMRIGHT', 0, -LAYOUT.SECTION_GAP)
         infoFrame:SetHeight(64)
 
-  -- Divider line above the note
+        -- Divider line above the note
         local divider = infoFrame:CreateTexture(nil, 'ARTWORK')
         divider:SetTexture('Interface\\Buttons\\WHITE8X8')
         divider:SetVertexColor(0.6, 0.6, 0.6, 0.6)
