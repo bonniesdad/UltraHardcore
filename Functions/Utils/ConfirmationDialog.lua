@@ -76,16 +76,6 @@ function ShowConfirmationDialog(title, message, onConfirm, onCancel, confirmText
     cancelButton:SetSize(100, 30)
     cancelButton:SetPoint('BOTTOM', confirmationDialog, 'BOTTOM', 70, 16)
     confirmationDialog.cancelButton = cancelButton
-
-    -- Close on escape
-    confirmationDialog:SetScript('OnKeyDown', function(self, key)
-      if key == 'ESCAPE' then
-        self:Hide()
-        if self.onCancel then
-          self.onCancel()
-        end
-      end
-    end)
   end
 
   -- Update dialog content
@@ -121,15 +111,12 @@ function ShowConfirmationDialog(title, message, onConfirm, onCancel, confirmText
 
   -- Show dialog
   confirmationDialog:Show()
-  confirmationDialog:EnableKeyboard(true)
-  confirmationDialog:SetFocus()
 end
 
 -- Hide the confirmation dialog
 function HideConfirmationDialog()
   if confirmationDialog then
     confirmationDialog:Hide()
-    confirmationDialog:EnableKeyboard(false)
   end
 end
 
