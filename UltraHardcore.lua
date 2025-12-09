@@ -37,13 +37,23 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     HidePlayerMapIndicators()
     ShowWelcomeMessage()
     ShowVersionUpdateDialog()
-    SetPlayerFrameDisplay(
-      GLOBAL_SETTINGS.hidePlayerFrame or false,
-      GLOBAL_SETTINGS.completelyRemovePlayerFrame or false
-    )
+    SetPlayerFrameDisplay()
+
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
+    end
+    
     SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
     if GLOBAL_SETTINGS.showClockEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowClock()
+    end
+
+    if SetVitalsOverlayEnabled then
+      SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
+    end
+    
+    if GLOBAL_SETTINGS.showTrackingWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
+        ShowTrackingButton()
     end
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowMail()
@@ -71,7 +81,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
-    SetBreathBarDisplay(GLOBAL_SETTINGS.hideBreathIndicator or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
@@ -154,19 +163,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
           SetAllGroupIndicators()
         end
       end)
-    end
-  elseif event == 'MIRROR_TIMER_START' then
-    -- Start breath monitoring when underwater
-    -- Mirror timer events pass timerName as the first parameter after event
-    local timerName = ...
-    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
-      OnBreathStart()
-    end
-  elseif event == 'MIRROR_TIMER_STOP' then
-    -- Stop breath monitoring when surfacing
-    local timerName = ...
-    if timerName == 'BREATH' and GLOBAL_SETTINGS.hideBreathIndicator then
-      OnBreathStop()
     end
   elseif event == 'UNIT_SPELLCAST_START' then
     -- Hide player cast bar if setting is enabled

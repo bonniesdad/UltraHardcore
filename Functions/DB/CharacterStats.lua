@@ -25,15 +25,12 @@ local CharacterStats = {
     xpGainedWithoutOptionHideMinimap = 0,
     xpGainedWithoutOptionHideQuestFrame = 0,
     xpGainedWithoutOptionHideBuffFrame = 0,
-    xpGainedWithoutOptionHideBreathIndicator = 0,
     xpGainedWithoutOptionShowCritScreenMoveEffect = 0,
     xpGainedWithoutOptionHideActionBars = 0,
     xpGainedWithoutOptionPetsDiePermanently = 0,
     xpGainedWithoutOptionShowFullHealthIndicator = 0,
     xpGainedWithoutOptionShowFullHealthIndicatorAudioCue = 0,
     xpGainedWithoutOptionShowHealingIndicator = 0,
-    xpGWA = 0, -- Used to track XP gained with the addon
-    xpGWOA = 0, -- These variable names are abbreviated to discourage SavedVariable file editing
     xpTotal = 0,
     xpGainedWithoutOptionRoutePlanner = 0,
     -- Survival statistics
@@ -43,6 +40,9 @@ local CharacterStats = {
     targetDummiesUsed = 0,
     grenadesUsed = 0,
     partyMemberDeaths = 0,
+    playerDeaths = 0,
+    playerLives = 1,
+    deathHistory = {},
     closeEscapes = 0,
     duelsTotal = 0,
     duelsWon = 0,
@@ -60,6 +60,53 @@ local CharacterStats = {
     -- Add more stats here as needed
   },
 }
+
+local function sanitizeDeathRecord(record)
+  if type(record) ~= 'table' then
+    return {
+      killer = 'Unknown',
+      location = 'Unknown',
+      healthText = '',
+      level = nil,
+      timestamp = time(),
+    }
+  end
+
+  return {
+    killer = record.killer or 'Unknown',
+    location = record.location or 'Unknown',
+    healthText = record.healthText or '',
+    level = record.level,
+    timestamp = record.timestamp or time(),
+  }
+end
+
+local function normalizeDeathHistoryEntries(statsTable)
+  if type(statsTable.deathHistory) ~= 'table' then
+    statsTable.deathHistory = copyValue(CharacterStats.defaults.deathHistory)
+    return
+  end
+
+  for index, entry in ipairs(statsTable.deathHistory) do
+    if type(entry) ~= 'table' then
+      statsTable.deathHistory[index] = sanitizeDeathRecord({ location = tostring(entry) })
+    else
+      statsTable.deathHistory[index] = sanitizeDeathRecord(entry)
+    end
+  end
+end
+
+local function copyValue(value)
+  if type(value) ~= 'table' then
+    return value
+  end
+
+  local newTable = {}
+  for key, v in pairs(value) do
+    newTable[key] = copyValue(v)
+  end
+  return newTable
+end
 
 -- Reset individual stats to default values for current character
 function CharacterStats:ResetLowestHealth()
@@ -185,6 +232,31 @@ function CharacterStats:ResetPartyMemberDeaths()
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
+function CharacterStats:ResetPlayerDeaths()
+  local stats = self:GetCurrentCharacterStats()
+  stats.playerDeaths = self.defaults.playerDeaths
+  stats.deathHistory = copyValue(self.defaults.deathHistory)
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:AddDeathRecord(record)
+  local stats = self:GetCurrentCharacterStats()
+  if type(stats.deathHistory) ~= 'table' then
+    stats.deathHistory = copyValue(self.defaults.deathHistory)
+  end
+
+  local sanitized = sanitizeDeathRecord(record)
+  stats.playerDeaths = (stats.playerDeaths or 0) + 1
+  table.insert(stats.deathHistory, sanitized)
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:GetDeathHistory()
+  local stats = self:GetCurrentCharacterStats()
+  normalizeDeathHistoryEntries(stats)
+  return stats.deathHistory
+end
+
 function CharacterStats:ResetHighestCritValue()
   local stats = self:GetCurrentCharacterStats()
   stats.highestCritValue = self.defaults.highestCritValue
@@ -211,7 +283,9 @@ end
 
 -- Deprecated: This function will be removed on a future release
 function CharacterStats:ReportXPWithoutAddon()
-  return AddonXPTracking:WithoutAddon()
+  -- XP verification is being removed
+  return 0
+  -- return AddonXPTracking:WithoutAddon()
 end
 
 -- Get the current character's stats
@@ -228,16 +302,17 @@ function CharacterStats:GetCurrentCharacterStats()
   end
 
   if not UltraHardcoreDB.characterStats[characterGUID] then
-    UltraHardcoreDB.characterStats[characterGUID] = self.defaults
+    UltraHardcoreDB.characterStats[characterGUID] = copyValue(self.defaults)
   end
 
   -- Initialize new stats for existing characters (backward compatibility)
   if not statsInitialized then
     for statName, _ in pairs(self.defaults) do
       if UltraHardcoreDB.characterStats[characterGUID][statName] == nil then
-        UltraHardcoreDB.characterStats[characterGUID][statName] = self.defaults[statName]
+        UltraHardcoreDB.characterStats[characterGUID][statName] = copyValue(self.defaults[statName])
       end
     end
+    normalizeDeathHistoryEntries(UltraHardcoreDB.characterStats[characterGUID])
     statsInitialized = true
   end
 

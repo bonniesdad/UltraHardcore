@@ -1,5 +1,7 @@
 local minimapHideTimer = nil
+local minimapCleanupTicker = nil
 local initialRotateMinimap = GetCVar("RotateMinimap") or false
+
 
 -- Track temporary reveal state so we can restore cleanly on any event
 local minimapRevealState = {
@@ -20,6 +22,10 @@ local function ResetMinimapRevealState()
   if minimapHideTimer then
     minimapHideTimer:Cancel()
     minimapHideTimer = nil
+  end
+  if minimapCleanupTicker then
+    minimapCleanupTicker:Cancel()
+    minimapCleanupTicker = nil
   end
   if not minimapRevealState.active then return end
 
@@ -105,7 +111,19 @@ local function LoadClockPosition()
   if pos then
     TimeManagerClockButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+    -- Scale-adjusted default position: maintains visual position relative to mail/tracking icons
+    -- when clock scale changes. Uses divisor pattern to calculate offset.
+    -- Calibrated values: 100% scale = -60, 150% scale = -30, 200% scale = -15
+    local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
+    local divisor
+    if scale <= 1.0 then
+      divisor = 1.0  -- 100% scale: offset = -60 / 1.0 = -60
+    elseif scale <= 1.5 then
+      divisor = 1.0 + (scale - 1.0) * 2.0  -- Linear interpolation: 1.0 to 2.0 (100% to 150%)
+    else
+      divisor = 2.0 + (scale - 1.5) * 4.0  -- Linear interpolation: 2.0 to 4.0 (150% to 200%)
+    end
+    TimeManagerClockButton:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -60 / divisor, 0)
   end
 
   TimeManagerClockButton:SetFrameStrata("HIGH")
@@ -122,20 +140,89 @@ local function LoadMailPosition()
   if pos then
     MiniMapMailFrame:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
   else
-    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -50, -50)
+    -- Scale-adjusted default position: maintains visual position relative to clock/tracking icons
+    -- when mail scale changes. Uses linear interpolation between calibrated breakpoints.
+    -- Calibrated values: 100% scale = -20, 150% scale = -5, 200% scale = 0
+    local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
+    local offsetX
+    if scale <= 1.0 then
+      offsetX = -20  -- 100% scale: -20
+    elseif scale <= 1.5 then
+      offsetX = -20 + (scale - 1.0) * 30  -- Linear interpolation: -20 to -5 (100% to 150%)
+    else
+      offsetX = -5 + (scale - 1.5) * 10  -- Linear interpolation: -5 to 0 (150% to 200%)
+    end
+    MiniMapMailFrame:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", offsetX, -7)
   end
 
   MiniMapMailFrame:SetFrameStrata("HIGH")
   MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale or 1.0)
 end
 
+local function LoadTrackingPosition()
+  if not MiniMapTracking then return end
+
+  MiniMapTracking:SetParent(UIParent)
+  MiniMapTracking:ClearAllPoints()
+
+  local pos = UltraHardcoreDB.MiniMapTrackingPosition
+  if pos then
+    MiniMapTracking:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+  else
+    -- Scale-adjusted default position: maintains visual position relative to clock/mail icons
+    -- when tracking scale changes. Uses linear interpolation between calibrated breakpoints.
+    -- Calibrated values: 90% scale = -145, 150% scale = -85, 200% scale = -65
+    -- Note: Default scale is 90% (0.9), not 100%
+    local scale = GLOBAL_SETTINGS.minimapTrackingScale or 0.9
+    local offsetX
+    if scale <= 0.9 then
+      offsetX = -145  -- 90% scale (default): -145
+    elseif scale <= 1.5 then
+      offsetX = -145 + (scale - 0.9) * 100  -- Linear interpolation: -145 to -85 (90% to 150%)
+    else
+      offsetX = -85 + (scale - 1.5) * 40  -- Linear interpolation: -85 to -65 (150% to 200%)
+    end
+    MiniMapTracking:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", offsetX, -7)
+  end
+
+  MiniMapTracking:SetFrameStrata("HIGH")
+  MiniMapTracking:SetScale(GLOBAL_SETTINGS.minimapTrackingScale or 0.9)
+end
+
 -- Take the given frame and disable the mouse and hide for all children
 local function DisableMouseAndHideChildren(f)
   for _, child in ipairs({ f:GetChildren() }) do
-    if child and child.EnableMouse then child:EnableMouse(false) end
-    if child and child.EnableMouseWheel then child:EnableMouseWheel(false) end
-    if child then child:Hide() end
+    if child.EnableMouse then child:EnableMouse(false) end
+    if child.EnableMouseWheel then child:EnableMouseWheel(false) end
+    if child and child:IsShown() then
+      child:Hide()
+    end
   end
+end
+
+function ShowTrackingButton()
+  if not MiniMapTracking then
+    print("MiniMapTracking not found!")
+    return
+  end
+  -- Load the saved position for the tracking
+  LoadTrackingPosition()
+  MiniMapTracking:Show()
+
+  --Make the tracking movable and save the position
+  MiniMapTracking:SetMovable(true)
+  MiniMapTracking:EnableMouse(true)
+  MiniMapTracking:RegisterForDrag("LeftButton")
+  MiniMapTracking:SetScript("OnDragStart", function(self)
+    self:StartMoving()
+  end)
+  MiniMapTracking:SetScript("OnDragStop", function(self)
+    self:StopMovingOrSizing()
+    local point, _, relPoint, x, y = self:GetPoint()
+    UltraHardcoreDB.MiniMapTrackingPosition = { point = point, relPoint = relPoint, x = x, y = y }
+    SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+  end)
+  showTrackingInitialized = true
 end
 
 function ShowClock()
@@ -195,132 +282,168 @@ end
 function HideMinimap()
   -- Ensure no temporary reveal leftovers are active
   ResetMinimapRevealState()
-  -- Use custom blip texture to hide party members and objective arrows
-  Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
-  -- Hide the player arrow
-  Minimap:SetPlayerTexture("")
-    
-  -- Make the minimap invisible
-  Minimap:SetAlpha(0)
 
-  -- Hide it completely by default
+  -- Make the minimap invisible by default
+  Minimap:SetAlpha(0)
   Minimap:Hide()
   MinimapCluster:Hide()
 
-  -- Show it for 5 seconds after casting particular spells
-  Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
-  Minimap:SetScript("OnEvent", function(self, event, ...)
-    local unit, _, spellId = ...
-    local initialZoom = Minimap:GetZoom()
-    local trackingSpellIDs = {
-      [2580] = true, -- Find Minerals
-      [2383] = true, -- Find Herbs
-      [2481] = true, -- Find Treasure
-      [1494] = true, -- Track Beasts
-      [19880] = true, -- Track Elementals
-      [19882] = true, -- Track Giants
-      [19883] = true, -- Track Humanoids (Hunter)
-      [5225] = true, -- Track Humanoids (Druid)
-      [19884] = true, -- Track Undead
-      [19878] = true, -- Track Demons
-      [19879] = true, -- Track Dragonkin
-      [19885] = true, -- Track Hidden
-      [5502] = true, -- Sense Undead
-      [5500] = true, -- Sense Demons
-      [10242] = true, -- Elemental Tracking
-      [5124] = true, -- Elemental Tracker
-    }
+  -- Just check settings for specific toggles once
+  local isAlwaysOn = GLOBAL_SETTINGS and GLOBAL_SETTINGS.alwaysShowResourceMap
+  local showPlayerArrow = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showPlayerArrowOnResourceMap
 
-    if unit == 'player' and trackingSpellIDs[spellId] then
-      -- Temporarily make the minimap rotate with the user
-      SetCVar("RotateMinimap", true)
-      -- Allow clicks through minimap while this is up
-      Minimap:EnableMouse(false)
-      -- Prevent zooming when showing our tracking
-      Minimap:EnableMouseWheel(false)
-
-      -- Capture original state so we can restore it cleanly
-      minimapRevealState.active = true
-      minimapRevealState.originalParent = Minimap:GetParent()
-      local originalPoint, _, originalRelPoint, originalX, originalY = Minimap:GetPoint(1)
-      minimapRevealState.originalPoint = originalPoint
-      minimapRevealState.originalRelPoint = originalRelPoint
-      minimapRevealState.originalX = originalX
-      minimapRevealState.originalY = originalY
-      minimapRevealState.originalScale = Minimap:GetScale()
-      minimapRevealState.originalAlpha = Minimap:GetAlpha()
-      minimapRevealState.initialZoom = initialZoom
-
-      -- Detach the minimap from its cluster so we can show ONLY the map
-      Minimap:SetParent(UIParent)
-
-      Minimap:ClearAllPoints()
-      Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
-      Minimap:SetScale(8.0)
-      -- Minimap:SetAlpha(1)
-
-      -- This should hide and disable the mouse for all child frames, like QuestieFrameXXX
-      DisableMouseAndHideChildren(Minimap)
-
-      -- Hide extra minimap adornments while revealing
-      minimapRevealState.toggledFrames = {}
-      minimapRevealState.toggledRegions = {}
-      local function hideTemp(frame)
-        if frame and frame.Hide then
-          table.insert(minimapRevealState.toggledFrames, { frame = frame, wasShown = frame:IsShown() })
-          frame:Hide()
-        end
-      end
-
-      hideTemp(_G.MiniMapTracking)
-      hideTemp(_G.GameTimeFrame)
-      hideTemp(_G.MiniMapMailFrame)
-      hideTemp(_G.MinimapBorder)
-      hideTemp(_G.MinimapBackdrop)
-      hideTemp(_G.MinimapBorderTop)
-      hideTemp(_G.MinimapZoomIn)
-      hideTemp(_G.MinimapZoomOut)
-      hideTemp(_G.MinimapCompassTexture)
-      hideTemp(_G.MinimapNorthTag)
-
-      -- Hide terrain/background and border texture regions so only blips remain
-      do
-        local regions = { Minimap:GetRegions() }
-        for _, region in ipairs(regions) do
-          if region and region.GetObjectType and region:GetObjectType() == "Texture" then
-            local layer = (region.GetDrawLayer and region:GetDrawLayer()) or nil
-            -- Hide all terrain/background/border art so only blips remain
-            if layer == "BACKGROUND" or layer == "BORDER" or layer == "ARTWORK" then
-              table.insert(minimapRevealState.toggledRegions, { region = region, wasShown = region:IsShown() })
-              region:Hide()
-            end
-          end
-        end
-      end
-
-      -- Show only the minimap (keep cluster elements hidden)
-      Minimap:Show()
-      Minimap:SetZoom(0)
-
-      -- Cancel any existing 'hide' timer
-      if minimapHideTimer then
-        minimapHideTimer:Cancel()
-      end
-      
-      -- After a few seconds, hide the minimap again
-      minimapHideTimer = C_Timer.NewTimer(5, function()
-        -- Restore any temporary reveal state
-        ResetMinimapRevealState()
-        -- Then ensure minimap stays hidden if the setting is enabled
-        if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideMinimap then
-          Minimap:Hide()
-          MinimapCluster:Hide()
-          Minimap:SetAlpha(0)
-        end
-      end)
+  -- Set blip texture based on Always On mode
+  if isAlwaysOn then
+    Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted-AlwaysOn.png")
+    -- Show player arrow if setting is enabled
+    if showPlayerArrow then
+      Minimap:SetPlayerTexture("Interface\\Minimap\\MinimapArrow")
+    else
+      Minimap:SetPlayerTexture("")
     end
-  end)
 
+    RevealMinimapForTracking(isAlwaysOn)
+  else
+    -- Standard hide mode
+    Minimap:SetBlipTexture("Interface\\AddOns\\UltraHardcore\\Textures\\ObjectIconsAtlasRestricted.png")
+    Minimap:SetPlayerTexture("")
+
+    -- Register spell event handler
+    Minimap:RegisterEvent('UNIT_SPELLCAST_SUCCEEDED')
+    Minimap:SetScript("OnEvent", function(self, event, ...)
+      local unit, _, spellId = ...
+      local initialZoom = Minimap:GetZoom()
+
+      -- Tracking spells that should trigger the resource map reveal
+      local trackingSpellIDs = {
+        [2580] = true, -- Find Minerals
+        [2383] = true, -- Find Herbs
+        [2481] = true, -- Find Treasure
+        [1494] = true, -- Track Beasts
+        [19880] = true, -- Track Elementals
+        [19882] = true, -- Track Giants
+        [19883] = true, -- Track Humanoids (Hunter)
+        [5225] = true, -- Track Humanoids (Druid)
+        [19884] = true, -- Track Undead
+        [19878] = true, -- Track Demons
+        [19879] = true, -- Track Dragonkin
+        [19885] = true, -- Track Hidden
+        [5502] = true, -- Sense Undead
+        [5500] = true, -- Sense Demons
+        [10242] = true, -- Elemental Tracking
+        [5124] = true, -- Elemental Tracker
+      }
+
+      if (unit == 'player' and trackingSpellIDs[spellId]) then
+        RevealMinimapForTracking(isAlwaysOn)
+      end
+    end)
+  end
+end
+
+function RevealMinimapForTracking(isAlwaysOn)
+  -- Reset any existing reveal state to ensure we capture the true 'base' state
+  ResetMinimapRevealState()
+
+  -- Temporarily make the minimap rotate with the user
+  SetCVar("RotateMinimap", true)
+
+  -- Allow clicks through minimap while this is up
+  Minimap:EnableMouse(false)
+  -- Prevent zooming when showing our tracking
+  Minimap:EnableMouseWheel(false)
+
+  -- Capture original state so we can restore it cleanly
+  minimapRevealState.active = true
+  minimapRevealState.originalParent = Minimap:GetParent()
+  local originalPoint, _, originalRelPoint, originalX, originalY = Minimap:GetPoint(1)
+  minimapRevealState.originalPoint = originalPoint
+  minimapRevealState.originalRelPoint = originalRelPoint
+  minimapRevealState.originalX = originalX
+  minimapRevealState.originalY = originalY
+  minimapRevealState.originalScale = Minimap:GetScale()
+  minimapRevealState.originalAlpha = Minimap:GetAlpha()
+  minimapRevealState.initialZoom = initialZoom
+
+  -- Detach the minimap from its cluster so we can show ONLY the map
+  Minimap:SetParent(UIParent)
+
+  Minimap:ClearAllPoints()
+
+  if isAlwaysOn then
+    -- Normal position/scale for Always On mode
+    Minimap:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -20, -20)
+    Minimap:SetScale(1.0)
+  else
+    -- Giant/Center for standard reveal
+    Minimap:SetPoint("CENTER", UIParent, "CENTER", 0, 0)
+    Minimap:SetScale(8.0)
+
+    DisableMouseAndHideChildren(Minimap)
+  end
+
+  
+
+  -- Hide extra minimap adornments while revealing
+  minimapRevealState.toggledFrames = {}
+  minimapRevealState.toggledRegions = {}
+  local function hideTemp(frame)
+    if frame and frame.Hide then
+      table.insert(minimapRevealState.toggledFrames, { frame = frame, wasShown = frame:IsShown() })
+      frame:Hide()
+    end
+  end
+
+  -- TODO: Delete these, they don't seem to actually do anything
+  -- hideTemp(_G.MiniMapTracking)
+  hideTemp(_G.GameTimeFrame)
+  -- hideTemp(_G.MiniMapMailFrame)
+  hideTemp(_G.MinimapBorder)
+  hideTemp(_G.MinimapBackdrop)
+  hideTemp(_G.MinimapBorderTop)
+  hideTemp(_G.MinimapZoomIn)
+  hideTemp(_G.MinimapZoomOut)
+  hideTemp(_G.MinimapCompassTexture)
+  hideTemp(_G.MinimapNorthTag)
+
+  -- Hide terrain/background and border texture regions so only blips remain
+  do
+    local regions = { Minimap:GetRegions() }
+    for _, region in ipairs(regions) do
+      if region and region.GetObjectType and region:GetObjectType() == "Texture" then
+        local layer = (region.GetDrawLayer and region:GetDrawLayer()) or nil
+        -- Hide all terrain/background/border art so only blips remain
+        if layer == "BACKGROUND" or layer == "BORDER" or layer == "ARTWORK" then
+          table.insert(minimapRevealState.toggledRegions, { region = region, wasShown = region:IsShown() })
+          region:Hide()
+        end
+      end
+    end
+  end
+
+  -- Show only the minimap (keep cluster elements hidden)
+  Minimap:Show()
+  Minimap:SetZoom(0)
+
+  -- Cancel any existing 'hide' timer
+  if minimapHideTimer then
+    minimapHideTimer:Cancel()
+  end
+
+  -- Only set timer if NOT in Always On mode
+  if not isAlwaysOn then
+    -- After a few seconds, hide the minimap again
+    minimapHideTimer = C_Timer.NewTimer(5, function()
+      -- Restore any temporary reveal state
+      ResetMinimapRevealState()
+      -- Then ensure minimap stays hidden if the setting is enabled
+      if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideMinimap then
+        Minimap:Hide()
+        MinimapCluster:Hide()
+        Minimap:SetAlpha(0)
+      end
+    end)
+  end
 end
 
 function ShowMinimap()
@@ -368,14 +491,24 @@ local function ResetClockPosition()
 
   -- Clear existing points first
   TimeManagerClockButton:ClearAllPoints()
-  -- Reset to default position (top right)
-  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -50, -50)
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadClockPosition() for detailed comments on the scaling logic
+  local scale = GLOBAL_SETTINGS.minimapClockScale or 1.0
+  local divisor
+  if scale <= 1.0 then
+    divisor = 1.0  -- 100% scale: offset = -60 / 1.0 = -60
+  elseif scale <= 1.5 then
+    divisor = 1.0 + (scale - 1.0) * 2.0  -- Linear interpolation: 1.0 to 2.0 (100% to 150%)
+  else
+    divisor = 2.0 + (scale - 1.5) * 4.0  -- Linear interpolation: 2.0 to 4.0 (150% to 200%)
+  end
+  TimeManagerClockButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -60 / divisor, 0)
 
   -- Save the reset position
   local point, _, relPoint, x, y = TimeManagerClockButton:GetPoint()
   UltraHardcoreDB.minimapClockPosition = { point = point, relPoint = relPoint, x = x, y = y }
   SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
-  print('UltraHardcore: clock position reset to default')
+  print('|cfff44336[ULTRA]|r Clock position reset to default.')
 end
 
 -- Reset mail position function
@@ -388,14 +521,53 @@ local function ResetMailPosition()
 
   -- Clear existing points first
   MiniMapMailFrame:ClearAllPoints()
-  -- Reset to default position (top right)
-  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -50)
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadMailPosition() for detailed comments on the scaling logic
+  local scale = GLOBAL_SETTINGS.minimapMailScale or 1.0
+  local offsetX
+  if scale <= 1.0 then
+    offsetX = -20  -- 100% scale: -20
+  elseif scale <= 1.5 then
+    offsetX = -20 + (scale - 1.0) * 30  -- Linear interpolation: -20 to -5 (100% to 150%)
+  else
+    offsetX = -5 + (scale - 1.5) * 10  -- Linear interpolation: -5 to 0 (150% to 200%)
+  end
+  MiniMapMailFrame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', offsetX, -5)
 
   -- Save the reset position
   local point, _, relPoint, x, y = MiniMapMailFrame:GetPoint()
   UltraHardcoreDB.minimapMailPosition = { point = point, relPoint = relPoint, x = x, y = y }
   SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
-  print('UltraHardcore: Mail position reset to default')
+  print('|cfff44336[ULTRA]|r Mail position reset to default.')
+end
+
+-- Reset tracking position function
+local function ResetTrackingPosition()
+  if not MiniMapTracking then
+    print("MiniMapTracking not found!")
+    return
+  end
+
+  -- Clear existing points first
+  MiniMapTracking:ClearAllPoints()
+  -- Reset to scale-adjusted default position (maintains visual position when scale changes)
+  -- See LoadTrackingPosition() for detailed comments on the scaling logic
+  local scale = GLOBAL_SETTINGS.minimapTrackingScale or 0.9
+  local offsetX
+  if scale <= 0.9 then
+    offsetX = -145  -- 90% scale (default): -145
+  elseif scale <= 1.5 then
+    offsetX = -145 + (scale - 0.9) * 100  -- Linear interpolation: -145 to -85 (90% to 150%)
+  else
+    offsetX = -85 + (scale - 1.5) * 40  -- Linear interpolation: -85 to -65 (150% to 200%)
+  end
+  MiniMapTracking:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', offsetX, -5)
+
+  -- Save the reset position
+  local point, _, relPoint, x, y = MiniMapTracking:GetPoint()
+  UltraHardcoreDB.MiniMapTrackingPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+  print('|cfff44336[ULTRA]|r Tracking position reset to default.')
 end
 
 -- Slash command to reset clock position
@@ -407,3 +579,8 @@ SlashCmdList['RESETCLOCKPOSITION'] = ResetClockPosition
 SLASH_RESETMAILPOSITION1 = '/resetmailposition'
 SLASH_RESETMAILPOSITION2 = '/rmp'
 SlashCmdList['RESETMAILPOSITION'] = ResetMailPosition
+
+-- Slash command to reset tracking position
+SLASH_RESETTRACKINGPOSITION1 = '/resettrackingposition'
+SLASH_RESETTRACKINGPOSITION2 = '/rtp'
+SlashCmdList['RESETTRACKINGPOSITION'] = ResetTrackingPosition

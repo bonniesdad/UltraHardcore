@@ -25,7 +25,6 @@ local PRESET_SECTIONS = { {
 }, {
   title = 'Experimental:',
   settings = {
-    'hideBreathIndicator',
     'hidePlayerCastBar',
     'showCritScreenMoveEffect',
     'showFullHealthIndicator',
@@ -49,14 +48,20 @@ local PRESET_SECTIONS = { {
     'soundbiteChannel',
   },
 }, {
+  title = 'Maps:',
+  settings = { 'alwaysShowResourceMap', 'showPlayerArrowOnResourceMap' },
+}, {
   title = 'Misc:',
   settings = {
     'showOnScreenStatistics',
+    'showVitalsOverlay',
+    'useCustomComboFrame',
     'announceLevelUpToGuild',
     'autoJoinUHCChannel',
     'hideUIErrors',
     'showClockEvenWhenMapHidden',
     'showMailEvenWhenMapHidden',
+    'showTrackingWhenMapHidden',
     'announcePartyDeathsOnGroupJoin',
     'announceDungeonsCompletedOnGroupJoin',
     'buffBarOnResourceBar',
@@ -65,6 +70,7 @@ local PRESET_SECTIONS = { {
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
+    'showSoulshardIndicator',
   },
 }, {
   title = 'XP Bar:',

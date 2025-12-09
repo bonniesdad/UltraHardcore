@@ -125,6 +125,44 @@ local function UHC_SetElementSuppressed(frame, suppress)
   end
 end
 
+local OFFLINE_LABEL = PLAYER_OFFLINE or OFFLINE or 'Offline'
+local function UHC_UpdateRaidOfflineStatus(frame)
+  if not frame or not frame.statusText then return end
+  local statusText = frame.statusText
+  local unit = frame.displayedUnit or frame.unit
+  local isOffline = false
+
+  if unit and type(UnitIsConnected) == 'function' then
+    local ok, connected = pcall(UnitIsConnected, unit)
+    if ok and connected == false then
+      isOffline = true
+    end
+  end
+
+  if isOffline then
+    if statusText.ClearAllPoints and statusText.SetPoint then
+      statusText:ClearAllPoints()
+      statusText:SetPoint('CENTER', frame.uhcCircle or frame, 'CENTER', 0, -2)
+    end
+    local ok, font, size, flags = pcall(statusText.GetFont, statusText)
+    if ok and font and statusText.SetFont then
+      statusText:SetFont(font, math.max(10, size or 10), flags)
+    end
+    if statusText.SetTextColor then
+      statusText:SetTextColor(0.9, 0.35, 0.35, 1)
+    end
+    if statusText.SetText then
+      statusText:SetText(OFFLINE_LABEL)
+    end
+    UHC_SetElementSuppressed(statusText, false)
+  else
+    if statusText.SetText then
+      statusText:SetText('')
+    end
+    UHC_SetElementSuppressed(statusText, true)
+  end
+end
+
 -- Raid (Compact) Frames: Hide only the health bar so the name remains visible
 local function HideRaidHealthBar(i)
   local frame = _G['CompactRaidFrame' .. i]
@@ -146,7 +184,7 @@ local function HideRaidHealthBar(i)
       UHC_SetElementSuppressed(elem, true)
     end
     if frame.statusText then
-      UHC_SetElementSuppressed(frame.statusText, true)
+      UHC_UpdateRaidOfflineStatus(frame)
     end
   else
     -- Fallback to global-named health bar if direct frame not available
@@ -221,6 +259,50 @@ local function HookCompactRaidHealthHiding()
   if type(hooksecurefunc) ~= 'function' then return end
   uhcRaidHealthHooked = true
   -- Keep the custom circle and health indicator sized to the raid frame
+  local function UHC_IsNameplateFrame(frame)
+    if not frame then return false end
+    local function isNameplateUnit(unitToken)
+      return type(unitToken) == 'string' and unitToken:sub(1, 9) == 'nameplate'
+    end
+    if isNameplateUnit(frame.unit) or isNameplateUnit(frame.displayedUnit) then
+      return true
+    end
+    if type(frame.namePlateUnitToken) == 'string' and frame.namePlateUnitToken:sub(1, 9) == 'nameplate' then
+      return true
+    end
+    if frame.unitFrame then
+      if isNameplateUnit(frame.unitFrame.unit) or isNameplateUnit(frame.unitFrame.displayedUnit) then
+        return true
+      end
+      if type(frame.unitFrame.namePlateUnitToken) == 'string' and frame.unitFrame.namePlateUnitToken:sub(1, 9) == 'nameplate' then
+        return true
+      end
+    end
+    local name = frame.GetName and frame:GetName()
+    if type(name) == 'string' and name:match('^NamePlate') then
+      return true
+    end
+    local parent = frame.GetParent and frame:GetParent()
+    if parent then
+      local parentName = parent.GetName and parent:GetName()
+      if type(parentName) == 'string' and parentName:match('^NamePlate') then
+        return true
+      end
+    end
+    return false
+  end
+  local function UHC_IsTargetRaidCompactFrame(frame)
+    if not frame then return false end
+    if UHC_IsNameplateFrame(frame) then return false end
+    local name = frame.GetName and frame:GetName()
+    if type(name) ~= 'string' then
+      return false
+    end
+    if name:match('^CompactRaidFrame') or name:match('^CompactRaidGroup') then
+      return true
+    end
+    return false
+  end
   local function UHC_UpdateRaidCircleAndIndicatorSizes(frame)
     if not frame then return end
     if not frame.uhcCircle then return end
@@ -256,6 +338,7 @@ local function HookCompactRaidHealthHiding()
   end
   local function styleCompactRaidFrame(frame)
     if not frame then return end
+    if not UHC_IsTargetRaidCompactFrame(frame) then return end
     if InCombatLockdown() then
       C_Timer.After(0.2, function()
         if not InCombatLockdown() then
@@ -365,11 +448,17 @@ local function HookCompactRaidHealthHiding()
     if frame.uhcCircle and RAID_HEALTH_INDICATOR_FRAMES then
       UHC_UpdateRaidCircleAndIndicatorSizes(frame)
     end
+    if frame.statusText then
+      UHC_UpdateRaidOfflineStatus(frame)
+    end
   end
   local function hideFromUpdate(frame)
     if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideGroupHealth then return end
     if not frame then return end
-    -- Only act on compact unit frames (have a healthBar and name)
+    -- Only act on valid compact raid frames
+    if not UHC_IsTargetRaidCompactFrame(frame) then
+      return
+    end
     if frame.healthBar then
       -- Attempt to discover index by matching globals (best-effort)
       -- If no index can be determined, hide via frame reference directly
@@ -388,9 +477,7 @@ local function HookCompactRaidHealthHiding()
       for _, elem in ipairs(elements) do
         UHC_SetElementSuppressed(elem, true)
       end
-      if frame.statusText then
-        UHC_SetElementSuppressed(frame.statusText, true)
-      end
+      UHC_UpdateRaidOfflineStatus(frame)
       -- Apply styling (border removal + circular frame + name position)
       styleCompactRaidFrame(frame)
     end

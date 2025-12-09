@@ -3,10 +3,21 @@
 
 local TabManager = {}
 
-local NUM_TABS = 7
-local TAB_WIDTH = 92
+local TAB_WIDTH = 92 -- Default width
 local TAB_HEIGHT = 32
 local TAB_SPACING = 2
+
+-- Tab-specific widths
+local TAB_WIDTHS = {
+  [1] = TAB_WIDTH, -- Stats
+  [2] = TAB_WIDTH, -- Settings
+  [3] = 50, -- Achievements (A)
+  [4] = TAB_WIDTH, -- Lives
+  [5] = 50, -- Self Found (GF)
+  [6] = 70, -- Info
+  [7] = TAB_WIDTH, -- Commands
+  [8] = TAB_WIDTH, -- Credits
+}
 
 local BASE_TEXT_COLOR = {
   r = 0.922,
@@ -32,12 +43,42 @@ local tabButtons = {}
 local tabContents = {}
 local activeTab = 1
 
+-- Calculate cumulative horizontal offset for variable-width tabs
+local function calculateTabOffset(index)
+  -- Calculate total width of all tabs
+  local totalWidth = 0
+  for i = 1, 8 do
+    local width = TAB_WIDTHS[i] or TAB_WIDTH
+    if i < 8 then
+      totalWidth = totalWidth + width + TAB_SPACING
+    else
+      totalWidth = totalWidth + width
+    end
+  end
+
+  -- Calculate the left edge of the first tab (centered)
+  local leftEdge = -totalWidth / 2
+
+  -- Calculate cumulative width up to this tab
+  local cumulativeWidth = 0
+  for i = 1, index - 1 do
+    local width = TAB_WIDTHS[i] or TAB_WIDTH
+    cumulativeWidth = cumulativeWidth + width + TAB_SPACING
+  end
+
+  -- Position this tab's center
+  local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
+  local tabCenter = leftEdge + cumulativeWidth + (tabWidth / 2)
+
+  return tabCenter
+end
+
 -- Create proper folder tabs with angled edges
 local function createTabButton(text, index, parentFrame)
   local button = CreateFrame('Button', nil, parentFrame, 'BackdropTemplate')
-  button:SetSize(TAB_WIDTH, TAB_HEIGHT)
-  local centerIndex = (NUM_TABS + 1) / 2
-  local horizontalOffset = (index - centerIndex) * (TAB_WIDTH + TAB_SPACING)
+  local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
+  button:SetSize(tabWidth, TAB_HEIGHT)
+  local horizontalOffset = calculateTabOffset(index)
   button:SetPoint('TOP', parentFrame, 'TOP', horizontalOffset, -57) -- Position below title bar with spacing
   -- Create the main tab background with the custom texture
   local background = button:CreateTexture(nil, 'BACKGROUND')
@@ -95,22 +136,24 @@ function TabManager.initializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
   -- Create tab buttons
-  tabButtons[1] = createTabButton('Statistics', 1, settingsFrame)
+  tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
-  tabButtons[3] = createTabButton('Achievements', 3, settingsFrame)
-  tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
-  tabButtons[5] = createTabButton('Info', 5, settingsFrame)
-  tabButtons[6] = createTabButton('Commands', 6, settingsFrame)
-  tabButtons[7] = createTabButton('Credits', 7, settingsFrame)
+  tabButtons[3] = createTabButton('A', 3, settingsFrame)
+  tabButtons[4] = createTabButton('Lives', 4, settingsFrame)
+  tabButtons[5] = createTabButton('GF', 5, settingsFrame)
+  tabButtons[6] = createTabButton('Info', 6, settingsFrame)
+  tabButtons[7] = createTabButton('Commands', 7, settingsFrame)
+  tabButtons[8] = createTabButton('Credits', 8, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
   tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
   tabContents[3] = createTabContent(3, settingsFrame) -- Achievements tab
-  tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
-  tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
-  tabContents[6] = createTabContent(6, settingsFrame) -- Commands tab
-  tabContents[7] = createTabContent(7, settingsFrame) -- Credits tab
+  tabContents[4] = createTabContent(4, settingsFrame) -- Achievements tab
+  tabContents[5] = createTabContent(5, settingsFrame) -- Self Found tab
+  tabContents[6] = createTabContent(6, settingsFrame) -- Info tab
+  tabContents[7] = createTabContent(7, settingsFrame) -- Commands tab
+  tabContents[8] = createTabContent(8, settingsFrame) -- Credits tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
 end
@@ -191,7 +234,7 @@ function TabManager.switchToTab(index)
 
   -- Initialize tabs only if not already initialized
   -- Initialize X Found Mode tab if it's being shown
-  if index == 4 and InitializeXFoundModeTab then
+  if index == 5 and InitializeXFoundModeTab then
     InitializeXFoundModeTab()
   end
 
@@ -200,8 +243,12 @@ function TabManager.switchToTab(index)
     InitializeAchievementTab()
   end
 
+  if index == 4 and InitializeLivesTab then
+    InitializeLivesTab()
+  end
+
   -- Initialize Info tab if it's being shown
-  if index == 5 and InitializeInfoTab then
+  if index == 6 and InitializeInfoTab then
     InitializeInfoTab()
   end
 
@@ -220,12 +267,12 @@ function TabManager.switchToTab(index)
   end
 
   -- Initialize Commands tab if it's being shown
-  if index == 6 and InitializeCommandsTab then
+  if index == 7 and InitializeCommandsTab then
     InitializeCommandsTab()
   end
 
   -- Initialize Credits tab if it's being shown
-  if index == 7 and InitializeCreditsTab then
+  if index == 8 and InitializeCreditsTab then
     InitializeCreditsTab()
   end
 end
