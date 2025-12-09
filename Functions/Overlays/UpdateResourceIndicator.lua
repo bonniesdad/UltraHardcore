@@ -32,6 +32,22 @@ local function LoadResourceIndicatorPosition()
   end
 end
 
+-- Reset resource indicator position function
+local function ResetResourceIndicatorPosition()
+  resourceIndicator:ClearAllPoints()
+  resourceIndicator:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -20, 70)
+  if UltraHardcoreDB then
+    UltraHardcoreDB.resourceIndicatorPosition = nil
+  end
+  if SaveDBData then
+    SaveDBData('resourceIndicatorPosition', nil)
+  end
+  print('|cfff44336[ULTRA]|r Resource indicator position reset to default.')
+end
+
+-- Make ResetResourceIndicatorPosition globally accessible for combined reset commands
+_G.ResetResourceIndicatorPosition = ResetResourceIndicatorPosition
+
 -- Make draggable and save position
 resourceIndicator:EnableMouse(true)
 resourceIndicator:RegisterForDrag('LeftButton')

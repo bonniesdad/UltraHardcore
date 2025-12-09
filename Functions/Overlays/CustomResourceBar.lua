@@ -772,8 +772,11 @@ local function ResetResourceBarPosition()
   resourceBar:SetPoint('CENTER', UIParent, 'BOTTOM', 0, 140)
   -- Save the reset position
   SaveResourceBarPosition()
-  print('UltraHardcore: Resource bar position reset to default')
+  print('|cfff44336[ULTRA]|r Resource bar position reset to default.')
 end
+
+-- Make ResetResourceBarPosition globally accessible for combined reset commands
+_G.ResetResourceBarPosition = ResetResourceBarPosition
 
 -- Reset druid form resource bar position function
 local function ResetDruidFormResourceBarPosition()

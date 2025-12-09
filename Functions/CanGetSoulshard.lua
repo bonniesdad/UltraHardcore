@@ -64,6 +64,9 @@ local function ResetSoulshardPosition()
     print("|cfff44336[ULTRA]|r Soulshard Indicator position reset.")
 end
 
+-- Make ResetSoulshardPosition globally accessible for combined reset commands
+_G.ResetSoulshardPosition = ResetSoulshardPosition
+
 -- Drag handlers with lock support
 soulshardsFrame:SetScript("OnDragStart", function(self)
     if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.lockSoulshardPosition then
