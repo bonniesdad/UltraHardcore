@@ -125,7 +125,7 @@ xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
   elseif event == 'PLAYER_LOGIN' then
     InitializeXPTracking()
   elseif event == 'ADDON_LOADED' and select(1, ...) == 'UltraHardcore' then
-    Printing:EnableDebug()
+    --Printing:EnableDebug()
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking
     C_Timer.After(3.0, function()
