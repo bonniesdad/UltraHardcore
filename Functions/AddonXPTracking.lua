@@ -226,6 +226,10 @@ function AddonXPTracking:WithoutAddon()
   return self:GetTotalXP() - self:WithAddon()
 end
 
+function AddonXPTracking:PercentXPTracked()
+  return (1 - (self:WithAddon() / self:GetTotalXP())) * 100
+end
+
 function AddonXPTracking:PercentXPMissing()
   return (1 - (self:WithoutAddon() / self:GetTotalXP())) * 100
 end
@@ -305,14 +309,23 @@ function AddonXPTracking:PrintXPVerificationWarning()
 end
 
 function AddonXPTracking:XPReport()
-  --[[
-  local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
+  Printing:P(Colours:Yellow("Total XP: ") .. tostring(AddonXPTracking:TotalXP()))
+  Printing:P(Colours:Yellow("XP Gained With Addon: ") .. Colours:Green(tostring(AddonXPTracking:WithAddon())))
 
-  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
-  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
-  ]]
+  local pctMissing = self:PercentXPMissing()
+
+  if pctMissing > 0 then 
+    Printing:P(Colours:Yellow("The addon could not track ") .. Colours:ByName("Indigo", pctMissing .. "%") .. Colours:Yellow(" of your XP."))
+    local level = UnitLevel("player")
+
+    local isValid = self:IsAddonXPValid(level)
+    if isValid then 
+      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:Green("LOW"))
+    else
+      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:ByName("OrangeRed", "HIGH"))
+    end
+  end
+
 end 
 
 SLASH_XPFORLEVEL1 = '/uhcxpforlevel'
