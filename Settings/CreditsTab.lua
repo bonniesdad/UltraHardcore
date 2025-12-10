@@ -12,10 +12,10 @@ function InitializeCreditsTab()
 
   -- Background frame with border for all content
   local contentBackground = CreateFrame('Frame', nil, tabContents[8], 'BackdropTemplate')
-  contentBackground:SetPoint('TOP', tabContents[8], 'TOP', 0, -50)
+  contentBackground:SetPoint('TOP', tabContents[8], 'TOP', 0, -60)
   contentBackground:SetPoint('LEFT', tabContents[8], 'LEFT', 10, 0)
   contentBackground:SetPoint('RIGHT', tabContents[8], 'RIGHT', -10, 0)
-  contentBackground:SetPoint('BOTTOM', tabContents[8], 'BOTTOM', 0, -20)
+  contentBackground:SetPoint('BOTTOM', tabContents[8], 'BOTTOM', 0, -30)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
