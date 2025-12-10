@@ -360,4 +360,6 @@ function SetVitalsOverlayEnabled(shouldEnable)
   end
 
   updateOverlayVisibility()
+  updateOverlayText()
 end
+
