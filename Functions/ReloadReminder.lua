@@ -50,7 +50,6 @@ function ReloadReminder:ShowReminderButton()
         btn:SetText(" [ULTRA] Reload ")
         btn:SetScript("OnClick", function()
             ReloadReminder:DoReload()
-            ReloadUI()
         end)
         btn:SetScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -61,7 +60,7 @@ function ReloadReminder:ShowReminderButton()
         end)
         btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-        -- Create a close button with X
+        -- Create a close button 
         local closeBtn = CreateFrame("Button", "UHC_ReloadCloseButton", frame, "UIPanelButtonTemplate")
         closeBtn:SetSize(20, 20)
         closeBtn:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 8, 8)
@@ -141,6 +140,7 @@ function ReloadReminder:DoReload()
     self:Touch()
     self.ReminderInterval = 3600
     self:HideReminderButton()
+    ReloadUI()
 end
 
 function ReloadReminder:TimeSinceSave()
