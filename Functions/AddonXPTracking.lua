@@ -79,6 +79,7 @@ function AddonXPTracking:ShouldCheckStat(statName)
                   and statName ~= "playerJumps"
                   and statName ~= "lastSessionXP"
                   and statName ~= "LastReloadedAt"
+                  and statName ~= "LastReminderClosedAt"
                   and statName ~= "playerLives"
                   and statName ~= "deathHistory"
                   and string.find(statName, "lowestHealth") == nil

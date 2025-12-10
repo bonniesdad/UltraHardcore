@@ -1,7 +1,9 @@
+
 local ReloadReminder = {
     ReminderInterval = 3600,
     MinMinutes = 15,
     MaxMinutes = 180,
+    RemindersClosed = 0,
 }
 
 function ReloadReminder:UpdateInterval(minutes)
@@ -12,6 +14,11 @@ end
 
 function ReloadReminder:TimeUntilReminder()
     local elapsedTime = self:TimeSinceSave()
+    local closedTime = self:TimeSinceClose()
+
+    if closedTime < elapsedTime then
+        elapsedTime = closedTime
+    end
     local timeLeft = self.ReminderInterval - elapsedTime
     if timeLeft < 0 then timeLeft = 0 end
     return timeLeft
@@ -27,11 +34,21 @@ end
 
 function ReloadReminder:IntervalInformation()
     local elapsedTime = self:TimeSinceSave()
+    local closedTime = self:TimeSinceClose()
     local timeInPlainText = SecondsToTime(elapsedTime)
-    Printing:P(Colours:ByName("Silver", "Addon data not saved for ")
-                .. Colours:ByName("Cyan", tostring(timeInPlainText))
-                .. Colours:ByName("Silver", ".  Reload when safe to save your stats."))
 
+    if self.RemindersClosed > 0 then
+        Printing:P(Colours:ByName("Silver", "Addon data not saved for ")
+                    .. Colours:ByName("OrangeRed", tostring(timeInPlainText)) .. ". "
+                    .. Colours:ByName("Silver", "Reminder closed ")
+                    .. Colours:ByName("Orange", SecondsToTime(closedTime)) .. " ago. "
+                    .. Colours:ByName("Silver", self.RemindersClosed .. " reminder(s) closed.")
+                    .. Colours:ByName("Silver", " Reload when safe to save your stats."))
+    else
+        Printing:P(Colours:ByName("Silver", "Addon data not saved for ")
+                    .. Colours:ByName("OrangeRed", tostring(timeInPlainText)) .. ". "
+                    .. Colours:ByName("Silver", "Reload when safe to save your stats."))
+    end
 end
 
 function ReloadReminder:PrintReminder()
@@ -153,6 +170,7 @@ function ReloadReminder:ShowReminderButton()
 end
 
 function ReloadReminder:HideReminderButton()
+    self:LogClose()
     if self.reloadButtonFrame then
         self.reloadButtonFrame:Hide()
     end
@@ -161,6 +179,14 @@ end
 function ReloadReminder:Touch() 
     local stats = CharacterStats:GetCurrentCharacterStats()
     stats["LastReloadedAt"] = GetServerTime()
+    stats["LastReminderClosedAt"] = stats["LastReloadedAt"]
+    self.RemindersClosed = 0
+end
+
+function ReloadReminder:LogClose() 
+    local stats = CharacterStats:GetCurrentCharacterStats()
+    stats["LastReminderClosedAt"] = GetServerTime()
+    self.RemindersClosed = self.RemindersClosed + 1
 end
 
 function ReloadReminder:DoReload()
@@ -177,15 +203,33 @@ function ReloadReminder:TimeSinceSave()
     return (serverTime - lastReload)
 end
 
+function ReloadReminder:TimeSinceClose()
+    local stats = CharacterStats:GetCurrentCharacterStats()
+    local lastClosed = stats["LastReminderClosedAt"]
+    local serverTime = GetServerTime()
+    return (serverTime - lastClosed)
+end
+
 function ReloadReminder:CheckLastReloadTime()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastReload = stats["LastReloadedAt"]
+    local lastClosed = stats["LastReminderClosedAt"]
+
+    if lastClosed == nil then
+        stats["LastReminderClosedAt"] = GetServerTime()
+    end
 
     if lastReload == nil then
         stats["LastReloadedAt"] = GetServerTime()
     else
         local diff = self:TimeSinceSave()
+        local closedDiff = self:TimeSinceClose()
         Printing:Debug("Last reloaded " .. SecondsToTime(diff) .. " ago")
+        Printing:Debug("Last closed " .. SecondsToTime(closedDiff) .. " ago")
+
+        if closedDiff < diff then
+            diff = closedDiff
+        end
 
         if diff > self.ReminderInterval then 
             self:PrintReminder()
@@ -211,6 +255,7 @@ reloadReminderFrame:SetScript('OnEvent', function(self, event, ...)
     if event == "PLAYER_REGEN_ENABLED" then
         ReloadReminder:CheckLastReloadTime()
     elseif event == "PLAYER_ENTERING_WORLD" then
+        Printing:EnableDebug()
         -- Load reminder interval from settings on login
         ReloadReminder:LoadInterval()
         -- Ensure the reload button restores position/visibility after login/reload
