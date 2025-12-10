@@ -410,10 +410,6 @@ function InitializeSettingsOptionsTab()
     -- Apply the new completely remove settings immediately when presets are applied
     SetPlayerFrameDisplay()
 
-    if SetVitalsOverlayEnabled then
-      SetVitalsOverlayEnabled(tempSettings.showVitalsOverlay or false)
-    end
-
     updateCheckboxes()
     updateSliders()
     updateRadioButtons()
@@ -1018,18 +1014,6 @@ function InitializeSettingsOptionsTab()
             if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
 
-            if checkboxItem.dbSettingsValueName == 'buffBarOnResourceBar' or checkboxItem.dbSettingsValueName == 'hidePlayerFrame' then
-              if _G.UltraHardcoreHandleBuffBarSettingChange then
-                _G.UltraHardcoreHandleBuffBarSettingChange()
-              end
-            end
-
-            if checkboxItem.dbSettingsValueName == 'showVitalsOverlay' then
-              if SetVitalsOverlayEnabled then
-                SetVitalsOverlayEnabled(self:GetChecked())
-              end
-            end
-
             if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
               if self:GetChecked() then
                 if JoinUHCChannel then
@@ -1037,25 +1021,6 @@ function InitializeSettingsOptionsTab()
                 end
               else
                 LeaveChannelByName('uhc')
-              end
-            end
-
-            -- Apply always-on resource map setting immediately
-            if checkboxItem.dbSettingsValueName == 'alwaysShowResourceMap' then
-              -- Apply immediately to GLOBAL_SETTINGS so it takes effect
-              GLOBAL_SETTINGS.alwaysShowResourceMap = self:GetChecked()
-            end
-
-            -- Apply player arrow setting immediately
-            if checkboxItem.dbSettingsValueName == 'showPlayerArrowOnResourceMap' then
-              GLOBAL_SETTINGS.showPlayerArrowOnResourceMap = self:GetChecked()
-              -- Update the player texture immediately if resource map is active
-              if GLOBAL_SETTINGS.alwaysShowResourceMap then
-                if self:GetChecked() then
-                  Minimap:SetPlayerTexture('Interface\\Minimap\\MinimapArrow')
-                else
-                  Minimap:SetPlayerTexture('')
-                end
               end
             end
 
