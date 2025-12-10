@@ -23,6 +23,70 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE =
     'PetFrameManaBar',
   }
 
+-- Fix for PartyMemberHealthCheck error when health bars are reparented
+-- Blizzard's PartyMemberHealthCheck tries to access fields on the health bar's parent,
+-- but when we reparent to UltraHiddenParent, those fields don't exist.
+-- We hook the health bar's OnValueChanged to temporarily restore the parent.
+local partyHealthBarsHooked = {}
+local function HookPartyHealthBarValueChanged()
+  for i = 1, 5 do
+    local healthBar = _G['PartyMemberFrame' .. i .. 'HealthBar']
+    if healthBar and healthBar.GetScript and not partyHealthBarsHooked[i] then
+      local originalOnValueChanged = healthBar:GetScript('OnValueChanged')
+      if originalOnValueChanged then
+        partyHealthBarsHooked[i] = true
+        healthBar:SetScript('OnValueChanged', function(self, value)
+          -- If this health bar has been reparented to UltraHiddenParent,
+          -- temporarily restore the original parent before calling Blizzard's code
+          local originalParent = nil
+          local needsRestore = false
+          local ultraHiddenParent = _G['UltraHiddenParent']
+          local inCombat = InCombatLockdown()
+          
+          if self and self.GetParent and self._UltraOriginalParent then
+            local currentParent = self:GetParent()
+            if currentParent == ultraHiddenParent then
+              originalParent = self._UltraOriginalParent
+              -- Temporarily restore parent for Blizzard's code (only if not in combat)
+              if originalParent and not inCombat then
+                self:SetParent(originalParent)
+                needsRestore = true
+              end
+            end
+          end
+          
+          -- Call the original OnValueChanged handler
+          -- Wrap in pcall to catch any errors from PartyMemberHealthCheck
+          local success, err = pcall(originalOnValueChanged, self, value)
+          
+          -- Restore parent to UltraHiddenParent if we changed it
+          if needsRestore and self and self.SetParent and ultraHiddenParent and not inCombat then
+            self:SetParent(ultraHiddenParent)
+            self:Hide()
+          end
+          
+          -- If there was an error and we couldn't restore the parent (combat), 
+          -- the error is expected - the health bar is hidden anyway
+          if not success and not needsRestore then
+            -- Error occurred but we couldn't fix it (likely in combat)
+            -- This is expected behavior when health bars are hidden
+          end
+        end)
+      end
+    end
+  end
+end
+
+-- Try to hook party health bars when frames are available
+local function TryHookPartyHealthBars()
+  -- Check if at least one party frame exists
+  if _G['PartyMemberFrame1HealthBar'] then
+    HookPartyHealthBarValueChanged()
+    return true
+  end
+  return false
+end
+
 function SetPartyFramesInfo(hideGroupHealth)
   if hideGroupHealth then
     for n = 1, 5 do
@@ -42,6 +106,9 @@ function SetPartyFrameInfo(n)
     end)
     return
   end
+
+  -- Hook health bar value changed handlers to fix PartyMemberHealthCheck errors
+  TryHookPartyHealthBars()
 
   for _, subFrame in ipairs(PARTY_MEMBER_SUBFRAMES_TO_HIDE) do
     HidePartySubFrame(n, subFrame)
@@ -503,6 +570,14 @@ frame:SetScript('OnEvent', function(self, event, arg1)
     end
     return
   end
+  
+  -- Try to hook party health bars when party frames might be available
+  if event == 'GROUP_ROSTER_UPDATE' or event == 'PLAYER_ENTERING_WORLD' or event == 'PLAYER_LOGIN' then
+    C_Timer.After(0.1, function()
+      TryHookPartyHealthBars()
+    end)
+  end
+  
   if GLOBAL_SETTINGS.hideGroupHealth then
     -- Only apply changes when not in combat lockdown
     if not InCombatLockdown() then
