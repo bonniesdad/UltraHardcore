@@ -115,6 +115,8 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    -- Reload Reminder Settings
+    reminderIntervalMinutes = 60,
   }
 
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists

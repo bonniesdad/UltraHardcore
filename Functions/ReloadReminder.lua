@@ -1,14 +1,41 @@
 local ReloadReminder = {
     ReminderInterval = 3600,
+    MinMinutes = 15,
+    MaxMinutes = 180,
 }
 
-function ReloadReminder:PrintReminder()
+function ReloadReminder:UpdateInterval(minutes)
+    -- Clamp between min and max
+    minutes = math.max(self.MinMinutes, math.min(self.MaxMinutes, minutes))
+    self.ReminderInterval = minutes * 60
+end
+
+function ReloadReminder:TimeUntilReminder()
+    local elapsedTime = self:TimeSinceSave()
+    local timeLeft = self.ReminderInterval - elapsedTime
+    if timeLeft < 0 then timeLeft = 0 end
+    return timeLeft
+end
+
+function ReloadReminder:LoadInterval()
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.reminderIntervalMinutes then
+        self.ReminderInterval = GLOBAL_SETTINGS.reminderIntervalMinutes * 60
+    else
+        self.ReminderInterval = 3600 -- 60 minutes default
+    end
+end
+
+function ReloadReminder:IntervalInformation()
     local elapsedTime = self:TimeSinceSave()
     local timeInPlainText = SecondsToTime(elapsedTime)
     Printing:P(Colours:ByName("Silver", "Addon data not saved for ")
                 .. Colours:ByName("Cyan", tostring(timeInPlainText))
                 .. Colours:ByName("Silver", ".  Reload when safe to save your stats."))
 
+end
+
+function ReloadReminder:PrintReminder()
+    self:IntervalInformation()
     -- show an actionable button so the user can reload the UI immediately
     self:ShowReminderButton()
 
@@ -138,7 +165,7 @@ end
 
 function ReloadReminder:DoReload()
     self:Touch()
-    self.ReminderInterval = 3600
+    self:LoadInterval() -- Reload interval from settings
     self:HideReminderButton()
     ReloadUI()
 end
@@ -184,6 +211,8 @@ reloadReminderFrame:SetScript('OnEvent', function(self, event, ...)
     if event == "PLAYER_REGEN_ENABLED" then
         ReloadReminder:CheckLastReloadTime()
     elseif event == "PLAYER_ENTERING_WORLD" then
+        -- Load reminder interval from settings on login
+        ReloadReminder:LoadInterval()
         -- Ensure the reload button restores position/visibility after login/reload
         if ReloadReminder and ReloadReminder.reloadButtonFrame then
             -- If frame already created, try to load its position
