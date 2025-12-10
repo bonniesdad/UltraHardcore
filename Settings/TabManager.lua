@@ -5,18 +5,18 @@ local TabManager = {}
 
 local TAB_WIDTH = 92 -- Default width
 local TAB_HEIGHT = 32
-local TAB_SPACING = 2
+local TAB_SPACING = 3
 
 -- Tab-specific widths
 local TAB_WIDTHS = {
-  [1] = TAB_WIDTH, -- Stats
-  [2] = TAB_WIDTH, -- Settings
-  [3] = 50, -- Achievements (A)
-  [4] = TAB_WIDTH, -- Lives
-  [5] = 50, -- Self Found (GF)
-  [6] = 70, -- Info
+  [1] = 60, -- Stats
+  [2] = 80, -- Settings
+  [3] = 65, -- Achievements (A)
+  [4] = 70, -- Lives
+  [5] = 80, -- Self Found (GF)
+  [6] = 60, -- Info
   [7] = TAB_WIDTH, -- Commands
-  [8] = TAB_WIDTH, -- Credits
+  [8] = 70, -- Credits
 }
 
 local BASE_TEXT_COLOR = {
@@ -138,9 +138,9 @@ function TabManager.initializeTabs(settingsFrame)
   -- Create tab buttons
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
-  tabButtons[3] = createTabButton('A', 3, settingsFrame)
+  tabButtons[3] = createTabButton('Feats', 3, settingsFrame)
   tabButtons[4] = createTabButton('Lives', 4, settingsFrame)
-  tabButtons[5] = createTabButton('GF', 5, settingsFrame)
+  tabButtons[5] = createTabButton('X Found', 5, settingsFrame)
   tabButtons[6] = createTabButton('Info', 6, settingsFrame)
   tabButtons[7] = createTabButton('Commands', 7, settingsFrame)
   tabButtons[8] = createTabButton('Credits', 8, settingsFrame)

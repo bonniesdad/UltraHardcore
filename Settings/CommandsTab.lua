@@ -21,15 +21,15 @@ function InitializeCommandsTab()
   -- Short explainer
   local explainer = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   explainer:SetPoint('TOP', title, 'BOTTOM', 0, -6)
-  explainer:SetWidth(500)
+  explainer:SetWidth(640)
   explainer:SetJustifyH('CENTER')
   explainer:SetNonSpaceWrap(true)
   explainer:SetText('Use these slash commands in chat.')
 
   -- Create main container frame with background (similar to StatisticsTab and SettingsOptionsTab)
   local commandsFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
-  commandsFrame:SetPoint('TOPLEFT', explainer, 'BOTTOMLEFT', -12, -10)
-  commandsFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -28, 12)
+  commandsFrame:SetPoint('TOPLEFT', explainer, 'BOTTOMLEFT', 20, -20)
+  commandsFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -10, -25)
   commandsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -37,10 +37,10 @@ function InitializeCommandsTab()
     tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 5,
-      right = 5,
-      top = 5,
-      bottom = 5,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
   commandsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
