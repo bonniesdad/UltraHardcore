@@ -304,8 +304,10 @@ function AddonXPTracking:IsAddonXPValid(currentLevel)
     result = true  
   elseif currentLevel <= 50 and pctMissing <= 14 then
     result = true  
-  elseif currentLevel <= 60 and pctMissing <= 15 then
+  elseif currentLevel <= 59 and pctMissing <= 15 then
     result = true  
+  elseif currentLevel == 60 then
+    result = true
   end
   return result
 end
