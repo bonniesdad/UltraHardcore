@@ -1399,7 +1399,7 @@ function InitializeSettingsOptionsTab()
           end
 
           SaveCharacterSettings(GLOBAL_SETTINGS)
-          ReloadUI()
+          ReloadReminder:DoReload()
         end,
         nil,
         'Save and Reload',
