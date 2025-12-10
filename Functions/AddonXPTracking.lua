@@ -11,7 +11,15 @@ local AddonXPTracking = {
   },
   highXpMark = 999999999,
   DEBUGXP = false,
-  trackingInitialized = false
+  trackingInitialized = false,
+  XpDriftLevelValues = {
+    {level=10, lowPctDrift=10, mediumPctDrift=15}, -- At level 10, 10% is equal to XP for levels 1-4
+    {level=20, lowPctDrift=9, mediumPctDrift=14},
+    {level=30, lowPctDrift=8, mediumPctDrift=13},
+    {level=40, lowPctDrift=7, mediumPctDrift=12},
+    {level=50, lowPctDrift=6, mediumPctDrift=11},
+    {level=59, lowPctDrift=5, mediumPctDrift=6}, -- At level 59, 5% is equal to XP for levels 1-20
+  }
 }
 
 function AddonXPTracking:Stats()
@@ -290,24 +298,36 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
   end
 end
 
+function AddonXPTracking:XPDriftAmount()
+  local level = UnitLevel("player")
+  local pctMissing = self:PercentXPMissing()
+  if pctMissing == 0 or level == 60 then return "NONE" end
+
+  for _, levelData in ipairs(self.XpDriftLevelValues) do
+    if level <= levelData.level then
+      if pctMissing <= levelData.lowPctDrift then
+        return "LOW" 
+      elseif pctMissing <= levelData.mediumPctDrift then
+        return "MEDIUM"
+      else
+        return "HIGH"
+      end
+    end
+  end
+end
+
 function AddonXPTracking:IsAddonXPValid(currentLevel) 
+  if currentLevel == 60 then return true end
   local pctMissing = self:PercentXPMissing()
   Printing:Debug("Percent XP untracked: " .. pctMissing .. "%")
   local result = false
-  if currentLevel <= 10 and pctMissing <= 10 then
-    result = true
-  elseif currentLevel <= 20 and pctMissing <= 11 then
-    result = true  
-  elseif currentLevel <= 30 and pctMissing <= 12 then
-    result = true  
-  elseif currentLevel <= 40 and pctMissing <= 13 then
-    result = true  
-  elseif currentLevel <= 50 and pctMissing <= 14 then
-    result = true  
-  elseif currentLevel <= 59 and pctMissing <= 15 then
-    result = true  
-  elseif currentLevel == 60 then
-    result = true
+  for _, levelData in ipairs(self.XpDriftLevelValues) do
+    if currentLevel <= levelData.level then
+      if pctMissing <= levelData.mediumPctDrift then
+        result = true
+      end
+      break
+    end
   end
   return result
 end
@@ -321,21 +341,34 @@ function AddonXPTracking:PrintXPVerificationWarning()
 end
 
 function AddonXPTracking:XPReport()
-  Printing:P(Colours:Y("Total XP: ") .. tostring(AddonXPTracking:TotalXP()))
-  Printing:P(Colours:Y("XP Tracked: ") .. Colours:G(tostring(AddonXPTracking:WithAddon())))
+  --Printing:P(Colours:Y("XP Tracked: ") .. Colours:G(tostring(AddonXPTracking:WithAddon())))
 
   local pctMissing = self:PercentXPMissing()
+  local driftLevel = self:XPDriftAmount()
+  local xpColor = "Green"
+
+  if driftLevel == "LOW" then
+    xpColor = "Chartreuse"
+  elseif driftLevel == "MEDIUM" then
+    xpColor = "Orange"
+  elseif driftLevel == "HIGH" then
+    xpColor = "Red"
+  end
+  
+  Printing:P(Colours:W("Tracked XP")
+            .. Colours:Y(" / ")
+            .. Colours:W("Total XP: ")
+            .. Colours:ByName(xpColor,formatNumberWithCommas(AddonXPTracking:WithAddon()))
+            .. Colours:Y(" / ")
+            .. Colours:G(formatNumberWithCommas(AddonXPTracking:GetTotalXP())))
 
   if pctMissing > 0 then 
-    Printing:P(Colours:Y("The addon could not track ") .. Colours:ByName("Indigo", string.format("%.2f", pctMissing) .. "%") .. Colours:Y(" of your XP."))
+    Printing:P(Colours:Y("The addon could not track ") .. Colours:ByName(xpColor, string.format("%.2f", pctMissing) .. "%") .. Colours:Y(" of your XP."))
+    
     local level = UnitLevel("player")
-
-    local isValid = self:IsAddonXPValid(level)
-    if isValid then 
-      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:G("LOW"))
-    else
-      Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:ByName("OrangeRed", "HIGH"))
-    end
+    Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:ByName(xpColor, driftLevel))
+  else
+    Printing:P(Colours:ByName("LightBlue","No XP drift detected."))
   end
 
 end 
