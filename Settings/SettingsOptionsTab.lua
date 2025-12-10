@@ -1590,43 +1590,45 @@ function InitializeSettingsOptionsTab()
   resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
   addUIHeader(resourceSubHeader)
 
+  local activePowerKey = nil       -- current row being edited
+  local activeSetSwatchColor = nil -- current row’s setter
+  local activeOriginalColor = nil  -- previousValues backup
+
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
-    local row = CreateFrame('Frame', nil, colorSectionFrame)
-    row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
-    -- Position will be handled by reflow
-    row:SetPoint(
-      'TOPLEFT',
-      colorSectionFrame,
-      'TOPLEFT',
-      20,
-      -100 -- Temporary placeholder
-    )
+    local row = CreateFrame("Frame", nil, colorSectionFrame)
+    row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
+    row:SetPoint("TOPLEFT", colorSectionFrame, "TOPLEFT", 20, -100 - (rowIndex-1) * LAYOUT.COLOR_ROW_HEIGHT)
 
     local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
-    local SWATCH_WIDTH = 54
+    local SWATCH_WIDTH = 60
+    local SWATCH_HEIGHT = 16
     local GAP = 12
 
-    local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    label:SetPoint('LEFT', row, 'LEFT', 0, 0)
+    -- Label
+    local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    label:SetPoint("LEFT", row, "LEFT", 0, 0)
     label:SetWidth(LABEL_WIDTH)
-    label:SetJustifyH('LEFT')
+    label:SetJustifyH("LEFT")
     label:SetText(labelText)
 
-    local swatch = CreateFrame('Frame', nil, row, 'BackdropTemplate')
-    swatch:SetSize(SWATCH_WIDTH, 16)
-    swatch:SetPoint('LEFT', row, 'LEFT', LABEL_WIDTH + GAP, 0)
+    -- Swatch Button
+    local swatch = CreateFrame("Button", nil, row, "BackdropTemplate")
+    swatch:SetSize(SWATCH_WIDTH, SWATCH_HEIGHT)
+    swatch:SetPoint("LEFT", label, "RIGHT", GAP, 0)
     swatch:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      bgFile = "Interface\\Buttons\\WHITE8X8",
+      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
       edgeSize = 8,
-      insets = {
-        left = 1,
-        right = 1,
-        top = 1,
-        bottom = 1,
-      },
+      insets = { left=1, right=1, top=1, bottom=1 },
     })
 
+    -- Highlight border
+    local hl = swatch:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints(swatch)
+    hl:SetColorTexture(1,1,1,0.25)
+    swatch:SetHighlightTexture(hl)
+
+    -- Helper functions
     local function getDefaultColor()
       if POWER_COLORS and POWER_COLORS[powerKey] then
         return POWER_COLORS[powerKey][1], POWER_COLORS[powerKey][2], POWER_COLORS[powerKey][3]
@@ -1656,266 +1658,154 @@ function InitializeSettingsOptionsTab()
 
     setSwatchColor(getCurrentColor())
 
-    local pickButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
-    pickButton:SetSize(70, 20)
-    pickButton:SetPoint('LEFT', row, 'LEFT', LABEL_WIDTH + GAP + SWATCH_WIDTH + GAP, 0)
-    pickButton:SetText('Pick')
+    -- INITIALIZE COLOR PICKER INPUTS ONLY ONCE
+    if not ColorPickerFrame.__UHC_InputsCreated then
+      local inputs = CreateFrame("Frame", nil, ColorPickerFrame)
+      inputs:SetSize(240, 44)
+      inputs:SetPoint("BOTTOM", ColorPickerFrame, "BOTTOM", 0, 20)
 
-    local resetButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
-    resetButton:SetSize(56, 20)
-    resetButton:SetPoint('LEFT', pickButton, 'RIGHT', 6, 0)
-    resetButton:SetText('Reset')
+      -- Expand the picker once
+      ColorPickerFrame:SetHeight(ColorPickerFrame:GetHeight() + 50)
 
-    local classButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
-    classButton:SetSize(96, 20)
-    classButton:SetPoint('LEFT', resetButton, 'RIGHT', 6, 0)
-    classButton:SetText('Class Colour')
-    classButton:SetScript('OnClick', function()
-      local _, englishClass = UnitClass('player')
-      local classColor = RAID_CLASS_COLORS[englishClass]
-      if classColor then
-        tempSettings.resourceBarColors[powerKey] = { classColor.r, classColor.g, classColor.b }
-        setSwatchColor(classColor.r, classColor.g, classColor.b)
+      -- RGB inputs
+      inputs.rgb = {}
+      local labels = { 'R: ', 'G: ', 'B: ' }
+      for i = 1, 3 do
+        local lbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+        lbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', -15 + ((i - 1) * 55), -4)
+        lbl:SetText(labels[i])
+
+        local box = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
+        box:SetSize(30, 20)
+        box:SetPoint('TOPLEFT', lbl, 'TOPRIGHT', 4, 4)
+        box:SetAutoFocus(false)
+        box:SetMaxLetters(3)
+        box:SetNumeric(true)
+        box:SetMaxLetters(3)
+
+        inputs.rgb[i] = box
       end
-    end)
 
-    pickButton:SetScript('OnClick', function()
-      local r, g, b = getCurrentColor()
-      local function onColorPicked()
-        local nr, ng, nb = ColorPickerFrame:GetColorRGB()
-        tempSettings.resourceBarColors[powerKey] = { nr, ng, nb }
-        setSwatchColor(nr, ng, nb)
-      end
-      local function onCancel(prev)
-        local pr, pg, pb = r, g, b
-        if prev and prev.r and prev.g and prev.b then
-          pr, pg, pb = prev.r, prev.g, prev.b
-        end
-        tempSettings.resourceBarColors[powerKey] = { pr, pg, pb }
-        setSwatchColor(pr, pg, pb)
-      end
-      if ColorPickerFrame then
-        ColorPickerFrame:Hide()
-        ColorPickerFrame.hasOpacity = false
-        ColorPickerFrame.opacityFunc = nil
-        ColorPickerFrame.func = onColorPicked
-        ColorPickerFrame.swatchFunc = onColorPicked
+      -- Hex input
+      local hexLbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+      hexLbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', 160, -4)
+      hexLbl:SetText('Hex: ')
 
-        -- Only create inputs once per ColorPickerFrame
-        if not ColorPickerFrame.__UHC_InputsCreated then
-          local inputs = CreateFrame('Frame', nil, ColorPickerFrame)
-          inputs:SetSize(240, 44)
-          -- Slightly increase frame height to make room
-          local fh = (ColorPickerFrame.GetHeight and ColorPickerFrame:GetHeight()) or 0
-          if fh and fh > 0 then
-            ColorPickerFrame:SetHeight(fh + 40)
-          end
-          -- Position inputs above the standard OK/Cancel buttons (closer to bottom)
-          inputs:SetPoint('BOTTOM', ColorPickerFrame, 'BOTTOM', 0, 20)
+      local hexBox = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
+      hexBox:SetSize(56, 20)
+      hexBox:SetPoint('LEFT', hexLbl, 'RIGHT', 4, 0)
+      hexBox:SetAutoFocus(false)
+      hexBox:SetMaxLetters(6)
+      inputs.hex = hexBox
 
-          -- RGB inputs
-          inputs.rgb = {}
-          local labels = { 'R: ', 'G: ', 'B: ' }
-          for i = 1, 3 do
-            local lbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-            lbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', -15 + ((i - 1) * 55), -4)
-            lbl:SetText(labels[i])
+      ColorPickerFrame.__UHC_Inputs = inputs
+      ColorPickerFrame.__UHC_InputsCreated = true
 
-            local box = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
-            box:SetSize(30, 20)
-            box:SetPoint('TOPLEFT', lbl, 'TOPRIGHT', 4, 4)
-            box:SetAutoFocus(false)
-            box:SetMaxLetters(3)
-            box:SetNumeric(true)
+      -- ColorPicker Update UI
+      local function updateInputs()
+        if not activePowerKey then return end
 
-            local function updateColorFromRGB()
-              local r = tonumber(inputs.rgb[1]:GetText() or '') or 0
-              local g = tonumber(inputs.rgb[2]:GetText() or '') or 0
-              local b = tonumber(inputs.rgb[3]:GetText() or '') or 0
-              r = math.max(0, math.min(255, r)) / 255
-              g = math.max(0, math.min(255, g)) / 255
-              b = math.max(0, math.min(255, b)) / 255
-              ColorPickerFrame:SetColorRGB(r, g, b)
-            end
-            box:SetScript('OnTextChanged', function(self, user)
-              if user then
-                updateColorFromRGB()
-              end
-            end)
-            box:SetScript('OnEnterPressed', function(self)
-              self:ClearFocus()
-            end)
+        local r, g, b = ColorPickerFrame:GetColorRGB()
 
-            inputs.rgb[i] = box
-          end
+        tempSettings.resourceBarColors[activePowerKey] = {r, g, b}
+        activeSetSwatchColor(r, g, b)
 
-          -- Hex input
-          local hexLbl = inputs:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-          hexLbl:SetPoint('TOPLEFT', inputs, 'TOPLEFT', 160, -4)
-          hexLbl:SetText('Hex: ')
-
-          local hexBox = CreateFrame('EditBox', nil, inputs, 'InputBoxTemplate')
-          hexBox:SetSize(56, 20)
-          hexBox:SetPoint('LEFT', hexLbl, 'RIGHT', 4, 0)
-          hexBox:SetAutoFocus(false)
-          hexBox:SetMaxLetters(6)
-
-          local function updateColorFromHex()
-            local hex = (hexBox:GetText() or ''):gsub('#', ''):upper()
-            if hex:match('^%x%x%x%x%x%x$') then
-              local rr = (tonumber(hex:sub(1, 2), 16) or 0) / 255
-              local gg = (tonumber(hex:sub(3, 4), 16) or 0) / 255
-              local bb = (tonumber(hex:sub(5, 6), 16) or 0) / 255
-              rr = rr or 0
-              gg = gg or 0
-              bb = bb or 0
-              ColorPickerFrame:SetColorRGB(rr, gg, bb)
-            end
-          end
-          hexBox:SetScript('OnTextChanged', function(self, user)
-            if not user then return end
-            local hex = (self:GetText() or ''):gsub('#', ''):upper()
-            if #hex == 6 and hex:match('^%x%x%x%x%x%x$') then
-              updateColorFromHex()
-            end
-          end)
-          hexBox:SetScript('OnEnterPressed', function(self)
-            self:ClearFocus()
-          end)
-
-          inputs.hex = hexBox
-
-          -- Attempt to find the default top-right preview texture and replace it
-          local preview
-          for _, region in pairs({ ColorPickerFrame:GetRegions() }) do
-            if region and region:IsObjectType('Texture') then
-              local w = (region.GetWidth and region.GetWidth(region)) or 0
-              local h = (region.GetHeight and region.GetHeight(region)) or 0
-              if w >= 18 and w <= 48 and math.abs(w - h) <= 6 then
-                -- hide original preview region and reparent preview to same anchor
-                local p, rel, rp, ox, oy = region:GetPoint()
-                region:Hide()
-                preview = ColorPickerFrame:CreateTexture(nil, 'ARTWORK')
-                preview:SetSize(w, h)
-                if p then
-                  preview:ClearAllPoints()
-                  preview:SetPoint(p, rel or ColorPickerFrame, rp or p, ox or 0, oy or 0)
-                else
-                  preview:SetPoint('RIGHT', inputs, 'RIGHT', -8, 0)
-                end
-                break
-              end
-            end
-          end
-          if not preview then
-            preview = inputs:CreateTexture(nil, 'ARTWORK')
-            preview:SetSize(28, 28)
-            preview:SetPoint('RIGHT', inputs, 'RIGHT', -8, 0)
-          end
-          if preview.SetColorTexture then
-            preview:SetColorTexture(1, 1, 1, 1)
-          else
-            preview:SetTexture('Interface\\Buttons\\WHITE8X8')
-            preview:SetVertexColor(1, 1, 1, 1)
-          end
-          inputs.preview = preview
-
-          ColorPickerFrame.__UHC_Inputs = inputs
-          ColorPickerFrame.__UHC_InputsCreated = true
-          -- try repositioning the default OK/Cancel buttons to sit below our inputs
-          -- find likely OK/Cancel buttons among children
-          local okBtn, cancelBtn
-          for _, child in pairs({ ColorPickerFrame:GetChildren() }) do
-            if child and child:IsObjectType('Button') and child.GetText then
-              local t = child:GetText() or ''
-              if t == 'Okay' or t == 'OK' then
-                okBtn = child
-              end
-              if t == 'Cancel' then
-                cancelBtn = child
-              end
-            end
-          end
-          if okBtn and cancelBtn then
-            okBtn:ClearAllPoints()
-            cancelBtn:ClearAllPoints()
-            okBtn:SetPoint('TOP', inputs, 'BOTTOM', -70, 12)
-            cancelBtn:SetPoint('TOP', inputs, 'BOTTOM', 70, 12)
-          end
+        -- Update RGB boxes
+        for i, box in ipairs(inputs.rgb) do
+          local val = math.floor((i==1 and r or i==2 and g or b) * 255 + 0.5)
+          box:SetText(val)
         end
 
-        -- update function to sync picker -> inputs/preview
-        local function updateInputs()
-          local rr, gg, bb = ColorPickerFrame:GetColorRGB()
-          rr = rr or 0
-          gg = gg or 0
-          bb = bb or 0
-          local inputs = ColorPickerFrame.__UHC_Inputs
-          if inputs and inputs.rgb then
-            for i, box in ipairs(inputs.rgb) do
-              local val = math.floor((i == 1 and rr or i == 2 and gg or bb) * 255 + 0.5)
-              box:SetText(tostring(val))
-            end
-            inputs.hex:SetText(
-              string.format(
-                '%02X%02X%02X',
-                math.floor(rr * 255 + 0.5),
-                math.floor(gg * 255 + 0.5),
-                math.floor(bb * 255 + 0.5)
-              )
-            )
-            local pv = inputs.preview
-            if pv then
-              if pv.SetColorTexture then
-                pv:SetColorTexture(rr, gg, bb, 1)
-              else
-                pv:SetVertexColor(rr, gg, bb, 1)
-              end
-            end
-          end
-        end
+        -- Update Hex
+        inputs.hex:SetText(string.format("%02X%02X%02X",
+          math.floor(r*255+0.5), math.floor(g*255+0.5), math.floor(b*255+0.5)))
+      end
 
-        -- chain existing OnColorSelect
-        local oldOnColorSelect = ColorPickerFrame:GetScript('OnColorSelect')
-        ColorPickerFrame:SetScript('OnColorSelect', function(self)
-          if oldOnColorSelect then
-            pcall(oldOnColorSelect, self)
-          end
-          pcall(updateInputs)
+      ColorPickerFrame.__UHC_UpdateInputs = updateInputs
+
+      -- RGB EditBoxes Update picker
+      for i=1,3 do
+        inputs.rgb[i]:SetScript("OnTextChanged", function(self, user)
+          if not user or not activePowerKey then return end
+
+          local r = tonumber(inputs.rgb[1]:GetText()) or 0
+          local g = tonumber(inputs.rgb[2]:GetText()) or 0
+          local b = tonumber(inputs.rgb[3]:GetText()) or 0
+
+          r = math.min(255, math.max(0, r))
+          g = math.min(255, math.max(0, g))
+          b = math.min(255, math.max(0, b))
+
+          ColorPickerFrame:SetColorRGB(r/255, g/255, b/255)
         end)
+      end
 
-        -- assign picker callbacks to keep original behavior and sync inputs
-        ColorPickerFrame.func = function()
-          onColorPicked()
-          pcall(updateInputs)
-        end
-        ColorPickerFrame.swatchFunc = function()
-          pcall(onColorPicked)
-          pcall(updateInputs)
-        end
-        ColorPickerFrame.cancelFunc = onCancel
-        ColorPickerFrame.previousValues = {
-          r = r,
-          g = g,
-          b = b,
-        }
+      -- Hex -> Update picker
+      inputs.hex:SetScript("OnTextChanged", function(self, user)
+        if not user or not activePowerKey then return end
 
-        r = r or 0
-        g = g or 0
-        b = b or 0
+        local hex = self:GetText():gsub("#",""):upper()
+        if #hex ~= 6 or not hex:match("^%x%x%x%x%x%x$") then return end
+
+        local r = tonumber(hex:sub(1,2),16)/255
+        local g = tonumber(hex:sub(3,4),16)/255
+        local b = tonumber(hex:sub(5,6),16)/255
+
         ColorPickerFrame:SetColorRGB(r, g, b)
-        pcall(updateInputs)
-        ColorPickerFrame:Show()
+      end)
+    end
+
+    -- SWATCH CLICK -> OPEN COLOR PICKER FOR THIS ROW
+    swatch:SetScript("OnClick", function()
+      -- Set active row context
+      activePowerKey = powerKey
+      activeSetSwatchColor = setSwatchColor
+
+      local r, g, b = getCurrentColor()
+      activeOriginalColor = {r=r,g=g,b=b}
+
+      local updateInputs = ColorPickerFrame.__UHC_UpdateInputs
+
+      ColorPickerFrame.hasOpacity = false
+      ColorPickerFrame.previousValues = activeOriginalColor
+      ColorPickerFrame.func = updateInputs
+      ColorPickerFrame.swatchFunc = updateInputs
+      ColorPickerFrame.cancelFunc = function(prev)
+        prev = prev or activeOriginalColor
+        tempSettings.resourceBarColors[powerKey] = {prev.r, prev.g, prev.b}
+        setSwatchColor(prev.r, prev.g, prev.b)
+      end
+
+      ColorPickerFrame:SetColorRGB(r, g, b)
+      updateInputs()
+      ColorPickerFrame:Show()
+    end)
+
+    -- CLASS BUTTON
+    local classButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    classButton:SetSize(96,20)
+    classButton:SetPoint("LEFT", swatch, "RIGHT", GAP, 0)
+    classButton:SetText("Class Colour")
+    classButton:SetScript("OnClick", function()
+      local _, class = UnitClass("player")
+      local c = RAID_CLASS_COLORS[class]
+      if c then
+        tempSettings.resourceBarColors[powerKey] = {c.r, c.g, c.b}
+        setSwatchColor(c.r, c.g, c.b)
       end
     end)
 
-    resetButton:SetScript('OnClick', function()
+    -- RESET BUTTON
+    local resetButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+    resetButton:SetSize(56,20)
+    resetButton:SetPoint("LEFT", classButton, "RIGHT", GAP, 0)
+    resetButton:SetText("Reset")
+    resetButton:SetScript("OnClick", function()
       tempSettings.resourceBarColors[powerKey] = nil
-      local dr, dg, db = getDefaultColor()
-      setSwatchColor(dr, dg, db)
+      setSwatchColor(getDefaultColor())
     end)
 
-    addUIRow(row, labelText .. ' color resource bar', resourceSubHeader)
+    addUIRow(row, labelText .. " color resource bar", resourceSubHeader)
   end
 
   createColorRowInSection('Energy', 'ENERGY', 1)
