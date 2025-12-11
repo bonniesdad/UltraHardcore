@@ -45,6 +45,7 @@ local settingsCheckboxOptions = { {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
+  dependsOn = 'showTunnelVision',
 }, {
   name = 'Route Planner',
   dbSettingsValueName = 'routePlanner',
@@ -173,6 +174,7 @@ local settingsCheckboxOptions = { {
   name = 'Seasonal-themed Tunnel Vision',
   dbSettingsValueName = 'spookyTunnelVision',
   tooltip = 'Use the latest holiday themed tunnel vision overlay',
+  dependsOn = 'showTunnelVision',
 }, {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
@@ -185,6 +187,7 @@ local settingsCheckboxOptions = { {
   name = 'Show XP Bar Tooltip',
   dbSettingsValueName = 'showXpBarToolTip',
   tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
+  dependsOn = 'showExpBar',
 }, {
   name = 'Hide Default WoW XP Bar',
   dbSettingsValueName = 'hideDefaultExpBar',
