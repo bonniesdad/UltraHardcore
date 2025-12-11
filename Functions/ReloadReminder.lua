@@ -1,6 +1,7 @@
 
 local ReloadReminder = {
     ReminderInterval = 3600,
+    DefaultMinutes = 60,
     MinMinutes = 15,
     MaxMinutes = 180,
     RemindersClosed = 0,
