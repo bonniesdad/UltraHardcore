@@ -255,7 +255,7 @@ reloadReminderFrame:SetScript('OnEvent', function(self, event, ...)
     if event == "PLAYER_REGEN_ENABLED" then
         ReloadReminder:CheckLastReloadTime()
     elseif event == "PLAYER_ENTERING_WORLD" then
-        Printing:EnableDebug()
+        --Printing:EnableDebug()
         -- Load reminder interval from settings on login
         ReloadReminder:LoadInterval()
         -- Ensure the reload button restores position/visibility after login/reload
