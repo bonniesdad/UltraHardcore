@@ -1572,7 +1572,7 @@ function InitializeSettingsOptionsTab()
   local reminderSlider = CreateFrame('Slider', nil, reminderRow, 'OptionsSliderTemplate')
   reminderSlider:SetSize(LAYOUT.SLIDER_WIDTH, 15)
   reminderSlider:SetPoint('RIGHT', reminderRow, 'RIGHT', -50, 0)
-  reminderSlider:SetMinMaxValues(5, 180)
+  reminderSlider:SetMinMaxValues(ReloadReminder.MinMinutes, ReloadReminder.MaxMinutes)
   reminderSlider:SetValueStep(5)
   reminderSlider:SetObeyStepOnDrag(true)
 
