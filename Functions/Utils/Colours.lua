@@ -37,6 +37,10 @@ local Colours = {
   LightYellow = '|cffF5F5DC',
 }
 
+--- Returns the message wrapped in the specified colour with the |r reset value automatically appended.
+-- @param color The name of the colour to use.
+-- @param msg The message to wrap in colour.
+-- @return The coloured message, or the message wrapped in reset codes if the colour is not found.
 function Colours:ByName(color, msg)
   local c = Colours[color]
 
@@ -46,22 +50,37 @@ function Colours:ByName(color, msg)
   return c .. tostring(msg) .. Colours["Reset"]
 end
 
+--- Returns the message wrapped in white colour codes.
+-- @param text The message to wrap in white.
+-- @return The message wrapped in white colour codes.
 function Colours:W(text)
   return Colours["White"] .. text .. Colours["Reset"]
 end
 
+--- Returns the message wrapped in blue colour codes.
+-- @param text The message to wrap in blue.
+-- @return The message wrapped in blue colour codes.
 function Colours:B(text)
   return Colours["Blue"] .. text .. Colours["Reset"]
 end
 
+--- Returns the message wrapped in red colour codes.
+-- @param text The message to wrap in red.
+-- @return The message wrapped in red colour codes.
 function Colours:R(text)
   return Colours["Red"] .. text .. Colours["Reset"]
 end
 
+--- Returns the message wrapped in yellow colour codes.
+-- @param text The message to wrap in yellow.
+-- @return The message wrapped in yellow colour codes.
 function Colours:Y(text)
   return Colours["Yellow"] .. text .. Colours["Reset"]
 end
 
+--- Returns the message wrapped in green colour codes.
+-- @param text The message to wrap in green.
+-- @return The message wrapped in green colour codes.
 function Colours:G(text)
   return Colours["Green"] .. text .. Colours["Reset"]
 end

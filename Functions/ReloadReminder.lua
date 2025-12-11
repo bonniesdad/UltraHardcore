@@ -7,12 +7,16 @@ local ReloadReminder = {
     RemindersClosed = 0,
 }
 
+--- Updates the reminder interval to the specified number of minutes.
+-- Clamped between MinMinutes and MaxMinutes.
 function ReloadReminder:UpdateInterval(minutes)
     -- Clamp between min and max
     minutes = math.max(self.MinMinutes, math.min(self.MaxMinutes, minutes))
     self.ReminderInterval = minutes * 60
 end
 
+--- Returns the time remaining until the next reminder should be shown.
+-- @return The time in seconds until the next reminder.
 function ReloadReminder:TimeUntilReminder()
     local elapsedTime = self:TimeSinceSave()
     local closedTime = self:TimeSinceClose()
@@ -25,6 +29,7 @@ function ReloadReminder:TimeUntilReminder()
     return timeLeft
 end
 
+--- Loads the reminder interval from global settings.
 function ReloadReminder:LoadInterval()
     if GLOBAL_SETTINGS and GLOBAL_SETTINGS.reminderIntervalMinutes then
         self.ReminderInterval = GLOBAL_SETTINGS.reminderIntervalMinutes * 60
@@ -33,6 +38,7 @@ function ReloadReminder:LoadInterval()
     end
 end
 
+--- Prints information about the time since last save and reminders closed.
 function ReloadReminder:IntervalInformation()
     local elapsedTime = self:TimeSinceSave()
     local closedTime = self:TimeSinceClose()
@@ -52,6 +58,7 @@ function ReloadReminder:IntervalInformation()
     end
 end
 
+--- Prints the reload reminder message and shows the reload button.
 function ReloadReminder:PrintReminder()
     self:IntervalInformation()
     -- show an actionable button so the user can reload the UI immediately
@@ -66,6 +73,7 @@ function ReloadReminder:PrintReminder()
     end
 end
 
+--- Shows the reload reminder button on screen.
 function ReloadReminder:ShowReminderButton()
     if self.reloadButtonFrame and self.reloadButtonFrame:IsShown() then return end
 
@@ -170,6 +178,7 @@ function ReloadReminder:ShowReminderButton()
     self.reloadButtonFrame:Show()
 end
 
+--- Hides the reload reminder button.
 function ReloadReminder:HideReminderButton()
     self:LogClose()
     if self.reloadButtonFrame then
@@ -177,6 +186,7 @@ function ReloadReminder:HideReminderButton()
     end
 end
 
+--- Updates the last reloaded and last closed timestamps to the current server time.
 function ReloadReminder:Touch() 
     local stats = CharacterStats:GetCurrentCharacterStats()
     stats["LastReloadedAt"] = GetServerTime()
@@ -184,12 +194,14 @@ function ReloadReminder:Touch()
     self.RemindersClosed = 0
 end
 
+--- Logs that the reminder was closed by updating the last closed timestamp.
 function ReloadReminder:LogClose() 
     local stats = CharacterStats:GetCurrentCharacterStats()
     stats["LastReminderClosedAt"] = GetServerTime()
     self.RemindersClosed = self.RemindersClosed + 1
 end
 
+--- Performed the UI reload and updates timestamps.
 function ReloadReminder:DoReload()
     self:Touch()
     self:LoadInterval() -- Reload interval from settings
@@ -197,6 +209,7 @@ function ReloadReminder:DoReload()
     ReloadUI()
 end
 
+--- Returns the time since the last reload in seconds.
 function ReloadReminder:TimeSinceSave()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastReload = stats["LastReloadedAt"]
@@ -204,6 +217,7 @@ function ReloadReminder:TimeSinceSave()
     return (serverTime - lastReload)
 end
 
+--- Returns the time since the last reminder was closed in seconds.
 function ReloadReminder:TimeSinceClose()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastClosed = stats["LastReminderClosedAt"]
@@ -211,6 +225,7 @@ function ReloadReminder:TimeSinceClose()
     return (serverTime - lastClosed)
 end
 
+--- Checks the time since the last reload and shows a reminder if the interval has passed.
 function ReloadReminder:CheckLastReloadTime()
     local stats = CharacterStats:GetCurrentCharacterStats()
     local lastReload = stats["LastReloadedAt"]
