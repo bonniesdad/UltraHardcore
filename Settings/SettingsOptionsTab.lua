@@ -230,9 +230,9 @@ local settingsSliderOptions = { {
   name = 'Reload Reminder Interval',
   dbSettingsValueName = 'reminderIntervalMinutes',
   tooltip = 'Configure when the reload reminder first appears',
-  minValue = 15,
-  maxValue = 180,
-  defaultValue = 60,
+  minValue = ReloadReminder.MinMinutes,
+  maxValue = ReloadReminder.MaxMinutes,
+  defaultValue = ReloadReminder.DefaultMinutes,
 } }
 
 local presets = { {
@@ -1581,7 +1581,7 @@ function InitializeSettingsOptionsTab()
   end]]
 
   if tempSettings.reminderIntervalMinutes == nil then
-    tempSettings.reminderIntervalMinutes = GLOBAL_SETTINGS.reminderIntervalMinutes or 60
+    tempSettings.reminderIntervalMinutes = GLOBAL_SETTINGS.reminderIntervalMinutes or ReloadReminder.DefaultMinutes
   end
   reminderSlider:SetValue(tempSettings.reminderIntervalMinutes)
 
