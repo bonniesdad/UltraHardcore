@@ -3,7 +3,7 @@ radioButtons = {}
 -- Layout constants for consistent spacing (global so StatisticsTab.lua can access it)
 LAYOUT = {
   SECTION_HEADER_HEIGHT = 28,
-  ROW_HEIGHT = 25,
+  ROW_HEIGHT = 46,
   HEADER_TO_CONTENT_GAP = 5,
   SECTION_SPACING = 10,
   CONTENT_INDENT = 20,

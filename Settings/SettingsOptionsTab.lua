@@ -45,6 +45,7 @@ local settingsCheckboxOptions = { {
   name = 'Tunnel Vision Covers Everything',
   dbSettingsValueName = 'tunnelVisionMaxStrata',
   tooltip = 'Tunnel Vision covers all UI elements',
+  dependsOn = 'showTunnelVision',
 }, {
   name = 'Route Planner',
   dbSettingsValueName = 'routePlanner',
@@ -149,6 +150,7 @@ local settingsCheckboxOptions = { {
   name = 'Buff Bar on Resource Bar',
   dbSettingsValueName = 'buffBarOnResourceBar',
   tooltip = 'Position player buff bar on top of the custom resource bar',
+  dependsOff = 'hideCustomResourceBar',
 }, {
   name = 'Hide Buffs & Debuffs',
   dbSettingsValueName = 'hideBuffsCompletely',
@@ -173,6 +175,7 @@ local settingsCheckboxOptions = { {
   name = 'Seasonal-themed Tunnel Vision',
   dbSettingsValueName = 'spookyTunnelVision',
   tooltip = 'Use the latest holiday themed tunnel vision overlay',
+  dependsOn = 'showTunnelVision',
 }, {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
@@ -185,6 +188,7 @@ local settingsCheckboxOptions = { {
   name = 'Show XP Bar Tooltip',
   dbSettingsValueName = 'showXpBarToolTip',
   tooltip = 'Shows detailed XP information when hovering over the XP bar (percentage and exact numbers)',
+  dependsOn = 'showExpBar',
 }, {
   name = 'Hide Default WoW XP Bar',
   dbSettingsValueName = 'hideDefaultExpBar',
@@ -366,6 +370,22 @@ function InitializeSettingsOptionsTab()
   local sliders = {}
   local presetButtons = {}
   local selectedPreset = nil
+
+  local function cascadeDependencyUpdates(settingName)
+    if not settingName then return end
+
+    for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
+      if
+        otherCheckboxItem.dependsOn == settingName
+        or otherCheckboxItem.dependsOff == settingName
+      then
+        local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
+        if otherCheckbox and otherCheckbox._updateDependency then
+          otherCheckbox._updateDependency()
+        end
+      end
+    end
+  end
 
   local function updateCheckboxes()
     for _, checkboxItem in ipairs(settingsCheckboxOptions) do
@@ -982,27 +1002,31 @@ function InitializeSettingsOptionsTab()
 
           -- Handle dependencies: grey out and disable if dependency is not met
           local function updateDependencyState()
+            local shouldDisable = false
+
             if checkboxItem.dependsOn then
               local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
               if not dependencyEnabled then
-                checkbox:Disable()
-                checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
-                checkbox:SetChecked(false)
-                tempSettings[checkboxItem.dbSettingsValueName] = false
-
-                -- Cascade: update any checkboxes that depend on this one
-                for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
-                  if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
-                    local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
-                    if otherCheckbox and otherCheckbox._updateDependency then
-                      otherCheckbox._updateDependency()
-                    end
-                  end
-                end
-              else
-                checkbox:Enable()
-                checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
+                shouldDisable = true
               end
+            end
+
+            if not shouldDisable and checkboxItem.dependsOff then
+              local blockerEnabled = tempSettings[checkboxItem.dependsOff] or false
+              if blockerEnabled then
+                shouldDisable = true
+              end
+            end
+
+            if shouldDisable then
+              checkbox:Disable()
+              checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
+              checkbox:SetChecked(false)
+              tempSettings[checkboxItem.dbSettingsValueName] = false
+              cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
+            else
+              checkbox:Enable()
+              checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
             end
           end
 
@@ -1019,6 +1043,7 @@ function InitializeSettingsOptionsTab()
           checkbox:SetScript('OnClick', function(self)
             -- Prevent clicking if dependency is not met
             if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
+            if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
             tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
 
             if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
@@ -1032,21 +1057,14 @@ function InitializeSettingsOptionsTab()
             end
 
             -- Update any checkboxes that depend on this one
-            for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
-              if otherCheckboxItem.dependsOn == checkboxItem.dbSettingsValueName then
-                local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
-                if otherCheckbox and otherCheckbox._updateDependency then
-                  otherCheckbox._updateDependency()
-                end
-              end
-            end
+            cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
 
             updateSectionCount(sectionIndex)
           end)
 
           checkbox:SetScript('OnEnter', function(self)
             GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            local tooltipText = checkboxItem.tooltip
+            local tooltipText = checkboxItem.tooltip or ''
             if checkboxItem.dependsOn then
               local dependencyName = nil
               for _, item in ipairs(settingsCheckboxOptions) do
@@ -1059,6 +1077,21 @@ function InitializeSettingsOptionsTab()
                 local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
                 if not dependencyEnabled then
                   tooltipText = tooltipText .. '\n\n|cFFFF0000Requires: ' .. dependencyName .. '|r'
+                end
+              end
+            end
+            if checkboxItem.dependsOff then
+              local conflictName = nil
+              for _, item in ipairs(settingsCheckboxOptions) do
+                if item.dbSettingsValueName == checkboxItem.dependsOff then
+                  conflictName = item.name
+                  break
+                end
+              end
+              if conflictName then
+                local conflictEnabled = tempSettings[checkboxItem.dependsOff] or false
+                if conflictEnabled then
+                  tooltipText = tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. conflictName .. '|r'
                 end
               end
             end
