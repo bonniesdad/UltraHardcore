@@ -53,19 +53,519 @@ local function AddStatisticTooltip(label, tooltipKey)
   end)
 end
 
--- Extracting this logic so it can be called outside of the original function
-local function IsTampered()
-  local isTampered = false
-  if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
-    local success, result = pcall(function()
-      return PlayerStateSnapshot:IsTampered()
-    end)
-    if success then
-      isTampered = result
+-- Shared configuration for the new stat bar visuals
+local STAT_BAR_HEIGHT = 25
+local STAT_BAR_INSET = 2 -- widen bars by reducing side inset by 20px per side
+local STAT_FILL_INSET = 3
+local ROW_Y_ADJUST = -(LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2
+local BAR_VERTICAL_SHIFT = 28 -- pull bars up slightly now that min labels are hidden
+local TIER_LEFT_PADDING = 16 -- extra gap from bar start
+-- Fill colors progress from calm/neutral to impressive across tiers
+local TIER_COLORS = {
+  { 0.25, 0.65, 0.9, 0.95 }, -- tier 1: neutral blue
+  { 0.3, 0.75, 0.55, 0.95 }, -- tier 2: teal
+  { 0.9, 0.75, 0.25, 0.95 }, -- tier 3: gold
+  { 0.9, 0.45, 0.25, 0.95 }, -- tier 4: orange
+  { 0.9, 0.25, 0.25, 0.95 }, -- tier 5+: red
+}
+
+-- Level bar color steps (blue -> red as you near cap)
+local LEVEL_COLOR_STEPS = {
+  { 0.25, 0.65, 0.9, 0.95 }, -- blue
+  { 0.3, 0.75, 0.75, 0.95 }, -- teal
+  { 0.35, 0.8, 0.55, 0.95 }, -- green-teal
+  { 0.8, 0.75, 0.35, 0.95 }, -- yellow-gold
+  { 0.9, 0.55, 0.25, 0.95 }, -- orange
+  { 0.9, 0.25, 0.25, 0.95 }, -- red
+}
+
+local STAT_BAR_CONFIG = {
+  default = {
+    base = 100,
+    multiplier = 2,
+    color = { 0.25, 0.65, 0.9, 0.95 },
+    bgColor = { 0.05, 0.05, 0.07, 0.75 },
+  },
+  percent = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.35, 0.3, 0.95 },
+    bgColor = { 0.07, 0.07, 0.09, 0.75 },
+  },
+  lowestHealth = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.25, 0.25, 0.95 },
+  },
+  lowestHealthThisLevel = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.25, 0.25, 0.95 },
+  },
+  lowestHealthThisSession = {
+    type = 'percent',
+    max = 100,
+    color = { 0.85, 0.25, 0.25, 0.95 },
+  },
+  duelsWinPercent = {
+    type = 'percent',
+    max = 100,
+    color = { 0.9, 0.7, 0.25, 0.95 },
+  },
+  -- Numeric stats with individualized tier settings (all inherit default base/multiplier unless overridden)
+  level = {
+    type = 'percent',
+    max = 60, -- classic cap
+  },
+  closeEscapes = {
+    base = 10,
+    multiplier = 2,
+  },
+  petDeaths = { valueOnly = true },
+  enemiesSlain = {
+    base = 1000,
+    multiplier = 3,
+  },
+  elitesSlain = {
+    base = 200,
+    multiplier = 3,
+  },
+  rareElitesSlain = {
+    base = 25,
+    multiplier = 2,
+  },
+  worldBossesSlain = {
+    base = 10,
+    multiplier = 2,
+  },
+  dungeonBossesKilled = {
+    base = 25,
+    multiplier = 2,
+  },
+  dungeonsCompleted = {
+    base = 25,
+    multiplier = 2,
+  },
+  highestCritValue = {
+    base = 500,
+    multiplier = 2,
+    valueOnly = true,
+  },
+  highestHealCritValue = {
+    base = 500,
+    multiplier = 2,
+    valueOnly = true,
+  },
+  healthPotionsUsed = {
+    base = 25,
+    multiplier = 2,
+  },
+  manaPotionsUsed = {
+    base = 25,
+    multiplier = 2,
+  },
+  bandagesUsed = {
+    base = 50,
+    multiplier = 2,
+  },
+  targetDummiesUsed = {
+    base = 20,
+    multiplier = 2,
+  },
+  grenadesUsed = {
+    base = 25,
+    multiplier = 2,
+  },
+  partyMemberDeaths = {
+    base = 25,
+    multiplier = 2,
+    valueOnly = true,
+  },
+  duelsTotal = {
+    base = 25,
+    multiplier = 2,
+  },
+  duelsWon = {
+    base = 25,
+    multiplier = 2,
+  },
+  duelsLost = {
+    base = 25,
+    multiplier = 2,
+    valueOnly = true,
+  },
+  playerJumps = {
+    base = 10000,
+    multiplier = 3,
+  },
+  mapKeyPressesWhileMapBlocked = {
+    base = 50,
+    multiplier = 2,
+    valueOnly = true,
+  },
+}
+
+local statBars = {}
+
+local function CreateStatBar(parent)
+  local barFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
+  barFrame:SetHeight(STAT_BAR_HEIGHT)
+  barFrame:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 8,
+    insets = {
+      left = 2,
+      right = 2,
+      top = 2,
+      bottom = 2,
+    },
+  })
+  barFrame:SetBackdropColor(0.12, 0.16, 0.24, 0.85)
+  barFrame:SetBackdropBorderColor(0.18, 0.35, 0.55, 0.9)
+
+  local bg = barFrame:CreateTexture(nil, 'BACKGROUND')
+  bg:SetPoint('TOPLEFT', barFrame, 'TOPLEFT', 2, -2)
+  bg:SetPoint('BOTTOMRIGHT', barFrame, 'BOTTOMRIGHT', -2, 2)
+  bg:SetColorTexture(0.08, 0.12, 0.2, 0.85)
+
+  local fill = barFrame:CreateTexture(nil, 'ARTWORK')
+  fill:SetPoint('TOPLEFT', bg, 'TOPLEFT', STAT_FILL_INSET, -STAT_FILL_INSET)
+  fill:SetPoint('BOTTOMLEFT', bg, 'BOTTOMLEFT', STAT_FILL_INSET, STAT_FILL_INSET)
+  fill:SetWidth(0)
+  fill:SetColorTexture(0.25, 0.65, 0.9, 0.95)
+
+  local text = barFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  text:SetPoint('CENTER', barFrame, 'CENTER', 0, 0)
+
+  -- Dedicated container to force highest z-order for tier text/background
+  local tierContainer = CreateFrame('Frame', nil, barFrame)
+  tierContainer:SetFrameLevel(barFrame:GetFrameLevel() + 20)
+
+  local tierText = tierContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', 0, 9)
+  tierText:SetDrawLayer('OVERLAY', 50) -- keep above any pill/bg/fill
+  tierText:SetTextColor(1, 1, 1, 1) -- bright white for readability
+  -- Pill-style backdrop behind tier text
+  local tierBg = CreateFrame('Frame', nil, tierContainer, 'BackdropTemplate')
+  tierBg:SetFrameLevel(tierContainer:GetFrameLevel() - 1)
+  tierBg:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 2,
+      bottom = 2,
+    },
+  })
+  tierBg:SetBackdropColor(0, 0, 0, 0.35)
+  tierBg:SetBackdropBorderColor(0, 0, 0, 0.5)
+  tierBg:Hide()
+
+  return {
+    frame = barFrame,
+    fill = fill,
+    text = text,
+    tier = tierText,
+    tierBg = tierBg,
+    tierContainer = tierContainer,
+    bg = bg,
+  }
+end
+
+local function PositionStatBar(bar, parent, yOffset)
+  if not bar or not bar.frame then return end
+  bar.frame:ClearAllPoints()
+  bar.frame:SetPoint(
+    'TOPLEFT',
+    parent,
+    'TOPLEFT',
+    LAYOUT.ROW_INDENT + STAT_BAR_INSET,
+    yOffset - LAYOUT.ROW_HEIGHT - (LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2 + BAR_VERTICAL_SHIFT
+  )
+  bar.frame:SetPoint(
+    'TOPRIGHT',
+    parent,
+    'TOPRIGHT',
+    -LAYOUT.ROW_INDENT - STAT_BAR_INSET,
+    yOffset - LAYOUT.ROW_HEIGHT - (LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2 + BAR_VERTICAL_SHIFT
+  )
+end
+
+local function CreateBarRow(parent, statKey, yOffset, isLast)
+  local bar = CreateStatBar(parent)
+  bar.minText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  bar.maxText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+
+  bar.tier:ClearAllPoints()
+  bar.tier:SetPoint('TOPRIGHT', parent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset + ROW_Y_ADJUST)
+
+  bar.minText:SetPoint('BOTTOMLEFT', bar.frame, 'TOPLEFT', 0, 4)
+  -- Show the max value inside the bar on the right
+  bar.maxText:ClearAllPoints()
+  bar.maxText:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 0)
+  bar.maxText:SetJustifyH('RIGHT')
+  bar.maxText:SetDrawLayer('OVERLAY', 10) -- ensure it sits above fills/frames
+  -- Match styling to the centered current value
+  local r, g, b, a = bar.text:GetTextColor()
+  local sr, sg, sb, sa = bar.text:GetShadowColor()
+  local sx, sy = bar.text:GetShadowOffset()
+  local font, fontSize, fontFlags = bar.text:GetFont()
+  if font then
+    bar.maxText:SetFont(font, fontSize, fontFlags)
+  end
+  local fontObj = bar.text:GetFontObject()
+  if fontObj then
+    bar.maxText:SetFontObject(fontObj)
+  end
+  bar.maxText:SetTextColor(r, g, b, a)
+  if sr and sg and sb and sa then
+    bar.maxText:SetShadowColor(sr, sg, sb, sa)
+  end
+  if sx and sy then
+    bar.maxText:SetShadowOffset(sx, sy)
+  end
+
+  if not isLast then
+    local divider = parent:CreateTexture(nil, 'ARTWORK')
+    divider:SetColorTexture(0.25, 0.25, 0.3, 0.65)
+    divider:SetHeight(1) -- fill more space below (reduce post-divider gap by ~30px)
+    divider:SetPoint('TOP', bar.frame, 'BOTTOM', 0, -14) -- add 10px more gap above divider
+    divider:SetPoint('LEFT', parent, 'LEFT', LAYOUT.ROW_INDENT + 5, 0)
+    divider:SetPoint('RIGHT', parent, 'RIGHT', -LAYOUT.ROW_INDENT - 5, 0)
+    bar.divider = divider
+  end
+
+  statBars[statKey] = bar
+  PositionStatBar(bar, parent, yOffset)
+  return bar
+end
+
+local function CalculateTierProgress(value, base, multiplier)
+  local currentValue = math.max(0, value or 0)
+  local tier = 1
+  local tierMax = base
+
+  while currentValue > tierMax do
+    tier = tier + 1
+    tierMax = tierMax * multiplier
+  end
+
+  local tierMin = tier == 1 and 0 or (tierMax / multiplier)
+  local range = tierMax - tierMin
+  local progress = range > 0 and (currentValue - tierMin) / range or 0
+
+  return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
+end
+
+local function UpdateStatBar(statKey, value)
+  local bar = statBars[statKey]
+  if not bar then return end
+
+  local cfg = STAT_BAR_CONFIG[statKey] or STAT_BAR_CONFIG.default
+  local valueOnly = cfg.valueOnly
+  local fillColor = cfg.color or STAT_BAR_CONFIG.default.color
+  local bgColor = cfg.bgColor or STAT_BAR_CONFIG.default.bgColor
+  local effectiveFillColor = fillColor
+
+  if valueOnly then
+    -- Hide bar visuals, show only the value text with a subtle badge-style background
+    if bar.bg then
+      bar.bg:Hide()
+    end
+    if bar.fill then
+      bar.fill:Hide()
+    end
+    local displayText
+    local badgeColor = fillColor or { 0.8, 0.8, 0.8, 0.95 }
+    local textColor = badgeColor
+    if cfg.type == 'percent' then
+      local pctMax = cfg.max or 100
+      local percent = math.max(0, math.min(value or 0, pctMax))
+      displayText = string.format('%.1f%%', percent)
+    else
+      displayText = formatNumberWithCommas(value or 0)
+    end
+    if bar.minText then
+      bar.minText:Hide()
+    end
+    if bar.maxText then
+      bar.maxText:Hide()
+    end
+    if bar.tier then
+      bar.tier:SetText('')
+      bar.tier:Hide()
+    end
+    if bar.tierBg then
+      bar.tierBg:Hide()
+    end
+    bar.frame:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 8,
+      insets = {
+        left = 2,
+        right = 2,
+        top = 2,
+        bottom = 2,
+      },
+    })
+    bar.frame:SetBackdropColor(badgeColor[1], badgeColor[2], badgeColor[3], 0.18)
+    bar.frame:SetBackdropBorderColor(badgeColor[1], badgeColor[2], badgeColor[3], 0.35)
+    bar.text:ClearAllPoints()
+    bar.text:SetPoint('CENTER', bar.frame, 'CENTER', 0, 0)
+    bar.text:SetText(displayText or '')
+    bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
+    if bar.tier then
+      bar.tier:Hide()
+    end
+    if bar.tierBg then
+      bar.tierBg:Hide()
+    end
+    -- Keep bar height consistent
+    bar.frame:SetHeight(STAT_BAR_HEIGHT)
+    return
+  end
+
+  -- Ensure visuals are shown for normal bar mode
+  if bar.bg then
+    bar.bg:Show()
+  end
+  if bar.fill then
+    bar.fill:Show()
+  end
+  if bar.tier then
+    bar.tier:Show()
+  end
+  if bar.minText then
+    bar.minText:Hide()
+    bar.minText:SetText('')
+  end
+  if bar.maxText then
+    bar.maxText:Show()
+  end
+
+  if cfg.type == 'percent' then
+    local pctMax = cfg.max or 100
+    local percent = math.max(0, math.min(value or 0, pctMax))
+    local progress = pctMax > 0 and percent / pctMax or 0
+    if statKey == 'level' and #LEVEL_COLOR_STEPS > 0 then
+      local idx =
+        math.min(#LEVEL_COLOR_STEPS, math.max(1, math.floor(progress * #LEVEL_COLOR_STEPS) + 1))
+      effectiveFillColor = LEVEL_COLOR_STEPS[idx] or effectiveFillColor
+    end
+    local availableWidth =
+      (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
+    bar.fill:SetWidth(availableWidth * progress)
+    if statKey == 'level' then
+      bar.text:SetText(string.format('%d', value or 0))
+    else
+      bar.text:SetText(string.format('%.1f%%', percent))
+    end
+    bar.tier:SetText('')
+    if bar.minText then
+      bar.minText:SetText('0')
+    end
+    if bar.maxText then
+      bar.maxText:SetText(string.format('%d', pctMax))
+    end
+  else
+    local base = cfg.base or STAT_BAR_CONFIG.default.base
+    local multiplier = cfg.multiplier or STAT_BAR_CONFIG.default.multiplier
+    if multiplier <= 1 then
+      multiplier = STAT_BAR_CONFIG.default.multiplier
+    end
+
+    local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
+    if not cfg.color and #TIER_COLORS > 0 then
+      local tierColorIndex = math.min(tier, #TIER_COLORS)
+      effectiveFillColor = TIER_COLORS[tierColorIndex] or effectiveFillColor
+    end
+    local availableWidth =
+      (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
+    bar.fill:SetWidth(availableWidth * progress)
+    bar.text:SetText(formatNumberWithCommas(value or 0))
+    bar.tier:SetText('Tier ' .. tier)
+    if bar.minText then
+      bar.minText:SetText(formatNumberWithCommas(tierMin))
+    end
+    if bar.maxText then
+      bar.maxText:SetText(formatNumberWithCommas(tierMax))
     end
   end
-  return isTampered
+
+  -- Style end value to exactly match the centered value and sit above fills
+  if bar.maxText then
+    bar.maxText:Show()
+    bar.maxText:ClearAllPoints()
+    bar.maxText:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 0)
+    bar.maxText:SetJustifyH('RIGHT')
+    local font, fontSize, fontFlags = bar.text:GetFont()
+    if font then
+      bar.maxText:SetFont(font, fontSize, fontFlags)
+    end
+    local fontObj = bar.text:GetFontObject()
+    if fontObj then
+      bar.maxText:SetFontObject(fontObj)
+    end
+    local r, g, b, a = bar.text:GetTextColor()
+    bar.maxText:SetTextColor(r or 1, g or 1, b or 1, a or 1)
+    local sr, sg, sb, sa = bar.text:GetShadowColor()
+    if sr and sg and sb and sa then
+      bar.maxText:SetShadowColor(sr, sg, sb, sa)
+    end
+    local sx, sy = bar.text:GetShadowOffset()
+    if sx and sy then
+      bar.maxText:SetShadowOffset(sx, sy)
+    end
+    -- Force max text to the topmost layer
+    bar.maxText:SetDrawLayer('OVERLAY', 50)
+  end
+
+  -- Layout: tier on the left, value on the right
+  if bar.tier then
+    if cfg.type == 'percent' then
+      bar.tier:Hide()
+      if bar.tierBg then
+        bar.tierBg:Hide()
+      end
+    else
+      bar.tier:Show()
+      bar.tier:ClearAllPoints()
+      bar.tier:SetPoint('LEFT', bar.frame, 'LEFT', TIER_LEFT_PADDING, 0)
+      if bar.tierBg then
+        bar.tierBg:ClearAllPoints()
+        bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
+        bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
+        bar.tierBg:Show()
+      end
+    end
+  end
+  bar.text:ClearAllPoints()
+  bar.text:SetPoint('CENTER', bar.frame, 'CENTER', 0, 0)
+
+  if effectiveFillColor then
+    bar.fill:SetColorTexture(unpack(effectiveFillColor))
+  end
+  if bgColor then
+    bar.bg:SetColorTexture(unpack(bgColor))
+  end
+  if effectiveFillColor then
+    bar.fill:SetColorTexture(unpack(effectiveFillColor))
+  end
+  if bgColor then
+    bar.bg:SetColorTexture(unpack(bgColor))
+  end
 end
+
 -- Initialize Statistics Tab when called
 function InitializeStatisticsTab()
   -- Check if tabContents[1] exists
@@ -103,8 +603,6 @@ function InitializeStatisticsTab()
   local statsScrollChild = CreateFrame('Frame', nil, statsScrollFrame)
   statsScrollChild:SetSize(560, 300) -- Width matches section header width
   statsScrollFrame:SetScrollChild(statsScrollChild)
-  local totalHPText
-  local totalManaText
   local resourceEventFrame
 
   -- Track all sections for dynamic positioning
@@ -236,7 +734,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Character Info breakdown
   local characterInfoContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  characterInfoContent:SetSize(540, 3 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- 3 rows: Level, HP, Mana (reduced by 10px for equal padding)
+  characterInfoContent:SetSize(540, LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Level only
   -- Position will be set by updateSectionPositions
   characterInfoContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -271,20 +769,13 @@ function InitializeStatisticsTab()
     characterInfoContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING
+    -LAYOUT.CONTENT_PADDING + ROW_Y_ADJUST
   )
   levelLabel:SetText('Level:')
   AddStatisticTooltip(levelLabel, 'level')
 
-  local levelText = characterInfoContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  levelText:SetPoint(
-    'TOPRIGHT',
-    characterInfoContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
-  levelText:SetText(formatNumberWithCommas(UnitLevel('player')))
+  local levelBar = CreateBarRow(characterInfoContent, 'level', -LAYOUT.CONTENT_PADDING, false)
+  UpdateStatBar('level', UnitLevel('player'))
 
   -- Create checkbox for showing level in main screen statistics
   local showStatsLevelRadio =
@@ -297,79 +788,6 @@ function InitializeStatisticsTab()
     tempSettings.showMainStatisticsPanelLevel = self:GetChecked()
     GLOBAL_SETTINGS.showMainStatisticsPanelLevel = self:GetChecked()
     -- Trigger immediate update of main screen statistics
-    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
-      UltraHardcoreStatsFrame.UpdateRowVisibility()
-    end
-  end)
-
-  -- Create Total HP display
-  local totalHPLabel = characterInfoContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  totalHPLabel:SetPoint(
-    'TOPLEFT',
-    characterInfoContent,
-    'TOPLEFT',
-    LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
-  )
-  totalHPLabel:SetText('Total HP:')
-  AddStatisticTooltip(totalHPLabel, 'totalHP')
-
-  totalHPText = characterInfoContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  totalHPText:SetPoint(
-    'TOPRIGHT',
-    characterInfoContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
-  )
-  totalHPText:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
-
-  local showStatsTotalHPRadio =
-    CreateFrame('CheckButton', nil, characterInfoContent, 'UICheckButtonTemplate')
-  showStatsTotalHPRadio:SetPoint('RIGHT', totalHPLabel, 'LEFT', -4, 0)
-  showStatsTotalHPRadio:SetScale(0.5)
-  showStatsTotalHPRadio:SetChecked(false)
-  radioButtons.showMainStatisticsPanelTotalHP = showStatsTotalHPRadio
-  showStatsTotalHPRadio:SetScript('OnClick', function(self)
-    tempSettings.showMainStatisticsPanelTotalHP = self:GetChecked()
-    GLOBAL_SETTINGS.showMainStatisticsPanelTotalHP = self:GetChecked()
-    if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
-      UltraHardcoreStatsFrame.UpdateRowVisibility()
-    end
-  end)
-
-  -- Create Total Mana display
-  local totalManaLabel = characterInfoContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  totalManaLabel:SetPoint(
-    'TOPLEFT',
-    characterInfoContent,
-    'TOPLEFT',
-    LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
-  )
-  totalManaLabel:SetText('Total Mana:')
-  AddStatisticTooltip(totalManaLabel, 'totalMana')
-
-  totalManaText = characterInfoContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  totalManaText:SetPoint(
-    'TOPRIGHT',
-    characterInfoContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
-  )
-  local manaPowerType = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
-  totalManaText:SetText(formatNumberWithCommas(UnitPowerMax('player', manaPowerType) or 0))
-
-  local showStatsTotalManaRadio =
-    CreateFrame('CheckButton', nil, characterInfoContent, 'UICheckButtonTemplate')
-  showStatsTotalManaRadio:SetPoint('RIGHT', totalManaLabel, 'LEFT', -4, 0)
-  showStatsTotalManaRadio:SetScale(0.5)
-  showStatsTotalManaRadio:SetChecked(false)
-  radioButtons.showMainStatisticsPanelTotalMana = showStatsTotalManaRadio
-  showStatsTotalManaRadio:SetScript('OnClick', function(self)
-    tempSettings.showMainStatisticsPanelTotalMana = self:GetChecked()
-    GLOBAL_SETTINGS.showMainStatisticsPanelTotalMana = self:GetChecked()
     if UltraHardcoreStatsFrame and UltraHardcoreStatsFrame.UpdateRowVisibility then
       UltraHardcoreStatsFrame.UpdateRowVisibility()
     end
@@ -403,7 +821,7 @@ function InitializeStatisticsTab()
   healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- 5 rows: Total, This Level, This Session, Close Escapes, Pet Deaths (reduced by 10px for equal padding)
+  healthTrackingContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- 5 stats, two rows each
   healthTrackingContent:Show()
   local healthTrackingSection =
     addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
@@ -437,20 +855,14 @@ function InitializeStatisticsTab()
     healthTrackingContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING
+    -LAYOUT.CONTENT_PADDING + ROW_Y_ADJUST
   )
   lowestHealthTotalLabel:SetText('Lowest Health (Total):')
   AddStatisticTooltip(lowestHealthTotalLabel, 'total')
 
-  lowestHealthText = healthTrackingContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  lowestHealthText:SetPoint(
-    'TOPRIGHT',
-    healthTrackingContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
-  lowestHealthText:SetText(string.format('%.1f%%', CharacterStats:GetStat('lowestHealth') or 100))
+  statBars.lowestHealth =
+    CreateBarRow(healthTrackingContent, 'lowestHealth', -LAYOUT.CONTENT_PADDING, false)
+  UpdateStatBar('lowestHealth', CharacterStats:GetStat('lowestHealth') or 100)
 
   -- Create checkbox for showing lowest health in main screen statistics
   local showStatsLowestHealthRadio =
@@ -476,23 +888,19 @@ function InitializeStatisticsTab()
     healthTrackingContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2 + ROW_Y_ADJUST
   )
   lowestHealthThisLevelLabel:SetText('Lowest Health (This Level):')
   AddStatisticTooltip(lowestHealthThisLevelLabel, 'thisLevel')
 
-  local lowestHealthThisLevelText =
-    healthTrackingContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  lowestHealthThisLevelText:SetPoint(
-    'TOPRIGHT',
-    healthTrackingContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
-  )
-  lowestHealthThisLevelText:SetText(
-    string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
-  )
+  statBars.lowestHealthThisLevel =
+    CreateBarRow(
+      healthTrackingContent,
+      'lowestHealthThisLevel',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2,
+      false
+    )
+  UpdateStatBar('lowestHealthThisLevel', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
 
   -- Create checkbox for showing this level health in main screen statistics
   local showStatsThisLevelRadio =
@@ -518,23 +926,19 @@ function InitializeStatisticsTab()
     healthTrackingContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4 + ROW_Y_ADJUST
   )
   lowestHealthThisSessionLabel:SetText('Lowest Health (This Session):')
   AddStatisticTooltip(lowestHealthThisSessionLabel, 'thisSession')
 
-  local lowestHealthThisSessionText =
-    healthTrackingContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  lowestHealthThisSessionText:SetPoint(
-    'TOPRIGHT',
-    healthTrackingContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
-  )
-  lowestHealthThisSessionText:SetText(
-    string.format('%.1f%%', CharacterStats:GetStat('lowestHealthThisSession') or 100)
-  )
+  statBars.lowestHealthThisSession =
+    CreateBarRow(
+      healthTrackingContent,
+      'lowestHealthThisSession',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4,
+      false
+    )
+  UpdateStatBar('lowestHealthThisSession', CharacterStats:GetStat('lowestHealthThisSession') or 100)
 
   -- Create checkbox for showing session health in main screen statistics
   local showStatsSessionHealthRadio =
@@ -560,21 +964,19 @@ function InitializeStatisticsTab()
     healthTrackingContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6 + ROW_Y_ADJUST
   )
   closeEscapesLabel:SetText('Close Escapes:')
   AddStatisticTooltip(closeEscapesLabel, 'closeEscapes')
 
-  local closeEscapesText =
-    healthTrackingContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  closeEscapesText:SetPoint(
-    'TOPRIGHT',
-    healthTrackingContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
-  )
-  closeEscapesText:SetText(formatNumberWithCommas(CharacterStats:GetStat('closeEscapes') or 0))
+  statBars.closeEscapes =
+    CreateBarRow(
+      healthTrackingContent,
+      'closeEscapes',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6,
+      false
+    )
+  UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
 
   local showStatsCloseEscapesRadio =
     CreateFrame('CheckButton', nil, healthTrackingContent, 'UICheckButtonTemplate')
@@ -597,20 +999,20 @@ function InitializeStatisticsTab()
     healthTrackingContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 8 + ROW_Y_ADJUST
   )
   petDeathsLabel:SetText('Pet Deaths:')
   AddStatisticTooltip(petDeathsLabel, 'petDeaths')
 
-  petDeathsText = healthTrackingContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  petDeathsText:SetPoint(
-    'TOPRIGHT',
-    healthTrackingContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
-  )
-  petDeathsText:SetText(formatNumberWithCommas(CharacterStats:GetStat('petDeaths')))
+  petDeathsText =
+    CreateBarRow(
+      healthTrackingContent,
+      'petDeaths',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 8,
+      true
+    )
+  statBars.petDeaths = petDeathsText
+  UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths'))
 
   -- Create checkbox for showing pet deaths in main screen statistics
   local showStatsPetDeathsRadio =
@@ -659,7 +1061,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Combat breakdown
   local combatContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatContent:SetSize(540, 8 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- 8 rows + padding (reduced by 10px for equal padding)
+  combatContent:SetSize(540, 8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- 8 stats, two rows each
   -- Position will be set by updateSectionPositions
   combatContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -692,20 +1094,14 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING
+    -LAYOUT.CONTENT_PADDING + ROW_Y_ADJUST
   )
   enemiesSlainTotalLabel:SetText('Total:')
   AddStatisticTooltip(enemiesSlainTotalLabel, 'enemiesSlainTotal')
 
-  local enemiesSlainText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  enemiesSlainText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
-  enemiesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('enemiesSlain')))
+  local enemiesSlainText =
+    CreateBarRow(combatContent, 'enemiesSlain', -LAYOUT.CONTENT_PADDING, false)
+  UpdateStatBar('enemiesSlain', CharacterStats:GetStat('enemiesSlain'))
 
   -- Create checkbox for showing enemies slain in main screen statistics
   local showStatsEnemiesSlainRadio =
@@ -730,20 +1126,19 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2 + ROW_Y_ADJUST
   )
   elitesSlainLabel:SetText('Elites Slain:')
   AddStatisticTooltip(elitesSlainLabel, 'elitesSlain')
 
-  local elitesSlainText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  elitesSlainText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT
-  )
-  elitesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('elitesSlain')))
+  local elitesSlainText =
+    CreateBarRow(
+      combatContent,
+      'elitesSlain',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2,
+      false
+    )
+  UpdateStatBar('elitesSlain', CharacterStats:GetStat('elitesSlain'))
 
   -- Create checkbox for showing elites slain in main screen statistics
   local showStatsElitesSlainRadio =
@@ -768,20 +1163,19 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4 + ROW_Y_ADJUST
   )
   rareElitesSlainLabel:SetText('Rare Elites Slain:')
   AddStatisticTooltip(rareElitesSlainLabel, 'rareElitesSlain')
 
-  local rareElitesSlainText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  rareElitesSlainText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 2
-  )
-  rareElitesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('rareElitesSlain')))
+  local rareElitesSlainText =
+    CreateBarRow(
+      combatContent,
+      'rareElitesSlain',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4,
+      false
+    )
+  UpdateStatBar('rareElitesSlain', CharacterStats:GetStat('rareElitesSlain'))
 
   -- Create checkbox for showing rare elites slain in main screen statistics
   local showStatsRareElitesSlainRadio =
@@ -806,20 +1200,19 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6 + ROW_Y_ADJUST
   )
   worldBossesSlainLabel:SetText('World Bosses Slain:')
   AddStatisticTooltip(worldBossesSlainLabel, 'worldBossesSlain')
 
-  local worldBossesSlainText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  worldBossesSlainText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 3
-  )
-  worldBossesSlainText:SetText(formatNumberWithCommas(CharacterStats:GetStat('worldBossesSlain')))
+  local worldBossesSlainText =
+    CreateBarRow(
+      combatContent,
+      'worldBossesSlain',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6,
+      false
+    )
+  UpdateStatBar('worldBossesSlain', CharacterStats:GetStat('worldBossesSlain'))
 
   -- Create checkbox for showing world bosses slain in main screen statistics
   local showStatsWorldBossesSlainRadio =
@@ -844,20 +1237,20 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 8 + ROW_Y_ADJUST
   )
   dungeonBossesLabel:SetText('Dungeon Bosses Slain:')
   AddStatisticTooltip(dungeonBossesLabel, 'dungeonBossesSlain')
 
-  local dungeonBossesText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  dungeonBossesText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 4
-  )
-  dungeonBossesText:SetText(formatNumberWithCommas(CharacterStats:GetStat('dungeonBossesKilled')))
+  local dungeonBossesText =
+    CreateBarRow(
+      combatContent,
+      'dungeonBossesKilled',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 8,
+      false
+    )
+  statBars.dungeonBossesKilled = dungeonBossesText
+  UpdateStatBar('dungeonBossesKilled', CharacterStats:GetStat('dungeonBossesKilled'))
 
   -- Create checkbox for showing dungeon bosses slain in main screen statistics
   local showStatsDungeonBossesRadio =
@@ -882,20 +1275,20 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 10 + ROW_Y_ADJUST
   )
   dungeonsCompletedLabel:SetText('Dungeons Completed:')
   AddStatisticTooltip(dungeonsCompletedLabel, 'dungeonsCompleted')
 
-  local dungeonsCompletedText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  dungeonsCompletedText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 5
-  )
-  dungeonsCompletedText:SetText(formatNumberWithCommas(CharacterStats:GetStat('dungeonsCompleted')))
+  local dungeonsCompletedText =
+    CreateBarRow(
+      combatContent,
+      'dungeonsCompleted',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 10,
+      false
+    )
+  statBars.dungeonsCompleted = dungeonsCompletedText
+  UpdateStatBar('dungeonsCompleted', CharacterStats:GetStat('dungeonsCompleted'))
 
   -- Create checkbox for showing dungeons completed in main screen statistics
   local showStatsDungeonsCompletedRadio =
@@ -920,20 +1313,20 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 12 + ROW_Y_ADJUST
   )
   highestCritLabel:SetText('Highest Crit Value:')
   AddStatisticTooltip(highestCritLabel, 'highestCritValue')
 
-  local highestCritText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  highestCritText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 6
-  )
-  highestCritText:SetText(formatNumberWithCommas(CharacterStats:GetStat('highestCritValue')))
+  local highestCritText =
+    CreateBarRow(
+      combatContent,
+      'highestCritValue',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 12,
+      false
+    )
+  statBars.highestCritValue = highestCritText
+  UpdateStatBar('highestCritValue', CharacterStats:GetStat('highestCritValue'))
 
   -- Create checkbox for showing highest crit value in main screen statistics
   local showStatsHighestCritRadio =
@@ -958,22 +1351,20 @@ function InitializeStatisticsTab()
     combatContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
+    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 14 + ROW_Y_ADJUST
   )
   highestHealCritLabel:SetText('Highest Heal Crit Value:')
   AddStatisticTooltip(highestHealCritLabel, 'highestHealCritValue')
 
-  local highestHealCritText = combatContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  highestHealCritText:SetPoint(
-    'TOPRIGHT',
-    combatContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 7
-  )
-  highestHealCritText:SetText(
-    formatNumberWithCommas(CharacterStats:GetStat('highestHealCritValue'))
-  )
+  local highestHealCritText =
+    CreateBarRow(
+      combatContent,
+      'highestHealCritValue',
+      -LAYOUT.CONTENT_PADDING - LAYOUT.ROW_HEIGHT * 14,
+      true
+    )
+  statBars.highestHealCritValue = highestHealCritText
+  UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue'))
 
   -- Create checkbox for showing highest heal crit value in main screen statistics
   local showStatsHighestHealCritRadio =
@@ -1021,7 +1412,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Survival breakdown
   local survivalContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  survivalContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below (reduced by 10px for equal padding)
+  survivalContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   survivalContent:Show() -- Always show
   -- Register section and make header clickable
@@ -1043,9 +1434,6 @@ function InitializeStatisticsTab()
   })
   survivalContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
   survivalContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
-
-  -- Create survival statistics display inside the content frame
-  local survivalTexts = {}
 
   -- Create survival statistics entries (items/consumables used)
   local survivalStats = { {
@@ -1071,25 +1459,20 @@ function InitializeStatisticsTab()
   } }
 
   local yOffset = -LAYOUT.CONTENT_PADDING
-  for _, stat in ipairs(survivalStats) do
+  for index, stat in ipairs(survivalStats) do
     local label = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    label:SetPoint('TOPLEFT', survivalContent, 'TOPLEFT', LAYOUT.ROW_INDENT + 12, yOffset)
+    label:SetPoint(
+      'TOPLEFT',
+      survivalContent,
+      'TOPLEFT',
+      LAYOUT.ROW_INDENT + 12,
+      yOffset + ROW_Y_ADJUST
+    )
     label:SetText(stat.label)
     AddStatisticTooltip(label, stat.tooltipKey)
 
-    local text = survivalContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    text:SetPoint('TOPRIGHT', survivalContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
-    if stat.key == 'duelsWinPercent' then
-      -- format percentage stats differently
-      local duelWinPercent = CharacterStats:GetStat(stat.key)
-      if duelWinPercent % 1 == 0 then
-        text:SetText(string.format('%d%%', duelWinPercent))
-      else
-        text:SetText(string.format('%.1f%%', duelWinPercent))
-      end
-    else
-      text:SetText(formatNumberWithCommas(CharacterStats:GetStat(stat.key)))
-    end
+    local bar = CreateBarRow(survivalContent, stat.key, yOffset, index == #survivalStats)
+    UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key))
 
     -- Create checkbox for this survival statistic
     local radio = CreateFrame('CheckButton', nil, survivalContent, 'UICheckButtonTemplate')
@@ -1107,14 +1490,15 @@ function InitializeStatisticsTab()
       end
     end)
 
-    survivalTexts[stat.key] = text
-
-    yOffset = yOffset - LAYOUT.ROW_HEIGHT
+    yOffset = yOffset - LAYOUT.ROW_HEIGHT * 2
   end
 
   -- Correct survival content height now that we know the total rows
   local survivalRows = #survivalStats
-  survivalContent:SetSize(540, survivalRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- Reduced by 10px for equal padding
+  survivalContent:SetSize(
+    540,
+    survivalRows * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12
+  )
   -- Create modern WoW-style Social section (collapsible)
   local socialHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   socialHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -1141,7 +1525,7 @@ function InitializeStatisticsTab()
   socialLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local socialContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  socialContent:SetSize(540, 1 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- Reduced by 10px for equal padding
+  socialContent:SetSize(540, 1 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
   socialContent:Show()
   local socialSection = addSection(socialHeader, socialContent, 'social')
   makeHeaderClickable(socialHeader, socialContent, 'social', socialSection)
@@ -1167,20 +1551,14 @@ function InitializeStatisticsTab()
     socialContent,
     'TOPLEFT',
     LAYOUT.ROW_INDENT + 12,
-    -LAYOUT.CONTENT_PADDING
+    -LAYOUT.CONTENT_PADDING + ROW_Y_ADJUST
   )
   partyDeathsLabel:SetText('Party Deaths Witnessed:')
   AddStatisticTooltip(partyDeathsLabel, 'partyDeathsWitnessed')
 
-  local partyDeathsText = socialContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  partyDeathsText:SetPoint(
-    'TOPRIGHT',
-    socialContent,
-    'TOPRIGHT',
-    -LAYOUT.ROW_INDENT,
-    -LAYOUT.CONTENT_PADDING
-  )
-  partyDeathsText:SetText(formatNumberWithCommas(CharacterStats:GetStat('partyMemberDeaths') or 0))
+  statBars.partyMemberDeaths =
+    CreateBarRow(socialContent, 'partyMemberDeaths', -LAYOUT.CONTENT_PADDING, true)
+  UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
 
   local showStatsPartyDeathsRadio =
     CreateFrame('CheckButton', nil, socialContent, 'UICheckButtonTemplate')
@@ -1226,7 +1604,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Misc breakdown
   local miscContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  miscContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below (reduced by 10px for equal padding)
+  miscContent:SetSize(540, 6 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
   -- Position will be set by updateSectionPositions
   miscContent:Show()
 
@@ -1251,7 +1629,6 @@ function InitializeStatisticsTab()
   miscContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create misc statistics display inside the content frame
-  local miscTexts = {}
   local miscStats = { {
     key = 'duelsTotal',
     label = 'Duels Total:',
@@ -1279,24 +1656,20 @@ function InitializeStatisticsTab()
   } }
 
   local miscYOffset = -LAYOUT.CONTENT_PADDING
-  for _, stat in ipairs(miscStats) do
+  for index, stat in ipairs(miscStats) do
     local label = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    label:SetPoint('TOPLEFT', miscContent, 'TOPLEFT', LAYOUT.ROW_INDENT + 12, miscYOffset)
+    label:SetPoint(
+      'TOPLEFT',
+      miscContent,
+      'TOPLEFT',
+      LAYOUT.ROW_INDENT + 12,
+      miscYOffset + ROW_Y_ADJUST
+    )
     label:SetText(stat.label)
     AddStatisticTooltip(label, stat.tooltipKey)
 
-    local text = miscContent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    text:SetPoint('TOPRIGHT', miscContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, miscYOffset)
-    if stat.key == 'duelsWinPercent' then
-      local duelWinPercent = CharacterStats:GetStat(stat.key) or 0
-      if duelWinPercent % 1 == 0 then
-        text:SetText(string.format('%d%%', duelWinPercent))
-      else
-        text:SetText(string.format('%.1f%%', duelWinPercent))
-      end
-    else
-      text:SetText(formatNumberWithCommas(CharacterStats:GetStat(stat.key)))
-    end
+    local bar = CreateBarRow(miscContent, stat.key, miscYOffset, index == #miscStats)
+    UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key))
 
     -- Create checkbox for this misc statistic
     local radio = CreateFrame('CheckButton', nil, miscContent, 'UICheckButtonTemplate')
@@ -1313,13 +1686,12 @@ function InitializeStatisticsTab()
       end
     end)
 
-    miscTexts[stat.key] = text
-    miscYOffset = miscYOffset - LAYOUT.ROW_HEIGHT
+    miscYOffset = miscYOffset - LAYOUT.ROW_HEIGHT * 2
   end
 
   -- Correct misc content height now that we know the total rows
   local miscRows = #miscStats
-  miscContent:SetSize(540, miscRows * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 - 12) -- Reduced by 10px for equal padding
+  miscContent:SetSize(540, miscRows * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12)
   -- Create modern WoW-style XP gained section (collapsible)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -1519,139 +1891,39 @@ function InitializeStatisticsTab()
       LoadDBData()
     end
 
-    -- Update level display
-    if levelText then
-      local playerLevel = UnitLevel('player') or 1
-      levelText:SetText(formatNumberWithCommas(playerLevel))
+    UpdateStatBar('level', UnitLevel('player') or 1)
+
+    UpdateStatBar('lowestHealth', CharacterStats:GetStat('lowestHealth') or 100)
+    UpdateStatBar('lowestHealthThisLevel', CharacterStats:GetStat('lowestHealthThisLevel') or 100)
+    UpdateStatBar(
+      'lowestHealthThisSession',
+      CharacterStats:GetStat('lowestHealthThisSession') or 100
+    )
+
+    UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths') or 0)
+    UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
+    UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
+
+    UpdateStatBar('elitesSlain', CharacterStats:GetStat('elitesSlain') or 0)
+    UpdateStatBar('rareElitesSlain', CharacterStats:GetStat('rareElitesSlain') or 0)
+    UpdateStatBar('worldBossesSlain', CharacterStats:GetStat('worldBossesSlain') or 0)
+    UpdateStatBar('enemiesSlain', CharacterStats:GetStat('enemiesSlain') or 0)
+    UpdateStatBar('dungeonBossesKilled', CharacterStats:GetStat('dungeonBossesKilled') or 0)
+    UpdateStatBar('dungeonsCompleted', CharacterStats:GetStat('dungeonsCompleted') or 0)
+
+    UpdateStatBar('highestCritValue', CharacterStats:GetStat('highestCritValue') or 0)
+    UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
+
+    for _, stat in ipairs(survivalStats) do
+      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
     end
 
-    if totalHPText then
-      local maxHealth = UnitHealthMax('player') or 0
-      totalHPText:SetText(formatNumberWithCommas(maxHealth))
-    end
-
-    if totalManaText then
-      local manaPowerType = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
-      local maxMana = UnitPowerMax('player', manaPowerType) or 0
-      totalManaText:SetText(formatNumberWithCommas(maxMana))
-    end
-
-    if lowestHealthText then
-      local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
-      lowestHealthText:SetText(string.format('%.1f', currentLowestHealth) .. '%')
-    end
-
-    if lowestHealthThisLevelText then
-      local currentLowestHealthThisLevel = CharacterStats:GetStat('lowestHealthThisLevel') or 100
-      lowestHealthThisLevelText:SetText(string.format('%.1f', currentLowestHealthThisLevel) .. '%')
-    end
-
-    if lowestHealthThisSessionText then
-      local currentLowestHealthThisSession =
-        CharacterStats:GetStat('lowestHealthThisSession') or 100
-      lowestHealthThisSessionText:SetText(
-        string.format('%.1f', currentLowestHealthThisSession) .. '%'
-      )
-    end
-
-    -- Update pet death display
-    if petDeathsText then
-      local currentPetDeaths = CharacterStats:GetStat('petDeaths') or 0
-      petDeathsText:SetText(formatNumberWithCommas(currentPetDeaths))
-    end
-
-    -- Update close escapes display
-    if closeEscapesText then
-      local currentCloseEscapes = CharacterStats:GetStat('closeEscapes') or 0
-      closeEscapesText:SetText(formatNumberWithCommas(currentCloseEscapes))
-    end
-
-    -- Update party deaths display
-    if partyDeathsText then
-      local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
-      partyDeathsText:SetText(formatNumberWithCommas(currentPartyDeaths))
-    end
-
-    if elitesSlainText then
-      local elites = CharacterStats:GetStat('elitesSlain') or 0
-      elitesSlainText:SetText(formatNumberWithCommas(elites))
-    end
-
-    if rareElitesSlainText then
-      local rareElites = CharacterStats:GetStat('rareElitesSlain') or 0
-      rareElitesSlainText:SetText(formatNumberWithCommas(rareElites))
-    end
-
-    if worldBossesSlainText then
-      local worldBosses = CharacterStats:GetStat('worldBossesSlain') or 0
-      worldBossesSlainText:SetText(formatNumberWithCommas(worldBosses))
-    end
-
-    if enemiesSlainText then
-      local enemies = CharacterStats:GetStat('enemiesSlain') or 0
-      enemiesSlainText:SetText(formatNumberWithCommas(enemies))
-    end
-
-    if dungeonBossesText then
-      local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-      dungeonBossesText:SetText(formatNumberWithCommas(dungeonBosses))
-    end
-
-    if dungeonsCompletedText then
-      local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
-      dungeonsCompletedText:SetText(formatNumberWithCommas(dungeonsCompleted))
-    end
-
-    -- Update highest crit value
-    if highestCritText then
-      local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
-      highestCritText:SetText(formatNumberWithCommas(highestCrit))
-    end
-
-    -- Update highest heal crit value
-    if highestHealCritText then
-      local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
-      highestHealCritText:SetText(formatNumberWithCommas(highestHealCrit))
+    for _, stat in ipairs(miscStats) do
+      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
     end
 
     -- Update XP breakdown (always visible now)
     UpdateXPBreakdown()
-
-    -- Update survival statistics
-    if survivalTexts then
-      for _, stat in ipairs(survivalStats) do
-        local value = CharacterStats:GetStat(stat.key) or 0
-        if survivalTexts[stat.key] then
-          if stat.key == 'duelsWinPercent' then
-            if value % 1 == 0 then
-              survivalTexts[stat.key]:SetText(string.format('%d%%', value))
-            else
-              survivalTexts[stat.key]:SetText(string.format('%.1f%%', value))
-            end
-          else
-            survivalTexts[stat.key]:SetText(formatNumberWithCommas(value))
-          end
-        end
-      end
-    end
-
-    -- Update misc statistics
-    if miscTexts then
-      for _, stat in ipairs(miscStats) do
-        local value = CharacterStats:GetStat(stat.key) or 0
-        if miscTexts[stat.key] then
-          if stat.key == 'duelsWinPercent' then
-            if value % 1 == 0 then
-              miscTexts[stat.key]:SetText(string.format('%d%%', value))
-            else
-              miscTexts[stat.key]:SetText(string.format('%.1f%%', value))
-            end
-          else
-            miscTexts[stat.key]:SetText(formatNumberWithCommas(value))
-          end
-        end
-      end
-    end
   end
 
   -- Keep Total HP/Mana values current when stats change outside the panel
