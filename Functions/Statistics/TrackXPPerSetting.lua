@@ -8,6 +8,7 @@
 local settingToXPVariable = {
   -- Total XP, not tied to settings
   xpTotal = 'xpTotal', 
+  xpTrackedByAddon = 'xpTrackedByAddon',
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',
@@ -68,11 +69,13 @@ local function UpdateXPTracking(levelUp)
       local isSettingEnabled = GLOBAL_SETTINGS[settingName]
 
       -- For boolean settings, if they're false, we're gaining XP "without" that option
-      if not isSettingEnabled then
+      if not isSettingEnabled or AddonXPTracking:ShouldTrackStat(xpVariable) then
         -- Access character stats directly from our local variable to minimize calls
-        local currentXPForSetting = stats[xpVariable] or 0
-        local newXPForSetting = currentXPForSetting + xpGained
-        stats[xpVariable] = newXPForSetting
+        if AddonXPTracking:ShouldStoreStat(xpVariable) then
+          local currentXPForSetting = stats[xpVariable] or 0
+          local newXPForSetting = currentXPForSetting + xpGained
+          stats[xpVariable] = newXPForSetting
+        end
       end
     end
 
@@ -114,14 +117,15 @@ xpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
 xpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_XP_UPDATE' then
-    AddonXPTracking:XPTrackingDebug('PLAYER_XP_UPDATE event fired')
+    Printing:Debug('PLAYER_XP_UPDATE event fired')
     UpdateXPTracking(false)
   elseif event == 'PLAYER_LEVEL_UP' then
-    AddonXPTracking:XPTrackingDebug('PLAYER_LEVEL_UP event fired')
+    Printing:Debug('PLAYER_LEVEL_UP event fired')
     UpdateXPTracking(true)
   elseif event == 'PLAYER_LOGIN' then
     InitializeXPTracking()
   elseif event == 'ADDON_LOADED' and select(1, ...) == 'UltraHardcore' then
+    --Printing:EnableDebug()
     -- This event is too soon to load player XP immediately but it is the only one called with a /reload
     -- So use a timer to call InitializeXPTracking
     C_Timer.After(3.0, function()

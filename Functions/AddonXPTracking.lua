@@ -11,13 +11,16 @@ local AddonXPTracking = {
   },
   highXpMark = 999999999,
   DEBUGXP = false,
-  trackingInitialized = false
+  trackingInitialized = false,
+  XpDriftLevelValues = {
+    {level=10, lowPctDrift=10, mediumPctDrift=15}, -- At level 10, 10% is equal to XP for levels 1-4
+    {level=20, lowPctDrift=9, mediumPctDrift=14},
+    {level=30, lowPctDrift=8, mediumPctDrift=13},
+    {level=40, lowPctDrift=7, mediumPctDrift=12},
+    {level=50, lowPctDrift=6, mediumPctDrift=11},
+    {level=59, lowPctDrift=5, mediumPctDrift=6}, -- At level 59, 5% is equal to XP for levels 1-20
+  }
 }
-
-local yellowTextColour = '|cffffd000'
-local greenTextColour = '|cff33F24C'
-local redTextColour = '|cffFF4444'
-local msgPrefix = yellowTextColour .. "[|r" .. redTextColour .. "ULTRA|r" .. yellowTextColour .. "]|r "
 
 function AddonXPTracking:Stats()
     return CharacterStats:GetCurrentCharacterStats() 
@@ -31,11 +34,9 @@ function AddonXPTracking:DefaultSettings()
     return CharacterStats.defaults
 end
 
-function AddonXPTracking:XPTrackingDebug(msg)
-  if self.DEBUGXP ~= true then return end
-  print(msgPrefix .. "(" .. yellowTextColour .. "AddonXPTracking DEBUG|r) " ..  msg)
-end 
-
+--- Returns the minimum total XP required to reach the specified level.
+-- @param currentLevel The level to calculate the minimum XP for.
+-- @return The minimum total XP required to reach the specified level.
 function AddonXPTracking:GetMinXPForLevel(currentLevel)
   local totalXP = 0
 
@@ -47,7 +48,8 @@ function AddonXPTracking:GetMinXPForLevel(currentLevel)
   return totalXP
 end
 
--- This function adds XP from the level up table and current xp
+--- Returns the total XP the player has earned based on their level and current XP.
+-- @return The total XP the player has earned.
 function AddonXPTracking:GetTotalXP()
     local currentLevel = UnitLevel("player")
     local currentXP = UnitXP('player')
@@ -55,42 +57,40 @@ function AddonXPTracking:GetTotalXP()
 end
 
 function AddonXPTracking:CalculateTotalXPGained()
-    self:XPTrackingDebug("Calculating Total XP for " .. redTextColour .. UnitGUID("player") .. "|r")
+    Printing:Debug("Calculating Total XP for " .. Colours:R(UnitGUID("player")))
     local stats = self:Stats()
     local totalXP = self:GetTotalXP()
-    self:XPTrackingDebug("Total XP is " .. totalXP)
+    Printing:Debug("Total XP is " .. totalXP)
     stats["xpTotal"] = totalXP
-    if stats.xpGWA ~= nil and stats.xpGWA > 0 then
-      local xpGWOA = totalXP - stats.xpGWA
-      stats["xpGWOA"] = xpGWOA
-      self:XPTrackingDebug("XP Gained without Addon is " .. xpGWOA)
-    end
     return totalXP
 end
 
 function AddonXPTracking:ShouldRecalculateXPGainedWithAddon()
   local stats = self:Stats()
   local playerLevel = UnitLevel("player")
-  if stats.xpGWA == nil and stats.xpGWOA == nil then
-    self:XPTrackingDebug("Recalculating because xpGWA and xpGWOA are both nil")
-    return true
-  elseif stats.xpGWA == 0 and stats.xpGWOA == 0 and stats.xpTotal > 0 then
-    self:XPTrackingDebug("Recalculating because xpGWA and xpGWOA are both 0, xpTotal is " .. stats.xpTotal)
+  if stats.xpTrackedByAddon == nil then
+    Printing:Debug("Recalculating because xpTrackedByAddon is nil")
     return true
   else
-    self:XPTrackingDebug("Addon XP should not be recalculated")
+    Printing:Debug("Addon XP should not be recalculated")
     return false
   end
 end
 
+--- Returns true if the specified stat should be considered when calculating highest XP stat.
+-- @param statName The name of the stat to check.
+-- @return True if the stat should be considered, false otherwise.
 function AddonXPTracking:ShouldCheckStat(statName)
   local result = statName ~= "xpTotal"
-                  and statName ~= "xpGWA"
-                  and statName ~= "xpGWOA"
+                  and statName ~= "xpTrackedByAddon"
                   and statName ~= "playerJumps"
                   and statName ~= "lastSessionXP"
+                  and statName ~= "LastReloadedAt"
+                  and statName ~= "LastReminderClosedAt"
+                  and statName ~= "playerLives"
+                  and statName ~= "deathHistory"
                   and string.find(statName, "lowestHealth") == nil
-  --self:XPTrackingDebug("Should we count stats for " .. statName .. "? " .. tostring(result))
+  --Printing:Debug("Should we count stats for " .. statName .. "? " .. tostring(result))
   return result                  
 end
 
@@ -109,7 +109,7 @@ function AddonXPTracking:GetHighestNonHealthStat()
       end
     end
   end
-  self:XPTrackingDebug("Highest non-health XP stat is " .. highestXPStatName .. "=" .. highestXp)
+  Printing:Debug("Highest non-health XP stat is " .. highestXPStatName .. "=" .. highestXp)
   return highestXp
 end
 
@@ -130,7 +130,7 @@ function AddonXPTracking:GetHighestXpGainedStat()
       end
     end
   end
-  self:XPTrackingDebug("Highest XP stat is " .. highestXPStatName .. "=" ..highestXp)
+  Printing:Debug("Highest XP stat is " .. highestXPStatName .. "=" ..highestXp)
   return highestXp
 end
 
@@ -154,37 +154,30 @@ function AddonXPTracking:GetLowestXpGainedStat()
       end
     end
   end
-  self:XPTrackingDebug("Lowest XP stat is " .. lowestXPStatName .. "=" .. lowestXP)
+  Printing:Debug("Lowest XP stat is " .. lowestXPStatName .. "=" .. lowestXP)
   return lowestXP
 end
 
--- This will retroactively figure out the amount of XP gained _with_ the addon
+--- Recalculates the amount of XP gained with the addon by finding the lowest xpGainedWithoutOption stat
+-- @param forceReset If true, forces the reset even if not needed.
 function AddonXPTracking:ResetXPGainedWithAddon(forceReset)
   local playerLevel = UnitLevel("player")
   local xpDiff = 0
-  local xpWithoutAddon = 0
-  local totalXP = 0
-
+  local totalXP = self:GetTotalXP()
   local lowestXP = self:GetLowestXpGainedStat() or nil
   local highestXP = self:GetHighestXpGainedStat() or nil
+  local anyStat = self:GetHighestNonHealthStat()
 
-  if lowestXP < self.highXpMark then
-    totalXP = self:CalculateTotalXPGained()
-    local anyStat = self:GetHighestNonHealthStat()
-
-    if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
-      self:XPTrackingDebug("All high stats are 0, player level is " .. playerLevel)
-      -- This player looks to have just turned ultra on so all their XP is without addon
-      xpDiff = 0
-    else
-      xpDiff = totalXP - lowestXP
-    end
-    xpWithoutAddon = totalXP - xpDiff
-
-    self:UpdateStat("xpGWA", xpDiff)
-    self:UpdateStat("xpGWOA", xpWithoutAddon)
-    self:UpdateStat("xpTotal", totalXP)
+  if highestXP == 0 and anyStat == 0 and playerLevel > 1 then
+    Printing:Debug("All high stats are 0, player level is " .. playerLevel)
+    -- This player looks to have just turned ultra on so all their XP is without addon
+    xpDiff = 0
+  else
+    xpDiff = totalXP - lowestXP
   end
+
+  self:UpdateStat("xpTrackedByAddon", xpDiff)
+  self:UpdateStat("xpTotal", totalXP)
 end
 
 function AddonXPTracking:ForceSave()
@@ -192,16 +185,23 @@ function AddonXPTracking:ForceSave()
   local totalXP = self:CalculateTotalXPGained()
 
   self:UpdateStat("xpTotal", totalXP)
-  self.UpdateStat("xpGWA", stats.xpGWA)
-  self.UpdateStat("xpGWOA", totalXP - stats.xpGWA)
+  self.UpdateStat("xpTrackedByAddon", stats.xpTrackedByAddon)
   AddonXPTracking:XPTrackingDebug("Setting XP values: " .. totalXP 
-                                  .. " - " .. stats.xpGWA
-                                  .. " = " .. stats.xpGWOA
+                                  .. " - " .. stats.xpTrackedByAddon
+                                  .. " = " .. self:WithoutAddon()
                                 )
 end
 
+--- Initializes XP tracking for the addon.
+-- @param lastXPValue The last known XP value for the player.
 function AddonXPTracking:Initialize(lastXPValue)
   if self.trackingInitialized ~= true then
+    -- Because we disabled XP tracking, xpGWA is no longer valid so lets get rid of it
+    self:UpdateStat("xpGWA", nil)
+
+    -- This sets the last reload time
+    ReloadReminder:Touch()
+
     local playerLevel = UnitLevel("player")
     if lastXPValue == 0 and playerLevel > 1 then
       -- This shouldn't happen but just in case, don't run until later
@@ -210,58 +210,86 @@ function AddonXPTracking:Initialize(lastXPValue)
 
     local xp = self:CalculateTotalXPGained()
     self:UpdateStat("xpTotal", xp)
-    self:XPTrackingDebug("Player XP total is " .. xp)
+    Printing:Debug("Player XP total is " .. xp)
 
     if playerLevel == 1 and lastXPValue == 0 then
       self:UpdateStat("xpTotal", 0)
+      self:UpdateStat("xpTrackedByAddon", 0)
+    elseif self:ShouldRecalculateXPGainedWithAddon() == true then
+      self:ResetXPGainedWithAddon(true)
     end
     self.trackingInitialized = true
   end
 end
 
+--- Returns true if the specified stat should be stored when calculating highest XP stat.
+-- @param xpVariable The name of the XP variable to check.
 function AddonXPTracking:ShouldStoreStat(xpVariable)
-  return xpVariable ~= "xpGWOA" and xpVariable ~= "xpTotal"
+  return xpVariable ~= "xpTotal"
 end
 
+--- Returns true if the specified stat should be tracked when calculating highest XP stat.
+-- @param xpVariable The name of the XP variable to check.
 function AddonXPTracking:ShouldTrackStat(xpVariable)
-  if xpVariable == "xpGWA" or xpVariable == "xpGWOA" then
+  if xpVariable == "xpTrackedByAddon" then
     return true
   else
     return false
   end
 end
 
--- This function returns the storged total XP value from CharacterStats
 function AddonXPTracking:TotalXP()
-  return self:Stats()["xpTotal"]
+  return self:GetTotalXP()
 end
 
+--- Returns the amount of XP tracked by the addon.
 function AddonXPTracking:WithAddon()
-  return self:Stats()["xpGWA"]
+  return self:Stats()["xpTrackedByAddon"]
 end
 
+--- Returns the amount of XP not tracked by the addon.
 function AddonXPTracking:WithoutAddon()
-  return self:Stats()["xpGWOA"]
+  return self:GetTotalXP() - self:WithAddon()
 end
 
+--- Returns the percentage of total XP that has been tracked by the addon.
+function AddonXPTracking:PercentXPTracked()
+  if self:GetTotalXP() == 0 then return 100 end
+  return (self:WithAddon() / self:GetTotalXP()) * 100
+end
+
+--- Returns the percentage of total XP that has NOT been tracked by the addon.
+function AddonXPTracking:PercentXPMissing()
+  if self:GetTotalXP() == 0 then return 0 end
+  local untracked = self:WithoutAddon()
+
+  if untracked > 0 then
+    return (untracked / self:GetTotalXP()) * 100
+  else
+    return 0
+  end
+end
+
+--- Returns true if the addon's tracked XP is considered valid based on current level and percent XP missing.
 function AddonXPTracking:XPIsVerified()
-  local stats = self:Stats()
-  local isVerified = stats.xpGWA == stats.xpTotal and stats.xpGWOA == 0
-  self:XPTrackingDebug("Addon XP verification status: " .. tostring(isVerified))
-  return isVerified
+  local result = self:IsAddonXPValid(UnitLevel('player'))
+  Printing:Debug("Addon XP verification status: " .. tostring(result))
+  return result
 end
 
+--- Returns the amount of XP required to reach the specified level.
 function AddonXPTracking:XPForLevel(level)
   return self.TotalXPTable[level]
 end
 
+--- Returns the current XP value, adjusting for level ups if specified.
 function AddonXPTracking:GetXP(levelUp) 
   if levelUp == nil then levelUp = false end
 
   if levelUp then
     local newLevel = UnitLevel("player")
     local levelXP = AddonXPTracking:XPForLevel(newLevel)
-    self:XPTrackingDebug("Leveling up, reporting XP as " .. levelXP)
+    Printing:Debug("Leveling up, reporting XP as " .. levelXP)
     return levelXP
   else
     return UnitXP("player")
@@ -272,7 +300,7 @@ function AddonXPTracking:NewLastXPValue(levelUp, currentXp)
   if levelUp == nil then levelUp = false end
 
   if levelUp then
-    self:XPTrackingDebug("New XP value is 0 due to level up.  XP was " .. currentXp)
+    Printing:Debug("New XP value is 0 due to level up.  XP was " .. currentXp)
     return 0
   else
     return currentXp
@@ -284,22 +312,47 @@ function AddonXPTracking:NewLastXPUpdate(levelUp, currentTime)
 
   if levelUp then
     local newTime = currentTime - 2
-    self:XPTrackingDebug("Falsifying last update timestamp from " .. currentTime .. " to " .. newTime)
+    Printing:Debug("Falsifying last update timestamp from " .. currentTime .. " to " .. newTime)
     return newTime
   else
     return currentTime
   end
 end
 
-function AddonXPTracking:IsAddonXPValid(currentLevel) 
-  --[[local stats = self:Stats()
-  local xpForLevel = self:GetMinXPForLevel(currentLevel)
-  return (stats.xpGWA + stats.xpGWOA) >= xpForLevel]]
-  return true
+--- Returns the level of XP drift based on current level and percent XP missing.
+function AddonXPTracking:XPDriftAmount()
+  local level = UnitLevel("player")
+  local pctMissing = self:PercentXPMissing()
+  if pctMissing == 0 or level == 60 then return "NONE" end
+
+  for _, levelData in ipairs(self.XpDriftLevelValues) do
+    if level <= levelData.level then
+      if pctMissing <= levelData.lowPctDrift then
+        return "LOW" 
+      elseif pctMissing <= levelData.mediumPctDrift then
+        return "MEDIUM"
+      else
+        return "HIGH"
+      end
+    end
+  end
 end
 
-function AddonXPTracking:ValidateTotalStoredXP()
-  return self:GetTotalXP() == self:TotalXP()
+--- Returns true if the addon's tracked XP is considered valid based on current level and percent XP missing.
+function AddonXPTracking:IsAddonXPValid(currentLevel) 
+  if currentLevel == 60 then return true end
+  local pctMissing = self:PercentXPMissing()
+  Printing:Debug("Percent XP untracked: " .. pctMissing .. "%")
+  local result = false
+  for _, levelData in ipairs(self.XpDriftLevelValues) do
+    if currentLevel <= levelData.level then
+      if pctMissing <= levelData.mediumPctDrift then
+        result = true
+      end
+      break
+    end
+  end
+  return result
 end
 
 function AddonXPTracking:PrintXPVerificationWarning()
@@ -310,15 +363,38 @@ function AddonXPTracking:PrintXPVerificationWarning()
     ]]
 end
 
+--- Prints a report of the addon's XP tracking performance to the chat window.
 function AddonXPTracking:XPReport()
-  --[[
-  local verified = AddonXPTracking:XPIsVerified() and greenTextColour .. "is fully verified|r" or redTextColour .. "is not fully verified|r"
+  --Printing:P(Colours:Y("XP Tracked: ") .. Colours:G(tostring(AddonXPTracking:WithAddon())))
 
-  print(msgPrefix .. yellowTextColour .. "Total XP: |r" .. tostring(AddonXPTracking:TotalXP()))
-  print(msgPrefix .. yellowTextColour .. "XP Gained With Addon: " .. greenTextColour .. tostring(AddonXPTracking:WithAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "XP Gained Without Addon: |r".. redTextColour .. tostring(AddonXPTracking:WithoutAddon()) .. "|r")
-  print(msgPrefix .. yellowTextColour .. "Your addon XP |r" .. verified)
-  ]]
+  local pctMissing = self:PercentXPMissing()
+  local driftLevel = self:XPDriftAmount()
+  local xpColor = "Green"
+
+  if driftLevel == "LOW" then
+    xpColor = "Chartreuse"
+  elseif driftLevel == "MEDIUM" then
+    xpColor = "Orange"
+  elseif driftLevel == "HIGH" then
+    xpColor = "Red"
+  end
+  
+  Printing:P(Colours:W("Tracked XP")
+            .. Colours:Y(" / ")
+            .. Colours:W("Total XP: ")
+            .. Colours:ByName(xpColor,formatNumberWithCommas(AddonXPTracking:WithAddon()))
+            .. Colours:Y(" / ")
+            .. Colours:G(formatNumberWithCommas(AddonXPTracking:GetTotalXP())))
+
+  if pctMissing > 0 then 
+    Printing:P(Colours:Y("The addon could not track ") .. Colours:ByName(xpColor, string.format("%.2f", pctMissing) .. "%") .. Colours:Y(" of your XP."))
+    
+    local level = UnitLevel("player")
+    Printing:P("At level " .. Colours:ByName("Silver", level) .. " your XP drift is considered " .. Colours:ByName(xpColor, driftLevel))
+  else
+    Printing:P(Colours:ByName("LightBlue","No XP drift detected."))
+  end
+
 end 
 
 SLASH_XPFORLEVEL1 = '/uhcxpforlevel'
@@ -329,10 +405,16 @@ SlashCmdList['XPFORLEVEL'] = function(msg)
       totalXP = totalXP + xp
     end
   end
-  print("A level " .. greenTextColour .. msg 
-        .. "|r character has at least " 
-        .. redTextColour .. formatNumberWithCommas(totalXP) 
-        .. "|r XP")
+  Printing:P("A level " .. Colours:G(msg)
+        .. " character has at least " 
+        .. Colours:ByName("Cyan", formatNumberWithCommas(totalXP)) 
+        .. " XP")
 end
+
+SLASH_XPGWAREPORT1 = '/uhcxpreport'
+SlashCmdList['XPGWAREPORT'] = function() 
+  AddonXPTracking:XPReport()
+end
+
 
 _G.AddonXPTracking = AddonXPTracking

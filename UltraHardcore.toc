@@ -51,6 +51,7 @@ Functions/GroupButtons.lua
 Functions/ExpBar.lua
 Functions/TradeRestriction.lua
 Functions/AddonXPTracking.lua
+Functions/ReloadReminder.lua
 
 Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
@@ -76,6 +77,8 @@ Functions/Utils/TwitchInvite.lua
 Functions/Utils/KofiInvite.lua
 Functions/Utils/TbcQuestionnaire.lua
 Functions/Utils/AboutAuthor.lua
+Functions/Utils/Colours.lua
+Functions/Utils/Printing.lua
 Functions/Utils/ConfirmationDialog.lua
 Functions/Utils/ResetUI.lua
 

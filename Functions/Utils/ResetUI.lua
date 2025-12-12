@@ -20,6 +20,13 @@ local function ResetUI()
   elseif SlashCmdList['RESETRESOURCEBAR'] then
     SlashCmdList['RESETRESOURCEBAR']()
   end
+
+  -- Reload reminder button
+  if _G.ResetReloadButtonPosition  then
+    _G.ResetReloadButtonPosition()
+  elseif SlashCmdList['UHCRELOADBUTTONRESET'] then
+    SlashCmdList['UHCRELOADBUTTONRESET']()
+  end
   
   -- Reset resource indicator
   if _G.ResetResourceIndicatorPosition then

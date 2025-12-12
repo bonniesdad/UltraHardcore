@@ -221,7 +221,7 @@ local settingsCheckboxOptions = { {
   dependsOn = 'hideMinimap',
 } }
 
--- XP Bar Settings
+-- XP Bar and Reload Reminder Settings
 local settingsSliderOptions = { {
   name = 'XP Bar Height',
   dbSettingsValueName = 'xpBarHeight',
@@ -229,6 +229,13 @@ local settingsSliderOptions = { {
   minValue = MINIMUM_XP_BAR_HEIGHT,
   maxValue = MAXIMUM_XP_BAR_HEIGHT,
   defaultValue = 3,
+}, {
+  name = 'Reload Reminder Interval',
+  dbSettingsValueName = 'reminderIntervalMinutes',
+  tooltip = 'Configure when the reload reminder first appears',
+  minValue = ReloadReminder.MinMinutes,
+  maxValue = ReloadReminder.MaxMinutes,
+  defaultValue = ReloadReminder.DefaultMinutes,
 } }
 
 local presets = { {
@@ -1118,6 +1125,11 @@ function InitializeSettingsOptionsTab()
             if sliderItem.dbSettingsValueName == 'xpBarHeight' and _G.UpdateExpBarHeight then
               UpdateExpBarHeight()
             end
+
+            -- Handle Reload Reminder interval changes
+            if sliderItem.dbSettingsValueName == 'reminderIntervalMinutes' and _G.ReloadReminder then
+              ReloadReminder:UpdateInterval(newValue)
+            end
           end)
 
           -- Add tooltip functionality
@@ -1367,7 +1379,7 @@ function InitializeSettingsOptionsTab()
           end
 
           SaveCharacterSettings(GLOBAL_SETTINGS)
-          ReloadUI()
+          ReloadReminder:DoReload()
         end,
         nil,
         'Save and Reload',
@@ -1543,6 +1555,61 @@ function InitializeSettingsOptionsTab()
     GameTooltip:Hide()
   end)
   addUIRow(lockResourceBarCheckbox, 'lock resource bar position custom move', nil)
+
+  -- Reload Reminder Interval slider
+  local reminderRow = CreateFrame('Frame', nil, colorSectionFrame)
+  reminderRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.ROW_HEIGHT)
+  -- Position will be handled by reflow
+  reminderRow:SetPoint(
+    'TOPLEFT',
+    colorSectionFrame,
+    'TOPLEFT',
+    20,
+    -120 -- Temporary placeholder, reflow will adjust
+  )
+
+  local reminderLabel = reminderRow:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+  reminderLabel:SetPoint('LEFT', reminderRow, 'LEFT', 0, 0)
+  reminderLabel:SetText('Show Reload Reminder After')
+
+  local reminderSlider = CreateFrame('Slider', nil, reminderRow, 'OptionsSliderTemplate')
+  reminderSlider:SetSize(LAYOUT.SLIDER_WIDTH, 15)
+  reminderSlider:SetPoint('RIGHT', reminderRow, 'RIGHT', -50, 0)
+  reminderSlider:SetMinMaxValues(ReloadReminder.MinMinutes, ReloadReminder.MaxMinutes)
+  reminderSlider:SetValueStep(5)
+  reminderSlider:SetObeyStepOnDrag(true)
+
+  --[[if tempSettings.statisticsBackgroundOpacity == nil then
+    tempSettings.statisticsBackgroundOpacity = GLOBAL_SETTINGS.statisticsBackgroundOpacity or 0.3
+  end]]
+
+  if tempSettings.reminderIntervalMinutes == nil then
+    tempSettings.reminderIntervalMinutes = GLOBAL_SETTINGS.reminderIntervalMinutes or ReloadReminder.DefaultMinutes
+  end
+  reminderSlider:SetValue(tempSettings.reminderIntervalMinutes)
+
+  local reminderValueLabel = reminderRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  reminderValueLabel:SetPoint('RIGHT', reminderRow, 'RIGHT', -10, 0)
+  reminderValueLabel:SetText(tostring(math.floor(reminderSlider:GetValue())))
+
+  reminderSlider:SetScript('OnValueChanged', function(self, value)
+    local newValue = math.floor(value)
+    reminderValueLabel:SetText(tostring(newValue))
+    tempSettings.reminderIntervalMinutes = newValue
+    if ReloadReminder and ReloadReminder.UpdateInterval then
+      ReloadReminder:UpdateInterval(newValue)
+    end
+  end)
+
+  reminderRow:SetScript('OnEnter', function(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    GameTooltip:SetText('Set when reload reminder first appears (minutes).')
+    GameTooltip:Show()
+  end)
+  reminderRow:SetScript('OnLeave', function(self) GameTooltip:Hide() end)
+
+addUIRow(reminderRow, 'reload reminder interval minutes time slider', nil)
+
 
   -- Subheader: Resource Bar Colours
   local resourceSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
@@ -2161,6 +2228,7 @@ function InitializeSettingsOptionsTab()
     GameTooltip:AddLine('• Resource Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Soulshard Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Statistics Panel', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Reload Reminder Button', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• ULTRA Menu', 0.8, 0.8, 0.8)
     GameTooltip:AddLine(' ')
     GameTooltip:AddLine('Note: This does not reset scale settings.', 1, 0.5, 0.5)
