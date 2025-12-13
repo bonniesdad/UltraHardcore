@@ -204,7 +204,6 @@ end
 
 --- Performed the UI reload and updates timestamps.
 function ReloadReminder:DoReload()
-    self:LoadInterval() -- Reload interval from settings
     self:Touch()
     self:LoadInterval() -- Reload interval from settings
     self:HideReminderButton()
