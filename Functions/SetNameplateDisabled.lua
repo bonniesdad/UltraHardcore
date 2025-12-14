@@ -23,22 +23,35 @@ local nameplateMonitorFrame = nil
 local nameplateDisabled = false
 local nameplateFallbackFrame = nil
 
+local function ShouldAllowFriendlyPlates()
+  return GLOBAL_SETTINGS and (GLOBAL_SETTINGS.showWildAllyHealthIndicator or false)
+end
+
+local function DesiredCVarValue(cvar)
+  if ShouldAllowFriendlyPlates() then
+    if cvar == 'nameplateShowEnemies' then
+      return '0'
+    elseif cvar == 'nameplateShowFriends' or cvar == 'nameplateShowAll' then
+      return '1'
+    end
+  end
+  return '0'
+end
+
 -- Utility: run a function once combat ends (or immediately if not in combat)
 local function RunWhenOutOfCombat(callback)
   if not InCombatLockdown() then
     callback()
     return
   end
-  local waitFrame = CreateFrame("Frame")
-  waitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-  waitFrame:SetScript("OnEvent", function(self)
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    self:SetScript("OnEvent", nil)
+  local waitFrame = CreateFrame('Frame')
+  waitFrame:RegisterEvent('PLAYER_REGEN_ENABLED')
+  waitFrame:SetScript('OnEvent', function(self)
+    self:UnregisterEvent('PLAYER_REGEN_ENABLED')
+    self:SetScript('OnEvent', nil)
     callback()
   end)
 end
-
-
 
 -- Safe SetCVar wrapper that checks for protected state
 local function SafeSetCVar(cvar, value)
@@ -57,7 +70,8 @@ end
 -- Function to disable all nameplate CVars
 local function DisableAllNameplates()
   for _, cvar in ipairs(nameplateCVars) do
-    SafeSetCVar(cvar, 0)
+    local desired = DesiredCVarValue(cvar)
+    SafeSetCVar(cvar, desired)
   end
 end
 
@@ -68,8 +82,9 @@ local function CheckNameplateCVars()
   -- Check each nameplate CVar and reset if enabled
   for _, cvar in ipairs(nameplateCVars) do
     local currentValue = GetCVar(cvar)
-    if currentValue and currentValue ~= '0' then
-      SafeSetCVar(cvar, 0)
+    local desiredValue = DesiredCVarValue(cvar)
+    if currentValue and desiredValue and currentValue ~= desiredValue then
+      SafeSetCVar(cvar, desiredValue)
     end
   end
 end
@@ -188,16 +203,24 @@ local function StartNameplateMonitoring()
   end
 
   nameplateMonitorFrame = CreateFrame('Frame')
-  nameplateMonitorFrame:RegisterEvent("CVAR_UPDATE")
-  nameplateMonitorFrame:SetScript("OnEvent", function(self, event, cvar, value)
+  nameplateMonitorFrame:RegisterEvent('CVAR_UPDATE')
+  nameplateMonitorFrame:SetScript('OnEvent', function(self, event, cvar, value)
     -- We only check these three because they have keybinds that can be pressed on accident
-    if cvar == "nameplateShowEnemies" or cvar == "nameplateShowFriends" or cvar == "nameplateShowAll" then
-        -- force them off again
-        RunWhenOutOfCombat(function()
-          SetCVar("nameplateShowEnemies", 0)
-          SetCVar("nameplateShowFriends", 0)
-          SetCVar("nameplateShowAll", 0)
-        end)
+    if cvar == 'nameplateShowEnemies' or cvar == 'nameplateShowFriends' or cvar == 'nameplateShowAll' then
+      RunWhenOutOfCombat(function()
+        local desiredEnemies = DesiredCVarValue('nameplateShowEnemies')
+        local desiredFriends = DesiredCVarValue('nameplateShowFriends')
+        local desiredAll = DesiredCVarValue('nameplateShowAll')
+        if desiredEnemies then
+          SetCVar('nameplateShowEnemies', desiredEnemies)
+        end
+        if desiredFriends then
+          SetCVar('nameplateShowFriends', desiredFriends)
+        end
+        if desiredAll then
+          SetCVar('nameplateShowAll', desiredAll)
+        end
+      end)
     end
   end)
   --[[nameplateMonitorFrame:SetScript('OnUpdate', function(self, elapsed)

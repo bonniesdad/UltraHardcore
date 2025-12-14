@@ -72,6 +72,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
+  name = 'Wild Ally Health Indicator',
+  dbSettingsValueName = 'showWildAllyHealthIndicator',
+  tooltip = 'Replace friendly nameplates with a minimal health indicator for non-group allies',
+}, {
   name = 'Hide Player Cast Bar',
   dbSettingsValueName = 'hidePlayerCastBar',
   tooltip = 'Hide the player casting bar to remove spell casting information',
@@ -368,10 +372,7 @@ function InitializeSettingsOptionsTab()
     if not settingName then return end
 
     for _, otherCheckboxItem in ipairs(settingsCheckboxOptions) do
-      if
-        otherCheckboxItem.dependsOn == settingName
-        or otherCheckboxItem.dependsOff == settingName
-      then
+      if otherCheckboxItem.dependsOn == settingName or otherCheckboxItem.dependsOff == settingName then
         local otherCheckbox = checkboxes[otherCheckboxItem.dbSettingsValueName]
         if otherCheckbox and otherCheckbox._updateDependency then
           otherCheckbox._updateDependency()
@@ -1084,7 +1085,8 @@ function InitializeSettingsOptionsTab()
               if conflictName then
                 local conflictEnabled = tempSettings[checkboxItem.dependsOff] or false
                 if conflictEnabled then
-                  tooltipText = tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. conflictName .. '|r'
+                  tooltipText =
+                    tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. conflictName .. '|r'
                 end
               end
             end
@@ -1180,13 +1182,22 @@ function InitializeSettingsOptionsTab()
           label:SetText('Soundbite Channel')
 
           -- Available sound channels (aligned with in-game Sound options)
-          local CHANNEL_OPTIONS = {
-            { text = 'Master', value = 'Master' },
-            { text = 'Music', value = 'Music' },
-            { text = 'Effects', value = 'SFX' },
-            { text = 'Ambience', value = 'Ambience' },
-            { text = 'Dialog', value = 'Dialog' },
-          }
+          local CHANNEL_OPTIONS = { {
+            text = 'Master',
+            value = 'Master',
+          }, {
+            text = 'Music',
+            value = 'Music',
+          }, {
+            text = 'Effects',
+            value = 'SFX',
+          }, {
+            text = 'Ambience',
+            value = 'Ambience',
+          }, {
+            text = 'Dialog',
+            value = 'Dialog',
+          } }
 
           -- Initialize setting from GLOBAL_SETTINGS or default to Master
           if tempSettings.soundbiteChannel == nil then
@@ -1588,14 +1599,19 @@ function InitializeSettingsOptionsTab()
   resourceSubHeader:SetTextColor(0.922, 0.871, 0.761)
   addUIHeader(resourceSubHeader)
 
-  local activePowerKey = nil       -- current row being edited
+  local activePowerKey = nil -- current row being edited
   local activeSetSwatchColor = nil -- current row’s setter
-  local activeOriginalColor = nil  -- previousValues backup
-
+  local activeOriginalColor = nil -- previousValues backup
   local function createColorRowInSection(labelText, powerKey, rowIndex, fallbackColor)
-    local row = CreateFrame("Frame", nil, colorSectionFrame)
+    local row = CreateFrame('Frame', nil, colorSectionFrame)
     row:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
-    row:SetPoint("TOPLEFT", colorSectionFrame, "TOPLEFT", 20, -100 - (rowIndex-1) * LAYOUT.COLOR_ROW_HEIGHT)
+    row:SetPoint(
+      'TOPLEFT',
+      colorSectionFrame,
+      'TOPLEFT',
+      20,
+      -100 - (rowIndex - 1) * LAYOUT.COLOR_ROW_HEIGHT
+    )
 
     local LABEL_WIDTH = LAYOUT.LABEL_WIDTH
     local SWATCH_WIDTH = 60
@@ -1603,27 +1619,32 @@ function InitializeSettingsOptionsTab()
     local GAP = 12
 
     -- Label
-    local label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    label:SetPoint("LEFT", row, "LEFT", 0, 0)
+    local label = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    label:SetPoint('LEFT', row, 'LEFT', 0, 0)
     label:SetWidth(LABEL_WIDTH)
-    label:SetJustifyH("LEFT")
+    label:SetJustifyH('LEFT')
     label:SetText(labelText)
 
     -- Swatch Button
-    local swatch = CreateFrame("Button", nil, row, "BackdropTemplate")
+    local swatch = CreateFrame('Button', nil, row, 'BackdropTemplate')
     swatch:SetSize(SWATCH_WIDTH, SWATCH_HEIGHT)
-    swatch:SetPoint("LEFT", label, "RIGHT", GAP, 0)
+    swatch:SetPoint('LEFT', label, 'RIGHT', GAP, 0)
     swatch:SetBackdrop({
-      bgFile = "Interface\\Buttons\\WHITE8X8",
-      edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
       edgeSize = 8,
-      insets = { left=1, right=1, top=1, bottom=1 },
+      insets = {
+        left = 1,
+        right = 1,
+        top = 1,
+        bottom = 1,
+      },
     })
 
     -- Highlight border
-    local hl = swatch:CreateTexture(nil, "HIGHLIGHT")
+    local hl = swatch:CreateTexture(nil, 'HIGHLIGHT')
     hl:SetAllPoints(swatch)
-    hl:SetColorTexture(1,1,1,0.25)
+    hl:SetColorTexture(1, 1, 1, 0.25)
     swatch:SetHighlightTexture(hl)
 
     -- Helper functions
@@ -1658,9 +1679,9 @@ function InitializeSettingsOptionsTab()
 
     -- INITIALIZE COLOR PICKER INPUTS ONLY ONCE
     if not ColorPickerFrame.__UHC_InputsCreated then
-      local inputs = CreateFrame("Frame", nil, ColorPickerFrame)
+      local inputs = CreateFrame('Frame', nil, ColorPickerFrame)
       inputs:SetSize(240, 44)
-      inputs:SetPoint("BOTTOM", ColorPickerFrame, "BOTTOM", 0, 20)
+      inputs:SetPoint('BOTTOM', ColorPickerFrame, 'BOTTOM', 0, 20)
 
       -- Expand the picker once
       ColorPickerFrame:SetHeight(ColorPickerFrame:GetHeight() + 50)
@@ -1705,25 +1726,31 @@ function InitializeSettingsOptionsTab()
 
         local r, g, b = ColorPickerFrame:GetColorRGB()
 
-        tempSettings.resourceBarColors[activePowerKey] = {r, g, b}
+        tempSettings.resourceBarColors[activePowerKey] = { r, g, b }
         activeSetSwatchColor(r, g, b)
 
         -- Update RGB boxes
         for i, box in ipairs(inputs.rgb) do
-          local val = math.floor((i==1 and r or i==2 and g or b) * 255 + 0.5)
+          local val = math.floor((i == 1 and r or i == 2 and g or b) * 255 + 0.5)
           box:SetText(val)
         end
 
         -- Update Hex
-        inputs.hex:SetText(string.format("%02X%02X%02X",
-          math.floor(r*255+0.5), math.floor(g*255+0.5), math.floor(b*255+0.5)))
+        inputs.hex:SetText(
+          string.format(
+            '%02X%02X%02X',
+            math.floor(r * 255 + 0.5),
+            math.floor(g * 255 + 0.5),
+            math.floor(b * 255 + 0.5)
+          )
+        )
       end
 
       ColorPickerFrame.__UHC_UpdateInputs = updateInputs
 
       -- RGB EditBoxes Update picker
-      for i=1,3 do
-        inputs.rgb[i]:SetScript("OnTextChanged", function(self, user)
+      for i = 1, 3 do
+        inputs.rgb[i]:SetScript('OnTextChanged', function(self, user)
           if not user or not activePowerKey then return end
 
           local r = tonumber(inputs.rgb[1]:GetText()) or 0
@@ -1734,33 +1761,37 @@ function InitializeSettingsOptionsTab()
           g = math.min(255, math.max(0, g))
           b = math.min(255, math.max(0, b))
 
-          ColorPickerFrame:SetColorRGB(r/255, g/255, b/255)
+          ColorPickerFrame:SetColorRGB(r / 255, g / 255, b / 255)
         end)
       end
 
       -- Hex -> Update picker
-      inputs.hex:SetScript("OnTextChanged", function(self, user)
+      inputs.hex:SetScript('OnTextChanged', function(self, user)
         if not user or not activePowerKey then return end
 
-        local hex = self:GetText():gsub("#",""):upper()
-        if #hex ~= 6 or not hex:match("^%x%x%x%x%x%x$") then return end
+        local hex = self:GetText():gsub('#', ''):upper()
+        if #hex ~= 6 or not hex:match('^%x%x%x%x%x%x$') then return end
 
-        local r = tonumber(hex:sub(1,2),16)/255
-        local g = tonumber(hex:sub(3,4),16)/255
-        local b = tonumber(hex:sub(5,6),16)/255
+        local r = tonumber(hex:sub(1, 2), 16) / 255
+        local g = tonumber(hex:sub(3, 4), 16) / 255
+        local b = tonumber(hex:sub(5, 6), 16) / 255
 
         ColorPickerFrame:SetColorRGB(r, g, b)
       end)
     end
 
     -- SWATCH CLICK -> OPEN COLOR PICKER FOR THIS ROW
-    swatch:SetScript("OnClick", function()
+    swatch:SetScript('OnClick', function()
       -- Set active row context
       activePowerKey = powerKey
       activeSetSwatchColor = setSwatchColor
 
       local r, g, b = getCurrentColor()
-      activeOriginalColor = {r=r,g=g,b=b}
+      activeOriginalColor = {
+        r = r,
+        g = g,
+        b = b,
+      }
 
       local updateInputs = ColorPickerFrame.__UHC_UpdateInputs
 
@@ -1770,7 +1801,7 @@ function InitializeSettingsOptionsTab()
       ColorPickerFrame.swatchFunc = updateInputs
       ColorPickerFrame.cancelFunc = function(prev)
         prev = prev or activeOriginalColor
-        tempSettings.resourceBarColors[powerKey] = {prev.r, prev.g, prev.b}
+        tempSettings.resourceBarColors[powerKey] = { prev.r, prev.g, prev.b }
         setSwatchColor(prev.r, prev.g, prev.b)
       end
 
@@ -1780,30 +1811,30 @@ function InitializeSettingsOptionsTab()
     end)
 
     -- CLASS BUTTON
-    local classButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-    classButton:SetSize(96,20)
-    classButton:SetPoint("LEFT", swatch, "RIGHT", GAP, 0)
-    classButton:SetText("Class Colour")
-    classButton:SetScript("OnClick", function()
-      local _, class = UnitClass("player")
+    local classButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    classButton:SetSize(96, 20)
+    classButton:SetPoint('LEFT', swatch, 'RIGHT', GAP, 0)
+    classButton:SetText('Class Colour')
+    classButton:SetScript('OnClick', function()
+      local _, class = UnitClass('player')
       local c = RAID_CLASS_COLORS[class]
       if c then
-        tempSettings.resourceBarColors[powerKey] = {c.r, c.g, c.b}
+        tempSettings.resourceBarColors[powerKey] = { c.r, c.g, c.b }
         setSwatchColor(c.r, c.g, c.b)
       end
     end)
 
     -- RESET BUTTON
-    local resetButton = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
-    resetButton:SetSize(56,20)
-    resetButton:SetPoint("LEFT", classButton, "RIGHT", GAP, 0)
-    resetButton:SetText("Reset")
-    resetButton:SetScript("OnClick", function()
+    local resetButton = CreateFrame('Button', nil, row, 'UIPanelButtonTemplate')
+    resetButton:SetSize(56, 20)
+    resetButton:SetPoint('LEFT', classButton, 'RIGHT', GAP, 0)
+    resetButton:SetText('Reset')
+    resetButton:SetScript('OnClick', function()
       tempSettings.resourceBarColors[powerKey] = nil
       setSwatchColor(getDefaultColor())
     end)
 
-    addUIRow(row, labelText .. " color resource bar", resourceSubHeader)
+    addUIRow(row, labelText .. ' color resource bar', resourceSubHeader)
   end
 
   createColorRowInSection('Energy', 'ENERGY', 1)
@@ -2015,7 +2046,13 @@ function InitializeSettingsOptionsTab()
 
   local minimapTrackingScalePercentText =
     minimapTrackingScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  minimapTrackingScalePercentText:SetPoint('LEFT', minimapTrackingScaleRow, 'LEFT', LABEL_WIDTH2 + GAP2, 0)
+  minimapTrackingScalePercentText:SetPoint(
+    'LEFT',
+    minimapTrackingScaleRow,
+    'LEFT',
+    LABEL_WIDTH2 + GAP2,
+    0
+  )
   minimapTrackingScalePercentText:SetWidth(40)
   minimapTrackingScalePercentText:SetJustifyH('LEFT')
   minimapTrackingScalePercentText:SetText(
@@ -2029,7 +2066,9 @@ function InitializeSettingsOptionsTab()
   minimapTrackingScaleSlider:SetMinMaxValues(9, 20)
   minimapTrackingScaleSlider:SetValueStep(1)
   minimapTrackingScaleSlider:SetObeyStepOnDrag(true)
-  minimapTrackingScaleSlider:SetValue(math.floor(((tempSettings.minimapTrackingScale or 0.9) * 10) + 0.5))
+  minimapTrackingScaleSlider:SetValue(
+    math.floor(((tempSettings.minimapTrackingScale or 0.9) * 10) + 0.5)
+  )
   if minimapTrackingScaleSlider.Low then
     minimapTrackingScaleSlider.Low:SetText('90%')
   end

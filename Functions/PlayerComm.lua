@@ -5,16 +5,17 @@
 
 REQUEST_TIMEOUT = 5.0
 
-local AceComm = LibStub("AceComm-3.0")
-local AceSerializer = LibStub("AceSerializer-3.0")
+local AceComm = LibStub('AceComm-3.0')
+local AceSerializer = LibStub('AceSerializer-3.0')
 
 local PlayerComm = {}
 
 -- Communication prefix (max 16 characters)
-local COMM_PREFIX = "ULTRA"
+local COMM_PREFIX = 'ULTRA'
 
 -- Storage for player tamper status (cache)
 local playerTamperStatus = {}
+local playerPresenceStatus = {}
 local guildFoundHandlers = {}
 
 -- Request timeout (seconds)
@@ -24,7 +25,7 @@ local pendingRequests = {}
 
 local function NotifyGuildFoundHandlers(payload)
   for _, handler in ipairs(guildFoundHandlers) do
-    if type(handler) == "function" then
+    if type(handler) == 'function' then
       local ok, err = pcall(handler, payload)
       if not ok then
         -- Swallow handler errors to avoid breaking comms
@@ -35,7 +36,7 @@ end
 
 -- Generate unique request ID
 local function GenerateRequestId()
-  return time() .. "_" .. math.random(1000, 9999)
+  return time() .. '_' .. math.random(1000, 9999)
 end
 
 -- Clean up expired requests
@@ -58,10 +59,10 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
   if not playerName or not callback then
     return false
   end
-  
+
   -- Clean up expired requests
   CleanupExpiredRequests()
-  
+
   -- Generate unique request ID (ensure uniqueness)
   local requestId = GenerateRequestId()
   local attempts = 0
@@ -69,27 +70,27 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
     requestId = GenerateRequestId()
     attempts = attempts + 1
   end
-  
+
   -- Normalize player name (remove server/realm if present)
-  local normalizedPlayerName = Ambiguate(playerName, "none")
-  
+  local normalizedPlayerName = Ambiguate(playerName, 'none')
+
   -- Store request info
   local requestStartTime = GetTime()
   pendingRequests[requestId] = {
     callback = callback,
     timestamp = requestStartTime,
     playerName = normalizedPlayerName, -- Store normalized name for matching
-    messageType = "TAMPER_STATUS",
+    messageType = 'TAMPER_STATUS',
     requestId = requestId,
   }
-  
+
   -- Create request message
   local message = {
-    type = "REQUEST",
-    messageType = "TAMPER_STATUS",
+    type = 'REQUEST',
+    messageType = 'TAMPER_STATUS',
     requestId = requestId,
   }
-  
+
   -- Serialize and send
   local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
   if not success or not serialized then
@@ -98,10 +99,10 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
     callback(false, normalizedPlayerName, false)
     return false
   end
-  
+
   -- Note: SendCommMessage may return nil in Classic, but message is still sent
-  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", normalizedPlayerName, "NORMAL")
-  
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, 'WHISPER', normalizedPlayerName, 'NORMAL')
+
   -- Set up timeout check
   C_Timer.After(REQUEST_TIMEOUT, function()
     local request = pendingRequests[requestId]
@@ -111,70 +112,150 @@ function PlayerComm:RequestTamperStatus(playerName, callback)
       request.callback(false, normalizedPlayerName, false)
     end
   end)
-  
+
   return true
+end
+
+-- Request addon presence status from another player
+-- callback: function(hasAddon, playerName, success)
+function PlayerComm:RequestUltraPresence(playerName, callback)
+  if not playerName or not callback then
+    return false
+  end
+
+  CleanupExpiredRequests()
+
+  local requestId = GenerateRequestId()
+  local attempts = 0
+  while pendingRequests[requestId] and attempts < 10 do
+    requestId = GenerateRequestId()
+    attempts = attempts + 1
+  end
+
+  local normalizedPlayerName = Ambiguate(playerName, 'none')
+
+  pendingRequests[requestId] = {
+    callback = callback,
+    timestamp = GetTime(),
+    playerName = normalizedPlayerName,
+    messageType = 'PRESENCE',
+    requestId = requestId,
+  }
+
+  local message = {
+    type = 'REQUEST',
+    messageType = 'PRESENCE',
+    requestId = requestId,
+  }
+
+  local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
+  if not success or not serialized then
+    pendingRequests[requestId] = nil
+    callback(false, normalizedPlayerName, false)
+    return false
+  end
+
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, 'WHISPER', normalizedPlayerName, 'NORMAL')
+
+  C_Timer.After(REQUEST_TIMEOUT, function()
+    local request = pendingRequests[requestId]
+    if request and request.playerName == normalizedPlayerName then
+      pendingRequests[requestId] = nil
+      request.callback(false, normalizedPlayerName, false)
+    end
+  end)
+
+  return true
+end
+
+-- Cache presence (hasAddon boolean) with timestamp
+local function CachePresence(playerName, hasAddon)
+  if not playerName then return end
+  playerPresenceStatus[playerName] = {
+    hasAddon = hasAddon,
+    timestamp = time(),
+  }
+end
+
+function PlayerComm:GetCachedPresence(playerName)
+  if not playerName then
+    return false, false
+  end
+  local cached = playerPresenceStatus[playerName]
+  if cached then
+    if time() - cached.timestamp < 300 then
+      return cached.hasAddon, true
+    else
+      playerPresenceStatus[playerName] = nil
+    end
+  end
+  return false, false
+end
+
+function PlayerComm:ClearCachedPresence(playerName)
+  if playerName then
+    playerPresenceStatus[playerName] = nil
+  end
 end
 
 -- Send tamper status response to requesting player
 local function SendTamperStatusResponse(playerName, requestId, isTampered)
   local message = {
-    type = "RESPONSE",
-    messageType = "TAMPER_STATUS",
+    type = 'RESPONSE',
+    messageType = 'TAMPER_STATUS',
     requestId = requestId,
     isTampered = isTampered,
   }
-  
+
   local success, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
   if not success or not serialized then
     return false
   end
-  
+
   -- Note: SendCommMessage may return nil in Classic, but message is still sent
-  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", playerName, "NORMAL")
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, 'WHISPER', playerName, 'NORMAL')
   return true
 end
 
 -- Handle incoming communication
 local function OnCommReceived(prefix, message, distribution, sender)
-  if prefix ~= COMM_PREFIX then
-    return
-  end
-  
+  if prefix ~= COMM_PREFIX then return end
+
   -- Normalize sender name (remove server name if present)
-  sender = Ambiguate(sender, "none")
-  
+  sender = Ambiguate(sender, 'none')
+
   -- Deserialize message
   local deserializeSuccess, data = AceSerializer:Deserialize(message)
-  
+
   if not deserializeSuccess then
     return -- Invalid or corrupted message
   end
-  
-  if not data or type(data) ~= "table" then
+
+  if not data or type(data) ~= 'table' then
     return -- Invalid or corrupted message
   end
-  
+
   -- Handle Guild Found handshake messages (these don't have a "type" field)
-  if data.messageType == "GF_HANDSHAKE" then
+  if data.messageType == 'GF_HANDSHAKE' then
     -- Add sender to payload and notify handlers
     data.sender = sender
     NotifyGuildFoundHandlers(data)
     return
   end
-  
+
   -- Handle tamper status requests (these require a "type" field)
   if not data.type then
     return -- Invalid or corrupted message
   end
-  
-  if data.messageType == "TAMPER_STATUS" then
+
+  if data.messageType == 'TAMPER_STATUS' then
     -- Handle request (someone asking for our tamper status)
-    if data.type == "REQUEST" and data.requestId then
+    if data.type == 'REQUEST' and data.requestId then
       -- Validate request ID exists
-      if not data.requestId or type(data.requestId) ~= "string" then
+      if not data.requestId or type(data.requestId) ~= 'string' then
         return -- Invalid request ID
       end
-      
+
       -- Get our tamper status
       local isTampered = false
       if PlayerStateSnapshot and PlayerStateSnapshot.IsTampered then
@@ -187,34 +268,58 @@ local function OnCommReceived(prefix, message, distribution, sender)
           isTampered = false -- Default to clean on error
         end
       end
-      
+
       -- Send response
       SendTamperStatusResponse(sender, data.requestId, isTampered)
-    elseif data.type == "RESPONSE" and data.requestId and data.isTampered ~= nil then
+    elseif data.type == 'RESPONSE' and data.requestId and data.isTampered ~= nil then
       -- Handle response (someone responded to our request)
       -- Find pending request
       local request = pendingRequests[data.requestId]
       if request then
         -- Validate response matches request (prevent spoofing)
-        local senderNormalized = string.lower(sender or "")
-        local requestedPlayerNormalized = string.lower(request.playerName or "")
-        
+        local senderNormalized = string.lower(sender or '')
+        local requestedPlayerNormalized = string.lower(request.playerName or '')
+
         if senderNormalized == requestedPlayerNormalized then
           -- Valid response - cache the result
           playerTamperStatus[sender] = {
             isTampered = data.isTampered,
             timestamp = time(),
           }
-          
+
           -- Call callback with success
           request.callback(data.isTampered, sender, true)
-          
+
           -- Remove from pending
           pendingRequests[data.requestId] = nil
         end
       end
     end
-  elseif data.messageType == "GF_HANDSHAKE" then
+  elseif data.messageType == 'PRESENCE' then
+    if data.type == 'REQUEST' and data.requestId then
+      local message = {
+        type = 'RESPONSE',
+        messageType = 'PRESENCE',
+        requestId = data.requestId,
+        hasAddon = true,
+      }
+      local ok, serialized = pcall(AceSerializer.Serialize, AceSerializer, message)
+      if ok and serialized then
+        AceComm:SendCommMessage(COMM_PREFIX, serialized, 'WHISPER', sender, 'NORMAL')
+      end
+    elseif data.type == 'RESPONSE' and data.requestId and data.hasAddon ~= nil then
+      local request = pendingRequests[data.requestId]
+      if request then
+        local senderNormalized = string.lower(sender or '')
+        local requestedPlayerNormalized = string.lower(request.playerName or '')
+        if senderNormalized == requestedPlayerNormalized then
+          CachePresence(sender, data.hasAddon)
+          request.callback(data.hasAddon, sender, true)
+          pendingRequests[data.requestId] = nil
+        end
+      end
+    end
+  elseif data.messageType == 'GF_HANDSHAKE' then
     data.sender = sender
     NotifyGuildFoundHandlers(data)
   end
@@ -226,7 +331,7 @@ function PlayerComm:GetCachedTamperStatus(playerName)
   if not playerName then
     return false, false
   end
-  
+
   local cached = playerTamperStatus[playerName]
   if cached then
     -- Cache is valid for 5 minutes
@@ -238,7 +343,7 @@ function PlayerComm:GetCachedTamperStatus(playerName)
       playerTamperStatus[playerName] = nil
     end
   end
-  
+
   return false, false
 end
 
@@ -260,9 +365,9 @@ function PlayerComm:SendGuildFoundHandshake(action, targetName)
     return false
   end
 
-  local normalizedTarget = Ambiguate(targetName, "none")
+  local normalizedTarget = Ambiguate(targetName, 'none')
   local message = {
-    messageType = "GF_HANDSHAKE",
+    messageType = 'GF_HANDSHAKE',
     action = action,
   }
 
@@ -271,13 +376,13 @@ function PlayerComm:SendGuildFoundHandshake(action, targetName)
     return false
   end
 
-  AceComm:SendCommMessage(COMM_PREFIX, serialized, "WHISPER", normalizedTarget, "NORMAL")
+  AceComm:SendCommMessage(COMM_PREFIX, serialized, 'WHISPER', normalizedTarget, 'NORMAL')
   return true
 end
 
 -- Register a handler for Guild Found handshake payloads
 function PlayerComm:RegisterGuildFoundHandler(handler)
-  if type(handler) ~= "function" then
+  if type(handler) ~= 'function' then
     return false
   end
   table.insert(guildFoundHandlers, handler)
@@ -290,4 +395,3 @@ AceComm:RegisterComm(COMM_PREFIX, OnCommReceived)
 -- Export (for backward compatibility)
 _G.TamperStatusComm = PlayerComm
 _G.PlayerComm = PlayerComm
-

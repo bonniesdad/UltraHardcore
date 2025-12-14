@@ -30,7 +30,7 @@ UltraHardcore:RegisterEvent('PLAYER_LOGIN')
 
 -- 🟢 Event handler to apply all funcitons on login
 UltraHardcore:SetScript('OnEvent', function(self, event, ...)
-  -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but these are before all the UI elements are available.  
+  -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but these are before all the UI elements are available.
   -- Switched to PLAYER_LOGIN which happens after ADDON_LOADED and all UI elements are available
   if event == 'PLAYER_LOGIN' then
     LoadDBData()
@@ -42,7 +42,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if SetVitalsOverlayEnabled then
       SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
     end
-    
+
     SetMinimapDisplay(GLOBAL_SETTINGS.hideMinimap or false)
     if GLOBAL_SETTINGS.showClockEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowClock()
@@ -51,9 +51,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if SetVitalsOverlayEnabled then
       SetVitalsOverlayEnabled(GLOBAL_SETTINGS.showVitalsOverlay or false)
     end
-    
+
     if GLOBAL_SETTINGS.showTrackingWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
-        ShowTrackingButton()
+      ShowTrackingButton()
     end
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowMail()
@@ -82,6 +82,7 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
+    SetWildAllyHealthIndicators(GLOBAL_SETTINGS.showWildAllyHealthIndicator or false)
     HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     -- Only update group indicators when not in combat lockdown

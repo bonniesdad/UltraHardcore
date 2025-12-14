@@ -1475,6 +1475,7 @@ function InitializeStatisticsTab()
     showFullHealthIndicator = 'Use ULTRA Full Health Indicator',
     hideCustomResourceBar = 'Hide Custom Resource Bar',
     showHealingIndicator = 'Use ULTRA Incoming Healing Effect',
+    showWildAllyHealthIndicator = 'Use Wild Ally Health Indicator',
   }
 
   -- Define preset sections with their settings (limit to up to Extreme)
