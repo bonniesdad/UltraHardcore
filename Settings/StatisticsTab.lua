@@ -116,6 +116,7 @@ local STAT_BAR_CONFIG = {
     type = 'percent',
     max = 100,
     color = { 0.9, 0.7, 0.25, 0.95 },
+    valueOnly = true,
   },
   -- Numeric stats with individualized tier settings (all inherit default base/multiplier unless overridden)
   level = {
@@ -125,31 +126,38 @@ local STAT_BAR_CONFIG = {
   closeEscapes = {
     base = 10,
     multiplier = 2,
+    valueOnly = true,
   },
   petDeaths = { valueOnly = true },
   enemiesSlain = {
     base = 1000,
     multiplier = 3,
+    valueOnly = true,
   },
   elitesSlain = {
     base = 200,
     multiplier = 3,
+    valueOnly = true,
   },
   rareElitesSlain = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   worldBossesSlain = {
     base = 10,
     multiplier = 2,
+    valueOnly = true,
   },
   dungeonBossesKilled = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   dungeonsCompleted = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   highestCritValue = {
     base = 500,
@@ -164,22 +172,27 @@ local STAT_BAR_CONFIG = {
   healthPotionsUsed = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   manaPotionsUsed = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   bandagesUsed = {
     base = 50,
     multiplier = 2,
+    valueOnly = true,
   },
   targetDummiesUsed = {
     base = 20,
     multiplier = 2,
+    valueOnly = true,
   },
   grenadesUsed = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   partyMemberDeaths = {
     base = 25,
@@ -189,10 +202,12 @@ local STAT_BAR_CONFIG = {
   duelsTotal = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   duelsWon = {
     base = 25,
     multiplier = 2,
+    valueOnly = true,
   },
   duelsLost = {
     base = 25,
@@ -202,6 +217,7 @@ local STAT_BAR_CONFIG = {
   playerJumps = {
     base = 10000,
     multiplier = 3,
+    valueOnly = true,
   },
   mapKeyPressesWhileMapBlocked = {
     base = 50,
@@ -288,7 +304,16 @@ end
 local function PositionStatBar(bar, parent, yOffset, layoutOptions)
   if not bar or not bar.frame then return end
   bar.frame:ClearAllPoints()
-  local yPosition = yOffset - LAYOUT.ROW_HEIGHT - (LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2 + BAR_VERTICAL_SHIFT
+  local cfg = bar.statKey and STAT_BAR_CONFIG[bar.statKey]
+  local isValueOnly = cfg and cfg.valueOnly
+  local yPosition
+  if isValueOnly then
+    -- Align value-only rows with the label row
+    yPosition = yOffset + ROW_Y_ADJUST
+  else
+    yPosition =
+      yOffset - LAYOUT.ROW_HEIGHT - (LAYOUT.ROW_HEIGHT - STAT_BAR_HEIGHT) / 2 + BAR_VERTICAL_SHIFT
+  end
   local left = (layoutOptions and layoutOptions.left) or (LAYOUT.ROW_INDENT + STAT_BAR_INSET)
   if layoutOptions and layoutOptions.width then
     local width = layoutOptions.width
@@ -308,6 +333,7 @@ end
 
 local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   local bar = CreateStatBar(parent)
+  bar.statKey = statKey
   bar.minText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   bar.maxText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 
@@ -372,7 +398,9 @@ local function AttachSettingCheckbox(radio, settingName)
 end
 
 local function CreateStatsGrid(parent, statsList, options)
-  if not parent or not statsList or #statsList == 0 then return 0 end
+  if not parent or not statsList or #statsList == 0 then
+    return 0
+  end
 
   local opts = options or {}
   local defaultWidth = opts.defaultWidth or 0.5
@@ -393,33 +421,58 @@ local function CreateStatsGrid(parent, statsList, options)
 
   local rowCount = 0
   local nextColumn = 0
+  local accumulatedHeight = 0
+  local pendingRowHeight = 0
+  local pendingRowYOffset = baseYOffset
+  local valueOnlyRowHeight = opts.valueOnlyRowHeight or (STAT_BAR_HEIGHT + 4)
 
   for _, stat in ipairs(statsList) do
     local statKey = stat.key
     if statKey then
       local width = stat.width or defaultWidth
+      local cfg = STAT_BAR_CONFIG[statKey]
+      if cfg and cfg.valueOnly and width < 1 then
+        width = 1
+      end
+      local isValueOnly = cfg and cfg.valueOnly
+      local rowHeightForStat = isValueOnly and valueOnlyRowHeight or rowHeight
       local isFullWidth = width >= 1
       local barWidth = isFullWidth and fullBarWidth or halfBarWidth
       local columnIndex
+      local yOffset
 
       if isFullWidth then
         if nextColumn == 1 then
+          accumulatedHeight = accumulatedHeight + pendingRowHeight
+          pendingRowHeight = 0
+          pendingRowYOffset = baseYOffset - accumulatedHeight
           nextColumn = 0
         end
         rowCount = rowCount + 1
         columnIndex = 0
+        yOffset = baseYOffset - accumulatedHeight
+        accumulatedHeight = accumulatedHeight + rowHeightForStat
       else
         if nextColumn == 0 then
           rowCount = rowCount + 1
           columnIndex = 0
+          pendingRowHeight = rowHeightForStat
+          pendingRowYOffset = baseYOffset - accumulatedHeight
           nextColumn = 1
+          yOffset = pendingRowYOffset
         else
           columnIndex = 1
+          yOffset = pendingRowYOffset
+          if rowHeightForStat > pendingRowHeight then
+            pendingRowHeight = rowHeightForStat
+          end
           nextColumn = 0
+          accumulatedHeight = accumulatedHeight + pendingRowHeight
+          pendingRowHeight = 0
+          pendingRowYOffset = baseYOffset - accumulatedHeight
         end
       end
 
-      local yOffset = baseYOffset - (rowCount - 1) * rowHeight
       local columnLeft = barLeftBase
       if not isFullWidth and columnIndex == 1 then
         columnLeft = columnLeft + halfBarWidth + columnGap
@@ -453,8 +506,11 @@ local function CreateStatsGrid(parent, statsList, options)
         local settingName = stat.settingName
         if settingName == nil then
           settingName =
-            (opts.settingPrefix or 'showMainStatisticsPanel')
-            .. string.gsub(statKey, '^%l', string.upper)
+            (opts.settingPrefix or 'showMainStatisticsPanel') .. string.gsub(
+              statKey,
+              '^%l',
+              string.upper
+            )
         end
         if settingName and settingName ~= '' then
           local radio = CreateFrame('CheckButton', nil, parent, 'UICheckButtonTemplate')
@@ -466,7 +522,11 @@ local function CreateStatsGrid(parent, statsList, options)
     end
   end
 
-  local totalHeight = math.max(rowHeight, rowCount * rowHeight + LAYOUT.CONTENT_PADDING * 2 - 12)
+  if nextColumn == 1 then
+    accumulatedHeight = accumulatedHeight + pendingRowHeight
+  end
+
+  local totalHeight = math.max(rowHeight, accumulatedHeight + LAYOUT.CONTENT_PADDING * 2 - 12)
   parent:SetHeight(totalHeight + SECTION_CONTENT_BOTTOM_PADDING)
   return rowCount
 end
@@ -499,22 +559,23 @@ function UpdateStatBar(statKey, value)
   local effectiveFillColor = fillColor
 
   if valueOnly then
-    -- Hide bar visuals, show only the value text with a subtle badge-style background
+    -- Value-only mode: simple label + value (no bar visuals)
     if bar.bg then
       bar.bg:Hide()
     end
     if bar.fill then
       bar.fill:Hide()
     end
+    local rawValue = value or 0
+    local isZero = rawValue == 0
     local displayText
-    local badgeColor = fillColor or { 0.8, 0.8, 0.8, 0.95 }
-    local textColor = badgeColor
+    local textColor = fillColor or { 1, 1, 1, 1 }
     if cfg.type == 'percent' then
       local pctMax = cfg.max or 100
       local percent = math.max(0, math.min(value or 0, pctMax))
-      displayText = string.format('%.1f%%', percent)
+      displayText = isZero and '-' or string.format('%.1f%%', percent)
     else
-      displayText = formatNumberWithCommas(value or 0)
+      displayText = isZero and '-' or formatNumberWithCommas(rawValue)
     end
     if bar.minText then
       bar.minText:Hide()
@@ -529,31 +590,13 @@ function UpdateStatBar(statKey, value)
     if bar.tierBg then
       bar.tierBg:Hide()
     end
-    bar.frame:SetBackdrop({
-      bgFile = 'Interface\\Buttons\\WHITE8X8',
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      tile = true,
-      tileSize = 8,
-      edgeSize = 8,
-      insets = {
-        left = 2,
-        right = 2,
-        top = 2,
-        bottom = 2,
-      },
-    })
-    bar.frame:SetBackdropColor(badgeColor[1], badgeColor[2], badgeColor[3], 0.18)
-    bar.frame:SetBackdropBorderColor(badgeColor[1], badgeColor[2], badgeColor[3], 0.35)
+    bar.frame:SetBackdrop(nil)
     bar.text:ClearAllPoints()
-    bar.text:SetPoint('CENTER', bar.frame, 'CENTER', 0, 0)
+    -- Nudge value up slightly to align with label baseline
+    bar.text:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 2)
+    bar.text:SetJustifyH('RIGHT')
     bar.text:SetText(displayText or '')
     bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
-    if bar.tier then
-      bar.tier:Hide()
-    end
-    if bar.tierBg then
-      bar.tierBg:Hide()
-    end
     -- Keep bar height consistent
     bar.frame:SetHeight(STAT_BAR_HEIGHT)
     return
@@ -759,8 +802,7 @@ function InitializeStatisticsTab()
           anchorFrame,
           'BOTTOMLEFT',
           previousSection.collapsed and 0 or -LAYOUT.CONTENT_INDENT,
-          previousSection.collapsed and -LAYOUT.SECTION_SPACING
-            or -(LAYOUT.SECTION_SPACING)
+          previousSection.collapsed and -LAYOUT.SECTION_SPACING or -LAYOUT.SECTION_SPACING
         )
       end
 
@@ -936,10 +978,7 @@ function InitializeStatisticsTab()
   healthTrackingLabel:SetShadowColor(0, 0, 0, 0.8)
 
   local healthTrackingContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  healthTrackingContent:SetSize(
-    540,
-    5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12
-  ) -- Initial height, recalculated after grid layout
+  healthTrackingContent:SetSize(540, 5 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   healthTrackingContent:Show()
   local healthTrackingSection =
     addSection(healthTrackingHeader, healthTrackingContent, 'healthTracking')
@@ -986,20 +1025,6 @@ function InitializeStatisticsTab()
     settingName = 'showMainStatisticsPanelSessionHealth',
     defaultValue = 100,
     width = 0.5,
-  }, {
-    key = 'closeEscapes',
-    label = 'Close Escapes:',
-    tooltipKey = 'closeEscapes',
-    settingName = 'showMainStatisticsPanelCloseEscapes',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'petDeaths',
-    label = 'Pet Deaths:',
-    tooltipKey = 'petDeaths',
-    settingName = 'showMainStatisticsPanelPetDeaths',
-    defaultValue = 0,
-    width = 0.5,
   } }
   CreateStatsGrid(healthTrackingContent, healthStats, { defaultWidth = 0.5 })
 
@@ -1034,10 +1059,7 @@ function InitializeStatisticsTab()
 
   -- Create content frame for Combat breakdown
   local combatContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  combatContent:SetSize(
-    540,
-    8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12
-  ) -- Initial height, recalculated after grid layout
+  combatContent:SetSize(540, 8 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, recalculated after grid layout
   -- Position will be set by updateSectionPositions
   combatContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -1065,60 +1087,74 @@ function InitializeStatisticsTab()
 
   local combatStats = { {
     key = 'enemiesSlain',
-    label = 'Total:',
+    label = 'Enemies Slain:',
     tooltipKey = 'enemiesSlainTotal',
     settingName = 'showMainStatisticsPanelEnemiesSlain',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'elitesSlain',
     label = 'Elites Slain:',
     tooltipKey = 'elitesSlain',
     settingName = 'showMainStatisticsPanelElitesSlain',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'rareElitesSlain',
     label = 'Rare Elites Slain:',
     tooltipKey = 'rareElitesSlain',
     settingName = 'showMainStatisticsPanelRareElitesSlain',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'worldBossesSlain',
     label = 'World Bosses Slain:',
     tooltipKey = 'worldBossesSlain',
     settingName = 'showMainStatisticsPanelWorldBossesSlain',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'dungeonBossesKilled',
     label = 'Dungeon Bosses Slain:',
     tooltipKey = 'dungeonBossesSlain',
     settingName = 'showMainStatisticsPanelDungeonBosses',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'dungeonsCompleted',
     label = 'Dungeons Completed:',
     tooltipKey = 'dungeonsCompleted',
     settingName = 'showMainStatisticsPanelDungeonsCompleted',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'highestCritValue',
     label = 'Highest Crit Value:',
     tooltipKey = 'highestCritValue',
     settingName = 'showMainStatisticsPanelHighestCritValue',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'highestHealCritValue',
     label = 'Highest Heal Crit Value:',
     tooltipKey = 'highestHealCritValue',
     settingName = 'showMainStatisticsPanelHighestHealCritValue',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
+  }, {
+    key = 'closeEscapes',
+    label = 'Close Escapes:',
+    tooltipKey = 'closeEscapes',
+    settingName = 'showMainStatisticsPanelCloseEscapes',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'petDeaths',
+    label = 'Pet Deaths:',
+    tooltipKey = 'petDeaths',
+    settingName = 'showMainStatisticsPanelPetDeaths',
+    defaultValue = 0,
+    width = 1,
   } }
   CreateStatsGrid(combatContent, combatStats, { defaultWidth = 0.5 })
 
@@ -1181,13 +1217,13 @@ function InitializeStatisticsTab()
     label = 'Health Potions Used:',
     tooltipKey = 'healthPotionsUsed',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'manaPotionsUsed',
     label = 'Mana Potions Used:',
     tooltipKey = 'manaPotionsUsed',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'bandagesUsed',
     label = 'Bandages Applied:',
@@ -1199,13 +1235,13 @@ function InitializeStatisticsTab()
     label = 'Target Dummies Used:',
     tooltipKey = 'targetDummiesUsed',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'grenadesUsed',
     label = 'Grenades Used:',
     tooltipKey = 'grenadesUsed',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   } }
   CreateStatsGrid(survivalContent, survivalStats, { defaultWidth = 0.5 })
   -- Create modern WoW-style Social section (collapsible)
@@ -1259,6 +1295,30 @@ function InitializeStatisticsTab()
     label = 'Party Deaths Witnessed:',
     tooltipKey = 'partyDeathsWitnessed',
     settingName = 'showMainStatisticsPanelPartyMemberDeaths',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsTotal',
+    label = 'Duels Total:',
+    tooltipKey = 'duelsTotal',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWon',
+    label = 'Duels Won:',
+    tooltipKey = 'duelsWon',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsLost',
+    label = 'Duels Lost:',
+    tooltipKey = 'duelsLost',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'duelsWinPercent',
+    label = 'Duel Win Percent:',
+    tooltipKey = 'duelsWinPercent',
     defaultValue = 0,
     width = 1,
   } }
@@ -1320,41 +1380,17 @@ function InitializeStatisticsTab()
 
   -- Create misc statistics display inside the content frame
   local miscStats = { {
-    key = 'duelsTotal',
-    label = 'Duels Total:',
-    tooltipKey = 'duelsTotal',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'duelsWon',
-    label = 'Duels Won:',
-    tooltipKey = 'duelsWon',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'duelsLost',
-    label = 'Duels Lost:',
-    tooltipKey = 'duelsLost',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
-    key = 'duelsWinPercent',
-    label = 'Duel Win Percent:',
-    tooltipKey = 'duelsWinPercent',
-    defaultValue = 0,
-    width = 0.5,
-  }, {
     key = 'playerJumps',
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   }, {
     key = 'mapKeyPressesWhileMapBlocked',
     label = 'Blocked Map Opens (Route Planner):',
     tooltipKey = 'mapKeyPressesWhileMapBlocked',
     defaultValue = 0,
-    width = 0.5,
+    width = 1,
   } }
   CreateStatsGrid(miscContent, miscStats, { defaultWidth = 0.5 })
   -- Create modern WoW-style XP gained section (collapsible)
@@ -1386,8 +1422,9 @@ function InitializeStatisticsTab()
   xpGainedLabel:SetShadowColor(0, 0, 0, 0.8)
 
   -- Create collapsible content frame for XP breakdown
+  local XP_ROW_HEIGHT = math.max(18, LAYOUT.ROW_HEIGHT * 0.75)
   local xpGainedContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
-  xpGainedContent:SetSize(540, 15 * LAYOUT.ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 12) -- Adjusted for equal padding (reduced extra gap from 40px to 35px)
+  xpGainedContent:SetSize(540, 15 * XP_ROW_HEIGHT + LAYOUT.CONTENT_PADDING * 2 + 12) -- Adjusted for smaller row height
   -- Position will be set by updateSectionPositions
   xpGainedContent:Show() -- Show by default
   -- Register section and make header clickable
@@ -1459,7 +1496,7 @@ function InitializeStatisticsTab()
     sectionHeader:SetText(section.title)
     sectionHeader:SetTextColor(1, 1, 0.5) -- Light yellow color for headers
     xpSectionHeaders[sectionIndex] = sectionHeader
-    yOffset = yOffset - LAYOUT.ROW_HEIGHT
+    yOffset = yOffset - XP_ROW_HEIGHT
 
     -- Create settings for this section
     for _, settingName in ipairs(section.settings) do
@@ -1478,7 +1515,7 @@ function InitializeStatisticsTab()
         xpBreakdownLabels[settingName] = label
         xpBreakdownTexts[settingName] = text
 
-        yOffset = yOffset - LAYOUT.ROW_HEIGHT
+        yOffset = yOffset - XP_ROW_HEIGHT
       end
     end
 
@@ -1515,7 +1552,7 @@ function InitializeStatisticsTab()
           LAYOUT.ROW_INDENT + 12,
           yOffset
         )
-        yOffset = yOffset - LAYOUT.ROW_HEIGHT
+        yOffset = yOffset - XP_ROW_HEIGHT
       end
 
       -- Position settings for this section
@@ -1542,7 +1579,7 @@ function InitializeStatisticsTab()
           )
           textElement:SetPoint('TOPRIGHT', xpGainedContent, 'TOPRIGHT', -LAYOUT.ROW_INDENT, yOffset)
           textElement:SetText(formatNumberWithCommas(xpGained))
-          yOffset = yOffset - LAYOUT.ROW_HEIGHT
+          yOffset = yOffset - XP_ROW_HEIGHT
         end
       end
 
@@ -1581,6 +1618,10 @@ function InitializeStatisticsTab()
     UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
 
     for _, stat in ipairs(survivalStats) do
+      UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
+    end
+
+    for _, stat in ipairs(socialStats) do
       UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
     end
 

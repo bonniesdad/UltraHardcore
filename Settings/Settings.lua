@@ -133,18 +133,6 @@ settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
 settingsTitleLabel:SetText('ULTRA')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
 
--- Initialize TBC feature (comment out this line to disable TBC feature)
--- To completely remove: Also remove Settings/TBCFeature.lua from UltraHardcore.toc
-if InitializeTBCFeature then
-  InitializeTBCFeature(
-    titleBar,
-    settingsFrame,
-    updateSettingsFrameBackdrop,
-    initializeTabs,
-    initializeTempSettings
-  )
-end
-
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
 dividerFrame:SetSize(670, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
