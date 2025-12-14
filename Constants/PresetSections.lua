@@ -30,6 +30,7 @@ local PRESET_SECTIONS = { {
     'showFullHealthIndicator',
     'hideCustomResourceBar',
     'showHealingIndicator',
+    'showWildAllyHealthIndicator',
     'setFirstPersonCamera',
     'completelyRemovePlayerFrame',
     'completelyRemoveTargetFrame',
