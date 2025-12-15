@@ -161,7 +161,25 @@ local function TrackLowestHealth(event)
     -- lets pause until we get above the thrshold again
     pvpPauseLowestHealthCloseEscape = true
   end
+end
 
+local function HandleSessionLowestReset(eventType)
+  if eventType == 'PLAYER_LOGOUT' then
+    local currentTime = GetServerTime()
+    CharacterStats:UpdateStat('lastLogoutTime', currentTime)
+  end 
+  if eventType == 'PLAYER_LOGIN' then
+    local currentTime = GetServerTime()
+    local lastLogoutTime = CharacterStats:GetStat('lastLogoutTime')
+    print('currentTime - lastLogoutTime', currentTime - lastLogoutTime)
+    if lastLogoutTime and currentTime - lastLogoutTime > 1800 then
+      print('|cfff44336[ULTRA]|r |cfff0f000New session! This Session lowest health has been reset.|r')
+      CharacterStats:ResetLowestHealthThisSession()
+      return
+    else
+      print('|cfff44336[ULTRA]|r |cfff0f000You have logged in within the last minute. This Session lowest health has not been reset.|r')
+    end
+  end
 end
 
 local frame = CreateFrame('Frame')
@@ -173,6 +191,7 @@ frame:RegisterEvent('PLAYER_REGEN_DISABLED') -- In combat, if we want it
 frame:RegisterEvent('PLAYER_REGEN_ENABLED') -- Out of combat, if we want it
 frame:RegisterEvent('PLAYER_LEVEL_UP') -- Reset This Level stats when leveling up
 frame:RegisterEvent('PLAYER_LOGIN') -- Reset This Session stats when logging in
+frame:RegisterEvent('PLAYER_LOGOUT') -- Reset This Session stats when logging in
 frame:SetScript('OnEvent', function(self, event, arg1, arg2, arg3)
   if event == 'UNIT_HEALTH' and arg1 ~= 'player' then return end
 
@@ -194,10 +213,8 @@ frame:SetScript('OnEvent', function(self, event, arg1, arg2, arg3)
     -- Reset This Level stats when leveling up
     CharacterStats:ResetLowestHealthThisLevel()
     print('|cfff44336[ULTRA]|r |cfff0f000Level up! This Level lowest health has been reset.|r')
-  elseif event == 'PLAYER_LOGIN' then
-    -- Reset This Session stats when logging in
-    CharacterStats:ResetLowestHealthThisSession()
-    print('|cfff44336[ULTRA]|r |cfff0f000New session! This Session lowest health has been reset.|r')
+  elseif event == 'PLAYER_LOGIN' or event == 'PLAYER_LOGOUT' then
+    HandleSessionLowestReset(event)
   elseif event == 'PLAYER_REGEN_ENABLED' then
     leftCombat()
     return
