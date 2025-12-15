@@ -58,6 +58,7 @@ local CharacterStats = {
     rareElitesSlain = 0,
     worldBossesSlain = 0,
     -- Add more stats here as needed
+    lastLogoutTime = 0,
   },
 }
 
