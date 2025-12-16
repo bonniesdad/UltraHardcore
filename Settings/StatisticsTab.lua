@@ -234,9 +234,11 @@ local STAT_BAR_CONFIG = {
   },
   lagHome = {
     valueOnly = true,
+    suffix = ' ms',
   },
   lagWorld = {
     valueOnly = true,
+    suffix = ' ms',
   },
 }
 
@@ -589,7 +591,8 @@ function UpdateStatBar(statKey, value)
       local percent = math.max(0, math.min(value or 0, pctMax))
       displayText = isZero and '-' or string.format('%.1f%%', percent)
     else
-      displayText = isZero and '-' or formatNumberWithCommas(rawValue)
+      local suffix = cfg.suffix or ''
+      displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
     end
     if bar.minText then
       bar.minText:Hide()
