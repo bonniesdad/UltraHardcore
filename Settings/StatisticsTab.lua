@@ -2,13 +2,13 @@
 
 -- Centralized tooltip map for all statistics
 local STATISTIC_TOOLTIPS = {
-  -- Lowest Health section
+  -- Character Info section
   level = 'Your current character level',
+  -- Health Tracking section
   total = "The lowest health percentage you've ever reached across all levels",
   thisLevel = "The lowest health percentage you've reached at your current level",
   thisSession = "The lowest health percentage you've reached in your current play session",
-  petDeaths = 'Total number of times your pet has died permanently',
-  -- Enemies Slain section
+  -- Combat section
   enemiesSlainTotal = 'Total number of enemies you have killed',
   elitesSlain = 'Number of elite enemies you have killed',
   rareElitesSlain = 'Number of rare elite enemies you have killed',
@@ -17,20 +17,28 @@ local STATISTIC_TOOLTIPS = {
   dungeonsCompleted = 'Number of dungeons you have fully completed',
   highestCritValue = 'The highest critical hit damage you have dealt',
   highestHealCritValue = 'The highest critical heal you have done',
-  -- Survival section
+  closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
+  petDeaths = 'Total number of times your pet has died permanently',
+-- Survival section
   healthPotionsUsed = 'Number of health potions you have consumed',
   manaPotionsUsed = 'Number of mana potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
   targetDummiesUsed = 'Number of target dummies you have used',
   grenadesUsed = 'Number of grenades you have thrown',
+  -- Social section
   partyDeathsWitnessed = 'Number of party member deaths you have witnessed',
-  closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
   duelsTotal = 'Total number of duels you have done',
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
+
+  -- Misc section
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
+  -- Network section
+  lagHome = 'Latency to your home server',
+  lagWorld = 'Latency to the world server',
+  -- Unused statistics
   totalHP = 'Your maximum possible health with current gear and buffs',
   totalMana = 'Your maximum possible mana with current gear and buffs',
 }
@@ -222,6 +230,12 @@ local STAT_BAR_CONFIG = {
   mapKeyPressesWhileMapBlocked = {
     base = 50,
     multiplier = 2,
+    valueOnly = true,
+  },
+  lagHome = {
+    valueOnly = true,
+  },
+  lagWorld = {
     valueOnly = true,
   },
 }
@@ -1393,6 +1407,77 @@ function InitializeStatisticsTab()
     width = 1,
   } }
   CreateStatsGrid(miscContent, miscStats, { defaultWidth = 0.5 })
+
+  -- Create modern WoW-style Network section (collapsible)
+  local networkHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  networkHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
+  -- Position will be set by updateSectionPositions
+  -- Modern WoW row styling with rounded corners and greyish background
+  networkHeader:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 12,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  networkHeader:SetBackdropColor(0.15, 0.15, 0.2, 0.85)
+  networkHeader:SetBackdropBorderColor(0.5, 0.5, 0.6, 0.9)
+  -- Create header text
+  local networkLabel = networkHeader:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  networkLabel:SetPoint('LEFT', networkHeader, 'LEFT', 24, 0)
+  networkLabel:SetText('Network')
+  networkLabel:SetTextColor(0.9, 0.85, 0.75, 1)
+  networkLabel:SetShadowOffset(1, -1)
+  networkLabel:SetShadowColor(0, 0, 0, 0.8)
+
+  -- Create content frame for Network breakdown
+  local networkContent = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
+  networkContent:SetSize(540, 2 * LAYOUT.ROW_HEIGHT * 2 + LAYOUT.CONTENT_PADDING * 2 - 12) -- Initial height, will be corrected below
+  -- Position will be set by updateSectionPositions
+  networkContent:Show()
+
+  -- Register section and make header clickable
+  local networkSection = addSection(networkHeader, networkContent, 'network')
+  makeHeaderClickable(networkHeader, networkContent, 'network', networkSection)
+  -- Modern content frame styling
+  networkContent:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 10,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  networkContent:SetBackdropColor(0.08, 0.08, 0.1, 0.6)
+  networkContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
+
+  -- Create network statistics display inside the content frame
+    local networkStats = { {
+      key = 'lagHome',
+      label = 'Home Latency:',
+      tooltipKey = 'lagHome',
+      defaultValue = 0,
+      width = 1,
+    }, {
+      key = 'lagWorld',
+      label = 'World Latency:',
+      tooltipKey = 'lagWorld',
+      defaultValue = 0,
+      width = 1,
+    } }
+  CreateStatsGrid(networkContent, networkStats, { defaultWidth = 0.5 })
+
   -- Create modern WoW-style XP gained section (collapsible)
   local xpGainedHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
   xpGainedHeader:SetSize(560, LAYOUT.SECTION_HEADER_HEIGHT)
@@ -1617,6 +1702,8 @@ function InitializeStatisticsTab()
 
     UpdateStatBar('highestCritValue', CharacterStats:GetStat('highestCritValue') or 0)
     UpdateStatBar('highestHealCritValue', CharacterStats:GetStat('highestHealCritValue') or 0)
+    UpdateStatBar('lagHome', select(3, GetNetStats()))
+    UpdateStatBar('lagWorld', select(4, GetNetStats()))
 
     for _, stat in ipairs(survivalStats) do
       UpdateStatBar(stat.key, CharacterStats:GetStat(stat.key) or 0)
