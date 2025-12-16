@@ -335,7 +335,7 @@ lagHomeLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagHomeValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 lagHomeValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
-lagHomeValue:SetText(formatNumberWithCommas(0))
+lagHomeValue:SetText(formatNumberWithCommas(0) .. ' ms')
 lagHomeValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagWorldLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -345,7 +345,7 @@ lagWorldLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagWorldValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 lagWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
-lagWorldValue:SetText(formatNumberWithCommas(0))
+lagWorldValue:SetText(formatNumberWithCommas(0) .. ' ms')
 lagWorldValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- XP Gained With Addon
@@ -642,11 +642,11 @@ function UpdateStatistics()
 
   -- Update Lag Home value
   local lagHome = select(3, GetNetStats()) or 0
-  lagHomeValue:SetText(formatNumberWithCommas(lagHome))
+  lagHomeValue:SetText(formatNumberWithCommas(lagHome) .. ' ms')
 
   -- Update Lag World value
   local lagWorld = select(4, GetNetStats()) or 0
-  lagWorldValue:SetText(formatNumberWithCommas(lagWorld))
+  lagWorldValue:SetText(formatNumberWithCommas(lagWorld) .. ' ms')
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
