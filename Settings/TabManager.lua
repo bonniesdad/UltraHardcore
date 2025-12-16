@@ -259,6 +259,19 @@ function TabManager.switchToTab(index)
     if updateRadioButtons then
       updateRadioButtons()
     end
+    -- Ensure stat bars/graphs are filled when the Stats tab becomes visible.
+    -- Some bar widths are 0 until after the first layout pass, so defer by one frame.
+    if UpdateLowestHealthDisplay then
+      if C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+          if TabManager.getActiveTab and TabManager.getActiveTab() == 1 and UpdateLowestHealthDisplay then
+            UpdateLowestHealthDisplay()
+          end
+        end)
+      else
+        UpdateLowestHealthDisplay()
+      end
+    end
   end
 
   -- Initialize Settings Options tab if it's being shown
