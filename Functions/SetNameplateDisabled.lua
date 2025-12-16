@@ -23,8 +23,14 @@ local nameplateMonitorFrame = nil
 local nameplateDisabled = false
 local nameplateFallbackFrame = nil
 
+local function IsInDungeonOrRaidInstance()
+  local inInstance, instanceType = IsInInstance()
+  return inInstance and (instanceType == "party" or instanceType == "raid")
+end
+
 local function ShouldAllowFriendlyPlates()
-  return GLOBAL_SETTINGS and (GLOBAL_SETTINGS.showWildAllyHealthIndicator or false)
+  -- Only allow friendly plates for wild ally indicators outside dungeon/raid instances
+  return GLOBAL_SETTINGS and (GLOBAL_SETTINGS.showWildAllyHealthIndicator or false) and not IsInDungeonOrRaidInstance()
 end
 
 local function DesiredCVarValue(cvar)
@@ -90,8 +96,107 @@ local function CheckNameplateCVars()
 end
 
 -- Fallback: if nameplates appear, force them to look like 100% HP with no level
-local function ApplyNameplateFallbackToFrame(plate)
+local function GetNamePlateUnitToken(plate)
+  if not plate then return nil end
+  if type(plate.namePlateUnitToken) == 'string' then
+    return plate.namePlateUnitToken
+  end
+  local unitFrame = plate.UnitFrame or plate.unitFrame
+  if unitFrame then
+    if type(unitFrame.unit) == 'string' then
+      return unitFrame.unit
+    end
+    if type(unitFrame.displayedUnit) == 'string' then
+      return unitFrame.displayedUnit
+    end
+  end
+  return nil
+end
+
+local function RestoreFriendlyNpcHealthBarIfNeeded(plate)
+  if not plate or not plate._UHC_HideFriendlyNPCHealthBar then return end
+  plate._UHC_HideFriendlyNPCHealthBar = nil
+
+  local unitFrame = plate.UnitFrame or plate.unitFrame
+  if not unitFrame then return end
+
+  local barCandidates =
+    {
+      unitFrame.healthBar,
+      unitFrame.healthbar,
+      unitFrame.healthBarContainer,
+      unitFrame.healthBarBackground,
+      unitFrame.healthBarContainer and unitFrame.healthBarContainer.healthBar,
+    }
+
+  for _, bar in ipairs(barCandidates) do
+    if bar then
+      if bar.Show then
+        bar:Show()
+      end
+      if bar.SetAlpha then
+        bar:SetAlpha(1)
+      end
+    end
+  end
+end
+
+local function HideFriendlyNpcHealthBarIfNeeded(plate, unitToken)
+  if not plate or not nameplateDisabled then return false end
+  if not unitToken or type(unitToken) ~= 'string' then return false end
+  if not UnitExists(unitToken) then return false end
+
+  -- Friendly NPC: keep the *name* visible, but hide the healthbar visuals.
+  if UnitIsFriend('player', unitToken) and not UnitIsPlayer(unitToken) then
+    plate._UHC_HideFriendlyNPCHealthBar = true
+
+    local unitFrame = plate.UnitFrame or plate.unitFrame
+    if not unitFrame then return true end
+
+    local nameRegion = unitFrame.name or unitFrame.Name
+    if nameRegion then
+      if nameRegion.Show then
+        nameRegion:Show()
+      end
+      if nameRegion.SetAlpha then
+        nameRegion:SetAlpha(1)
+      end
+    end
+
+    local barCandidates =
+      {
+        unitFrame.healthBar,
+        unitFrame.healthbar,
+        unitFrame.healthBarContainer,
+        unitFrame.healthBarBackground,
+        unitFrame.healthBarContainer and unitFrame.healthBarContainer.healthBar,
+      }
+
+    for _, bar in ipairs(barCandidates) do
+      if bar then
+        if bar.Hide then
+          bar:Hide()
+        end
+        if bar.SetAlpha then
+          bar:SetAlpha(0)
+        end
+      end
+    end
+
+    return true
+  end
+
+  -- Not a friendly NPC: undo any prior bar-hiding in case plates are recycled.
+  RestoreFriendlyNpcHealthBarIfNeeded(plate)
+  return false
+end
+
+local function ApplyNameplateFallbackToFrame(plate, unitToken)
   if not plate then return end
+
+  -- If this is a friendly NPC plate, hide its healthbar but keep its name visible.
+  -- We still run the rest of the fallback (level hiding, etc.) afterward.
+  HideFriendlyNpcHealthBarIfNeeded(plate, unitToken)
 
   -- Try to locate a health bar on the nameplate
   local unitFrame = plate.UnitFrame or plate.unitFrame
@@ -157,7 +262,8 @@ local function ApplyNameplateFallback()
   if not C_NamePlate or not C_NamePlate.GetNamePlates then return end
   local plates = C_NamePlate.GetNamePlates() or {}
   for _, plate in ipairs(plates) do
-    ApplyNameplateFallbackToFrame(plate)
+    local unitToken = GetNamePlateUnitToken(plate)
+    ApplyNameplateFallbackToFrame(plate, unitToken)
   end
 end
 
@@ -172,7 +278,7 @@ local function StartNameplateFallback()
     if not nameplateDisabled then return end
     if event == 'NAME_PLATE_UNIT_ADDED' then
       local plate = C_NamePlate.GetNamePlateForUnit and C_NamePlate.GetNamePlateForUnit(unit)
-      ApplyNameplateFallbackToFrame(plate)
+      ApplyNameplateFallbackToFrame(plate, unit)
     elseif event == 'NAME_PLATE_UNIT_REMOVED' then
     -- nothing needed on remove for now
     end
@@ -204,7 +310,19 @@ local function StartNameplateMonitoring()
 
   nameplateMonitorFrame = CreateFrame('Frame')
   nameplateMonitorFrame:RegisterEvent('CVAR_UPDATE')
+  nameplateMonitorFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
+  nameplateMonitorFrame:RegisterEvent('PLAYER_DIFFICULTY_CHANGED')
+  nameplateMonitorFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
   nameplateMonitorFrame:SetScript('OnEvent', function(self, event, cvar, value)
+    -- Instance/zone transitions can change the desired friendly-plate behavior
+    if event == 'ZONE_CHANGED_NEW_AREA' or event == 'PLAYER_DIFFICULTY_CHANGED' or event == 'PLAYER_ENTERING_WORLD' then
+      if not nameplateDisabled then return end
+      RunWhenOutOfCombat(function()
+        DisableAllNameplates()
+      end)
+      return
+    end
+
     -- We only check these three because they have keybinds that can be pressed on accident
     if cvar == 'nameplateShowEnemies' or cvar == 'nameplateShowFriends' or cvar == 'nameplateShowAll' then
       RunWhenOutOfCombat(function()
@@ -255,5 +373,12 @@ function SetNameplateDisabled(disabled)
     -- Stop monitoring
     StopNameplateMonitoring()
     StopNameplateFallback()
+    -- Best-effort: if we hid any friendly NPC healthbars, restore them
+    if C_NamePlate and C_NamePlate.GetNamePlates then
+      local plates = C_NamePlate.GetNamePlates() or {}
+      for _, plate in ipairs(plates) do
+        RestoreFriendlyNpcHealthBarIfNeeded(plate)
+      end
+    end
   end
 end
