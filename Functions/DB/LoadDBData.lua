@@ -44,7 +44,7 @@ function LoadDBData()
     showFullHealthIndicator = false,
     hideCustomResourceBar = false,
     showHealingIndicator = false,
-    showWildAllyHealthIndicator = false,
+    showWildAllyHealthIndicator = true,
     setFirstPersonCamera = false,
     completelyRemovePlayerFrame = false,
     completelyRemoveTargetFrame = false,

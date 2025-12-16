@@ -72,9 +72,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showHealingIndicator',
   tooltip = 'Gold glow on the edges of the screen when you are healed',
 }, {
-  name = 'Wild Ally Health Indicator',
+  name = 'Friendly Health Indicators - Open World',
   dbSettingsValueName = 'showWildAllyHealthIndicator',
   tooltip = 'Replace friendly nameplates with a minimal health indicator for non-group allies',
+  dependsOn = 'disableNameplateHealth',
 }, {
   name = 'Hide Player Cast Bar',
   dbSettingsValueName = 'hidePlayerCastBar',
