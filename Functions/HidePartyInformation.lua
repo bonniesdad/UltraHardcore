@@ -326,6 +326,20 @@ local function HookCompactRaidHealthHiding()
   if type(hooksecurefunc) ~= 'function' then return end
   uhcRaidHealthHooked = true
   -- Keep the custom circle and health indicator sized to the raid frame
+  local function UHC_SafeGetName(obj)
+    if not obj or not obj.GetName then return nil end
+    local ok, name = pcall(obj.GetName, obj)
+    if ok then return name end
+    return nil
+  end
+
+  local function UHC_SafeGetParent(obj)
+    if not obj or not obj.GetParent then return nil end
+    local ok, parent = pcall(obj.GetParent, obj)
+    if ok then return parent end
+    return nil
+  end
+
   local function UHC_IsNameplateFrame(frame)
     if not frame then return false end
     local function isNameplateUnit(unitToken)
@@ -345,13 +359,13 @@ local function HookCompactRaidHealthHiding()
         return true
       end
     end
-    local name = frame.GetName and frame:GetName()
+    local name = UHC_SafeGetName(frame)
     if type(name) == 'string' and name:match('^NamePlate') then
       return true
     end
-    local parent = frame.GetParent and frame:GetParent()
+    local parent = UHC_SafeGetParent(frame)
     if parent then
-      local parentName = parent.GetName and parent:GetName()
+      local parentName = UHC_SafeGetName(parent)
       if type(parentName) == 'string' and parentName:match('^NamePlate') then
         return true
       end
@@ -361,7 +375,7 @@ local function HookCompactRaidHealthHiding()
   local function UHC_IsTargetRaidCompactFrame(frame)
     if not frame then return false end
     if UHC_IsNameplateFrame(frame) then return false end
-    local name = frame.GetName and frame:GetName()
+    local name = UHC_SafeGetName(frame)
     if type(name) ~= 'string' then
       return false
     end
@@ -427,7 +441,7 @@ local function HookCompactRaidHealthHiding()
       UHC_SetElementSuppressed(elem, true)
     end
     -- Explicitly hide common background globals if they exist
-    local frameName = frame.GetName and frame:GetName() or nil
+    local frameName = UHC_SafeGetName(frame)
     if frameName then
       local bg = _G[frameName .. 'Background']
       if bg then
@@ -495,7 +509,8 @@ local function HookCompactRaidHealthHiding()
       frame.uhcSizeHooked = true
     end
     -- Place the name inside the circle, small
-    local nameFrame = frame.name or _G[frame:GetName() and (frame:GetName() .. 'Name') or '']
+    local nameFrameName = UHC_SafeGetName(frame)
+    local nameFrame = frame.name or (nameFrameName and _G[nameFrameName .. 'Name'] or nil)
     if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
       nameFrame:ClearAllPoints()
       nameFrame:SetPoint('TOP', frame.uhcCircle, 'TOP', 0, -6)

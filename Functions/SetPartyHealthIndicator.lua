@@ -53,9 +53,36 @@ WILD_HEALTH_ICON_FRAMES = {}
 
 -- Track if wild ally indicators are enabled to avoid unnecessary work
 local wildAllyIndicatorsEnabled = false
+local wildAllyPresenceCache  -- declared early so helper functions see the local
+-- Treat wild ally indicators as disabled inside dungeon/raid instances
+local function IsInDungeonOrRaidInstance()
+  local inInstance, instanceType = IsInInstance()
+  return inInstance and (instanceType == 'party' or instanceType == 'raid')
+end
+
+-- The "effective" runtime enable (does not change the saved setting)
+local function AreWildAllyIndicatorsActive()
+  return wildAllyIndicatorsEnabled and not IsInDungeonOrRaidInstance()
+end
+
+local function ClearWildAllyIndicators()
+  wildAllyPresenceCache = {}
+  for unit, indicator in pairs(WILD_HEALTH_INDICATOR_FRAMES) do
+    if indicator then
+      indicator:Hide()
+    end
+    WILD_HEALTH_INDICATOR_FRAMES[unit] = nil
+  end
+  for unit, icon in pairs(WILD_HEALTH_ICON_FRAMES) do
+    if icon then
+      icon:Hide()
+    end
+    WILD_HEALTH_ICON_FRAMES[unit] = nil
+  end
+end
 
 -- Cache presence for wild allies (playerName -> {hasAddon, pending, timestamp})
-local wildAllyPresenceCache = {}
+wildAllyPresenceCache = {}
 local PRESENCE_CACHE_EXPIRY = 300
 local PRESENCE_PENDING_WINDOW = 6
 
@@ -63,7 +90,7 @@ local PRESENCE_PENDING_WINDOW = 6
 local RefreshAllWildAllyHealthIndicators
 
 local function ShouldShowWildAllyIndicator(unit)
-  if not wildAllyIndicatorsEnabled then
+  if not AreWildAllyIndicatorsActive() then
     return false
   end
   if not unit or not UnitExists(unit) then
@@ -310,13 +337,8 @@ local function GetNamePlateUnitToken(plate)
 end
 
 RefreshAllWildAllyHealthIndicators = function()
-  if not wildAllyIndicatorsEnabled then
-    for unit, indicator in pairs(WILD_HEALTH_INDICATOR_FRAMES) do
-      if indicator then
-        indicator:Hide()
-      end
-      WILD_HEALTH_INDICATOR_FRAMES[unit] = nil
-    end
+  if not AreWildAllyIndicatorsActive() then
+    ClearWildAllyIndicators()
     return
   end
 
@@ -332,10 +354,14 @@ end
 
 function SetWildAllyHealthIndicators(enabled)
   wildAllyIndicatorsEnabled = enabled and true or false
-  if wildAllyIndicatorsEnabled and SetCVar then
+  local active = AreWildAllyIndicatorsActive()
+  -- If the addon is in "Disable Nameplates" mode, let SetNameplateDisabled own CVars.
+  local shouldTouchCVars =
+  active and SetCVar and not (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.disableNameplateHealth or false))
+  if shouldTouchCVars then
     if InCombatLockdown() then
       C_Timer.After(0.1, function()
-        if wildAllyIndicatorsEnabled and not InCombatLockdown() then
+        if shouldTouchCVars and AreWildAllyIndicatorsActive() and not InCombatLockdown() then
           SetCVar('nameplateShowFriends', 1)
           SetCVar('nameplateShowAll', 1)
         end
@@ -345,14 +371,8 @@ function SetWildAllyHealthIndicators(enabled)
       SetCVar('nameplateShowAll', 1)
     end
   end
-  if not wildAllyIndicatorsEnabled then
-    wildAllyPresenceCache = {}
-    for unit, icon in pairs(WILD_HEALTH_ICON_FRAMES) do
-      if icon then
-        icon:Hide()
-      end
-      WILD_HEALTH_ICON_FRAMES[unit] = nil
-    end
+  if not active then
+    ClearWildAllyIndicators()
   end
   RefreshAllWildAllyHealthIndicators()
 end
@@ -1118,6 +1138,8 @@ partyHealthFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 partyHealthFrame:RegisterEvent('ADDON_LOADED')
 partyHealthFrame:RegisterEvent('NAME_PLATE_UNIT_ADDED')
 partyHealthFrame:RegisterEvent('NAME_PLATE_UNIT_REMOVED')
+partyHealthFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
+partyHealthFrame:RegisterEvent('PLAYER_DIFFICULTY_CHANGED')
 
 partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
   if event == 'UNIT_HEALTH_FREQUENT' or event == 'UNIT_HEALTH' then
@@ -1165,6 +1187,8 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
     C_Timer.After(1.0, function()
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
+      -- Re-apply wild ally indicators so instance transitions behave like the setting is off
+      SetWildAllyHealthIndicators(wildAllyIndicatorsEnabled)
       RefreshAllWildAllyHealthIndicators()
       if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
         SetAllRaidHealthIndicators(true)
@@ -1174,5 +1198,8 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
     UpdateWildAllyHealthIndicator(unit)
   elseif event == 'NAME_PLATE_UNIT_REMOVED' then
     RemoveWildAllyIndicator(unit)
+  elseif event == 'ZONE_CHANGED_NEW_AREA' or event == 'PLAYER_DIFFICULTY_CHANGED' then
+    -- Handle dungeon/raid instance transitions without changing the saved toggle
+    SetWildAllyHealthIndicators(wildAllyIndicatorsEnabled)
   end
 end)
