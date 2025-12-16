@@ -1,5 +1,21 @@
 # Patch Notes
 
+## Version 1.4.0 - 2025-12-16
+
+### New Features
+
+- Friendly Health Indicators - Open World
+  - When enabled, friendly nameplates will be replaced with a minimal health indicator in the open world.
+- ULTRA icon above nameplate in open world
+  - Show an ULTRA icon above players head if they are using ULTRA.
+- Session lowest health does not reset as often
+  - Check if logged out for more than 30 minutes before resetting session lowest health.
+
+### UI Improvements
+
+- Better visualisation of lowest health and level stats.
+- Reverse dependencies for options menu.
+
 ## Version 1.3.0 - 2025-12-05
 
 ### UI Improvements
