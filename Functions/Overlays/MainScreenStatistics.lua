@@ -330,7 +330,7 @@ blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 -- Network statistics
 local lagHomeLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 lagHomeLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
-lagHomeLabel:SetText('Lag Home:')
+lagHomeLabel:SetText('Home Latency:')
 lagHomeLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagHomeValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -340,7 +340,7 @@ lagHomeValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagWorldLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 lagWorldLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
-lagWorldLabel:SetText('Lag World:')
+lagWorldLabel:SetText('World Latency:')
 lagWorldLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 local lagWorldValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
