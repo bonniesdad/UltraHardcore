@@ -212,3 +212,31 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     end
   end
 end)
+
+-- Mirror Blizzard's RotateMinimap CVar into ULTRA's rotateMinimapOnResourceMap
+-- setting whenever the player changes it in the default WoW options. This keeps
+-- the ULTRA checkbox in sync with the game's own option, without writing back
+-- to the CVar when the ULTRA setting changes (ULTRA only affects behaviour
+-- when Always Show Resource Map is active).
+local rotateMinimapWatcher = CreateFrame('Frame')
+rotateMinimapWatcher:RegisterEvent('CVAR_UPDATE')
+rotateMinimapWatcher:SetScript('OnEvent', function(_, name, value)
+  -- CVAR_UPDATE fires with the CVar name exactly as used in GetCVar/SetCVar.
+  if name ~= 'RotateMinimap' then return end
+
+  local isEnabled = (value == '1' or value == 'true' or value == true)
+
+  -- Update saved per-character setting so future sessions mirror Blizzard.
+  if GLOBAL_SETTINGS then
+    GLOBAL_SETTINGS.rotateMinimapOnResourceMap = isEnabled
+  end
+
+  -- If the Settings UI is currently open, update its temp copy and refresh
+  -- checkboxes so the ULTRA interface reflects the change "live".
+  if _G.tempSettings then
+    _G.tempSettings.rotateMinimapOnResourceMap = isEnabled
+  end
+  if _G.updateCheckboxes then
+    _G.updateCheckboxes()
+  end
+end)
