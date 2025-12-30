@@ -327,6 +327,26 @@ blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 blockedMapOpensValue:SetText(formatNumberWithCommas(0))
 blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Network statistics
+local lagHomeLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lagHomeLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+lagHomeLabel:SetText('Home Latency:')
+lagHomeLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local lagHomeValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lagHomeValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+lagHomeValue:SetText(formatNumberWithCommas(0) .. ' ms')
+lagHomeValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local lagWorldLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lagWorldLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+lagWorldLabel:SetText('World Latency:')
+lagWorldLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local lagWorldValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+lagWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+lagWorldValue:SetText(formatNumberWithCommas(0) .. ' ms')
+lagWorldValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
 -- XP Gained With Addon
 
@@ -443,6 +463,14 @@ local statsElements = { {
   label = blockedMapOpensLabel,
   value = blockedMapOpensValue,
   setting = 'showMainStatisticsPanelMapKeyPressesWhileMapBlocked',
+}, {
+  label = lagHomeLabel,
+  value = lagHomeValue,
+  setting = 'showMainStatisticsPanelLagHome',
+}, {
+  label = lagWorldLabel,
+  value = lagWorldValue,
+  setting = 'showMainStatisticsPanelLagWorld',
 } }
 
 -- Function to update row visibility and positioning
@@ -611,6 +639,14 @@ function UpdateStatistics()
   -- Update Blocked Map Opens value
   local blockedMapOpens = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
   blockedMapOpensValue:SetText(formatNumberWithCommas(blockedMapOpens))
+
+  -- Update Lag Home value
+  local lagHome = select(3, GetNetStats()) or 0
+  lagHomeValue:SetText(formatNumberWithCommas(lagHome) .. ' ms')
+
+  -- Update Lag World value
+  local lagWorld = select(4, GetNetStats()) or 0
+  lagWorldValue:SetText(formatNumberWithCommas(lagWorld) .. ' ms')
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
