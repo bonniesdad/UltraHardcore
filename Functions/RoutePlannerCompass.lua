@@ -1,21 +1,41 @@
 --[[
   Route Planner Compass
-  - Adds horizontal compass to the screen
+  - Displays a horizontal compass in the open world
+  - Automatically hides in instanced content due to GetPlayerFacing() limitations in instances
 ]]
 
+local COMPASS_FRAME_NAME = "UltraHardcoreCompassFrame"
 
-function createCompassText(parent, offsetX, text)
+local isCompassCreated = false
+local compassFrame
+
+-- Visibility logic
+local function UpdateCompassVisibility()
+    if not compassFrame then return end
+
+    local _, instanceType = IsInInstance()
+    if instanceType == "none" then
+        compassFrame:Show()
+    else
+        compassFrame:Hide()
+    end
+end
+
+local function createCompassText(parent, offsetX, text)
     local compassText = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     compassText:SetFontHeight(18)
     compassText:SetPoint("CENTER", offsetX, 0)
     compassText:SetText(text)
 end
 
-function createCompass()
+-- Compass creation
+local function createCompass()
+    if isCompassCreated then return end
+
     local width = 400
     local height = 30
 
-    local compassFrame = CreateFrame("Frame", 'UltraHardcoreCompassFrame', UIParent)
+    compassFrame = CreateFrame("Frame", COMPASS_FRAME_NAME, UIParent)
     compassFrame:SetSize(width, height)
     compassFrame:SetPoint("TOP", 0, -25)
 
@@ -50,7 +70,6 @@ function createCompass()
     right:SetWidth(borderSize)
     right:SetHeight(height - borderSize * 2)
 
-
     local compassMask = CreateFrame("Frame", nil, compassFrame)
     compassMask:SetPoint("CENTER")
     compassMask:SetSize(width - borderSize * 2, height - borderSize * 2)
@@ -62,9 +81,7 @@ function createCompass()
 
     local directionDistance = compassContentWidth / (math.pi * 2)
 
-    -- offset(2) here needed due to jump when going from 6.28 radians to 0 radians
     createCompassText(compassContent, 2, "N")
-
     createCompassText(compassContent, directionDistance, "NE")
     createCompassText(compassContent, directionDistance * 2, "E")
     createCompassText(compassContent, directionDistance * 3, "SE")
@@ -93,19 +110,30 @@ function createCompass()
     local compassSpeed = directionDistance * 1.27
     compassFrame:SetScript("OnUpdate", function()
         local facing = GetPlayerFacing()
-        if facing then
-	            local offset = facing * compassSpeed
-	            compassContent:ClearAllPoints()
-	            compassContent:SetPoint("CENTER", compassMask, "CENTER", offset, -1)
-        end
+        if not facing then return end
+
+        local offset = facing * compassSpeed
+        compassContent:ClearAllPoints()
+        compassContent:SetPoint("CENTER", compassMask, "CENTER", offset, -1)
     end)
-end
 
-local isCompassCreated = false
-function SetRoutePlannerCompass(compassEnabled)
-  if compassEnabled and not isCompassCreated then
-    createCompass()
     isCompassCreated = true
-  end
+    UpdateCompassVisibility()
 end
 
+function SetRoutePlannerCompass(enabled)
+    if enabled and not isCompassCreated then
+        createCompass()
+    elseif not enabled and compassFrame then
+        compassFrame:Hide()
+    end
+end
+
+-- Update logic
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+
+eventFrame:SetScript("OnEvent", function()
+    UpdateCompassVisibility()
+end)
