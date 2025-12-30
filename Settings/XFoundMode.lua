@@ -158,11 +158,11 @@ end
 -- Initialize X Found Mode when the tab is first shown
 function InitializeXFoundModeTab()
   -- Check if tabContents[5] exists
-  if not tabContents or not tabContents[5] then return end
+  if not tabContents or not tabContents[4] then return end
 
   -- Ensure parent frame is set
   if not XFoundModeManager.parentFrame then
-    XFoundModeManager.parentFrame = tabContents[5]
+    XFoundModeManager.parentFrame = tabContents[4]
   end
 
   -- If the X Found UI is disabled, show only the placeholder and return

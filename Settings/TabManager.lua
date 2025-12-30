@@ -3,20 +3,19 @@
 
 local TabManager = {}
 
-local TAB_WIDTH = 92 -- Default width
+local TAB_WIDTH = 83 -- Default width
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
 -- Tab-specific widths
 local TAB_WIDTHS = {
-  [1] = 60, -- Stats
-  [2] = 80, -- Settings
-  [3] = 65, -- Achievements (A)
-  [4] = 70, -- Lives
-  [5] = 80, -- Self Found (GF)
-  [6] = 60, -- Info
-  [7] = TAB_WIDTH, -- Commands
-  [8] = 70, -- Credits
+  [1] = TAB_WIDTH, -- Stats
+  [2] = TAB_WIDTH, -- Settings
+  [3] = TAB_WIDTH, -- Achievements (A)
+  [4] = TAB_WIDTH, -- Self Found (GF)
+  [5] = TAB_WIDTH, -- Info
+  [6] = TAB_WIDTH, -- Commands
+  [7] = TAB_WIDTH, -- Credits
 }
 
 local BASE_TEXT_COLOR = {
@@ -47,9 +46,9 @@ local activeTab = 1
 local function calculateTabOffset(index)
   -- Calculate total width of all tabs
   local totalWidth = 0
-  for i = 1, 8 do
+  for i = 1, 7 do
     local width = TAB_WIDTHS[i] or TAB_WIDTH
-    if i < 8 then
+    if i < 7 then
       totalWidth = totalWidth + width + TAB_SPACING
     else
       totalWidth = totalWidth + width
@@ -139,21 +138,19 @@ function TabManager.initializeTabs(settingsFrame)
   tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
   tabButtons[3] = createTabButton('Feats', 3, settingsFrame)
-  tabButtons[4] = createTabButton('Lives', 4, settingsFrame)
-  tabButtons[5] = createTabButton('X Found', 5, settingsFrame)
-  tabButtons[6] = createTabButton('Info', 6, settingsFrame)
-  tabButtons[7] = createTabButton('Commands', 7, settingsFrame)
-  tabButtons[8] = createTabButton('Credits', 8, settingsFrame)
+  tabButtons[4] = createTabButton('X Found', 4, settingsFrame)
+  tabButtons[5] = createTabButton('Info', 5, settingsFrame)
+  tabButtons[6] = createTabButton('Commands', 6, settingsFrame)
+  tabButtons[7] = createTabButton('Credits', 7, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
   tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
   tabContents[3] = createTabContent(3, settingsFrame) -- Achievements tab
-  tabContents[4] = createTabContent(4, settingsFrame) -- Achievements tab
-  tabContents[5] = createTabContent(5, settingsFrame) -- Self Found tab
-  tabContents[6] = createTabContent(6, settingsFrame) -- Info tab
-  tabContents[7] = createTabContent(7, settingsFrame) -- Commands tab
-  tabContents[8] = createTabContent(8, settingsFrame) -- Credits tab
+  tabContents[4] = createTabContent(4, settingsFrame) -- Self Found tab
+  tabContents[5] = createTabContent(5, settingsFrame) -- Info tab
+  tabContents[6] = createTabContent(6, settingsFrame) -- Commands tab
+  tabContents[7] = createTabContent(7, settingsFrame) -- Credits tab
   -- Make tabContents globally accessible immediately
   _G.tabContents = tabContents
 end
@@ -232,26 +229,6 @@ function TabManager.switchToTab(index)
     end
   end
 
-  -- Initialize tabs only if not already initialized
-  -- Initialize X Found Mode tab if it's being shown
-  if index == 5 and InitializeXFoundModeTab then
-    InitializeXFoundModeTab()
-  end
-
-  -- Initialize Achievement tab if it's being shown
-  if index == 3 and InitializeAchievementTab then
-    InitializeAchievementTab()
-  end
-
-  if index == 4 and InitializeLivesTab then
-    InitializeLivesTab()
-  end
-
-  -- Initialize Info tab if it's being shown
-  if index == 6 and InitializeInfoTab then
-    InitializeInfoTab()
-  end
-
   -- Initialize Statistics tab if it's being shown
   if index == 1 and InitializeStatisticsTab then
     InitializeStatisticsTab()
@@ -279,13 +256,29 @@ function TabManager.switchToTab(index)
     InitializeSettingsOptionsTab()
   end
 
+  -- Initialize Achievement tab if it's being shown
+  if index == 3 and InitializeAchievementTab then
+    InitializeAchievementTab()
+  end
+
+  -- Initialize tabs only if not already initialized
+  -- Initialize X Found Mode tab if it's being shown
+  if index == 4 and InitializeXFoundModeTab then
+    InitializeXFoundModeTab()
+  end
+
+  -- Initialize Info tab if it's being shown
+  if index == 5 and InitializeInfoTab then
+    InitializeInfoTab()
+  end
+
   -- Initialize Commands tab if it's being shown
-  if index == 7 and InitializeCommandsTab then
+  if index == 6 and InitializeCommandsTab then
     InitializeCommandsTab()
   end
 
   -- Initialize Credits tab if it's being shown
-  if index == 8 and InitializeCreditsTab then
+  if index == 7 and InitializeCreditsTab then
     InitializeCreditsTab()
   end
 end
