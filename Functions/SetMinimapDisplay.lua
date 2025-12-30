@@ -1,7 +1,5 @@
 local minimapHideTimer = nil
 local minimapCleanupTicker = nil
-local initialRotateMinimap = GetCVar("RotateMinimap") or false
-
 
 -- Track temporary reveal state so we can restore cleanly on any event
 local minimapRevealState = {
@@ -14,6 +12,7 @@ local minimapRevealState = {
   originalScale = nil,
   originalAlpha = nil,
   initialZoom = nil,
+  originalRotateMinimap = nil,
   toggledFrames = nil,
   toggledRegions = nil,
 }
@@ -55,7 +54,10 @@ local function ResetMinimapRevealState()
   if minimapRevealState.initialZoom ~= nil then
     Minimap:SetZoom(minimapRevealState.initialZoom)
   end
-  SetCVar("RotateMinimap", initialRotateMinimap)
+  -- Only restore RotateMinimap if we explicitly overrode it for a temporary reveal
+  if minimapRevealState.originalRotateMinimap ~= nil then
+    SetCVar("RotateMinimap", minimapRevealState.originalRotateMinimap)
+  end
 
   Minimap:ClearAllPoints()
   if minimapRevealState.originalParent then
@@ -345,8 +347,28 @@ function RevealMinimapForTracking(isAlwaysOn)
   -- Reset any existing reveal state to ensure we capture the true 'base' state
   ResetMinimapRevealState()
 
-  -- Temporarily make the minimap rotate with the user
-  SetCVar("RotateMinimap", true)
+  -- Rotation behaviour:
+  --  - If Always On resource map is NOT enabled (spell-based temporary reveal),
+  --    we snapshot the current RotateMinimap CVar and force rotation for the
+  --    duration of the overlay, then restore the snapshot afterwards.
+  --  - If Always On resource map IS enabled, we respect the user's ULTRA
+  --    setting (rotateMinimapOnResourceMap) and do NOT snapshot/restore,
+  --    so their underlying WoW minimap rotation preference is not overridden
+  --    when Always Show Resource Map is disabled.
+  if not isAlwaysOn then
+    minimapRevealState.originalRotateMinimap = GetCVar("RotateMinimap")
+    SetCVar("RotateMinimap", true)
+  else
+    local rotate
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.rotateMinimapOnResourceMap ~= nil then
+      rotate = GLOBAL_SETTINGS.rotateMinimapOnResourceMap
+    else
+      local cvarValue = GetCVar("RotateMinimap")
+      rotate = (cvarValue == "1" or cvarValue == "true" or cvarValue == true)
+    end
+    SetCVar("RotateMinimap", rotate)
+    minimapRevealState.originalRotateMinimap = nil
+  end
 
   -- Allow clicks through minimap while this is up
   Minimap:EnableMouse(false)

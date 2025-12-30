@@ -141,4 +141,19 @@ function LoadDBData()
 
   -- Load current character's settings
   GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
+
+  -- Always mirror the current WoW RotateMinimap CVar into our
+  -- rotateMinimapOnResourceMap flag on load so ULTRA starts in
+  -- the same state as the base game every session. The ULTRA
+  -- settings UI can change this by writing back to the CVar via
+  -- Save and Reload; after that, this will see the updated value.
+  do
+    local cvarValue = GetCVar('RotateMinimap')
+    if cvarValue ~= nil then
+      GLOBAL_SETTINGS.rotateMinimapOnResourceMap =
+        (cvarValue == '1' or cvarValue == 'true' or cvarValue == true)
+    else
+      GLOBAL_SETTINGS.rotateMinimapOnResourceMap = false
+    end
+  end
 end

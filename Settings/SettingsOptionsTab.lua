@@ -213,13 +213,17 @@ local settingsCheckboxOptions = { {
 }, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
-  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only).',
+  tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
   dependsOn = 'hideMinimap',
 }, {
   name = 'Show Player Arrow on Resource Map',
   dbSettingsValueName = 'showPlayerArrowOnResourceMap',
   tooltip = 'Display the player arrow on the resource tracking map',
   dependsOn = 'alwaysShowResourceMap',
+}, {
+  name = 'Rotate Minimap',
+  dbSettingsValueName = 'rotateMinimapOnResourceMap',
+  tooltip = 'Rotate the minimap instead of keeping it static',
 }, {
   name = 'Show Tracking Button When Minimap is Hidden',
   dbSettingsValueName = 'showTrackingWhenMapHidden',
@@ -236,6 +240,10 @@ local settingsSliderOptions = { {
   maxValue = MAXIMUM_XP_BAR_HEIGHT,
   defaultValue = 3,
 } }
+
+-- Temporary per-session settings used by the options UI; only written back
+-- into GLOBAL_SETTINGS when the player clicks Save and Reload.
+tempSettings = tempSettings or {}
 
 local presets = { {
   -- Preset 1: Lite
@@ -357,6 +365,20 @@ function InitializeSettingsOptionsTab()
       tempSettings.lockResourceBar = GLOBAL_SETTINGS.lockResourceBar
     else
       tempSettings.lockResourceBar = false
+    end
+  end
+
+  -- Initialize Rotate Minimap for Resource Map to mirror the player's current
+  -- WoW minimap rotation preference the first time, so we don't hard-force
+  -- this option on or off by default. Subsequent changes are only saved when
+  -- the player clicks Save and Reload.
+  if tempSettings.rotateMinimapOnResourceMap == nil then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.rotateMinimapOnResourceMap ~= nil then
+      tempSettings.rotateMinimapOnResourceMap = GLOBAL_SETTINGS.rotateMinimapOnResourceMap
+    else
+      local cvarValue = GetCVar('RotateMinimap')
+      tempSettings.rotateMinimapOnResourceMap =
+        (cvarValue == '1' or cvarValue == 'true' or cvarValue == true)
     end
   end
 
@@ -1379,6 +1401,23 @@ function InitializeSettingsOptionsTab()
             GLOBAL_SETTINGS[key] = value
           end
 
+          -- If the player has chosen a Rotate Minimap state via the ULTRA
+          -- checkbox, write it back to the Blizzard CVar now so that on
+          -- next load ULTRA and the base game are in sync.
+          if tempSettings.rotateMinimapOnResourceMap ~= nil then
+            SetCVar(
+              'RotateMinimap',
+              tempSettings.rotateMinimapOnResourceMap and '1' or '0'
+            )
+          end
+
+          -- The player explicitly saved ULTRA settings; treat ULTRA as the
+          -- source of truth for minimap rotation until they change the WoW
+          -- RotateMinimap option again (which will flip the source back).
+          if GLOBAL_SETTINGS.rotateMinimapOnResourceMap ~= nil then
+            GLOBAL_SETTINGS.rotateMinimapSource = 'ultra'
+          end
+
           -- Apply the new completely remove settings immediately
           SetPlayerFrameDisplay()
 
@@ -1419,6 +1458,13 @@ function InitializeSettingsOptionsTab()
       -- Fallback if confirmation dialog isn't loaded
       for key, value in pairs(tempSettings) do
         GLOBAL_SETTINGS[key] = value
+      end
+
+      if tempSettings.rotateMinimapOnResourceMap ~= nil then
+        SetCVar(
+          'RotateMinimap',
+          tempSettings.rotateMinimapOnResourceMap and '1' or '0'
+        )
       end
 
       -- Apply the new completely remove settings immediately
