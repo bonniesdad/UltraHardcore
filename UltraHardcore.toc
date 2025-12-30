@@ -73,7 +73,6 @@ Functions/Utils/NormalizeName.lua
 Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
 Functions/Utils/TwitchInvite.lua
-Functions/Utils/KofiInvite.lua
 Functions/Utils/TbcQuestionnaire.lua
 Functions/Utils/AboutAuthor.lua
 Functions/Utils/ConfirmationDialog.lua
@@ -114,7 +113,6 @@ Settings/TabManager.lua
 Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/AchievementTab.lua
-Settings/LivesTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua
