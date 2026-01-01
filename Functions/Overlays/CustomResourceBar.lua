@@ -17,7 +17,7 @@ resourceBar:SetStatusBarTexture('Interface\\TargetingFrame\\UI-StatusBar')
 -- Position persistence functions
 local function SaveResourceBarPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip saving
   end
 
   local point, relativeTo, relativePoint, xOfs, yOfs = resourceBar:GetPoint()
@@ -35,7 +35,7 @@ end
 
 local function LoadResourceBarPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip loading
   end
 
   local pos = UltraHardcoreDB.resourceBarPosition
@@ -198,7 +198,7 @@ druidFormBorder:SetSize(171, 50)
 -- Position persistence functions for druid form resource bar
 local function SaveDruidFormResourceBarPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip saving
   end
 
   local point, relativeTo, relativePoint, xOfs, yOfs = druidFormResourceBar:GetPoint()
@@ -215,7 +215,7 @@ end
 
 local function LoadDruidFormResourceBarPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip loading
   end
 
   local pos = UltraHardcoreDB.druidFormResourceBarPosition
@@ -265,9 +265,12 @@ local function UpdateResourcePoints()
   resourceBar:SetValue(value)
   resourceBar:SetStatusBarColor(GetPowerTypeColor(powerType))
 
-  -- Ensure the resource bar is visible when updating (unless settings say otherwise)
+  -- Update visibility based on settings (don't force show - let event handler manage visibility)
+  -- This ensures the bar state is consistent with settings
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and not GLOBAL_SETTINGS.hideCustomResourceBar then
     resourceBar:Show()
+  else
+    resourceBar:Hide()
   end
 end
 
@@ -347,10 +350,11 @@ local function UpdateDruidFormResourceBar()
   druidFormResourceBar:SetValue(manaValue)
   druidFormResourceBar:SetStatusBarColor(GetPowerTypeColor('MANA'))
 
-  if GLOBAL_SETTINGS and not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
-    druidFormResourceBar:Hide()
-  else
+  -- Show druid form bar only if player frame is hidden AND custom resource bar is not hidden
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and not GLOBAL_SETTINGS.hideCustomResourceBar then
     druidFormResourceBar:Show()
+  else
+    druidFormResourceBar:Hide()
   end
 end
 
@@ -665,22 +669,33 @@ end
 
 resourceBar:SetScript('OnEvent', function(self, event, unit)
   -- Skip visibility check for pet events - they should only affect pet bar, not player bar
-  local isPetEvent = event == 'UNIT_PET' or event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP'
-  
+  local isPetEvent =
+    event == 'UNIT_PET' or event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP'
+
+  -- Check if resource bar should be visible
+  local shouldShowResourceBar =
+    GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and not GLOBAL_SETTINGS.hideCustomResourceBar
+
   if not isPetEvent then
-    if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hidePlayerFrame or GLOBAL_SETTINGS.hideCustomResourceBar then
+    -- For non-pet events, manage visibility based on settings
+    if shouldShowResourceBar then
+      resourceBar:Show()
+    else
       resourceBar:Hide()
       if ShouldHideComboFrame() then
         comboFrame:Hide()
       end
       petResourceBar:Hide()
       druidFormResourceBar:Hide()
-      return
+    -- Don't return early - still need to process other events like PLAYER_ENTERING_WORLD
+    -- to ensure proper initialization
+    end
+  else
+    -- For pet events, maintain current visibility state (don't change player bar visibility)
+    if shouldShowResourceBar then
+      resourceBar:Show()
     end
   end
-
-  -- Ensure resource bar is visible when conditions are met
-  resourceBar:Show()
 
   if event == 'PLAYER_LOGIN' and unit == 'Blizzard_BuffFrame' then
     HookBuffFrame()
@@ -694,7 +709,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   if event == 'PLAYER_ENTERING_WORLD' then
     ApplyResourceBarLockState()
     HideComboPointsForNonUsers()
-    UpdateResourcePoints()
+    UpdateResourcePoints() -- This will set visibility correctly
     UpdatePetResourcePoints()
     UpdateDruidFormResourceBar()
     HandleBuffBarSettingChange()
@@ -706,6 +721,10 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
     C_Timer.After(0.1, function()
       LoadResourceBarPosition()
       LoadDruidFormResourceBarPosition()
+      -- Re-check visibility after position is loaded to ensure bar is shown if it should be
+      if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and not GLOBAL_SETTINGS.hideCustomResourceBar then
+        resourceBar:Show()
+      end
     end)
   elseif event == 'UNIT_POWER_FREQUENT' then
     if unit == 'player' then
@@ -734,7 +753,7 @@ resourceBar:SetScript('OnEvent', function(self, event, unit)
   elseif event == 'PET_ATTACK_START' or event == 'PET_ATTACK_STOP' then
     -- Update pet resource when pet starts/stops attacking
     UpdatePetResourcePoints()
-  elseif unit == 'player' and event == 'UNIT_AURA' or event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'GROUP_LEFT' then
+  elseif (unit == 'player' and event == 'UNIT_AURA') or event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'GROUP_LEFT' then
     CenterPlayerBuffBar()
   elseif unit == 'player' and event == 'UNIT_INVENTORY_CHANGED' then
     -- This event triggers based on inventory items changing so it needs a small delay
