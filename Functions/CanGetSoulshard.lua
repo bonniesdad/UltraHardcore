@@ -30,7 +30,7 @@ end)
 -- Position persistence functions
 local function SaveSoulshardPosition()
     if not UltraHardcoreDB then
-        return -- Database not initialized yet, skip saving
+        return
     end
 
     local point, _, relPoint, x, y = soulshardsFrame:GetPoint()

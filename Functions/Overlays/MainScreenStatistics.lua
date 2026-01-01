@@ -527,7 +527,7 @@ end
 -- Function to update all statistics
 function UpdateStatistics()
   if not UltraHardcoreDB then
-    LoadDBData()
+    return
   end
 
   -- Update character level
@@ -686,7 +686,7 @@ end)
 -- Slash command to reset statistics frame to its saved position
 local function ResetStatsFrameToSavedPosition()
   if not UltraHardcoreDB then
-    LoadDBData()
+    return
   end
   statsFrame:ClearAllPoints()
   local pos = UltraHardcoreDB and UltraHardcoreDB.statsFramePosition or nil

@@ -1679,7 +1679,7 @@ function InitializeStatisticsTab()
   -- Update the lowest health display
   local function UpdateLowestHealthDisplay()
     if not UltraHardcoreDB then
-      LoadDBData()
+      return
     end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
