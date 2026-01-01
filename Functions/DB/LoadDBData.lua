@@ -1,8 +1,6 @@
 -- 🟢 Load saved score on login
 function LoadDBData()
-  if not UltraHardcoreDB then
-    UltraHardcoreDB = {} -- Ensure the table exists
-  end
+  if not UltraHardcoreDB then return end
 
   enemiesSlain = UltraHardcoreDB.enemiesSlain or 0
   elitesSlain = UltraHardcoreDB.elitesSlain or 0
@@ -13,9 +11,6 @@ function LoadDBData()
   if not UltraHardcoreDB.lastSeenVersion then
     UltraHardcoreDB.lastSeenVersion = nil
   end
-
-  -- Get current character's GUID for per-character settings
-  local characterGUID = UnitGUID('player')
 
   -- Initialize character settings if they don't exist
   if not UltraHardcoreDB.characterSettings then
@@ -117,30 +112,6 @@ function LoadDBData()
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
   }
-
-  -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
-  if UltraHardcoreDB.GLOBAL_SETTINGS then
-    if not UltraHardcoreDB.characterSettings[characterGUID] then
-      UltraHardcoreDB.characterSettings[characterGUID] = UltraHardcoreDB.GLOBAL_SETTINGS
-    end
-    UltraHardcoreDB.GLOBAL_SETTINGS = nil
-  end
-
-  -- Initialize settings for current character if they don't exist
-  if not UltraHardcoreDB.characterSettings[characterGUID] then
-    UltraHardcoreDB.characterSettings[characterGUID] = defaultSettings
-  end
-
-  -- Iterate over the defaults to see if there are any new settings
-  -- we need to add to characters that have an existing DB.
-  for settingName, settingValue in pairs(defaultSettings) do
-    if UltraHardcoreDB.characterSettings[characterGUID][settingName] == nil then
-      UltraHardcoreDB.characterSettings[characterGUID][settingName] = settingValue
-    end
-  end
-
-  -- Load current character's settings
-  GLOBAL_SETTINGS = UltraHardcoreDB.characterSettings[characterGUID]
 
   -- Always mirror the current WoW RotateMinimap CVar into our
   -- rotateMinimapOnResourceMap flag on load so ULTRA starts in

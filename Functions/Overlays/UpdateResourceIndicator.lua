@@ -8,7 +8,7 @@ resourceIndicator:SetClampedToScreen(true)
 -- Position persistence
 local function SaveResourceIndicatorPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip saving
   end
 
   local point, _, relPoint, x, y = resourceIndicator:GetPoint()
@@ -20,7 +20,7 @@ end
 
 local function LoadResourceIndicatorPosition()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    return -- Database not initialized yet, skip loading
   end
 
   local pos = UltraHardcoreDB.resourceIndicatorPosition
@@ -108,7 +108,8 @@ end
 SLASH_TOGGLEBONNIE1 = '/bonnie'
 SlashCmdList.TOGGLEBONNIE = function()
   if not UltraHardcoreDB then
-    UltraHardcoreDB = {}
+    print('|cfff44336[ULTRA]|r Database not initialized yet. Please wait a moment and try again.')
+    return
   end
   if resourceIndicator:IsShown() then
     resourceIndicator:Hide()

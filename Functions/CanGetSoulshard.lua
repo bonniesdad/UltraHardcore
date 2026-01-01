@@ -30,7 +30,7 @@ end)
 -- Position persistence functions
 local function SaveSoulshardPosition()
     if not UltraHardcoreDB then
-        UltraHardcoreDB = {}
+        return -- Database not initialized yet, skip saving
     end
 
     local point, _, relPoint, x, y = soulshardsFrame:GetPoint()
@@ -39,7 +39,7 @@ end
 
 local function LoadSoulshardPosition()
     if not UltraHardcoreDB then
-        UltraHardcoreDB = {}
+        return -- Database not initialized yet, skip loading
     end
 
     local pos = UltraHardcoreDB.soulshardPosition
@@ -79,8 +79,15 @@ soulshardsFrame:SetScript("OnDragStop", function(self)
     SaveSoulshardPosition()
 end)
 
--- Load position on initialization
-LoadSoulshardPosition()
+-- Load position after database is initialized
+-- Defer loading until PLAYER_LOGIN to ensure database is ready
+local loadPositionFrame = CreateFrame("Frame")
+loadPositionFrame:RegisterEvent("PLAYER_LOGIN")
+loadPositionFrame:SetScript("OnEvent", function()
+    C_Timer.After(0.1, function()
+        LoadSoulshardPosition()
+    end)
+end)
 
 
 -- You can change this to anything. I used the felmending icon for visibility.
