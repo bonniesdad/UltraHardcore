@@ -25,11 +25,9 @@ Functions/SetTargetTooltipDisplay.lua
 Functions/SetUIErrorsDisplay.lua
 Functions/TunnelVision.lua
 Functions/OnCombatLogEvent.lua
-Functions/WelcomeMessage.lua
 Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
-Functions/ResourceTrackingExplainer.lua
 Functions/Utils/AudioUtils.lua
 Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua

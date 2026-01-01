@@ -291,6 +291,10 @@ end
 
 -- Get the current character's stats
 function CharacterStats:GetCurrentCharacterStats()
+  if not UltraHardcoreDB then
+    return self.defaults
+  end
+
   local characterGUID = UnitGUID('player')
 
   if statsInitialized then

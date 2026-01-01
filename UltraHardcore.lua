@@ -35,7 +35,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_LOGIN' then
     LoadDBData()
     HidePlayerMapIndicators()
-    ShowWelcomeMessage()
     ShowVersionUpdateDialog()
     SetPlayerFrameDisplay()
 
@@ -58,7 +57,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     if GLOBAL_SETTINGS.showMailEvenWhenMapHidden and GLOBAL_SETTINGS.hideMinimap then
       ShowMail()
     end
-    ShowResourceTrackingExplainer()
 
     -- Setup target frame options
     local targetMask = {}
