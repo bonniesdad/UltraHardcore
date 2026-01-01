@@ -2,35 +2,15 @@
 -- Shows health indicator icons next to party member frames and target glow
 
 -- Use the same health indicator steps as nameplates
-PARTY_HEALTH_INDICATOR_STEPS = { {
-  health = 0,
-  alpha = 1.0,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-black.png',
-}, {
-  health = 0.2,
-  alpha = 1.0,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png',
-}, {
-  health = 0.3,
-  alpha = 0.8,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png',
-}, {
-  health = 0.4,
-  alpha = 0.6,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png',
-}, {
-  health = 0.6,
-  alpha = 0.4,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png',
-}, {
-  health = 0.8,
-  alpha = 0.2,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png',
-}, {
-  health = 1,
-  alpha = 0.0,
-  texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png',
-} }
+PARTY_HEALTH_INDICATOR_STEPS = {
+  {health = 0, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-black.png'},
+  {health = 0.2, alpha = 1.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
+  {health = 0.3, alpha = 0.8, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-red.png'},
+  {health = 0.4, alpha = 0.6, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.6, alpha = 0.4, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-orange.png'},
+  {health = 0.8, alpha = 0.2, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+  {health = 1, alpha = 0.0, texture = 'Interface\\AddOns\\UltraHardcore\\Textures\\health-icon-yellow.png'},
+}
 
 -- Cache of all party health indicators
 PARTY_HEALTH_INDICATOR_FRAMES = {}
@@ -47,341 +27,9 @@ PET_TARGET_HIGHLIGHT_FRAMES = {}
 -- Cache of all raid health indicators
 RAID_HEALTH_INDICATOR_FRAMES = {}
 
--- Cache of all wild (non-group) friendly player nameplate indicators
-WILD_HEALTH_INDICATOR_FRAMES = {}
-WILD_HEALTH_ICON_FRAMES = {}
-
--- Track if wild ally indicators are enabled to avoid unnecessary work
-local wildAllyIndicatorsEnabled = false
-local wildAllyPresenceCache  -- declared early so helper functions see the local
--- Treat wild ally indicators as disabled inside dungeon/raid instances
-local function IsInDungeonOrRaidInstance()
-  local inInstance, instanceType = IsInInstance()
-  return inInstance and (instanceType == 'party' or instanceType == 'raid')
-end
-
--- The "effective" runtime enable (does not change the saved setting)
-local function AreWildAllyIndicatorsActive()
-  return wildAllyIndicatorsEnabled and not IsInDungeonOrRaidInstance()
-end
-
-local function ClearWildAllyIndicators()
-  wildAllyPresenceCache = {}
-  for unit, indicator in pairs(WILD_HEALTH_INDICATOR_FRAMES) do
-    if indicator then
-      indicator:Hide()
-    end
-    WILD_HEALTH_INDICATOR_FRAMES[unit] = nil
-  end
-  for unit, icon in pairs(WILD_HEALTH_ICON_FRAMES) do
-    if icon then
-      icon:Hide()
-    end
-    WILD_HEALTH_ICON_FRAMES[unit] = nil
-  end
-end
-
--- Cache presence for wild allies (playerName -> {hasAddon, pending, timestamp})
-wildAllyPresenceCache = {}
-local PRESENCE_CACHE_EXPIRY = 300
-local PRESENCE_PENDING_WINDOW = 6
-
--- Forward declaration so early functions see the local
-local RefreshAllWildAllyHealthIndicators
-
-local function ShouldShowWildAllyIndicator(unit)
-  if not AreWildAllyIndicatorsActive() then
-    return false
-  end
-  if not unit or not UnitExists(unit) then
-    return false
-  end
-  if not UnitIsPlayer(unit) then
-    return false
-  end
-  if not UnitIsFriend('player', unit) then
-    return false
-  end
-  if UnitIsUnit(unit, 'player') then
-    return false
-  end
-  if UnitInParty(unit) or UnitInRaid(unit) then
-    return false
-  end
-  return true
-end
-
-local function PositionNameplateName(unitFrame)
-  if not unitFrame then return end
-  local nameRegion = unitFrame.name or unitFrame.Name
-  if not nameRegion then return end
-
-  nameRegion:ClearAllPoints()
-  -- Nudge the name slightly upward so it sits above our indicator
-  nameRegion:SetPoint('BOTTOM', unitFrame, 'TOP', 0, 4)
-  nameRegion:SetAlpha(1)
-  if nameRegion.Show then
-    nameRegion:Show()
-  end
-end
-
-local function HideNameplateVisuals(plate)
-  if not plate then return end
-  local unitFrame = plate.UnitFrame or plate.unitFrame
-  if not unitFrame then return end
-
-  local elements =
-    {
-      unitFrame.healthBar,
-      unitFrame.healthbar,
-      unitFrame.healthBarContainer and unitFrame.healthBarContainer.healthBar,
-      unitFrame.castBar,
-      unitFrame.levelText,
-      unitFrame.LevelText,
-    }
-
-  for _, element in ipairs(elements) do
-    if element then
-      if element.Hide then
-        element:Hide()
-      end
-      if element.SetAlpha then
-        element:SetAlpha(0)
-      end
-    end
-  end
-
-  PositionNameplateName(unitFrame)
-end
-
-local function GetNameRegion(plate)
-  if not plate then
-    return nil
-  end
-  local unitFrame = plate.UnitFrame or plate.unitFrame
-  if not unitFrame then
-    return nil
-  end
-  return unitFrame.name or unitFrame.Name
-end
-
-local function SetWildAllyIcon(unit, plate, hasAddon)
-  local nameRegion = GetNameRegion(plate)
-  local icon = WILD_HEALTH_ICON_FRAMES[unit]
-
-  if not hasAddon then
-    if icon then
-      icon:Hide()
-    end
-    return
-  end
-
-  local anchor = nameRegion or plate
-  if not anchor then return end
-
-  if not icon or icon:GetParent() ~= anchor then
-    icon = anchor:CreateTexture(nil, 'OVERLAY')
-    icon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png')
-    icon:SetSize(18, 18)
-    WILD_HEALTH_ICON_FRAMES[unit] = icon
-  end
-
-  icon:ClearAllPoints()
-  if nameRegion then
-    icon:SetPoint('BOTTOM', nameRegion, 'TOP', 0, 2)
-  else
-    icon:SetPoint('BOTTOM', plate, 'TOP', 0, 2)
-  end
-  icon:SetAlpha(1)
-  icon:Show()
-end
-
-local function EnsureWildAllyPresence(unit)
-  if not PlayerComm or not PlayerComm.RequestUltraPresence then
-    return false
-  end
-
-  local name = UnitName(unit)
-  if not name then
-    return false
-  end
-  local normalized = Ambiguate(name, 'none')
-  local now = GetTime()
-  local cache = wildAllyPresenceCache[normalized]
-
-  if cache and cache.hasAddon ~= nil and (now - cache.timestamp) < PRESENCE_CACHE_EXPIRY then
-    return cache.hasAddon
-  end
-
-  if cache and cache.pending and (now - cache.timestamp) < PRESENCE_PENDING_WINDOW then
-    return cache.hasAddon
-  end
-
-  wildAllyPresenceCache[normalized] = {
-    pending = true,
-    timestamp = now,
-    hasAddon = cache and cache.hasAddon or false,
-  }
-
-  PlayerComm:RequestUltraPresence(normalized, function(hasAddon, playerName, success)
-    local key = Ambiguate(playerName or normalized, 'none')
-    wildAllyPresenceCache[key] = {
-      pending = false,
-      hasAddon = success and hasAddon or false,
-      timestamp = GetTime(),
-    }
-    RefreshAllWildAllyHealthIndicators()
-  end)
-
-  return cache and cache.hasAddon or false
-end
-
-local function RemoveWildAllyIndicator(unit)
-  local indicator = WILD_HEALTH_INDICATOR_FRAMES[unit]
-  if indicator then
-    indicator:Hide()
-    WILD_HEALTH_INDICATOR_FRAMES[unit] = nil
-  end
-  local icon = WILD_HEALTH_ICON_FRAMES[unit]
-  if icon then
-    icon:Hide()
-    WILD_HEALTH_ICON_FRAMES[unit] = nil
-  end
-end
-
-local function UpdateWildAllyHealthIndicator(unit)
-  if not ShouldShowWildAllyIndicator(unit) then
-    RemoveWildAllyIndicator(unit)
-    return
-  end
-
-  if not C_NamePlate or not C_NamePlate.GetNamePlateForUnit then
-    RemoveWildAllyIndicator(unit)
-    return
-  end
-
-  local plate = C_NamePlate.GetNamePlateForUnit(unit)
-  if not plate then
-    RemoveWildAllyIndicator(unit)
-    return
-  end
-
-  HideNameplateVisuals(plate)
-  local hasAddon = EnsureWildAllyPresence(unit)
-  SetWildAllyIcon(unit, plate, hasAddon)
-
-  local indicator = WILD_HEALTH_INDICATOR_FRAMES[unit]
-  if not indicator or indicator:GetParent() ~= plate then
-    indicator = plate:CreateTexture(nil, 'OVERLAY')
-    indicator:SetSize(30, 30)
-    indicator:SetPoint('CENTER', plate, 'CENTER', 0, 0)
-    indicator:SetAlpha(0.0)
-    WILD_HEALTH_INDICATOR_FRAMES[unit] = indicator
-  end
-
-  local health = UnitHealth(unit)
-  local maxHealth = UnitHealthMax(unit)
-  if not health or not maxHealth or maxHealth == 0 then
-    indicator:Hide()
-    return
-  end
-
-  local healthRatio = health / maxHealth
-  if health == 0 or UnitIsDead(unit) then
-    healthRatio = 0
-  end
-
-  local alpha = 0.0
-  local texture = nil
-  for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
-    if healthRatio <= step.health then
-      alpha = step.alpha
-      texture = step.texture
-      break
-    end
-  end
-
-  if alpha > 0 then
-    indicator:SetTexture(texture)
-    indicator:SetAlpha(alpha)
-    indicator:Show()
-  else
-    indicator:Hide()
-  end
-end
-
-local function GetNamePlateUnitToken(plate)
-  if not plate then
-    return nil
-  end
-  if plate.namePlateUnitToken then
-    return plate.namePlateUnitToken
-  end
-  if plate.UnitFrame then
-    if plate.UnitFrame.unit then
-      return plate.UnitFrame.unit
-    end
-    if plate.UnitFrame.displayedUnit then
-      return plate.UnitFrame.displayedUnit
-    end
-  end
-  if plate.unitFrame then
-    if plate.unitFrame.unit then
-      return plate.unitFrame.unit
-    end
-    if plate.unitFrame.displayedUnit then
-      return plate.unitFrame.displayedUnit
-    end
-  end
-  return nil
-end
-
-RefreshAllWildAllyHealthIndicators = function()
-  if not AreWildAllyIndicatorsActive() then
-    ClearWildAllyIndicators()
-    return
-  end
-
-  if not C_NamePlate or not C_NamePlate.GetNamePlates then return end
-  local plates = C_NamePlate.GetNamePlates() or {}
-  for _, plate in ipairs(plates) do
-    local unitToken = GetNamePlateUnitToken(plate)
-    if unitToken then
-      UpdateWildAllyHealthIndicator(unitToken)
-    end
-  end
-end
-
-function SetWildAllyHealthIndicators(enabled)
-  wildAllyIndicatorsEnabled = enabled and true or false
-  local active = AreWildAllyIndicatorsActive()
-  -- If the addon is in "Disable Nameplates" mode, let SetNameplateDisabled own CVars.
-  local shouldTouchCVars =
-  active and SetCVar and not (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.disableNameplateHealth or false))
-  if shouldTouchCVars then
-    if InCombatLockdown() then
-      C_Timer.After(0.1, function()
-        if shouldTouchCVars and AreWildAllyIndicatorsActive() and not InCombatLockdown() then
-          SetCVar('nameplateShowFriends', 1)
-          SetCVar('nameplateShowAll', 1)
-        end
-      end)
-    else
-      SetCVar('nameplateShowFriends', 1)
-      SetCVar('nameplateShowAll', 1)
-    end
-  end
-  if not active then
-    ClearWildAllyIndicators()
-  end
-  RefreshAllWildAllyHealthIndicators()
-end
-
 -- Helper to get a CompactRaidFrame's unit, being tolerant of different fields
 local function GetRaidFrameUnit(frame, fallbackIndex)
-  if not frame then
-    return fallbackIndex and ('raid' .. fallbackIndex) or nil
-  end
+  if not frame then return fallbackIndex and ('raid' .. fallbackIndex) or nil end
   if frame.displayedUnit and type(frame.displayedUnit) == 'string' then
     return frame.displayedUnit
   end
@@ -398,7 +46,9 @@ end
 function SetRaidHealthIndicator(enabled, raidIndex)
   local raidFrame = _G['CompactRaidFrame' .. raidIndex]
   local nameFrame = _G['CompactRaidFrame' .. raidIndex .. 'Name']
-  if not raidFrame or not nameFrame then return end
+  if not raidFrame or not nameFrame then
+    return
+  end
 
   if not enabled then
     local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
@@ -535,13 +185,15 @@ end
 
 function SetPartyHealthIndicator(enabled, partyIndex)
   local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then
+  if not partyFrame then 
     -- Try alternative party frame names
     partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
     if not partyFrame then
       partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
     end
-    if not partyFrame then return end
+    if not partyFrame then
+      return 
+    end
   end
 
   -- If health indicator is disabled, hide existing indicators
@@ -561,7 +213,7 @@ function SetPartyHealthIndicator(enabled, partyIndex)
     healthIndicator:SetSize(32, 32)
     healthIndicator:SetPoint('RIGHT', partyFrame, 'LEFT', -5, 0)
     healthIndicator:SetAlpha(0.0)
-
+    
     -- Cache for updates
     PARTY_HEALTH_INDICATOR_FRAMES[partyIndex] = healthIndicator
   end
@@ -575,27 +227,31 @@ function UpdatePartyHealthIndicator(partyIndex)
   if not healthIndicator then return end
 
   local unit = 'party' .. partyIndex
-
+  
   -- Always hide first - only show if we have reliable data AND health is low
   healthIndicator:Hide()
-
-  if not UnitExists(unit) then return end
+  
+  if not UnitExists(unit) then
+    return
+  end
 
   local health = UnitHealth(unit)
   local maxHealth = UnitHealthMax(unit)
-  if not health or not maxHealth or maxHealth == 0 then return end
+  if not health or not maxHealth or maxHealth == 0 then
+    return
+  end
 
   local healthRatio = health / maxHealth
-
+  
   -- Handle dead party members (0 health)
   if health == 0 or UnitIsDead(unit) then
     healthRatio = 0
   end
-
+  
   -- Find the appropriate health step
   local alpha = 0.0
   local texture = nil
-
+  
   for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
@@ -625,16 +281,18 @@ end
 function SetPetHealthIndicator(enabled, petType, petIndex)
   local petFrame = nil
   local petUnit = nil
-
-  if petType == 'player' then
+  
+  if petType == "player" then
     petFrame = PetFrame
-    petUnit = 'pet'
-  elseif petType == 'party' then
+    petUnit = "pet"
+  elseif petType == "party" then
     petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
-    petUnit = 'partypet' .. petIndex
+    petUnit = "partypet" .. petIndex
   end
-
-  if not petFrame then return end
+  
+  if not petFrame then
+    return
+  end
 
   -- If health indicator is disabled, hide existing indicators
   if not enabled then
@@ -653,7 +311,7 @@ function SetPetHealthIndicator(enabled, petType, petIndex)
     healthIndicator:SetSize(24, 24) -- Smaller than party indicators
     healthIndicator:SetPoint('LEFT', petFrame, 'RIGHT', -80, 0)
     healthIndicator:SetAlpha(0.0)
-
+    
     -- Cache for updates
     PET_HEALTH_INDICATOR_FRAMES[petType .. petIndex] = healthIndicator
   end
@@ -667,32 +325,36 @@ function UpdatePetHealthIndicator(petType, petIndex)
   if not healthIndicator then return end
 
   local petUnit = nil
-  if petType == 'player' then
-    petUnit = 'pet'
-  elseif petType == 'party' then
-    petUnit = 'partypet' .. petIndex
+  if petType == "player" then
+    petUnit = "pet"
+  elseif petType == "party" then
+    petUnit = "partypet" .. petIndex
   end
-
+  
   -- Always hide first - only show if we have reliable data AND health is low
   healthIndicator:Hide()
-
-  if not UnitExists(petUnit) then return end
+  
+  if not UnitExists(petUnit) then
+    return
+  end
 
   local health = UnitHealth(petUnit)
   local maxHealth = UnitHealthMax(petUnit)
-  if not health or not maxHealth or maxHealth == 0 then return end
+  if not health or not maxHealth or maxHealth == 0 then
+    return
+  end
 
   local healthRatio = health / maxHealth
-
+  
   -- Handle dead pets (0 health)
   if health == 0 or UnitIsDead(petUnit) then
     healthRatio = 0
   end
-
+  
   -- Find the appropriate health step
   local alpha = 0.0
   local texture = nil
-
+  
   for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
@@ -714,11 +376,11 @@ end
 
 function UpdateAllPetHealthIndicators()
   -- Update player pet
-  UpdatePetHealthIndicator('player', '')
-
+  UpdatePetHealthIndicator("player", "")
+  
   -- Update party pets
   for i = 1, 4 do
-    UpdatePetHealthIndicator('party', i)
+    UpdatePetHealthIndicator("party", i)
   end
 end
 
@@ -736,47 +398,47 @@ function SetAllPetHealthIndicators(enabled)
   -- Create health indicators for player pet
   local playerPetFrame = PetFrame
   if playerPetFrame then
-    local healthIndicator = PET_HEALTH_INDICATOR_FRAMES['player']
+    local healthIndicator = PET_HEALTH_INDICATOR_FRAMES["player"]
     if not healthIndicator then
       healthIndicator = playerPetFrame:CreateTexture(nil, 'OVERLAY')
       healthIndicator:SetSize(24, 24)
       healthIndicator:SetPoint('LEFT', playerPetFrame, 'RIGHT', -80, 0)
       healthIndicator:SetAlpha(0.0)
       healthIndicator:Hide()
-
-      PET_HEALTH_INDICATOR_FRAMES['player'] = healthIndicator
+      
+      PET_HEALTH_INDICATOR_FRAMES["player"] = healthIndicator
     end
-
-    UpdatePetHealthIndicator('player', '')
+    
+    UpdatePetHealthIndicator("player", "")
   end
 
   -- Create health indicators for party pets
   for i = 1, 4 do
     local partyPetFrame = _G['PartyMemberFrame' .. i .. 'PetFrame']
     if partyPetFrame then
-      local healthIndicator = PET_HEALTH_INDICATOR_FRAMES['party' .. i]
+      local healthIndicator = PET_HEALTH_INDICATOR_FRAMES["party" .. i]
       if not healthIndicator then
         healthIndicator = partyPetFrame:CreateTexture(nil, 'OVERLAY')
         healthIndicator:SetSize(24, 24)
         healthIndicator:SetPoint('LEFT', partyPetFrame, 'RIGHT', -90, 0)
         healthIndicator:SetAlpha(0.0)
         healthIndicator:Hide()
-
-        PET_HEALTH_INDICATOR_FRAMES['party' .. i] = healthIndicator
+        
+        PET_HEALTH_INDICATOR_FRAMES["party" .. i] = healthIndicator
       end
-
-      UpdatePetHealthIndicator('party', i)
+      
+      UpdatePetHealthIndicator("party", i)
     end
   end
-
+  
   -- Also try with a delay in case pet frames aren't ready yet
   C_Timer.After(0.5, function()
     -- Update player pet
-    UpdatePetHealthIndicator('player', '')
-
+    UpdatePetHealthIndicator("player", "")
+    
     -- Update party pets
     for i = 1, 4 do
-      UpdatePetHealthIndicator('party', i)
+      UpdatePetHealthIndicator("party", i)
     end
   end)
 end
@@ -796,14 +458,14 @@ function SetAllPartyHealthIndicators(enabled)
   -- Create health indicators for all party members and update them based on actual health
   for i = 1, 4 do -- Party members 1-4
     local partyFrame = _G['PartyMemberFrame' .. i]
-    if not partyFrame then
+    if not partyFrame then 
       -- Try alternative party frame names
       partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
       if not partyFrame then
         partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
       end
     end
-
+    
     if partyFrame then
       -- Create or get existing health indicator
       local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
@@ -813,28 +475,28 @@ function SetAllPartyHealthIndicators(enabled)
         healthIndicator:SetPoint('RIGHT', partyFrame, 'LEFT', -5, 0)
         healthIndicator:SetAlpha(0.0)
         healthIndicator:Hide()
-
+        
         -- Cache for updates
         PARTY_HEALTH_INDICATOR_FRAMES[i] = healthIndicator
       end
-
+      
       -- Update the indicator based on actual health
       UpdatePartyHealthIndicator(i)
     end
   end
-
+  
   -- Also try with a delay in case party frames aren't ready yet
   C_Timer.After(0.5, function()
     for i = 1, 4 do -- Party members 1-4
       local partyFrame = _G['PartyMemberFrame' .. i]
-      if not partyFrame then
+      if not partyFrame then 
         -- Try alternative party frame names
         partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
         if not partyFrame then
           partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
         end
       end
-
+      
       if partyFrame then
         -- Create or get existing health indicator
         local healthIndicator = PARTY_HEALTH_INDICATOR_FRAMES[i]
@@ -844,11 +506,11 @@ function SetAllPartyHealthIndicators(enabled)
           healthIndicator:SetPoint('RIGHT', partyFrame, 'LEFT', -5, 0)
           healthIndicator:SetAlpha(0.0)
           healthIndicator:Hide()
-
+          
           -- Cache for updates
           PARTY_HEALTH_INDICATOR_FRAMES[i] = healthIndicator
         end
-
+        
         -- Update the indicator based on actual health
         UpdatePartyHealthIndicator(i)
       end
@@ -859,13 +521,15 @@ end
 -- Function to create target highlight for a party member
 function CreatePartyTargetHighlight(partyIndex)
   local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then
+  if not partyFrame then 
     -- Try alternative party frame names
     partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
     if not partyFrame then
       partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
     end
-    if not partyFrame then return end
+    if not partyFrame then
+      return 
+    end
   end
 
   local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[partyIndex]
@@ -874,34 +538,34 @@ function CreatePartyTargetHighlight(partyIndex)
     highlight = partyFrame:CreateTexture(nil, 'OVERLAY')
     highlight:SetSize(100, 100) -- Larger than party frame for glow effect
     highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
-
+    
     -- Use holy damage texture for a golden glow effect
     highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect
     highlight:Hide()
-
+    
     PARTY_TARGET_HIGHLIGHT_FRAMES[partyIndex] = highlight
   else
     -- Ensure existing highlight is properly positioned
     highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
   end
-
+  
   return highlight
 end
 
 -- Function to create target highlight for a pet
 function CreatePetTargetHighlight(petType)
   local petFrame = nil
-
-  if petType == 'player' then
+  
+  if petType == "player" then
     petFrame = PetFrame
-  elseif petType:match('^party%d+$') then
-    local petIndex = petType:match('party(%d+)')
+  elseif petType:match("^party%d+$") then
+    local petIndex = petType:match("party(%d+)")
     petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
   end
-
+  
   if not petFrame then
     return nil
   end
@@ -911,38 +575,39 @@ function CreatePetTargetHighlight(petType)
     -- Create a glow effect around the pet frame
     highlight = petFrame:CreateTexture(nil, 'OVERLAY')
     highlight:SetSize(80, 80) -- Smaller than party frame for pet frames
+    
     -- Position differently for player pet vs party pets
-    if petType == 'player' then
+    if petType == "player" then
       highlight:SetPoint('CENTER', petFrame, 'CENTER', -40, 0)
     else
       -- Party pets get positioned 30 pixels to the right
       highlight:SetPoint('CENTER', petFrame, 'CENTER', 30, 0)
     end
-
+    
     -- Use holy damage texture for a golden glow effect
     highlight:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\party-target-highlight.png')
     highlight:SetVertexColor(1, 0.84, 0, 0.7) -- Gold color with transparency
     highlight:SetAlpha(0.8)
     highlight:SetBlendMode('ADD') -- Additive blending for glow effect
     highlight:Hide()
-
+    
     PET_TARGET_HIGHLIGHT_FRAMES[petType] = highlight
   else
     -- Ensure existing highlight is properly positioned
-    if petType == 'player' then
+    if petType == "player" then
       highlight:SetPoint('CENTER', petFrame, 'CENTER', -40, 0)
     else
       -- Party pets get positioned 30 pixels to the right
       highlight:SetPoint('CENTER', petFrame, 'CENTER', -20, 0)
     end
   end
-
+  
   return highlight
 end
 
 -- Function to update target highlights
 function UpdatePartyTargetHighlights()
-  local targetUnit = 'target'
+  local targetUnit = "target"
   if not UnitExists(targetUnit) then
     -- Hide all highlights if no target
     for i = 1, 4 do
@@ -958,9 +623,9 @@ function UpdatePartyTargetHighlights()
 
   -- Check if target is a party member
   for i = 1, 4 do
-    local partyUnit = 'party' .. i
+    local partyUnit = "party" .. i
     local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[i]
-
+    
     if UnitIsUnit(targetUnit, partyUnit) then
       -- Target is this party member - show highlight
       if not highlight then
@@ -981,25 +646,25 @@ function UpdatePartyTargetHighlights()
       end
     end
   end
-
+  
   -- Also check for pet targets
   UpdatePetTargetHighlights()
 end
 
 -- Function to update pet target highlights
 function UpdatePetTargetHighlights()
-  local targetUnit = 'target'
+  local targetUnit = "target"
   if not UnitExists(targetUnit) then
     -- Hide all pet highlights if no target
     -- Hide player pet highlight
-    local playerPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES['player']
+    local playerPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES["player"]
     if playerPetHighlight then
       playerPetHighlight:Hide()
     end
-
+    
     -- Hide party pet highlights
     for i = 1, 4 do
-      local partyPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES['party' .. i]
+      local partyPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES["party" .. i]
       if partyPetHighlight then
         partyPetHighlight:Hide()
       end
@@ -1008,17 +673,17 @@ function UpdatePetTargetHighlights()
   end
 
   -- Check if target is player pet
-  if UnitIsUnit(targetUnit, 'pet') then
-    local highlight = PET_TARGET_HIGHLIGHT_FRAMES['player']
+  if UnitIsUnit(targetUnit, "pet") then
+    local highlight = PET_TARGET_HIGHLIGHT_FRAMES["player"]
     if not highlight then
-      highlight = CreatePetTargetHighlight('player')
+      highlight = CreatePetTargetHighlight("player")
     end
     if highlight then
       highlight:Show()
     end
   else
     -- Hide player pet highlight if not targeting it
-    local playerPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES['player']
+    local playerPetHighlight = PET_TARGET_HIGHLIGHT_FRAMES["player"]
     if playerPetHighlight then
       playerPetHighlight:Hide()
     end
@@ -1026,13 +691,13 @@ function UpdatePetTargetHighlights()
 
   -- Check if target is a party pet
   for i = 1, 4 do
-    local partyPetUnit = 'partypet' .. i
-    local highlight = PET_TARGET_HIGHLIGHT_FRAMES['party' .. i]
-
+    local partyPetUnit = "partypet" .. i
+    local highlight = PET_TARGET_HIGHLIGHT_FRAMES["party" .. i]
+    
     if UnitIsUnit(targetUnit, partyPetUnit) then
       -- Target is this party pet - show highlight
       if not highlight then
-        highlight = CreatePetTargetHighlight('party' .. i)
+        highlight = CreatePetTargetHighlight("party" .. i)
       end
       if highlight then
         highlight:Show()
@@ -1065,10 +730,10 @@ function SetAllPartyTargetHighlights(enabled)
   for i = 1, 4 do
     CreatePartyTargetHighlight(i)
   end
-
+  
   -- Also create pet highlights
   SetAllPetTargetHighlights(true)
-
+  
   -- Update highlights based on current target
   UpdatePartyTargetHighlights()
 end
@@ -1086,13 +751,13 @@ function SetAllPetTargetHighlights(enabled)
   end
 
   -- Create highlight for player pet
-  CreatePetTargetHighlight('player')
-
+  CreatePetTargetHighlight("player")
+  
   -- Create highlights for party pets
   for i = 1, 4 do
-    CreatePetTargetHighlight('party' .. i)
+    CreatePetTargetHighlight("party" .. i)
   end
-
+  
   -- Update pet highlights based on current target
   UpdatePetTargetHighlights()
 end
@@ -1103,7 +768,6 @@ function SetAllGroupIndicators()
   SetAllPetHealthIndicators(true)
   SetAllPartyTargetHighlights(true)
   SetAllPetTargetHighlights(true)
-  RefreshAllWildAllyHealthIndicators()
   -- Only enable raid health indicators when group health is hidden
   if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
     SetAllRaidHealthIndicators(true)
@@ -1136,10 +800,6 @@ partyHealthFrame:RegisterEvent('PARTY_MEMBER_DISABLE')
 partyHealthFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
 partyHealthFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 partyHealthFrame:RegisterEvent('ADDON_LOADED')
-partyHealthFrame:RegisterEvent('NAME_PLATE_UNIT_ADDED')
-partyHealthFrame:RegisterEvent('NAME_PLATE_UNIT_REMOVED')
-partyHealthFrame:RegisterEvent('ZONE_CHANGED_NEW_AREA')
-partyHealthFrame:RegisterEvent('PLAYER_DIFFICULTY_CHANGED')
 
 partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
   if event == 'UNIT_HEALTH_FREQUENT' or event == 'UNIT_HEALTH' then
@@ -1156,16 +816,14 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
       if partyIndex and partyIndex >= 1 and partyIndex <= 4 then
         UpdatePartyHealthIndicator(partyIndex)
       end
-      -- Check if this is a pet
+    -- Check if this is a pet
     elseif unit == 'pet' then
-      UpdatePetHealthIndicator('player', '')
+      UpdatePetHealthIndicator("player", "")
     elseif unit and unit:match('^partypet%d+$') then
       local petIndex = tonumber(unit:match('partypet(%d+)'))
       if petIndex and petIndex >= 1 and petIndex <= 4 then
-        UpdatePetHealthIndicator('party', petIndex)
+        UpdatePetHealthIndicator("party", petIndex)
       end
-    elseif unit and unit:match('^nameplate%d+$') then
-      UpdateWildAllyHealthIndicator(unit)
     end
   elseif event == 'GROUP_ROSTER_UPDATE' or event == 'GROUP_JOINED' or event == 'PARTY_MEMBER_ENABLE' or event == 'PARTY_MEMBER_DISABLE' then
     -- Update all party indicators when party composition changes
@@ -1174,7 +832,6 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
       UpdatePartyTargetHighlights()
-      RefreshAllWildAllyHealthIndicators()
       if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
         SetAllRaidHealthIndicators(true)
       end
@@ -1187,19 +844,9 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
     C_Timer.After(1.0, function()
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
-      -- Re-apply wild ally indicators so instance transitions behave like the setting is off
-      SetWildAllyHealthIndicators(wildAllyIndicatorsEnabled)
-      RefreshAllWildAllyHealthIndicators()
       if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
         SetAllRaidHealthIndicators(true)
       end
     end)
-  elseif event == 'NAME_PLATE_UNIT_ADDED' then
-    UpdateWildAllyHealthIndicator(unit)
-  elseif event == 'NAME_PLATE_UNIT_REMOVED' then
-    RemoveWildAllyIndicator(unit)
-  elseif event == 'ZONE_CHANGED_NEW_AREA' or event == 'PLAYER_DIFFICULTY_CHANGED' then
-    -- Handle dungeon/raid instance transitions without changing the saved toggle
-    SetWildAllyHealthIndicators(wildAllyIndicatorsEnabled)
   end
 end)

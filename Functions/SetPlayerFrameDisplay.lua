@@ -17,6 +17,7 @@ local PLAYER_HIDEABLE = {
   "PlayerFrameTexture",
   "PlayerStatusTexture",
   "PlayerFrameBackground",
+  "PlayerLevelText"
 }
 
 -- Apply mask to PlayerFrame
