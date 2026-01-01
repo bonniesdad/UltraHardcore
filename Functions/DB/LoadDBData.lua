@@ -1,7 +1,7 @@
 -- 🟢 Load saved score on login
 function LoadDBData()
   if not UltraHardcoreDB then 
-    return
+    UltraHardcoreDB = {}
   end
 
   enemiesSlain = UltraHardcoreDB.enemiesSlain or 0
