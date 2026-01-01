@@ -4,7 +4,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local frame =
     CreateFrame('Frame', 'UltraHardcoreVersionUpdateFrame', UIParent, 'BackdropTemplate')
   frame:SetSize(500, 600) -- Increased height to accommodate important info and button spacing
-  frame:SetPoint('CENTER')
+  frame:SetPoint('CENTER', UIParent, 'CENTER', 0, 40)
   frame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -111,6 +111,11 @@ end
 
 local versionUpdateOpen = false
 function ShowVersionUpdateDialog()
+  if not UltraHardcoreDB then
+    print('UltraHardcore: UltraHardcoreDB not found')
+    return
+  end
+
   -- Get current version from TOC
   local currentVersion = GetAddOnMetadata(addonName, 'Version')
 
