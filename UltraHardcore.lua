@@ -82,7 +82,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
-    SetWildAllyHealthIndicators(GLOBAL_SETTINGS.showWildAllyHealthIndicator or false)
     HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
     -- Only update group indicators when not in combat lockdown

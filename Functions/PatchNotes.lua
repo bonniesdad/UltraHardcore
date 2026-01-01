@@ -4,10 +4,6 @@ PATCH_NOTES = { {
   date = '2025-12-16',
   notes = {
     'NEW FEATURES:',
-    '• Friendly Health Indicators - Open World',
-    '  • When enabled, friendly nameplates will be replaced with a minimal health indicator in the open world.',
-    '• Ultra Icon above nameplate in open world.',
-    '  • Show an ultra icon above players head if they are using ultra.',
     '• Session lowest health does not reset as often.',
     '  • Check if logged out for more than 30 minutes before resetting session lowest health.',
     '',
