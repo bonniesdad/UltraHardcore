@@ -1,8 +1,7 @@
 function SetTargetTooltipDisplay(hideTargetTooltip)
   if not hideTargetTooltip then return end
 
-  hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent)
-  end)
+  hooksecurefunc('GameTooltip_SetDefaultAnchor', function(tooltip, parent) end)
 
   -- Forcefully suppress the default status bar even if other addons or the default UI
   -- try to show it again later.
@@ -45,9 +44,9 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
       local tooltip = self
       C_Timer.After(0, function()
         local _, delayedUnit = tooltip:GetUnit()
-        if not delayedUnit or not UnitExists(delayedUnit) or UnitIsPlayer(delayedUnit) then
-          return
-        end
+        if not delayedUnit or not UnitExists(delayedUnit) or UnitIsPlayer(
+          delayedUnit
+        ) then return end
 
         -- Capture all current lines (including Questie), then rewrite without the level line
         local numLines = tooltip:NumLines()
@@ -69,18 +68,24 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
             rightText = rightFS:GetText()
           end
 
-          if leftText and leftText ~= "" then
+          if leftText and leftText ~= '' then
             -- Skip the NPC level line(s), keep everything else (including Questie)
             if not (leftText:match(LEVEL) and not UnitIsPlayer(delayedUnit)) then
               lr, lg, lb = leftFS:GetTextColor()
-              if rightText and rightText ~= "" then
+              if rightText and rightText ~= '' then
                 rr, rg, rb = rightFS:GetTextColor()
               else
                 rightText, rr, rg, rb = nil, nil, nil, nil
               end
               table.insert(lines, {
-                leftText = leftText, lr = lr, lg = lg, lb = lb,
-                rightText = rightText, rr = rr, rg = rg, rb = rb,
+                leftText = leftText,
+                lr = lr,
+                lg = lg,
+                lb = lb,
+                rightText = rightText,
+                rr = rr,
+                rg = rg,
+                rb = rb,
               })
             end
           end
@@ -92,7 +97,16 @@ function SetTargetTooltipDisplay(hideTargetTooltip)
 
         for idx, line in ipairs(lines) do
           if line.rightText then
-            tooltip:AddDoubleLine(line.leftText, line.rightText, line.lr, line.lg, line.lb, line.rr, line.rg, line.rb)
+            tooltip:AddDoubleLine(
+              line.leftText,
+              line.rightText,
+              line.lr,
+              line.lg,
+              line.lb,
+              line.rr,
+              line.rg,
+              line.rb
+            )
           else
             if idx == 1 then
               tooltip:AddLine(line.leftText, line.lr, line.lg, line.lb)

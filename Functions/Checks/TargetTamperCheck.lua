@@ -30,14 +30,14 @@ function GetTargetTamper(callback)
   if not callback then
     return false
   end
-  
-  local targetName = GetUnitName("target", true)
-  
+
+  local targetName = GetUnitName('target', true)
+
   if not targetName then
     callback(false) -- No target, allow
     return false
   end
-  
+
   -- Always request fresh data
   if PlayerComm and PlayerComm.RequestTamperStatus then
     PlayerComm:RequestTamperStatus(targetName, function(isTampered, playerName, success)
@@ -51,7 +51,7 @@ function GetTargetTamper(callback)
     end)
     return true
   end
-  
+
   -- Failed to request - fail-safe: block if communication unavailable
   callback(true) -- Assume tampered if communication unavailable (fail-safe)
   return false
@@ -63,7 +63,7 @@ function GetPlayerTamper(playerName, callback)
   if not playerName or not callback then
     return false
   end
-  
+
   -- Always request fresh data
   if PlayerComm and PlayerComm.RequestTamperStatus then
     PlayerComm:RequestTamperStatus(playerName, function(isTampered, playerName, success)
@@ -77,9 +77,8 @@ function GetPlayerTamper(playerName, callback)
     end)
     return true
   end
-  
+
   -- Failed to request - fail-safe: block if communication unavailable
   callback(true) -- Assume tampered if communication unavailable (fail-safe)
   return false
 end
-

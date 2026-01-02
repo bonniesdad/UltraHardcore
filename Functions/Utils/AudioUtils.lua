@@ -12,5 +12,3 @@ function UHC_GetSoundbiteChannel()
 
   return 'Master'
 end
-
-

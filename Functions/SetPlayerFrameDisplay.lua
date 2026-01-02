@@ -4,21 +4,22 @@
 local playerMask = {}
 
 -- Subframes / elements we want to control
-local PLAYER_HIDEABLE = {
-  "PlayerFrameHealthBar",
-  "PlayerFrameHealthBarText",
-  "PlayerFrameHealthBarTextLeft",
-  "PlayerFrameHealthBarTextRight",
-  "PlayerFrameManaBar",
-  "PlayerFrameManaBarText",
-  "PlayerFrameManaBarTextLeft",
-  "PlayerFrameManaBarTextRight",
-  "PlayerName",
-  "PlayerFrameTexture",
-  "PlayerStatusTexture",
-  "PlayerFrameBackground",
-  "PlayerLevelText"
-}
+local PLAYER_HIDEABLE =
+  {
+    'PlayerFrameHealthBar',
+    'PlayerFrameHealthBarText',
+    'PlayerFrameHealthBarTextLeft',
+    'PlayerFrameHealthBarTextRight',
+    'PlayerFrameManaBar',
+    'PlayerFrameManaBarText',
+    'PlayerFrameManaBarTextLeft',
+    'PlayerFrameManaBarTextRight',
+    'PlayerName',
+    'PlayerFrameTexture',
+    'PlayerStatusTexture',
+    'PlayerFrameBackground',
+    'PlayerLevelText',
+  }
 
 -- Apply mask to PlayerFrame
 local function ApplyPlayerMask()
@@ -29,7 +30,7 @@ local function ApplyPlayerMask()
   for _, name in ipairs(PLAYER_HIDEABLE) do
     local f = _G[name]
     if f then
-      if name == "PlayerStatusTexture" then
+      if name == 'PlayerStatusTexture' then
         -- This will hide the name glow in rested areas
         PlayerStatusTexture:SetTexture(nil)
       end
@@ -38,9 +39,8 @@ local function ApplyPlayerMask()
   end
 end
 
-
 -- Hook into Blizzard updates
-hooksecurefunc("PlayerFrame_Update", ApplyPlayerMask)
+hooksecurefunc('PlayerFrame_Update', ApplyPlayerMask)
 
 function SetPlayerFrameDisplay()
   -- Setup Player frame options
@@ -52,7 +52,7 @@ function SetPlayerFrameDisplay()
     playerMask.all = true
   end
   if GLOBAL_SETTINGS.completelyRemovePlayerFrame then
-    -- Completely hide the Player Frame 
+    -- Completely hide the Player Frame
     ForceHideFrame(PlayerFrame)
     return
   end

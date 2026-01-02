@@ -3,12 +3,10 @@ local leaveButton = nil
 local eventFrame = nil
 
 local function areFramesHidden()
-  if not GLOBAL_SETTINGS then return false end
-  return (GLOBAL_SETTINGS.hidePlayerFrame or false)
-    or (GLOBAL_SETTINGS.completelyRemovePlayerFrame or false)
-    or (GLOBAL_SETTINGS.hideTargetFrame or false)
-    or (GLOBAL_SETTINGS.completelyRemoveTargetFrame or false)
-    or (GLOBAL_SETTINGS.hideGroupHealth or false)
+  if not GLOBAL_SETTINGS then
+    return false
+  end
+  return (GLOBAL_SETTINGS.hidePlayerFrame or false) or (GLOBAL_SETTINGS.completelyRemovePlayerFrame or false) or (GLOBAL_SETTINGS.hideTargetFrame or false) or (GLOBAL_SETTINGS.completelyRemoveTargetFrame or false) or (GLOBAL_SETTINGS.hideGroupHealth or false)
 end
 
 local function isPlayerInGroup()
@@ -21,11 +19,21 @@ local function isPlayerInGroup()
 end
 
 local function canInviteTarget()
-  if not UnitExists("target") then return false end
-  if not UnitIsPlayer("target") then return false end
-  if UnitIsUnit("target", "player") then return false end
-  if UnitInParty and UnitInParty("target") then return false end
-  if UnitInRaid and UnitInRaid("target") then return false end
+  if not UnitExists('target') then
+    return false
+  end
+  if not UnitIsPlayer('target') then
+    return false
+  end
+  if UnitIsUnit('target', 'player') then
+    return false
+  end
+  if UnitInParty and UnitInParty('target') then
+    return false
+  end
+  if UnitInRaid and UnitInRaid('target') then
+    return false
+  end
   return true
 end
 
@@ -50,7 +58,8 @@ end
 local function createButtons()
   if inviteButton and leaveButton then return end
 
-  leaveButton = CreateFrame('Button', 'UltraHardcoreLeaveGroupButton', UIParent, 'UIPanelButtonTemplate')
+  leaveButton =
+    CreateFrame('Button', 'UltraHardcoreLeaveGroupButton', UIParent, 'UIPanelButtonTemplate')
   leaveButton:SetSize(80, 24)
   leaveButton:SetText('Leave')
   leaveButton:SetPoint('BOTTOMRIGHT', UIParent, 'BOTTOMRIGHT', -16, 16)
@@ -66,7 +75,8 @@ local function createButtons()
   end)
   leaveButton:Hide()
 
-  inviteButton = CreateFrame('Button', 'UltraHardcoreInviteButton', UIParent, 'UIPanelButtonTemplate')
+  inviteButton =
+    CreateFrame('Button', 'UltraHardcoreInviteButton', UIParent, 'UIPanelButtonTemplate')
   inviteButton:SetSize(80, 24)
   inviteButton:SetText('Invite')
   inviteButton:SetPoint('RIGHT', leaveButton, 'LEFT', -8, 0)
@@ -118,5 +128,3 @@ function InitializeGroupButtons()
   updateInviteButtonVisibility()
   updateLeaveButtonVisibility()
 end
-
-

@@ -1,13 +1,12 @@
+local jumpTrackingFrame = CreateFrame('Frame')
+jumpTrackingFrame:RegisterEvent('ADDON_LOADED')
 
-local jumpTrackingFrame = CreateFrame("Frame")
-jumpTrackingFrame:RegisterEvent("ADDON_LOADED")
-
-jumpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
+jumpTrackingFrame:SetScript('OnEvent', function(self, event, ...)
   -- Table to store jump count and timestamps
   local JumpCounter = {}
   JumpCounter.count = 0
   JumpCounter.lastJump = 0
-  JumpCounter.debounce = 0.75  -- seconds between counted jumps
+  JumpCounter.debounce = 0.75 -- seconds between counted jumps
   -- Get saved jump count if we have one
   JumpCounter.count = CharacterStats:GetStat('playerJumps') or 0
 
@@ -20,9 +19,9 @@ jumpTrackingFrame:SetScript("OnEvent", function(self, event, ...)
   end
 
   -- Hook AscendStop to detect player jumps
-  hooksecurefunc("AscendStop", function()
+  hooksecurefunc('AscendStop', function()
     if not IsFalling() then
-      return  -- ignore if the player is on the ground
+      return -- ignore if the player is on the ground
     end
 
     local now = GetTime()

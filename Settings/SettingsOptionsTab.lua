@@ -1400,10 +1400,7 @@ function InitializeSettingsOptionsTab()
           -- checkbox, write it back to the Blizzard CVar now so that on
           -- next load ULTRA and the base game are in sync.
           if tempSettings.rotateMinimapOnResourceMap ~= nil then
-            SetCVar(
-              'RotateMinimap',
-              tempSettings.rotateMinimapOnResourceMap and '1' or '0'
-            )
+            SetCVar('RotateMinimap', tempSettings.rotateMinimapOnResourceMap and '1' or '0')
           end
 
           -- The player explicitly saved ULTRA settings; treat ULTRA as the
@@ -1456,10 +1453,7 @@ function InitializeSettingsOptionsTab()
       end
 
       if tempSettings.rotateMinimapOnResourceMap ~= nil then
-        SetCVar(
-          'RotateMinimap',
-          tempSettings.rotateMinimapOnResourceMap and '1' or '0'
-        )
+        SetCVar('RotateMinimap', tempSettings.rotateMinimapOnResourceMap and '1' or '0')
       end
 
       -- Apply the new completely remove settings immediately

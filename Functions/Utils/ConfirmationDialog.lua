@@ -16,7 +16,8 @@ function ShowConfirmationDialog(title, message, onConfirm, onCancel, confirmText
 
   -- Create dialog if it doesn't exist
   if not confirmationDialog then
-    confirmationDialog = CreateFrame('Frame', 'UltraHardcoreConfirmationDialog', UIParent, 'BackdropTemplate')
+    confirmationDialog =
+      CreateFrame('Frame', 'UltraHardcoreConfirmationDialog', UIParent, 'BackdropTemplate')
     confirmationDialog:SetFrameStrata('FULLSCREEN_DIALOG')
     confirmationDialog:SetFrameLevel(100)
     confirmationDialog:SetToplevel(true)
@@ -127,4 +128,3 @@ end
 -- Make functions globally accessible
 _G.ShowConfirmationDialog = ShowConfirmationDialog
 _G.HideConfirmationDialog = HideConfirmationDialog
-
