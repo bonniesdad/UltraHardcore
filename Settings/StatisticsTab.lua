@@ -19,7 +19,7 @@ local STATISTIC_TOOLTIPS = {
   highestHealCritValue = 'The highest critical heal you have done',
   closeEscapes = 'Number of times your health has dropped below ' .. closeEscapeHealthPercent .. '%',
   petDeaths = 'Total number of times your pet has died permanently',
--- Survival section
+  -- Survival section
   healthPotionsUsed = 'Number of health potions you have consumed',
   manaPotionsUsed = 'Number of mana potions you have consumed',
   bandagesApplied = 'Number of bandages you have used to heal',
@@ -31,7 +31,6 @@ local STATISTIC_TOOLTIPS = {
   duelsWon = 'Number of duels you have won',
   duelsLost = 'Number of duels you have lost',
   duelsWinPercent = 'Percentage of duels you have won',
-
   -- Misc section
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
@@ -1466,19 +1465,19 @@ function InitializeStatisticsTab()
   networkContent:SetBackdropBorderColor(0.3, 0.3, 0.35, 0.5)
 
   -- Create network statistics display inside the content frame
-    local networkStats = { {
-      key = 'lagHome',
-      label = 'Home Latency:',
-      tooltipKey = 'lagHome',
-      defaultValue = 0,
-      width = 1,
-    }, {
-      key = 'lagWorld',
-      label = 'World Latency:',
-      tooltipKey = 'lagWorld',
-      defaultValue = 0,
-      width = 1,
-    } }
+  local networkStats = { {
+    key = 'lagHome',
+    label = 'Home Latency:',
+    tooltipKey = 'lagHome',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'lagWorld',
+    label = 'World Latency:',
+    tooltipKey = 'lagWorld',
+    defaultValue = 0,
+    width = 1,
+  } }
   CreateStatsGrid(networkContent, networkStats, { defaultWidth = 0.5 })
 
   -- Create modern WoW-style XP gained section (collapsible)
@@ -1678,9 +1677,7 @@ function InitializeStatisticsTab()
 
   -- Update the lowest health display
   local function UpdateLowestHealthDisplay()
-    if not UltraHardcoreDB then
-      return
-    end
+    if not UltraHardcoreDB then return end
 
     UpdateStatBar('level', UnitLevel('player') or 1)
 

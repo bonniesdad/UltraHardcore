@@ -24,13 +24,15 @@ function InitializeAchievementTab()
   achievementsDesc:SetWidth(460)
   achievementsDesc:SetJustifyH('CENTER')
   achievementsDesc:SetNonSpaceWrap(true)
-  achievementsDesc:SetText("Achievements are currently under development.")
-  -- 
+  achievementsDesc:SetText('Achievements are currently under development.')
+  --
 
   local achievementsDesc2 = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   achievementsDesc2:SetPoint('TOP', achievementsDesc, 'BOTTOM', 0, -8)
   achievementsDesc2:SetWidth(460)
   achievementsDesc2:SetJustifyH('CENTER')
   achievementsDesc2:SetNonSpaceWrap(true)
-  achievementsDesc2:SetText("You can try out the BETA version by downloading the addon called\n'Hardcore Achievements By Chills'\nfrom CurseForge.")
+  achievementsDesc2:SetText(
+    "You can try out the BETA version by downloading the addon called\n'Hardcore Achievements By Chills'\nfrom CurseForge."
+  )
 end

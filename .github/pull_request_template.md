@@ -15,4 +15,3 @@ How to enable/trigger the feature.
    - Reload UI (/reload)
 2. Expected result:
    - What should be visible/hidden
-

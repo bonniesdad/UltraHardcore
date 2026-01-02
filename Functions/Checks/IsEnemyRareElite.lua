@@ -6,10 +6,10 @@ function IsEnemyRareElite(unitGUID)
       return true
     end
   end
-  
+
   -- Check if the killed enemy is a party member's target
   for i = 1, GetNumGroupMembers() do
-    local unitID = "party" .. i .. "target"
+    local unitID = 'party' .. i .. 'target'
     if UnitGUID(unitID) == unitGUID then
       local classification = UnitClassification(unitID)
       if classification == 'rareelite' then
@@ -17,6 +17,6 @@ function IsEnemyRareElite(unitGUID)
       end
     end
   end
-  
+
   return false
 end

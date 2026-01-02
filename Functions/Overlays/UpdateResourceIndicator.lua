@@ -12,7 +12,12 @@ local function SaveResourceIndicatorPosition()
   end
 
   local point, _, relPoint, x, y = resourceIndicator:GetPoint()
-  UltraHardcoreDB.resourceIndicatorPosition = { point = point, relPoint = relPoint, x = x, y = y }
+  UltraHardcoreDB.resourceIndicatorPosition = {
+    point = point,
+    relPoint = relPoint,
+    x = x,
+    y = y,
+  }
   if SaveDBData then
     SaveDBData('resourceIndicatorPosition', UltraHardcoreDB.resourceIndicatorPosition)
   end
@@ -122,7 +127,6 @@ SlashCmdList.TOGGLEBONNIE = function()
     SaveDBData('resourceIndicatorShown', UltraHardcoreDB.resourceIndicatorShown)
   end
 end
-
 
 -- Event Handler
 resourceIndicator:RegisterEvent('PLAYER_ENTERING_WORLD')

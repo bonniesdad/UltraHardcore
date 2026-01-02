@@ -1,31 +1,33 @@
 -- All things Pet
 
-local HIDEABLE_PET_ELEMENTS = {
-  "PetFrameHealthBar",
-  "PetFrameHealthBarText",
-  "PetFrameHealthBarTextLeft",
-  "PetFrameHealthBarTextRight",
-  "PetFrameManaBar",
-  "PetFrameManaBarText",
-  "PetFrameManaBarTextLeft",
-  "PetFrameManaBarTextRight",
-  "PetFrameCombatText",
-  "PetFrameFloatingCombatText",
-  "PetName",
-  "PetFrameTexture",
-  "PetFrameBackground",
-  "PetAttackModeTexture",
-}
+local HIDEABLE_PET_ELEMENTS =
+  {
+    'PetFrameHealthBar',
+    'PetFrameHealthBarText',
+    'PetFrameHealthBarTextLeft',
+    'PetFrameHealthBarTextRight',
+    'PetFrameManaBar',
+    'PetFrameManaBarText',
+    'PetFrameManaBarTextLeft',
+    'PetFrameManaBarTextRight',
+    'PetFrameCombatText',
+    'PetFrameFloatingCombatText',
+    'PetName',
+    'PetFrameTexture',
+    'PetFrameBackground',
+    'PetAttackModeTexture',
+  }
 
 -- Optional: disable pet combat text
 function DisablePetCombatText()
-  local elements = {
-    "PetFrameHealthBarText",
-    "PetFrameManaBarText",
-    "PetFrameCombatText",
-    "PetFrameFloatingCombatText",
-  }
-  
+  local elements =
+    {
+      'PetFrameHealthBarText',
+      'PetFrameManaBarText',
+      'PetFrameCombatText',
+      'PetFrameFloatingCombatText',
+    }
+
   for _, name in ipairs(elements) do
     local e = _G[name]
     if e then
@@ -34,7 +36,7 @@ function DisablePetCombatText()
       e.Show = function() end
     end
   end
-  
+
   COMBATFEEDBACK_FADEINTIME = 0
   COMBATFEEDBACK_HOLDTIME = 0
   COMBATFEEDBACK_FADEOUTTIME = 0
@@ -45,7 +47,7 @@ function RepositionPetHappiness()
   local tex = PetFrameHappinessTexture
   if tex and PetFrame then
     tex:ClearAllPoints()
-    tex:SetPoint("CENTER", PetFrame, "CENTER", -70, -5)
+    tex:SetPoint('CENTER', PetFrame, 'CENTER', -70, -5)
   end
 end
 
@@ -55,7 +57,7 @@ function RepositionPetHappinessTexture()
   if happinessTexture and PetFrame then
     happinessTexture:ClearAllPoints()
     -- Position relative to PetFrame, offset 50-70 pixels to the left, slightly down
-    happinessTexture:SetPoint("CENTER", PetFrame, "CENTER", -70, -5)
+    happinessTexture:SetPoint('CENTER', PetFrame, 'CENTER', -70, -5)
   end
 end
 

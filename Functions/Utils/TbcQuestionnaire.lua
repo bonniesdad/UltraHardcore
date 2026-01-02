@@ -29,7 +29,8 @@ do
     end
 
     if not dialogFrame then
-      dialogFrame = CreateFrame('Frame', 'UltraHardcoreTBCQuestionnaireDialog', UIParent, 'BackdropTemplate')
+      dialogFrame =
+        CreateFrame('Frame', 'UltraHardcoreTBCQuestionnaireDialog', UIParent, 'BackdropTemplate')
       dialogFrame:SetFrameStrata('FULLSCREEN_DIALOG')
       dialogFrame:SetToplevel(true)
       dialogFrame:SetSize(420, 145)
@@ -131,4 +132,3 @@ do
     return button
   end
 end
-

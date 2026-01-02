@@ -13,15 +13,15 @@ end
 --     endDay = 1,
 --     texturePrefix = "halloween_foggy_",
 --   },
-  -- Add more themes here, e.g.:
-  -- {
-  --   name = "Winter",
-  --   startMonth = 12,
-  --   startDay = 20,
-  --   endMonth = 1,
-  --   endDay = 5,
-  --   texturePrefix = "winter_foggy_",
-  -- },
+-- Add more themes here, e.g.:
+-- {
+--   name = "Winter",
+--   startMonth = 12,
+--   startDay = 20,
+--   endMonth = 1,
+--   endDay = 5,
+--   texturePrefix = "winter_foggy_",
+-- },
 -- }
 
 -- local function GetActiveSeasonalTheme()
@@ -48,7 +48,7 @@ end
 function ShowTunnelVision(blurIntensity)
   -- Create a unique frame name based on blur intensity
   local frameName = 'UltraHardcoreTunnelVision_' .. blurIntensity
-  
+
   -- Check if frame already exists and is visible
   if UltraHardcore.tunnelVisionFrames[frameName] and UltraHardcore.tunnelVisionFrames[frameName]:IsShown() then
     local existingFrame = UltraHardcore.tunnelVisionFrames[frameName]
@@ -62,12 +62,12 @@ function ShowTunnelVision(blurIntensity)
     end
     return -- Already shown; either ensured fully visible or already at full alpha
   end
-  
+
   -- Create the frame if it doesn't exist
   if not UltraHardcore.tunnelVisionFrames[frameName] then
     local tunnelVisionFrame = CreateFrame('Frame', frameName, UIParent)
     tunnelVisionFrame:SetAllPoints(UIParent)
-    
+
     -- Set frame strata and level based on tunnelVisionMaxStrata setting
     if GLOBAL_SETTINGS.tunnelVisionMaxStrata then
       tunnelVisionFrame:SetFrameStrata('FULLSCREEN_DIALOG')
@@ -76,22 +76,25 @@ function ShowTunnelVision(blurIntensity)
       tunnelVisionFrame:SetFrameStrata(ChatFrame1:GetFrameStrata())
       tunnelVisionFrame:SetFrameLevel(ChatFrame1:GetFrameLevel() - 1 + blurIntensity) -- Stack frames with different levels
     end
-    
+
     tunnelVisionFrame.texture = tunnelVisionFrame:CreateTexture(nil, 'BACKGROUND')
     tunnelVisionFrame.texture:SetAllPoints()
     tunnelVisionFrame.texture:SetColorTexture(0, 0, 0, 0)
-    
+
     -- Store the frame reference
     UltraHardcore.tunnelVisionFrames[frameName] = tunnelVisionFrame
   end
-  
+
   local frame = UltraHardcore.tunnelVisionFrames[frameName]
-  
+
   -- Determine the texture based on active seasonal theme
-  local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and "new_year_tv_" or "tunnel_vision_" -- Fallback to default texture
+  local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and 'new_year_tv_' or 'tunnel_vision_' -- Fallback to default texture
   -- local texturePrefix = GLOBAL_SETTINGS.spookyTunnelVision and "halloween_foggy_" or "tunnel_vision_" -- Fallback to default texture
-  local texturePath = 'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format(blurIntensity) .. '.png'
-  
+  local texturePath =
+    'Interface\\AddOns\\UltraHardcore\\textures\\' .. texturePrefix .. string.format(
+      blurIntensity
+    ) .. '.png'
+
   frame.texture:SetTexture(texturePath)
   frame:SetAlpha(0)
   frame:Show()

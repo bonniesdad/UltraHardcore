@@ -13,34 +13,34 @@ local function ResetUI()
   if SlashCmdList['RESETTRACKINGPOSITION'] then
     SlashCmdList['RESETTRACKINGPOSITION']()
   end
-  
+
   -- Reset resource bar
   if _G.ResetResourceBarPosition then
     _G.ResetResourceBarPosition()
   elseif SlashCmdList['RESETRESOURCEBAR'] then
     SlashCmdList['RESETRESOURCEBAR']()
   end
-  
+
   -- Reset resource indicator
   if _G.ResetResourceIndicatorPosition then
     _G.ResetResourceIndicatorPosition()
   end
-  
+
   -- Reset soulshard indicator
   if _G.ResetSoulshardPosition then
     _G.ResetSoulshardPosition()
   end
-  
+
   -- Reset statistics panel
   if _G.ResetStatsFramePosition then
     _G.ResetStatsFramePosition()
   end
-  
+
   -- Reset ULTRA Menu frame
   if _G.ResetULTRAMenuFramesPosition then
     _G.ResetULTRAMenuFramesPosition()
   end
-  
+
   print('|cfff44336[ULTRA]|r All UI element positions reset to default.')
 end
 
@@ -51,4 +51,3 @@ SlashCmdList['RESETUI'] = ResetUI
 
 -- Make ResetUI globally accessible
 _G.ResetUI = ResetUI
-

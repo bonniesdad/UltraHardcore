@@ -526,9 +526,7 @@ end
 
 -- Function to update all statistics
 function UpdateStatistics()
-  if not UltraHardcoreDB then
-    return
-  end
+  if not UltraHardcoreDB then return end
 
   -- Update character level
   local playerLevel = UnitLevel('player') or 1
@@ -685,9 +683,7 @@ end)
 
 -- Slash command to reset statistics frame to its saved position
 local function ResetStatsFrameToSavedPosition()
-  if not UltraHardcoreDB then
-    return
-  end
+  if not UltraHardcoreDB then return end
   statsFrame:ClearAllPoints()
   local pos = UltraHardcoreDB and UltraHardcoreDB.statsFramePosition or nil
   if pos then

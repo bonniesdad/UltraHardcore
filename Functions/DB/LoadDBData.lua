@@ -1,6 +1,6 @@
 -- 🟢 Load saved score on login
 function LoadDBData()
-  if not UltraHardcoreDB then 
+  if not UltraHardcoreDB then
     UltraHardcoreDB = {}
   end
 
@@ -114,10 +114,9 @@ function LoadDBData()
     showMainStatisticsPanelPlayerJumps = false,
   }
 
-  
   -- Get current character's GUID for per-character settings
   local characterGUID = UnitGUID('player')
-  
+
   -- Backward compatibility: migrate from old GLOBAL_SETTINGS if it exists
   if UltraHardcoreDB.GLOBAL_SETTINGS then
     if not UltraHardcoreDB.characterSettings[characterGUID] then

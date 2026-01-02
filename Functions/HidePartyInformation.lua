@@ -3,7 +3,6 @@
   Compact party frames are not supported yet.
 ]]
 
-
 --[[
 BUGS:
 - On player or raid memeber level up, all health in raid is shown.
@@ -42,7 +41,7 @@ local function HookPartyHealthBarValueChanged()
           local needsRestore = false
           local ultraHiddenParent = _G['UltraHiddenParent']
           local inCombat = InCombatLockdown()
-          
+
           if self and self.GetParent and self._UltraOriginalParent then
             local currentParent = self:GetParent()
             if currentParent == ultraHiddenParent then
@@ -54,18 +53,18 @@ local function HookPartyHealthBarValueChanged()
               end
             end
           end
-          
+
           -- Call the original OnValueChanged handler
           -- Wrap in pcall to catch any errors from PartyMemberHealthCheck
           local success, err = pcall(originalOnValueChanged, self, value)
-          
+
           -- Restore parent to UltraHiddenParent if we changed it
           if needsRestore and self and self.SetParent and ultraHiddenParent and not inCombat then
             self:SetParent(ultraHiddenParent)
             self:Hide()
           end
-          
-          -- If there was an error and we couldn't restore the parent (combat), 
+
+          -- If there was an error and we couldn't restore the parent (combat),
           -- the error is expected - the health bar is hidden anyway
           if not success and not needsRestore then
             -- Error occurred but we couldn't fix it (likely in combat)
@@ -158,7 +157,9 @@ local function UHC_SetElementSuppressed(frame, suppress)
   if not frame then return end
 
   local function getAlphaSafe(f)
-    if not f or not f.GetAlpha then return nil end
+    if not f or not f.GetAlpha then
+      return nil
+    end
     local ok, alpha = pcall(f.GetAlpha, f)
     if ok then
       return alpha
@@ -327,35 +328,52 @@ local function HookCompactRaidHealthHiding()
   uhcRaidHealthHooked = true
   -- Keep the custom circle and health indicator sized to the raid frame
   local function UHC_SafeGetName(obj)
-    if not obj or not obj.GetName then return nil end
+    if not obj or not obj.GetName then
+      return nil
+    end
     local ok, name = pcall(obj.GetName, obj)
-    if ok then return name end
+    if ok then
+      return name
+    end
     return nil
   end
 
   local function UHC_SafeGetParent(obj)
-    if not obj or not obj.GetParent then return nil end
+    if not obj or not obj.GetParent then
+      return nil
+    end
     local ok, parent = pcall(obj.GetParent, obj)
-    if ok then return parent end
+    if ok then
+      return parent
+    end
     return nil
   end
 
   local function UHC_IsNameplateFrame(frame)
-    if not frame then return false end
+    if not frame then
+      return false
+    end
     local function isNameplateUnit(unitToken)
       return type(unitToken) == 'string' and unitToken:sub(1, 9) == 'nameplate'
     end
     if isNameplateUnit(frame.unit) or isNameplateUnit(frame.displayedUnit) then
       return true
     end
-    if type(frame.namePlateUnitToken) == 'string' and frame.namePlateUnitToken:sub(1, 9) == 'nameplate' then
+    if type(frame.namePlateUnitToken) == 'string' and frame.namePlateUnitToken:sub(
+      1,
+      9
+    ) == 'nameplate' then
       return true
     end
     if frame.unitFrame then
-      if isNameplateUnit(frame.unitFrame.unit) or isNameplateUnit(frame.unitFrame.displayedUnit) then
+      if isNameplateUnit(frame.unitFrame.unit) or isNameplateUnit(
+        frame.unitFrame.displayedUnit
+      ) then
         return true
       end
-      if type(frame.unitFrame.namePlateUnitToken) == 'string' and frame.unitFrame.namePlateUnitToken:sub(1, 9) == 'nameplate' then
+      if type(
+        frame.unitFrame.namePlateUnitToken
+      ) == 'string' and frame.unitFrame.namePlateUnitToken:sub(1, 9) == 'nameplate' then
         return true
       end
     end
@@ -373,8 +391,12 @@ local function HookCompactRaidHealthHiding()
     return false
   end
   local function UHC_IsTargetRaidCompactFrame(frame)
-    if not frame then return false end
-    if UHC_IsNameplateFrame(frame) then return false end
+    if not frame then
+      return false
+    end
+    if UHC_IsNameplateFrame(frame) then
+      return false
+    end
     local name = UHC_SafeGetName(frame)
     if type(name) ~= 'string' then
       return false
@@ -448,14 +470,13 @@ local function HookCompactRaidHealthHiding()
         UHC_SetElementSuppressed(bg, true)
       end
       -- Hide per-frame border slices if present
-      local borderNames =
-        {
-          frameName .. 'HorizTopBorder',
-          frameName .. 'HorixTopBorder', -- handle possible typo
-          frameName .. 'VertRightBorder',
-          frameName .. 'HorizBottomBorder',
-          frameName .. 'VertLeftBorder',
-        }
+      local borderNames = {
+        frameName .. 'HorizTopBorder',
+        frameName .. 'HorixTopBorder', -- handle possible typo
+        frameName .. 'VertRightBorder',
+        frameName .. 'HorizBottomBorder',
+        frameName .. 'VertLeftBorder',
+      }
       for _, bn in ipairs(borderNames) do
         local b = _G[bn]
         if b then
@@ -472,7 +493,9 @@ local function HookCompactRaidHealthHiding()
     -- Add circular frame if not present
     if not frame.uhcCircle then
       frame.uhcCircle = frame:CreateTexture(nil, 'ARTWORK')
-      frame.uhcCircle:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png')
+      frame.uhcCircle:SetTexture(
+        'Interface\\AddOns\\UltraHardcore\\Textures\\circle-with-border.png'
+      )
       if frame.uhcCircle.SetDrawLayer then
         frame.uhcCircle:SetDrawLayer('ARTWORK')
       end
@@ -538,9 +561,7 @@ local function HookCompactRaidHealthHiding()
     if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.hideGroupHealth then return end
     if not frame then return end
     -- Only act on valid compact raid frames
-    if not UHC_IsTargetRaidCompactFrame(frame) then
-      return
-    end
+    if not UHC_IsTargetRaidCompactFrame(frame) then return end
     if frame.healthBar then
       -- Attempt to discover index by matching globals (best-effort)
       -- If no index can be determined, hide via frame reference directly
@@ -585,14 +606,14 @@ frame:SetScript('OnEvent', function(self, event, arg1)
     end
     return
   end
-  
+
   -- Try to hook party health bars when party frames might be available
   if event == 'GROUP_ROSTER_UPDATE' or event == 'PLAYER_ENTERING_WORLD' or event == 'PLAYER_LOGIN' then
     C_Timer.After(0.1, function()
       TryHookPartyHealthBars()
     end)
   end
-  
+
   if GLOBAL_SETTINGS.hideGroupHealth then
     -- Only apply changes when not in combat lockdown
     if not InCombatLockdown() then

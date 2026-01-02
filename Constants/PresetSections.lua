@@ -49,7 +49,11 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Maps:',
-  settings = { 'alwaysShowResourceMap', 'showPlayerArrowOnResourceMap', 'rotateMinimapOnResourceMap' },
+  settings = {
+    'alwaysShowResourceMap',
+    'showPlayerArrowOnResourceMap',
+    'rotateMinimapOnResourceMap',
+  },
 }, {
   title = 'Misc:',
   settings = {

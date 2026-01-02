@@ -7,7 +7,7 @@
 -- Organized by preset type: Lite, Recommended, Experimental
 local settingToXPVariable = {
   -- Total XP, not tied to settings
-  xpTotal = 'xpTotal', 
+  xpTotal = 'xpTotal',
   -- Lite Preset Settings
   hidePlayerFrame = 'xpGainedWithoutOptionHidePlayerFrame',
   showOnScreenStatistics = 'xpGainedWithoutOptionShowOnScreenStatistics',

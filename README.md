@@ -25,8 +25,6 @@ Ultra Hardcore is a comprehensive World of Warcraft Classic addon designed to pu
 
 Ultra Hardcore transforms your World of Warcraft experience through a carefully designed system of UI modifications and gameplay enhancements that recreate the tension and uncertainty of classic gaming.
 
-
-
 ### Core Difficulty Modifiers
 
 **No Health Bar Visibility**: The addon completely removes your character's health bar display, forcing you to rely on visual and audio cues to gauge your survival status. This fundamental change eliminates the safety net of precise health monitoring that modern players have come to depend on, recreating the uncertainty that defined early gaming experiences.
@@ -63,7 +61,6 @@ Ultra Hardcore transforms your World of Warcraft experience through a carefully 
 
 **Challenge Tracking System**: An integrated logbook tracks your completion of unique hardcore challenges, providing long-term goals and achievement recognition within the hardcore community. This system is actively being expanded with new challenge types and difficulty tiers.
 
-
 ## Installation
 
 Ultra Hardcore supports multiple installation methods to accommodate different user preferences and technical comfort levels. The addon is designed to work seamlessly with World of Warcraft Classic Era (Interface version 11507) and requires no external dependencies.
@@ -71,15 +68,17 @@ Ultra Hardcore supports multiple installation methods to accommodate different u
 ### Method 1: Install via Curseforge (Recommended)
 
 1. **Download the Latest Release**
+
    ```bash
    # Navigate to your WoW Classic AddOns directory
    cd "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns"
-   
+
    # Download and extract the latest release
    # Visit: https://github.com/bonniesdad/UltraHardcore/releases
    ```
 
 2. **Extract to AddOns Directory**
+
    - Extract the downloaded ZIP file directly into your `Interface\AddOns` folder
    - Ensure the folder structure is: `Interface\AddOns\UltraHardcore\`
    - The main addon file should be located at: `Interface\AddOns\UltraHardcore\UltraHardcore.lua`
@@ -90,19 +89,21 @@ Ultra Hardcore supports multiple installation methods to accommodate different u
    - Locate "Ultra Hardcore" in the addon list
    - Check the box to enable the addon
    - Click "Okay" and enter the game
-   
+
 ### Method 2: Direct Download
 
 1. **Download the Latest Release**
+
    ```bash
    # Navigate to your WoW Classic AddOns directory
    cd "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns"
-   
+
    # Download and extract the latest release
    # Visit: https://github.com/bonniesdad/UltraHardcore/releases
    ```
 
 2. **Extract to AddOns Directory**
+
    - Extract the downloaded ZIP file directly into your `Interface\AddOns` folder
    - Ensure the folder structure is: `Interface\AddOns\UltraHardcore\`
    - The main addon file should be located at: `Interface\AddOns\UltraHardcore\UltraHardcore.lua`
@@ -188,10 +189,12 @@ The main event handler implements a dispatch system that routes events to approp
 The addon follows a hierarchical file organization that promotes maintainability and code reuse:
 
 **Core Files**:
+
 - `UltraHardcore.lua`: Main entry point and event dispatcher
 - `UltraHardcore.toc`: Addon metadata and file loading order
 
 **Modular Components**:
+
 - `Functions/`: Core functionality modules
 - `Settings/`: Configuration management
 - `Constants/`: Game data and configuration constants
@@ -203,15 +206,18 @@ The addon follows a hierarchical file organization that promotes maintainability
 Ultra Hardcore implements an event handling system that responds to different World of Warcraft events:
 
 **Player State Events**:
+
 - `PLAYER_ENTERING_WORLD`: Initializes addon state and applies UI modifications
 - `PLAYER_UPDATE_RESTING`: Manages action bar visibility in rested areas
 - `PLAYER_LEVEL_UP`: Triggers level-up specific functionality
 
 **Combat Events**:
+
 - `COMBAT_LOG_EVENT_UNFILTERED`: Processes combat actions for critical hit detection
 - `UNIT_HEALTH_FREQUENT`: Monitors health changes for death indicator system
 
 **UI Events**:
+
 - `UNIT_AURA`: Manages buff/debuff related visual effects
 - `GROUP_ROSTER_UPDATE`: Handles party composition changes
 - `NAME_PLATE_UNIT_ADDED`: Controls enemy nameplate visibility
@@ -223,20 +229,21 @@ The addon implements a saved variables system that persists user preferences and
 ```lua
 -- Database structure
 UltraHardcoreDB = {
-    global = {
-        settings = { ... },
-        statistics = { ... }
+  global = {
+    settings = { ... },
+    statistics = { ... },
+  },
+  characters = {
+    [characterKey] = {
+      preferences = { ... },
+      achievements = { ... },
     },
-    characters = {
-        [characterKey] = {
-            preferences = { ... },
-            achievements = { ... }
-        }
-    }
+  },
 }
 ```
 
 **Data Persistence Features**:
+
 - Automatic saving on significant events
 - Character-specific preference tracking
 - Cross-character statistics aggregation
@@ -247,12 +254,14 @@ UltraHardcoreDB = {
 Ultra Hardcore employs a UI manipulation system that modifies World of Warcraft's interface without causing taint or security violations. The framework uses secure hooking mechanisms and frame manipulation techniques.
 
 **Frame Management**:
+
 - Secure frame hiding using `ForceHideFrame()` utility
 - Dynamic overlay creation for visual effects
 - Event-driven UI state management
 - Compatibility with other UI addons
 
 **Visual Effects System**:
+
 - Progressive screen darkening for death indicator
 - Blur effects for dazed status
 - Screen rotation for critical hit feedback
@@ -263,11 +272,13 @@ Ultra Hardcore employs a UI manipulation system that modifies World of Warcraft'
 Ultra Hardcore adheres to Blizzard's addon security policies and maintains compatibility with the game's protected functions:
 
 **Security Compliance**:
+
 - No protected function hooking
 - Secure frame manipulation techniques
 - Taint-free operation with default UI
 
 **Addon Compatibility**:
+
 - Non-intrusive global namespace usage
 - Defensive programming against addon conflicts
 - Graceful degradation when conflicts occur
@@ -282,16 +293,16 @@ The addon's behavior is controlled through a comprehensive global settings objec
 
 ```lua
 GLOBAL_SETTINGS = {
-    hidePlayerFrame = true,        -- Remove health bar visibility
-    hideMinimap = true,           -- Hide minimap for navigation challenge
-    hideTargetFrame = true,       -- Hide target information
-    hideTargetTooltip = true,     -- Remove target tooltips
-    showTunnelVision = true,      -- Enable death indicator screen effect
-    showDazedEffect = true,       -- Enable dazed blur overlay
-    showCritScreenMoveEffect = true, -- Enable critical hit screen rotation
-    hideActionBars = false,       -- Control action bar visibility (rested areas only)
-    hideGroupHealth = true,       -- Hide party member health bars
-    hideUIErrors = true          -- Remove UI error messages
+  hidePlayerFrame = true, -- Remove health bar visibility
+  hideMinimap = true, -- Hide minimap for navigation challenge
+  hideTargetFrame = true, -- Hide target information
+  hideTargetTooltip = true, -- Remove target tooltips
+  showTunnelVision = true, -- Enable death indicator screen effect
+  showDazedEffect = true, -- Enable dazed blur overlay
+  showCritScreenMoveEffect = true, -- Enable critical hit screen rotation
+  hideActionBars = false, -- Control action bar visibility (rested areas only)
+  hideGroupHealth = true, -- Hide party member health bars
+  hideUIErrors = true, -- Remove UI error messages
 }
 ```
 
@@ -300,6 +311,7 @@ GLOBAL_SETTINGS = {
 Ultra Hardcore supports several slash commands for real-time configuration adjustment:
 
 **Primary Commands**:
+
 - `/bonnie`: Toggles the Bonnie resource indicator visibility
 - `/uhc help`: Displays available commands and current settings
 - `/uhc reset`: Restores all settings to default hardcore values
@@ -312,13 +324,13 @@ Ultra Hardcore supports several slash commands for real-time configuration adjus
 ```lua
 -- Death indicator activation points
 if healthPercent <= 20 then
-    ApplyDeathIndicatorChange(10)  -- Maximum darkness
+  ApplyDeathIndicatorChange(10) -- Maximum darkness
 elseif healthPercent <= 40 then
-    ApplyDeathIndicatorChange(14)  -- Heavy darkening
+  ApplyDeathIndicatorChange(14) -- Heavy darkening
 elseif healthPercent <= 60 then
-    ApplyDeathIndicatorChange(9)   -- Moderate darkening
+  ApplyDeathIndicatorChange(9) -- Moderate darkening
 elseif healthPercent <= 80 then
-    ApplyDeathIndicatorChange(4)   -- Light darkening
+  ApplyDeathIndicatorChange(4) -- Light darkening
 end
 ```
 
@@ -326,23 +338,17 @@ end
 
 ```lua
 -- Screen rotation parameters
-local rotationIntensity = 45      -- Degrees of rotation
-local rotationDuration = 2.5      -- Seconds of effect
-local recoverySpeed = 1.2         -- Return to normal speed
+local rotationIntensity = 45 -- Degrees of rotation
+local rotationDuration = 2.5 -- Seconds of effect
+local recoverySpeed = 1.2 -- Return to normal speed
 ```
 
 **Action Bar Visibility Rules**: The rested area detection system supports custom location definitions:
 
 ```lua
 -- Rested area detection
-local restedZones = {
-    "Stormwind City",
-    "Ironforge", 
-    "Darnassus",
-    "Orgrimmar",
-    "Thunder Bluff",
-    "Undercity"
-}
+local restedZones =
+  { 'Stormwind City', 'Ironforge', 'Darnassus', 'Orgrimmar', 'Thunder Bluff', 'Undercity' }
 ```
 
 ### Saved Variables Configuration
@@ -354,29 +360,30 @@ WTF\Account\[AccountName]\SavedVariables\UltraHardcoreDB.lua
 ```
 
 **Configuration File Structure**:
+
 ```lua
 UltraHardcoreDB = {
-    ["global"] = {
-        ["settings"] = {
-            ["difficultyLevel"] = 3,
-            ["enableExperimentalFeatures"] = false,
-            ["audioFeedbackEnabled"] = true,
-            ["visualEffectsIntensity"] = 1.0
-        },
-        ["statistics"] = {
-            ["totalDeaths"] = 0,
-            ["criticalHitsReceived"] = 0,
-            ["timePlayedHardcore"] = 0
-        }
+  global = {
+    settings = {
+      difficultyLevel = 3,
+      enableExperimentalFeatures = false,
+      audioFeedbackEnabled = true,
+      visualEffectsIntensity = 1.0,
     },
-    ["characters"] = {
-        ["RealmName-CharacterName"] = {
-            ["preferences"] = {
-                ["resourceIndicatorVisible"] = false,
-                ["customKeybindings"] = { ... }
-            }
-        }
-    }
+    statistics = {
+      totalDeaths = 0,
+      criticalHitsReceived = 0,
+      timePlayedHardcore = 0,
+    },
+  },
+  characters = {
+    ['RealmName-CharacterName'] = {
+      preferences = {
+        resourceIndicatorVisible = false,
+        customKeybindings = { ... },
+      },
+    },
+  },
 }
 ```
 
@@ -385,12 +392,14 @@ UltraHardcoreDB = {
 While Ultra Hardcore maintains consistent hardcore principles across all characters, certain preferences can be customized per character:
 
 **Individual Character Settings**:
+
 - Resource indicator visibility preferences
 - Custom keybinding configurations for scramble effects
 - Achievement tracking and challenge completion status
 - Personal statistics and performance metrics
 
 **Cross-Character Features**:
+
 - Global difficulty settings that apply to all characters
 - Shared addon preferences for consistent experience
 - Account-wide achievement recognition
@@ -401,6 +410,7 @@ While Ultra Hardcore maintains consistent hardcore principles across all charact
 Ultra Hardcore includes several experimental features that can be enabled for testing and feedback:
 
 **Keybinding Scramble System**:
+
 ```lua
 -- Enable experimental keybinding disruption
 GLOBAL_SETTINGS.enableKeybindingScramble = true
@@ -409,6 +419,7 @@ GLOBAL_SETTINGS.scrambleIntensity = 0.7
 ```
 
 **Enhanced Audio Feedback**:
+
 ```lua
 -- Heartbeat audio system configuration
 GLOBAL_SETTINGS.heartbeatEnabled = true
@@ -417,10 +428,11 @@ GLOBAL_SETTINGS.heartbeatFrequency = 1.2
 ```
 
 **Advanced Challenge Tracking**:
+
 ```lua
 -- Challenge system parameters
 GLOBAL_SETTINGS.challengeTrackingEnabled = true
-GLOBAL_SETTINGS.challengeDifficulty = "extreme"
+GLOBAL_SETTINGS.challengeDifficulty = 'extreme'
 GLOBAL_SETTINGS.shareAchievements = false
 ```
 
@@ -429,12 +441,14 @@ GLOBAL_SETTINGS.shareAchievements = false
 The addon implements validation to ensure configuration changes don't compromise game stability:
 
 **Setting Validation**:
+
 - Type checking for all configuration values
 - Range validation for numeric parameters
 - Dependency checking for related settings
 - Automatic fallback to safe defaults on invalid input
 
 **Error Recovery**:
+
 - Graceful handling of corrupted saved variables
 - Automatic backup creation before major changes
 - Recovery mechanisms for failed configuration updates
@@ -445,14 +459,16 @@ The addon implements validation to ensure configuration changes don't compromise
 Advanced users can fine-tune the addon's performance characteristics:
 
 **Update Frequency Control**:
+
 ```lua
 -- Visual effect update rates
-GLOBAL_SETTINGS.deathIndicatorUpdateRate = 0.1    -- 10 FPS
-GLOBAL_SETTINGS.healthCheckFrequency = 0.05       -- 20 FPS
-GLOBAL_SETTINGS.effectProcessingRate = 0.033      -- 30 FPS
+GLOBAL_SETTINGS.deathIndicatorUpdateRate = 0.1 -- 10 FPS
+GLOBAL_SETTINGS.healthCheckFrequency = 0.05 -- 20 FPS
+GLOBAL_SETTINGS.effectProcessingRate = 0.033 -- 30 FPS
 ```
 
 **Memory Usage Optimization**:
+
 ```lua
 -- Memory management settings
 GLOBAL_SETTINGS.enableGarbageCollection = true
@@ -461,7 +477,6 @@ GLOBAL_SETTINGS.maxCachedEvents = 1000
 ```
 
 This configuration system provides the flexibility to customize the hardcore experience while maintaining the core challenge that defines Ultra Hardcore's unique approach to World of Warcraft gameplay.
-
 
 ## Development
 
@@ -472,6 +487,7 @@ Ultra Hardcore welcomes contributions from developers who share the vision of cr
 Setting up a development environment for Ultra Hardcore requires familiarity with World of Warcraft addon development and Lua programming. The project uses modern development practices adapted for the WoW addon ecosystem.
 
 **Prerequisites**:
+
 - World of Warcraft Classic Era client
 - Text editor with Lua syntax highlighting (VS Code, Sublime Text, or Vim)
 - Git for version control
@@ -481,29 +497,32 @@ Setting up a development environment for Ultra Hardcore requires familiarity wit
 **Development Setup Process**:
 
 1. **Fork and Clone the Repository**
+
    ```bash
    # Fork the repository on GitHub first
    git clone https://github.com/yourusername/UltraHardcore.git
    cd UltraHardcore
-   
+
    # Set up upstream remote
    git remote add upstream https://github.com/bonniesdad/UltraHardcore.git
    ```
 
 2. **Create Development Symlink**
+
    ```bash
    # Create symlink in WoW AddOns directory (Windows)
    mklink /D "C:\Program Files (x86)\World of Warcraft\_classic_era_\Interface\AddOns\UltraHardcore" "C:\path\to\your\UltraHardcore"
-   
+
    # Create symlink on macOS/Linux
    ln -s /path/to/your/UltraHardcore "/Applications/World of Warcraft/_classic_era_/Interface/AddOns/UltraHardcore"
    ```
 
 3. **Install Development Tools**
+
    ```bash
    # Install Node.js dependencies for linting and formatting
    npm install
-   
+
    # Set up pre-commit hooks
    npm run setup-hooks
    ```
@@ -513,6 +532,7 @@ Setting up a development environment for Ultra Hardcore requires familiarity wit
 Ultra Hardcore follows a strict code organization philosophy that emphasizes modularity, readability, and maintainability. Understanding this structure is essential for effective contribution.
 
 **File Naming Conventions**:
+
 - Core functionality: `PascalCase.lua` (e.g., `DeathIndicator.lua`)
 - Utility functions: `Utils/PascalCase.lua` (e.g., `Utils/RotateScreenEffect.lua`)
 - Database operations: `DB/PascalCase.lua` (e.g., `DB/LoadDBData.lua`)
@@ -523,26 +543,27 @@ Ultra Hardcore follows a strict code organization philosophy that emphasizes mod
 ```lua
 -- Function naming: PascalCase for public functions, camelCase for private
 function DeathIndicator(self, event, unit, showTunnelVision)
-    local healthPercent = (UnitHealth('player') / UnitHealthMax('player')) * 100
-    
-    if showTunnelVision then
-        if healthPercent <= 20 then
-            ApplyDeathIndicatorChange(10)
-        elseif healthPercent <= 40 then
-            ApplyDeathIndicatorChange(14)
-        end
-    else
-        RemoveDeathIndicator()
+  local healthPercent = (UnitHealth('player') / UnitHealthMax('player')) * 100
+
+  if showTunnelVision then
+    if healthPercent <= 20 then
+      ApplyDeathIndicatorChange(10)
+    elseif healthPercent <= 40 then
+      ApplyDeathIndicatorChange(14)
     end
+  else
+    RemoveDeathIndicator()
+  end
 end
 
 -- Local variables for performance optimization
 local function updateHealthIndicator(unit, healthPercent)
-    -- Implementation details
+  -- Implementation details
 end
 ```
 
 **Documentation Standards**:
+
 - All public functions must include comprehensive comments
 - Complex algorithms require step-by-step explanation
 - Event handlers must document their trigger conditions
@@ -558,26 +579,26 @@ The addon includes a custom testing framework designed specifically for World of
 ```lua
 -- Test framework example
 UHCTestSuite = {
-    testDeathIndicator = function()
-        -- Simulate health loss
-        local mockHealth = 0.3
-        DeathIndicator(nil, "UNIT_HEALTH_FREQUENT", "player", true)
-        
-        -- Verify overlay application
-        assert(deathOverlayActive == true, "Death overlay should be active at 30% health")
-    end,
-    
-    testCriticalHitEffect = function()
-        -- Simulate critical hit event
-        OnCombatLogEvent(nil, "SPELL_DAMAGE", nil, nil, nil, nil, nil, nil, true)
-        
-        -- Verify screen rotation
-        assert(screenRotationActive == true, "Screen rotation should activate on critical hit")
-    end
+  testDeathIndicator = function()
+    -- Simulate health loss
+    local mockHealth = 0.3
+    DeathIndicator(nil, 'UNIT_HEALTH_FREQUENT', 'player', true)
+
+    -- Verify overlay application
+    assert(deathOverlayActive == true, 'Death overlay should be active at 30% health')
+  end,
+  testCriticalHitEffect = function()
+    -- Simulate critical hit event
+    OnCombatLogEvent(nil, 'SPELL_DAMAGE', nil, nil, nil, nil, nil, nil, true)
+
+    -- Verify screen rotation
+    assert(screenRotationActive == true, 'Screen rotation should activate on critical hit')
+  end,
 }
 ```
 
 **Manual Testing Procedures**:
+
 1. **Core Functionality Testing**: Verify all primary features work correctly
 2. **Edge Case Testing**: Test extreme scenarios (very low health, multiple critical hits)
 3. **Performance Testing**: Monitor frame rate impact during intensive scenarios
@@ -585,6 +606,7 @@ UHCTestSuite = {
 5. **User Experience Testing**: Validate that the hardcore experience remains challenging but fair
 
 **Automated Testing**:
+
 ```bash
 # Run automated test suite
 npm run test
@@ -609,6 +631,7 @@ Ultra Hardcore follows a structured contribution process that ensures code quali
 5. **Pull Request**: Submit a detailed pull request with clear description and testing notes
 
 **Pull Request Requirements**:
+
 - Clear description of changes and motivation
 - Comprehensive testing of new functionality
 - Documentation updates for user-facing changes
@@ -617,6 +640,7 @@ Ultra Hardcore follows a structured contribution process that ensures code quali
 
 **Code Review Process**:
 All contributions undergo thorough code review focusing on:
+
 - Code quality and adherence to project standards
 - Performance implications and optimization opportunities
 - User experience impact and hardcore philosophy alignment
@@ -628,47 +652,48 @@ All contributions undergo thorough code review focusing on:
 Ultra Hardcore provides several development tools to streamline the contribution process:
 
 **Debugging Utilities**:
+
 ```lua
 -- Debug logging system
 UHCDebug = {
-    log = function(message, level)
-        if GLOBAL_SETTINGS.debugMode then
-            print(string.format("[UHC-%s] %s", level or "INFO", message))
-        end
-    end,
-    
-    dumpSettings = function()
-        -- Output current settings for debugging
-        for key, value in pairs(GLOBAL_SETTINGS) do
-            UHCDebug.log(string.format("%s: %s", key, tostring(value)))
-        end
+  log = function(message, level)
+    if GLOBAL_SETTINGS.debugMode then
+      print(string.format('[UHC-%s] %s', level or 'INFO', message))
     end
+  end,
+  dumpSettings = function()
+    -- Output current settings for debugging
+    for key, value in pairs(GLOBAL_SETTINGS) do
+      UHCDebug.log(string.format('%s: %s', key, tostring(value)))
+    end
+  end,
 }
 ```
 
 **Performance Profiling**:
+
 ```lua
 -- Performance monitoring
 UHCProfiler = {
-    startTimer = function(name)
-        UHCProfiler.timers[name] = GetTime()
-    end,
-    
-    endTimer = function(name)
-        local elapsed = GetTime() - (UHCProfiler.timers[name] or 0)
-        UHCDebug.log(string.format("Timer %s: %.3fms", name, elapsed * 1000))
-    end
+  startTimer = function(name)
+    UHCProfiler.timers[name] = GetTime()
+  end,
+  endTimer = function(name)
+    local elapsed = GetTime() - (UHCProfiler.timers[name] or 0)
+    UHCDebug.log(string.format('Timer %s: %.3fms', name, elapsed * 1000))
+  end,
 }
 ```
 
 **Development Configuration**:
+
 ```lua
 -- Development-specific settings
 if GLOBAL_SETTINGS.developmentMode then
-    GLOBAL_SETTINGS.debugMode = true
-    GLOBAL_SETTINGS.enableProfiling = true
-    GLOBAL_SETTINGS.skipIntroAnimations = true
-    GLOBAL_SETTINGS.fastTestMode = true
+  GLOBAL_SETTINGS.debugMode = true
+  GLOBAL_SETTINGS.enableProfiling = true
+  GLOBAL_SETTINGS.skipIntroAnimations = true
+  GLOBAL_SETTINGS.fastTestMode = true
 end
 ```
 
@@ -706,8 +731,8 @@ Safely updates a specific setting with validation and error handling.
 -- value (any): New value for the setting
 
 -- Usage examples
-UltraHardcore.UpdateSetting("hidePlayerFrame", false)
-UltraHardcore.UpdateSetting("deathIndicatorSensitivity", 0.8)
+UltraHardcore.UpdateSetting('hidePlayerFrame', false)
+UltraHardcore.UpdateSetting('deathIndicatorSensitivity', 0.8)
 
 -- Return values:
 -- true: Setting updated successfully
@@ -721,17 +746,18 @@ Retrieves comprehensive information about the player's current hardcore status.
 ```lua
 -- Usage example
 local status = UltraHardcore.GetPlayerStatus()
-print(string.format("Health: %d%%, Deaths: %d", status.healthPercent, status.deathCount))
+print(
+  string.format('Health: %d%%, Deaths: %d', status.healthPercent, status.deathCount)
 
--- Return value structure
-{
-    healthPercent = number,        -- Current health percentage (0-100)
-    isInCombat = boolean,         -- Combat state
-    deathIndicatorActive = boolean, -- Death overlay status
-    criticalHitCount = number,    -- Session critical hits received
-    timeInHardcoreMode = number,  -- Total time played with addon
-    currentZone = string,         -- Current zone name
-    isInRestedArea = boolean      -- Rested area status
+  -- Return value structure
+){
+  healthPercent = number, -- Current health percentage (0-100)
+  isInCombat = boolean, -- Combat state
+  deathIndicatorActive = boolean, -- Death overlay status
+  criticalHitCount = number, -- Session critical hits received
+  timeInHardcoreMode = number, -- Total time played with addon
+  currentZone = string, -- Current zone name
+  isInRestedArea = boolean, -- Rested area status
 }
 ```
 
@@ -748,8 +774,8 @@ Registers a callback function to be executed when specific Ultra Hardcore events
 -- "HARDCORE_MODE_TOGGLED" - Addon enabled/disabled
 
 -- Usage example
-UltraHardcore.RegisterCallback("CRITICAL_HIT_RECEIVED", function(damage, source)
-    print(string.format("Critical hit for %d damage from %s", damage, source))
+UltraHardcore.RegisterCallback('CRITICAL_HIT_RECEIVED', function(damage, source)
+  print(string.format('Critical hit for %d damage from %s', damage, source))
 end)
 
 -- Callback function signatures:
@@ -765,12 +791,12 @@ Removes a previously registered callback function.
 ```lua
 -- Usage example
 local myCallback = function(intensity, healthPercent)
-    -- Handle death indicator changes
+  -- Handle death indicator changes
 end
 
-UltraHardcore.RegisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
+UltraHardcore.RegisterCallback('DEATH_INDICATOR_CHANGED', myCallback)
 -- Later...
-UltraHardcore.UnregisterCallback("DEATH_INDICATOR_CHANGED", myCallback)
+UltraHardcore.UnregisterCallback('DEATH_INDICATOR_CHANGED', myCallback)
 ```
 
 ### Visual Effects API
@@ -784,13 +810,13 @@ Creates custom visual overlays using the Ultra Hardcore overlay system.
 
 -- Usage example
 local customOverlay = {
-    name = "MyCustomEffect",
-    texture = "Interface\\FullScreenTextures\\LowHealth",
-    alpha = 0.5,
-    duration = 3.0,
-    fadeIn = 0.5,
-    fadeOut = 1.0,
-    blendMode = "BLEND"
+  name = 'MyCustomEffect',
+  texture = 'Interface\\FullScreenTextures\\LowHealth',
+  alpha = 0.5,
+  duration = 3.0,
+  fadeIn = 0.5,
+  fadeOut = 1.0,
+  blendMode = 'BLEND',
 }
 
 UltraHardcore.ApplyCustomOverlay(customOverlay)
@@ -810,7 +836,7 @@ Removes a custom overlay by name.
 
 ```lua
 -- Usage example
-UltraHardcore.RemoveCustomOverlay("MyCustomEffect")
+UltraHardcore.RemoveCustomOverlay('MyCustomEffect')
 
 -- Return values:
 -- true: Overlay removed successfully
@@ -824,7 +850,7 @@ Returns information about all currently active overlays.
 -- Usage example
 local overlays = UltraHardcore.GetActiveOverlays()
 for name, config in pairs(overlays) do
-    print(string.format("Active overlay: %s (alpha: %.2f)", name, config.alpha))
+  print(string.format('Active overlay: %s (alpha: %.2f)', name, config.alpha))
 end
 ```
 
@@ -838,21 +864,22 @@ Retrieves statistical data about hardcore gameplay.
 -- scope (string): "session", "character", or "account"
 
 -- Usage examples
-local sessionStats = UltraHardcore.GetStatistics("session")
-local characterStats = UltraHardcore.GetStatistics("character")
-local accountStats = UltraHardcore.GetStatistics("account")
+local sessionStats = UltraHardcore.GetStatistics('session')
+local characterStats = UltraHardcore.GetStatistics('character')
+local accountStats = UltraHardcore.GetStatistics(
+  'account'
 
--- Return value structure
-{
-    timePlayed = number,          -- Total time in seconds
-    deathCount = number,          -- Number of deaths
-    criticalHitsReceived = number, -- Critical hits taken
-    nearDeathExperiences = number, -- Times below 10% health
-    zonesExplored = table,        -- List of zones visited
-    achievementsUnlocked = table, -- Hardcore achievements
-    averageHealthPercent = number, -- Session average health
-    combatTime = number,          -- Time spent in combat
-    restedTime = number          -- Time spent in rested areas
+  -- Return value structure
+){
+  timePlayed = number, -- Total time in seconds
+  deathCount = number, -- Number of deaths
+  criticalHitsReceived = number, -- Critical hits taken
+  nearDeathExperiences = number, -- Times below 10% health
+  zonesExplored = table, -- List of zones visited
+  achievementsUnlocked = table, -- Hardcore achievements
+  averageHealthPercent = number, -- Session average health
+  combatTime = number, -- Time spent in combat
+  restedTime = number, -- Time spent in rested areas
 }
 ```
 
@@ -865,11 +892,11 @@ Records custom events for statistical tracking.
 -- eventData (table): Event-specific data
 
 -- Usage example
-UltraHardcore.RecordCustomEvent("BOSS_ENCOUNTER", {
-    bossName = "Ragnaros",
-    duration = 180,
-    outcome = "victory",
-    healthRemaining = 0.15
+UltraHardcore.RecordCustomEvent('BOSS_ENCOUNTER', {
+  bossName = 'Ragnaros',
+  duration = 180,
+  outcome = 'victory',
+  healthRemaining = 0.15,
 })
 ```
 
@@ -880,10 +907,10 @@ Checks if a specific addon is compatible with Ultra Hardcore.
 
 ```lua
 -- Usage example
-if UltraHardcore.IsCompatibleAddon("Details") then
-    print("Details addon is compatible")
+if UltraHardcore.IsCompatibleAddon('Details') then
+  print('Details addon is compatible')
 else
-    print("Details addon may conflict with Ultra Hardcore")
+  print('Details addon may conflict with Ultra Hardcore')
 end
 
 -- Return values:
@@ -901,7 +928,7 @@ Allows other addons to request temporary disabling of specific Ultra Hardcore fe
 -- reason (string): Reason for the request
 
 -- Usage example
-UltraHardcore.RequestFeatureDisable("hidePlayerFrame", "Raid healing interface needed")
+UltraHardcore.RequestFeatureDisable('hidePlayerFrame', 'Raid healing interface needed')
 
 -- Available features:
 -- "hidePlayerFrame", "hideMinimap", "hideTargetFrame"
@@ -917,7 +944,7 @@ Restores a previously disabled feature.
 
 ```lua
 -- Usage example
-UltraHardcore.RestoreFeature("hidePlayerFrame")
+UltraHardcore.RestoreFeature('hidePlayerFrame')
 ```
 
 ### Advanced Configuration API
@@ -931,26 +958,23 @@ Creates custom hardcore challenges with tracking and achievement integration.
 
 -- Usage example
 local customChallenge = {
-    name = "No Healing Challenge",
-    description = "Complete a dungeon without using healing spells",
-    category = "Combat",
-    difficulty = "Extreme",
-    conditions = {
-        {
-            type = "SPELL_CAST_SUCCESS",
-            spellCategories = {"Healing"},
-            maxCount = 0
-        },
-        {
-            type = "ZONE_COMPLETION",
-            zoneType = "Dungeon",
-            minCount = 1
-        }
-    },
-    rewards = {
-        title = "The Unhealed",
-        achievement = "NO_HEALING_MASTER"
-    }
+  name = 'No Healing Challenge',
+  description = 'Complete a dungeon without using healing spells',
+  category = 'Combat',
+  difficulty = 'Extreme',
+  conditions = { {
+    type = 'SPELL_CAST_SUCCESS',
+    spellCategories = { 'Healing' },
+    maxCount = 0,
+  }, {
+    type = 'ZONE_COMPLETION',
+    zoneType = 'Dungeon',
+    minCount = 1,
+  } },
+  rewards = {
+    title = 'The Unhealed',
+    achievement = 'NO_HEALING_MASTER',
+  },
 }
 
 UltraHardcore.CreateCustomChallenge(customChallenge)
@@ -961,8 +985,8 @@ Retrieves progress information for a specific challenge.
 
 ```lua
 -- Usage example
-local progress = UltraHardcore.GetChallengeProgress("No Healing Challenge")
-print(string.format("Progress: %d/%d conditions met", progress.completed, progress.total))
+local progress = UltraHardcore.GetChallengeProgress('No Healing Challenge')
+print(string.format('Progress: %d/%d conditions met', progress.completed, progress.total))
 ```
 
 ### Error Handling and Debugging API
@@ -992,12 +1016,11 @@ Retrieves information about the most recent error.
 -- Usage example
 local error = UltraHardcore.GetLastError()
 if error then
-    print(string.format("Last error: %s at %s", error.message, error.timestamp))
+  print(string.format('Last error: %s at %s', error.message, error.timestamp))
 end
 ```
 
 This API provides the foundation for extending Ultra Hardcore's functionality while maintaining the integrity and security of the hardcore gaming experience.
-
 
 ## Contributing
 
@@ -1095,7 +1118,6 @@ Submit a detailed pull request with a clear description of your changes, the pro
 
 Contributing to Ultra Hardcore is more than just writing code—it's about joining a community dedicated to preserving and enhancing the challenging, immersive gaming experiences that made classic MMORPGs special. Every contribution, no matter how small, helps maintain and improve this unique approach to World of Warcraft gameplay.
 
-
 ## Troubleshooting
 
 Ultra Hardcore is designed to be robust and reliable, but the complex nature of World of Warcraft addon interactions can occasionally lead to issues. This comprehensive troubleshooting guide addresses common problems and provides systematic solutions for resolving conflicts and performance issues.
@@ -1141,11 +1163,13 @@ Ultra Hardcore is optimized for minimal performance impact, but certain configur
 Ultra Hardcore is designed to coexist with most addons, but conflicts can occur:
 
 **Common Conflict Sources**:
+
 - **UI Replacement Addons**: ElvUI, Bartender, and similar comprehensive UI replacements may conflict with Ultra Hardcore's interface modifications
 - **Combat Addons**: Damage meters and combat analysis tools may interfere with the hidden damage text feature
 - **Nameplate Addons**: Custom nameplate addons may conflict with Ultra Hardcore's nameplate hiding functionality
 
 **Conflict Resolution Process**:
+
 1. **Identify Conflicting Addon**: Disable addons one by one to isolate which addon is causing conflicts
 2. **Check Load Order**: Ensure Ultra Hardcore loads after conflicting addons by modifying the TOC file if necessary
 3. **Configure Compatibility**: Many conflicts can be resolved by configuring the conflicting addon to avoid overlapping functionality
@@ -1232,10 +1256,12 @@ Monitor specific events to diagnose event-related issues:
 
 **Community Support**
 The Ultra Hardcore community provides support through the community discord channel:
+
 - https://discord.com/invite/zuSPDNhYEN
 
 **Bug Reporting**
 When reporting bugs, include the following information:
+
 - Exact steps to reproduce the issue
 - Your character class, level, and current zone
 - List of other installed addons
@@ -1244,6 +1270,7 @@ When reporting bugs, include the following information:
 
 **Feature Requests**
 Suggest new features or improvements through GitHub issues with:
+
 - Clear description of the desired functionality
 - Explanation of how it fits the hardcore philosophy
 - Examples of similar features in other contexts
@@ -1259,14 +1286,13 @@ For critical issues that prevent gameplay:
 
 This troubleshooting guide covers the most common issues encountered by Ultra Hardcore users. For problems not addressed here, the community is always ready to provide assistance and work toward solutions that maintain the addon's hardcore gaming philosophy.
 
-
 ## Credits
 
 Ultra Hardcore represents the collaborative effort of dedicated developers, testers, and community members who share a passion for challenging, authentic gaming experiences. This project builds upon the rich tradition of World of Warcraft addon development while pushing the boundaries of what's possible within the game's framework.
 
 ### Core Development Team
 
-**Bonnie's Dad** - *Project Creator and Lead Developer*
+**Bonnie's Dad** - _Project Creator and Lead Developer_
 The visionary behind Ultra Hardcore, Bonnie's Dad conceived and implemented the core philosophy of creating authentic difficulty through information limitation rather than artificial stat modifications. Their deep understanding of World of Warcraft's mechanics and commitment to preserving the essence of hardcore gaming drives the project's direction and maintains its focus on meaningful challenge.
 
 ### Technical Acknowledgments

@@ -1,7 +1,6 @@
 local enabled = false
-local ticker  = nil
-local TICK_INTERVAL = 1  -- seconds
-
+local ticker = nil
+local TICK_INTERVAL = 1 -- seconds
 local function zoomInHard()
   CameraZoomIn(50)
 end
@@ -16,13 +15,11 @@ local function startTicker()
   end)
 end
 
-
 local function enableLock()
   enabled = true
   zoomInHard()
   startTicker()
 end
-
 
 -- PUBLIC API (unchanged)
 function ForceFirstPersonCamera(forceFirstPerson)
