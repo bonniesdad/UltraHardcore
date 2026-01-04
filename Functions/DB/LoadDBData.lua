@@ -74,6 +74,7 @@ function LoadDBData()
     groupSelfFound = false,
     showDruidFormResourceBar = true,
     showSoulshardIndicator = true,
+    hideComboFrame = false,
     -- XP Bar
     showExpBar = false,
     showXpBarToolTip = false,

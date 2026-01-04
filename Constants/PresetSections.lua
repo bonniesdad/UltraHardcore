@@ -60,6 +60,7 @@ local PRESET_SECTIONS = { {
     'showOnScreenStatistics',
     'showVitalsOverlay',
     'useCustomComboFrame',
+    'hideComboFrame',
     'announceLevelUpToGuild',
     'autoJoinUHCChannel',
     'hideUIErrors',

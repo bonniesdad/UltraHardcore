@@ -113,6 +113,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'useCustomComboFrame',
   tooltip = 'Use a custom combo frame instead of the default Blizzard combo frame',
 }, {
+  name = 'Hide Combo Frame on Target Frame',
+  dbSettingsValueName = 'hideComboFrame',
+  tooltip = 'Hide the default Blizzard combo point frame',
+}, {
   name = 'Show Vitals Overlay',
   dbSettingsValueName = 'showVitalsOverlay',
   tooltip = 'Show maximum health and mana on the character panel',
