@@ -493,7 +493,7 @@ local function CreateStatsGrid(parent, statsList, options)
         columnLeft = columnLeft + halfBarWidth + columnGap
       end
 
-      local labelLeft = columnLeft + LABEL_BAR_OFFSET
+      local labelLeft = columnLeft + LABEL_BAR_OFFSET + 8
       local label = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
       label:SetPoint('TOPLEFT', parent, 'TOPLEFT', labelLeft, yOffset + ROW_Y_ADJUST)
       label:SetText(stat.label or statKey)
@@ -530,7 +530,7 @@ local function CreateStatsGrid(parent, statsList, options)
         if settingName and settingName ~= '' then
           local radio = CreateFrame('CheckButton', nil, parent, 'UICheckButtonTemplate')
           radio:SetPoint('RIGHT', label, 'LEFT', -4, 0)
-          radio:SetScale(0.5)
+          radio:SetScale(0.7)
           AttachSettingCheckbox(radio, settingName)
         end
       end
