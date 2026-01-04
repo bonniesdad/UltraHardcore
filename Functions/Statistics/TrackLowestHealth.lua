@@ -171,7 +171,6 @@ local function HandleSessionLowestReset(eventType)
   if eventType == 'PLAYER_LOGIN' then
     local currentTime = GetServerTime()
     local lastLogoutTime = CharacterStats:GetStat('lastLogoutTime')
-    print('currentTime - lastLogoutTime', currentTime - lastLogoutTime)
     if lastLogoutTime and currentTime - lastLogoutTime > 1800 then
       print(
         '|cfff44336[ULTRA]|r |cfff0f000New session! This Session lowest health has been reset.|r'
