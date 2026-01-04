@@ -614,10 +614,13 @@ druidFormResourceBar:RegisterEvent('UPDATE_SHAPESHIFT_FORM')
 local function HideComboFrame()
   -- Hide the default combo points (Blizzard UI)
   if ComboFrame then
-    if ShouldHideComboFrame() then
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideComboFrame then
       ComboFrame:Hide()
       ComboFrame:UnregisterAllEvents()
       ComboFrame:SetScript('OnUpdate', nil)
+    else
+      -- Show the combo frame if the setting is unchecked
+      ComboFrame:Show()
     end
   end
 end
