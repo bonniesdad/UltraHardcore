@@ -3,12 +3,12 @@
 
 function InitializeCommandsTab()
   -- Ensure tab content exists
-  if not tabContents or not tabContents[6] then return end
+  if not tabContents or not tabContents[4] then return end
   -- Prevent duplicate builds
-  if tabContents[6].initialized then return end
-  tabContents[6].initialized = true
+  if tabContents[4].initialized then return end
+  tabContents[4].initialized = true
 
-  local parent = tabContents[6]
+  local parent = tabContents[4]
 
   -- Title
   local title = parent:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
