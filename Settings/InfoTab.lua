@@ -11,7 +11,7 @@ function InitializeInfoTab(tabContents)
 
   -- Philosophy text (at top, moved down by 30)
   local philosophyText = tabContents[3]:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  philosophyText:SetPoint('TOP', tabContents[3], 'TOP', 0, -50)
+  philosophyText:SetPoint('TOP', tabContents[3], 'TOP', 0, -70)
   philosophyText:SetWidth(500)
   philosophyText:SetText(
     'UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version')
@@ -53,7 +53,7 @@ function InitializeInfoTab(tabContents)
 
   -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
   local patchNotesFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
-  patchNotesFrame:SetSize(600, 420)
+  patchNotesFrame:SetSize(600, 380)
   patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -5)
   patchNotesFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -72,5 +72,5 @@ function InitializeInfoTab(tabContents)
   patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
 
   -- Create patch notes display using reusable component (larger to fill new space)
-  CreatePatchNotesDisplay(patchNotesFrame, 560, 400, 10, -10)
+  CreatePatchNotesDisplay(patchNotesFrame, 560, 360, 10, -10)
 end

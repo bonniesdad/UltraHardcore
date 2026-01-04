@@ -3,7 +3,7 @@
 
 local TabManager = {}
 
-local TAB_WIDTH = 120 -- Default width
+local TAB_WIDTH = 160 -- Default width
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
 
@@ -44,9 +44,9 @@ local activeTab = 1
 local function calculateTabOffset(index)
   -- Calculate total width of all tabs
   local totalWidth = 0
-  for i = 1, 5 do
+  for i = 1, 4 do
     local width = TAB_WIDTHS[i] or TAB_WIDTH
-    if i < 5 then
+    if i < 4 then
       totalWidth = totalWidth + width + TAB_SPACING
     else
       totalWidth = totalWidth + width
@@ -137,14 +137,12 @@ function TabManagerInitializeTabs(settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
   tabButtons[3] = createTabButton('Info', 3, settingsFrame)
   tabButtons[4] = createTabButton('Commands', 4, settingsFrame)
-  tabButtons[5] = createTabButton('Credits', 5, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
   tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
   tabContents[3] = createTabContent(3, settingsFrame) -- Info tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Commands tab
-  tabContents[5] = createTabContent(5, settingsFrame) -- Credits tab
 end
 
 -- Switch to a specific tab
@@ -253,10 +251,6 @@ function TabManagerSwitchToTab(index)
     InitializeCommandsTab(tabContents)
   end
 
-  -- Initialize Credits tab if it's being shown
-  if index == 5 and InitializeCreditsTab then
-    InitializeCreditsTab(tabContents)
-  end
 end
 
 -- Set the default tab (Statistics tab)
