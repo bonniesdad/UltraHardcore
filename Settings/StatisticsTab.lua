@@ -81,6 +81,15 @@ local TIER_COLORS = {
   { 0.9, 0.25, 0.25, 0.95 }, -- tier 5+: red
 }
 
+-- Tier name mapping
+local TIER_NAMES = {
+  [1] = 'Bronze',
+  [2] = 'Silver',
+  [3] = 'Gold',
+  [4] = 'Master',
+  [5] = 'Demon',
+}
+
 -- Level bar color steps (blue -> red as you near cap)
 local LEVEL_COLOR_STEPS = {
   { 0.25, 0.65, 0.9, 0.95 }, -- blue
@@ -134,13 +143,17 @@ local STAT_BAR_CONFIG = {
   level = {
     max = 60, -- classic cap
     valueOnly = true,
+    noTier = true,
   },
   closeEscapes = {
     base = 10,
     multiplier = 2,
     valueOnly = true,
   },
-  petDeaths = { valueOnly = true },
+  petDeaths = {
+    valueOnly = true,
+    noTier = true,
+  },
   enemiesSlain = {
     base = 1000,
     multiplier = 3,
@@ -175,11 +188,13 @@ local STAT_BAR_CONFIG = {
     base = 500,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   highestHealCritValue = {
     base = 500,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   healthPotionsUsed = {
     base = 25,
@@ -210,21 +225,25 @@ local STAT_BAR_CONFIG = {
     base = 25,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   duelsTotal = {
     base = 25,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   duelsWon = {
     base = 25,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   duelsLost = {
     base = 25,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   playerJumps = {
     base = 10000,
@@ -235,14 +254,17 @@ local STAT_BAR_CONFIG = {
     base = 50,
     multiplier = 2,
     valueOnly = true,
+    noTier = true,
   },
   lagHome = {
     valueOnly = true,
     suffix = ' ms',
+    noTier = true,
   },
   lagWorld = {
     valueOnly = true,
     suffix = ' ms',
+    noTier = true,
   },
 }
 
@@ -309,6 +331,36 @@ local function CreateStatBar(parent)
   tierBg:SetBackdropColor(0, 0, 0, 0.35)
   tierBg:SetBackdropBorderColor(0, 0, 0, 0.5)
   tierBg:Hide()
+
+  -- Store tier range and name for tooltip directly on tierText
+  tierText.tierMin = 0
+  tierText.tierMax = 0
+  tierText.tierName = ''
+
+  -- Add tooltip to tier text
+  tierText:SetScript('OnEnter', function(self)
+    if self.tierMin ~= nil and self.tierMax ~= nil and self.tierName ~= '' then
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      GameTooltip:SetText(
+        string.format(
+          '%s tier is %s - %s',
+          self.tierName,
+          formatNumberWithCommas(self.tierMin),
+          formatNumberWithCommas(self.tierMax)
+        ),
+        nil,
+        nil,
+        nil,
+        nil,
+        true
+      )
+      GameTooltip:Show()
+    end
+  end)
+
+  tierText:SetScript('OnLeave', function(self)
+    GameTooltip:Hide()
+  end)
 
   return {
     frame = barFrame,
@@ -594,22 +646,57 @@ function UpdateStatBar(statKey, value)
       local pctMax = cfg.max or 100
       local percent = math.max(0, math.min(value or 0, pctMax))
       displayText = isZero and '-' or string.format('%.1f%%', percent)
+      -- Hide tier for percent stats
+      if bar.tier then
+        bar.tier:SetText('')
+        bar.tier:Hide()
+      end
+      if bar.tierBg then
+        bar.tierBg:Hide()
+      end
     else
       local suffix = cfg.suffix or ''
       displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
+
+      -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set)
+      if not cfg.noTier then
+        local base = cfg.base or STAT_BAR_CONFIG.default.base
+        local multiplier = cfg.multiplier or STAT_BAR_CONFIG.default.multiplier
+        if multiplier <= 1 then
+          multiplier = STAT_BAR_CONFIG.default.multiplier
+        end
+
+        local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
+        local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
+        -- Get tier color
+        local tierColorIndex = math.min(tier, #TIER_COLORS)
+        local tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
+        -- Use tier color for value text
+        textColor = tierColor
+        -- Store tier info for positioning after value text is set up
+        if bar.tier then
+          bar.tier:SetText(tierName)
+          bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+          bar.tier.tierMin = tierMin
+          bar.tier.tierMax = tierMax
+          bar.tier.tierName = tierName
+        end
+      else
+        -- Hide tier for stats with noTier flag
+        if bar.tier then
+          bar.tier:SetText('')
+          bar.tier:Hide()
+        end
+        if bar.tierBg then
+          bar.tierBg:Hide()
+        end
+      end
     end
     if bar.minText then
       bar.minText:Hide()
     end
     if bar.maxText then
       bar.maxText:Hide()
-    end
-    if bar.tier then
-      bar.tier:SetText('')
-      bar.tier:Hide()
-    end
-    if bar.tierBg then
-      bar.tierBg:Hide()
     end
     bar.frame:SetBackdrop(nil)
     bar.text:ClearAllPoints()
@@ -618,6 +705,21 @@ function UpdateStatBar(statKey, value)
     bar.text:SetJustifyH('RIGHT')
     bar.text:SetText(displayText or '')
     bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
+
+    -- Position tier text after value text is positioned (for non-percent valueOnly stats)
+    if cfg.type ~= 'percent' and not cfg.noTier and bar.tier and bar.tier:GetText() ~= '' then
+      bar.tier:Show()
+      bar.tier:ClearAllPoints()
+      -- Position tier text consistently 300px from the right
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -70, 6)
+      if bar.tierBg then
+        bar.tierBg:ClearAllPoints()
+        bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
+        bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
+        bar.tierBg:Show()
+      end
+    end
+
     -- Keep bar height consistent
     bar.frame:SetHeight(STAT_BAR_HEIGHT)
     return
@@ -673,15 +775,40 @@ function UpdateStatBar(statKey, value)
     end
 
     local tier, tierMin, tierMax, progress = CalculateTierProgress(value or 0, base, multiplier)
+    local tierColor = nil
     if not cfg.color and #TIER_COLORS > 0 then
       local tierColorIndex = math.min(tier, #TIER_COLORS)
-      effectiveFillColor = TIER_COLORS[tierColorIndex] or effectiveFillColor
+      tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
+      effectiveFillColor = tierColor
     end
     local availableWidth =
       (bar.bg and (bar.bg:GetWidth() - STAT_FILL_INSET * 2)) or bar.frame:GetWidth()
     bar.fill:SetWidth(availableWidth * progress)
     bar.text:SetText(formatNumberWithCommas(value or 0))
-    bar.tier:SetText('Tier ' .. tier)
+
+    -- Set tier name (bronze, silver, gold, master, demon)
+    local tierName = TIER_NAMES[tier] or TIER_NAMES[5] -- Default to Demon for tier 5+
+    bar.tier:SetText(tierName)
+
+    -- Set tier text color to match tier color
+    if not tierColor then
+      local tierColorIndex = math.min(tier, #TIER_COLORS)
+      tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
+    end
+    bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+
+    -- Set value text color to match tier color (only if not using custom color)
+    if not cfg.color then
+      bar.text:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+    end
+
+    -- Store tier range and name for tooltip
+    if bar.tier then
+      bar.tier.tierMin = tierMin
+      bar.tier.tierMax = tierMax
+      bar.tier.tierName = tierName
+    end
+
     if bar.minText then
       bar.minText:SetText(formatNumberWithCommas(tierMin))
     end
@@ -720,7 +847,7 @@ function UpdateStatBar(statKey, value)
 
   -- Layout: tier on the left, value on the right
   if bar.tier then
-    if cfg.type == 'percent' then
+    if cfg.type == 'percent' or cfg.noTier then
       bar.tier:Hide()
       if bar.tierBg then
         bar.tierBg:Hide()
@@ -728,7 +855,8 @@ function UpdateStatBar(statKey, value)
     else
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      bar.tier:SetPoint('LEFT', bar.frame, 'LEFT', TIER_LEFT_PADDING, 0)
+      -- Position tier text consistently 300px from the right
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -70, 6)
       if bar.tierBg then
         bar.tierBg:ClearAllPoints()
         bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
@@ -969,7 +1097,10 @@ function InitializeStatisticsTab(tabContents)
     end,
     defaultValue = 1,
   } }
-  CreateStatsGrid(characterInfoContent, characterStatsConfig, { defaultWidth = 1, rowHeight = 36 })
+  CreateStatsGrid(characterInfoContent, characterStatsConfig, {
+    defaultWidth = 1,
+    rowHeight = 36,
+  })
 
   -- Create Health Tracking section
   local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
@@ -1149,6 +1280,13 @@ function InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 1,
   }, {
+    key = 'closeEscapes',
+    label = 'Close Escapes:',
+    tooltipKey = 'closeEscapes',
+    settingName = 'showMainStatisticsPanelCloseEscapes',
+    defaultValue = 0,
+    width = 1,
+  }, {
     key = 'highestCritValue',
     label = 'Highest Crit Value:',
     tooltipKey = 'highestCritValue',
@@ -1162,21 +1300,21 @@ function InitializeStatisticsTab(tabContents)
     settingName = 'showMainStatisticsPanelHighestHealCritValue',
     defaultValue = 0,
     width = 1,
-  }, {
-    key = 'closeEscapes',
-    label = 'Close Escapes:',
-    tooltipKey = 'closeEscapes',
-    settingName = 'showMainStatisticsPanelCloseEscapes',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'petDeaths',
-    label = 'Pet Deaths:',
-    tooltipKey = 'petDeaths',
-    settingName = 'showMainStatisticsPanelPetDeaths',
-    defaultValue = 0,
-    width = 1,
   } }
+
+  -- Only add pet deaths for pet classes (hunter and warlock)
+  local _, playerClass = UnitClass('player')
+  if playerClass == 'HUNTER' or playerClass == 'WARLOCK' then
+    table.insert(combatStats, {
+      key = 'petDeaths',
+      label = 'Pet Deaths:',
+      tooltipKey = 'petDeaths',
+      settingName = 'showMainStatisticsPanelPetDeaths',
+      defaultValue = 0,
+      width = 1,
+    })
+  end
+
   CreateStatsGrid(combatContent, combatStats, { defaultWidth = 0.5 })
 
   -- Create modern WoW-style Survival section (collapsible)
@@ -1693,7 +1831,11 @@ function InitializeStatisticsTab(tabContents)
       CharacterStats:GetStat('lowestHealthThisSession') or 100
     )
 
-    UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths') or 0)
+    -- Only update pet deaths for pet classes (hunter and warlock)
+    local _, playerClass = UnitClass('player')
+    if playerClass == 'HUNTER' or playerClass == 'WARLOCK' then
+      UpdateStatBar('petDeaths', CharacterStats:GetStat('petDeaths') or 0)
+    end
     UpdateStatBar('closeEscapes', CharacterStats:GetStat('closeEscapes') or 0)
     UpdateStatBar('partyMemberDeaths', CharacterStats:GetStat('partyMemberDeaths') or 0)
 
