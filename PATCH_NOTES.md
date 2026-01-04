@@ -6,11 +6,15 @@
 
 - Session lowest health does not reset as often
   - Check if logged out for more than 30 minutes before resetting session lowest health.
+- PvP Flag icon on target frame
 
 ### UI Improvements
 
+- Improved display for first time users.
 - Better visualisation of lowest health and level stats.
 - Reverse dependencies for options menu.
+- Remove unused tabs in settings menu.
+- Fixed display of checkboxes in statistics tab.
 
 ## Version 1.3.0 - 2025-12-05
 
