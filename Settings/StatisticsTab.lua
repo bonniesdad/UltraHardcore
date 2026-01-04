@@ -750,7 +750,7 @@ function UpdateStatBar(statKey, value)
 end
 
 -- Initialize Statistics Tab when called
-function InitializeStatisticsTab()
+function InitializeStatisticsTab(tabContents)
   -- Check if tabContents[1] exists
   if not tabContents or not tabContents[1] then return end
 

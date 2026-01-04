@@ -105,7 +105,7 @@ local function createTabButton(text, index, parentFrame)
 
   -- Set up click handler
   button:SetScript('OnClick', function()
-    TabManager.switchToTab(index)
+    TabManagerSwitchToTab(index)
   end)
 
   -- Set initial appearance
@@ -125,7 +125,7 @@ local function createTabContent(index, parentFrame)
 end
 
 -- Initialize tabs for the settings frame
-function TabManager.initializeTabs(settingsFrame)
+function TabManagerInitializeTabs(settingsFrame)
   -- Store the settings frame reference
   TabManager.settingsFrame = settingsFrame
 
@@ -145,16 +145,10 @@ function TabManager.initializeTabs(settingsFrame)
   tabContents[3] = createTabContent(3, settingsFrame) -- Info tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Commands tab
   tabContents[5] = createTabContent(5, settingsFrame) -- Credits tab
-  -- Make tabContents globally accessible immediately
-  _G.tabContents = tabContents
 end
 
 -- Switch to a specific tab
-function TabManager.switchToTab(index)
-  -- Hide TBC overlay if it's showing
-  if _G.tbcContentFrame then
-    _G.tbcContentFrame:Hide()
-  end
+function TabManagerSwitchToTab(index)
 
   -- Hide all tab contents
   for i, content in ipairs(tabContents) do
@@ -225,7 +219,7 @@ function TabManager.switchToTab(index)
 
   -- Initialize Statistics tab if it's being shown
   if index == 1 and InitializeStatisticsTab then
-    InitializeStatisticsTab()
+    InitializeStatisticsTab(tabContents)
     -- Update radio buttons after Statistics tab is initialized
     if updateRadioButtons then
       updateRadioButtons()
@@ -235,7 +229,7 @@ function TabManager.switchToTab(index)
     if UpdateLowestHealthDisplay then
       if C_Timer and C_Timer.After then
         C_Timer.After(0, function()
-          if TabManager.getActiveTab and TabManager.getActiveTab() == 1 and UpdateLowestHealthDisplay then
+          if TabManagerGetActiveTab and TabManagerGetActiveTab() == 1 and UpdateLowestHealthDisplay then
             UpdateLowestHealthDisplay()
           end
         end)
@@ -247,26 +241,26 @@ function TabManager.switchToTab(index)
 
   -- Initialize Settings Options tab if it's being shown
   if index == 2 and InitializeSettingsOptionsTab then
-    InitializeSettingsOptionsTab()
+    InitializeSettingsOptionsTab(tabContents)
   end
   -- Initialize Info tab if it's being shown
   if index == 3 and InitializeInfoTab then
-    InitializeInfoTab()
+    InitializeInfoTab(tabContents)
   end
 
   -- Initialize Commands tab if it's being shown
   if index == 4 and InitializeCommandsTab then
-    InitializeCommandsTab()
+    InitializeCommandsTab(tabContents)
   end
 
   -- Initialize Credits tab if it's being shown
   if index == 5 and InitializeCreditsTab then
-    InitializeCreditsTab()
+    InitializeCreditsTab(tabContents)
   end
 end
 
 -- Set the default tab (Statistics tab)
-function TabManager.setDefaultTab()
+function TabManagerSetDefaultTab()
   local defaultIndex = 1
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.lastOpenedSettingsTab then
     local saved = GLOBAL_SETTINGS.lastOpenedSettingsTab
@@ -274,26 +268,26 @@ function TabManager.setDefaultTab()
       defaultIndex = saved
     end
   end
-  TabManager.switchToTab(defaultIndex)
+  TabManagerSwitchToTab(defaultIndex)
 end
 
 -- Get the currently active tab
-function TabManager.getActiveTab()
+function TabManagerGetActiveTab()
   return activeTab
 end
 
 -- Get tab content frame by index
-function TabManager.getTabContent(index)
+function TabManagerGetTabContent(index)
   return tabContents[index]
 end
 
 -- Get tab button by index
-function TabManager.getTabButton(index)
+function TabManagerGetTabButton(index)
   return tabButtons[index]
 end
 
 -- Hide all tabs
-function TabManager.hideAllTabs()
+function TabManagerHideAllTabs()
   for i, content in ipairs(tabContents) do
     content:Hide()
   end
@@ -323,7 +317,7 @@ function TabManager.hideAllTabs()
 end
 
 -- Reset tab state (called when settings window is closed)
-function TabManager.resetTabState()
+function TabManagerResetTabState()
   -- Reset active tab to default
   activeTab = 1
 
@@ -348,5 +342,3 @@ function TabManager.resetTabState()
   end
 end
 
--- Make TabManager globally accessible
-_G.TabManager = TabManager

@@ -1,7 +1,7 @@
 -- Commands Tab Content
 -- Builds a readable, scrollable list of all available slash commands
 
-function InitializeCommandsTab()
+function InitializeCommandsTab(tabContents)
   -- Ensure tab content exists
   if not tabContents or not tabContents[4] then return end
   -- Prevent duplicate builds
