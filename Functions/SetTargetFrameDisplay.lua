@@ -58,6 +58,14 @@ local function ApplyPortrait()
   end
 end
 
+-- Show PVP icon
+local function ApplyPVPIcon()
+  local pvpIcon = _G.TargetFrameTextureFramePVPIcon
+  if pvpIcon then
+    pvpIcon:SetAlpha(1)
+  end
+end
+
 -- Show/hide buffs/debuffs
 local function ApplyAuras()
   local showBuffs = targetFrameMask.buffs
@@ -233,6 +241,7 @@ local function ApplyMask()
 
   HideSubFrames('TargetFrame')
   HideTextureRegions(TargetFrameTextureFrame)
+  ApplyPVPIcon()
   ApplyPortrait()
   ApplyRaidIcon()
   ApplyAuras()
