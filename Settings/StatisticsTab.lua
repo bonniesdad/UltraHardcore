@@ -70,7 +70,7 @@ local TIER_LEFT_PADDING = 16 -- extra gap from bar start
 local BAR_ROW_HEIGHT_REDUCTION = 30 -- shrink bar rows vertically
 local DEFAULT_BAR_ROW_HEIGHT =
   math.max(STAT_BAR_HEIGHT + 4, (LAYOUT.ROW_HEIGHT * 2) - BAR_ROW_HEIGHT_REDUCTION)
-local SECTION_CONTENT_BOTTOM_PADDING = 20 -- gap between last row and frame edge
+local SECTION_CONTENT_BOTTOM_PADDING = 12 -- gap between last row and frame edge
 local SECTION_BOTTOM_PADDING = 30 -- add breathing room below each section
 -- Fill colors progress from calm/neutral to impressive across tiers
 local TIER_COLORS = {
@@ -97,27 +97,32 @@ local STAT_BAR_CONFIG = {
     multiplier = 2,
     color = { 0.25, 0.65, 0.9, 0.95 },
     bgColor = { 0.05, 0.05, 0.07, 0.75 },
+    valueOnly = true,
   },
   percent = {
     type = 'percent',
     max = 100,
     color = { 0.85, 0.35, 0.3, 0.95 },
     bgColor = { 0.07, 0.07, 0.09, 0.75 },
+    valueOnly = true,
   },
   lowestHealth = {
     type = 'percent',
     max = 100,
     color = { 0.85, 0.25, 0.25, 0.95 },
+    valueOnly = true,
   },
   lowestHealthThisLevel = {
     type = 'percent',
     max = 100,
     color = { 0.85, 0.25, 0.25, 0.95 },
+    valueOnly = true,
   },
   lowestHealthThisSession = {
     type = 'percent',
     max = 100,
     color = { 0.85, 0.25, 0.25, 0.95 },
+    valueOnly = true,
   },
   duelsWinPercent = {
     type = 'percent',
@@ -127,8 +132,8 @@ local STAT_BAR_CONFIG = {
   },
   -- Numeric stats with individualized tier settings (all inherit default base/multiplier unless overridden)
   level = {
-    type = 'percent',
     max = 60, -- classic cap
+    valueOnly = true,
   },
   closeEscapes = {
     base = 10,
@@ -609,7 +614,7 @@ function UpdateStatBar(statKey, value)
     bar.frame:SetBackdrop(nil)
     bar.text:ClearAllPoints()
     -- Nudge value up slightly to align with label baseline
-    bar.text:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 2)
+    bar.text:SetPoint('RIGHT', bar.frame, 'RIGHT', -6, 6)
     bar.text:SetJustifyH('RIGHT')
     bar.text:SetText(displayText or '')
     bar.text:SetTextColor(textColor[1] or 1, textColor[2] or 1, textColor[3] or 1, 1)
@@ -964,7 +969,7 @@ function InitializeStatisticsTab(tabContents)
     end,
     defaultValue = 1,
   } }
-  CreateStatsGrid(characterInfoContent, characterStatsConfig, { defaultWidth = 1 })
+  CreateStatsGrid(characterInfoContent, characterStatsConfig, { defaultWidth = 1, rowHeight = 36 })
 
   -- Create Health Tracking section
   local healthTrackingHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
