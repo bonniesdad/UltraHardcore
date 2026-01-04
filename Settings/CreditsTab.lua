@@ -1,21 +1,21 @@
 -- Credits Tab Content
 -- Initialize Credits Tab when called
 function InitializeCreditsTab()
-  -- Check if tabContents[7] exists
-  if not tabContents or not tabContents[7] then return end
+  -- Check if tabContents[5] exists
+  if not tabContents or not tabContents[5] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[7].initialized then return end
+  if tabContents[5].initialized then return end
 
   -- Mark as initialized
-  tabContents[7].initialized = true
+  tabContents[5].initialized = true
 
   -- Background frame with border for all content
-  local contentBackground = CreateFrame('Frame', nil, tabContents[7], 'BackdropTemplate')
-  contentBackground:SetPoint('TOP', tabContents[7], 'TOP', 0, -60)
-  contentBackground:SetPoint('LEFT', tabContents[7], 'LEFT', 10, 0)
-  contentBackground:SetPoint('RIGHT', tabContents[7], 'RIGHT', -10, 0)
-  contentBackground:SetPoint('BOTTOM', tabContents[7], 'BOTTOM', 0, -30)
+  local contentBackground = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
+  contentBackground:SetPoint('TOP', tabContents[5], 'TOP', 0, -60)
+  contentBackground:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
+  contentBackground:SetPoint('RIGHT', tabContents[5], 'RIGHT', -10, 0)
+  contentBackground:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -30)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
@@ -102,7 +102,7 @@ function InitializeCreditsTab()
   -- Center the button horizontally in the tab
   discordButton:ClearAllPoints()
   discordButton:SetPoint('TOP', joinDeveloperText, 'BOTTOM', 0, -10)
-  discordButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+  discordButton:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)
 
   -- Twitch invite button (centered in tab)
   local twitchButton =
@@ -120,5 +120,5 @@ function InitializeCreditsTab()
   -- Center the button horizontally in the tab
   twitchButton:ClearAllPoints()
   twitchButton:SetPoint('TOP', discordButton, 'BOTTOM', 0, 0)
-  twitchButton:SetPoint('CENTER', tabContents[7], 'CENTER', 0, 0)
+  twitchButton:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)
 end

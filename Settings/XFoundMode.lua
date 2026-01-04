@@ -12,39 +12,6 @@ local function IsGuildFoundUIEnabled()
   return _G.UHC_ENABLE_GUILD_FOUND_UI == true or IsUltraGuildMember()
 end
 
--- Simple placeholder page used when a section is hidden for phase 2
-local function CreatePhase2PlaceholderPage(parentFrame)
-  local page = CreateFrame('Frame', nil, parentFrame)
-  page:SetAllPoints(parentFrame)
-  page:Hide()
-  local text = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
-  text:SetPoint('CENTER')
-  text:SetText('Coming soon')
-  text:SetTextColor(1, 0.95, 0.5)
-  local betaText = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  betaText:SetPoint('TOP', text, 'BOTTOM', 0, -12)
-  betaText:SetText(
-    'Guild Found is being BETA tested on the EU server Soulseeker \nThe guild is on Horde and is called <U L T R A>.'
-  )
-  local betaText2 = page:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-  betaText2:SetPoint('TOP', betaText, 'BOTTOM', 0, -12)
-  betaText2:SetText('Contact Bonnies Dad if you would like to join the BETA test.')
-  if UHC_CreateDiscordInviteButton then
-    UHC_CreateDiscordInviteButton(
-      page,
-      'TOP',
-      betaText2,
-      'BOTTOM',
-      0,
-      -12,
-      220,
-      24,
-      'Discord Invite Link'
-    )
-  end
-  return page
-end
-
 -- Determine if the player should be treated as level 1 for X Found interactions
 function XFoundMode_ShouldTreatPlayerAsLevelOne()
   local playerLevel = UnitLevel('player') or 1
@@ -153,69 +120,6 @@ function LeaveXFoundModes(options)
   end
 
   return true
-end
-
--- Initialize X Found Mode when the tab is first shown
-function InitializeXFoundModeTab()
-  -- Check if tabContents[5] exists
-  if not tabContents or not tabContents[4] then return end
-
-  -- Ensure parent frame is set
-  if not XFoundModeManager.parentFrame then
-    XFoundModeManager.parentFrame = tabContents[4]
-  end
-
-  -- If the X Found UI is disabled, show only the placeholder and return
-  if not IsGuildFoundUIEnabled() then
-    if not XFoundModeManager.pages.phase2 then
-      XFoundModeManager.pages.phase2 = CreatePhase2PlaceholderPage(XFoundModeManager.parentFrame)
-    end
-    XFoundModeManager:HideAllPages()
-    if XFoundModeManager.pages.phase2 then
-      XFoundModeManager.pages.phase2:Show()
-      XFoundModeManager.currentPage = 'phase2'
-    end
-    return
-  end
-
-  -- Lazily create pages once
-  if XFoundModePages then
-    if not XFoundModeManager.pages.intro then
-      XFoundModeManager.pages.intro = XFoundModePages.CreateIntroPage(XFoundModeManager.parentFrame)
-    end
-    if not XFoundModeManager.pages.status then
-      XFoundModeManager.pages.status =
-        XFoundModePages.CreateStatusPage(XFoundModeManager.parentFrame)
-    end
-    if not XFoundModeManager.pages.guildConfirm then
-      XFoundModeManager.pages.guildConfirm =
-        XFoundModePages.CreateGuildConfirmPage(XFoundModeManager.parentFrame)
-    end
-    if not XFoundModeManager.pages.groupConfirm then
-      XFoundModeManager.pages.groupConfirm =
-        XFoundModePages.CreateGroupConfirmPage(XFoundModeManager.parentFrame)
-    end
-  end
-
-  -- Always hide all pages first to prevent stacking
-  XFoundModeManager:HideAllPages()
-
-  -- Show appropriate page based on player level and mode selection status
-  local treatAsLevelOne =
-    XFoundMode_ShouldTreatPlayerAsLevelOne and XFoundMode_ShouldTreatPlayerAsLevelOne()
-  local hasSelectedMode =
-    (GLOBAL_SETTINGS and GLOBAL_SETTINGS.guildSelfFound) or (GLOBAL_SETTINGS and GLOBAL_SETTINGS.groupSelfFound)
-
-  -- Ultra guild members should always see the full Guild Found display
-  if IsUltraGuildMember and IsUltraGuildMember() then
-    XFoundModeManager:ShowStatusPage()
-  elseif treatAsLevelOne and not hasSelectedMode then
-    -- Level 1 and no mode selected - show intro page
-    XFoundModeManager:ShowIntroPage()
-  else
-    -- Either not level 1 OR level 1 with mode already selected - show status page
-    XFoundModeManager:ShowStatusPage()
-  end
 end
 
 -- Show Intro Page (for level 1 players)
