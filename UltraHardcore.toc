@@ -1,6 +1,6 @@
 ## Interface: 11508
 ## Title: UltraHardcore
-## Version: 1.4.1
+## Version: 1.4.0
 ## Author: BonniesDad
 ## Notes: Making the game more immersive in various ways.
 ## SavedVariables: UltraHardcoreDB
