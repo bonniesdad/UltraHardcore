@@ -337,7 +337,7 @@ function updateRadioButtons()
 end
 
 -- Initialize Settings Options Tab when called
-function InitializeSettingsOptionsTab()
+function InitializeSettingsOptionsTab(tabContents)
   -- Check if tabContents[2] exists
   if not tabContents or not tabContents[2] then return end
 

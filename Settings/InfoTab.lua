@@ -1,6 +1,6 @@
 -- Info Tab Content
 -- Initialize Info Tab when called
-function InitializeInfoTab()
+function InitializeInfoTab(tabContents)
   if not tabContents or not tabContents[3] then return end
 
   -- Check if already initialized to prevent duplicates

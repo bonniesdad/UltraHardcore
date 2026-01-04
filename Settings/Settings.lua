@@ -138,24 +138,18 @@ dividerFrame:SetSize(670, 24)
 dividerFrame:SetPoint('BOTTOM', titleBar, 'BOTTOM', 0, -10)
 dividerFrame:SetFrameStrata('DIALOG')
 dividerFrame:SetFrameLevel(20)
+
 local dividerTexture = dividerFrame:CreateTexture(nil, 'ARTWORK')
 dividerTexture:SetAllPoints()
 dividerTexture:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\divider.png')
 dividerTexture:SetTexCoord(0, 1, 0, 1)
-local function initializeTabs()
-  if TabManager then
-    TabManager.initializeTabs(settingsFrame)
-  end
-end
+
 local closeButton = CreateFrame('Button', nil, titleBar, 'UIPanelCloseButton')
 closeButton:SetPoint('RIGHT', titleBar, 'RIGHT', -15, 4)
 closeButton:SetSize(12, 12)
 closeButton:SetScript('OnClick', function()
-  if TabManager then
-    TabManager.resetTabState()
-  end
-  if _G.tbcContentFrame then
-    _G.tbcContentFrame:Hide()
+  if TabManagerResetTabState then
+    TabManagerResetTabState()
   end
   initializeTempSettings()
   -- Close confirmation dialog if open
@@ -178,11 +172,8 @@ end
 
 function ToggleSettings()
   if settingsFrame:IsShown() then
-    if TabManager then
-      TabManager.resetTabState()
-    end
-    if _G.tbcContentFrame then
-      _G.tbcContentFrame:Hide()
+    if TabManagerResetTabState then
+      TabManagerResetTabState()
     end
     -- Close confirmation dialog if open
     if _G.HideConfirmationDialog then
@@ -191,7 +182,7 @@ function ToggleSettings()
     settingsFrame:Hide()
   else
     updateSettingsFrameBackdrop()
-    initializeTabs()
+    TabManagerInitializeTabs(settingsFrame)
 
     initializeTempSettings()
 
@@ -200,9 +191,9 @@ function ToggleSettings()
       _G.selectedPreset = nil
     end
 
-    if TabManager then
-      TabManager.hideAllTabs()
-      TabManager.setDefaultTab()
+    if TabManagerHideAllTabs and TabManagerSetDefaultTab then
+      TabManagerHideAllTabs()
+      TabManagerSetDefaultTab()
     end
 
     settingsFrame:Show()
@@ -227,7 +218,7 @@ SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
 -- Function to open settings and switch to a specific tab
 function OpenSettingsToTab(tabIndex)
   updateSettingsFrameBackdrop()
-  initializeTabs()
+  TabManagerInitializeTabs(settingsFrame)
 
   initializeTempSettings()
 
@@ -236,12 +227,9 @@ function OpenSettingsToTab(tabIndex)
     _G.selectedPreset = nil
   end
 
-  if _G.tbcContentFrame then
-    _G.tbcContentFrame:Hide()
-  end
-  if TabManager then
-    TabManager.hideAllTabs()
-    TabManager.switchToTab(tabIndex)
+  if TabManagerHideAllTabs and TabManagerSwitchToTab then
+    TabManagerHideAllTabs()
+    TabManagerSwitchToTab(tabIndex)
   end
 
   settingsFrame:Show()

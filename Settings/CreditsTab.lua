@@ -1,6 +1,6 @@
 -- Credits Tab Content
 -- Initialize Credits Tab when called
-function InitializeCreditsTab()
+function InitializeCreditsTab(tabContents)
   -- Check if tabContents[5] exists
   if not tabContents or not tabContents[5] then return end
 
