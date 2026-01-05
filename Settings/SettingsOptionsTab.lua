@@ -109,6 +109,20 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showOnScreenStatistics',
   tooltip = 'Show important ULTRA statistics on the screen at all times',
 }, {
+  name = 'Show Statistics Tracking',
+  dbSettingsValueName = 'showStatisticsTracking',
+  tooltip = 'Show statistic update notifications (proof of concept: Enemies Slain)',
+}, {
+  name = 'Minimal Statistics Tracking',
+  dbSettingsValueName = 'minimalStatisticsTracking',
+  tooltip = 'Show “+X [icon]” only (no stat name text)',
+  dependsOn = 'showStatisticsTracking',
+}, {
+  name = 'Show Only Tier Achievements',
+  dbSettingsValueName = 'statisticsTrackingTierOnly',
+  tooltip = 'Only show a notification when you advance to a new tier',
+  dependsOn = 'showStatisticsTracking',
+}, {
   name = 'Use Custom Combo Frame',
   dbSettingsValueName = 'useCustomComboFrame',
   tooltip = 'Use a custom combo frame instead of the default Blizzard combo frame',

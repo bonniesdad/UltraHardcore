@@ -327,8 +327,21 @@ end
 -- Update a specific stat for the current character
 function CharacterStats:UpdateStat(statName, value)
   local stats = self:GetCurrentCharacterStats()
+  local oldValue = stats[statName]
   stats[statName] = value
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+
+  -- Statistics tracking toast notifications
+  if _G.StatisticsTrackingToast and _G.StatisticsTrackingToast.NotifyStatDelta then
+    local nextVal = tonumber(value)
+    if nextVal ~= nil then
+      local prev = tonumber(oldValue) or 0
+      local delta = nextVal - prev
+      if delta ~= 0 then
+        _G.StatisticsTrackingToast:NotifyStatDelta(statName, delta, nextVal, prev)
+      end
+    end
+  end
 end
 
 -- Get a specific stat for the current character
