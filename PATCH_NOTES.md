@@ -1,6 +1,6 @@
 # Patch Notes
 
-## Version 1.4.0 - 2025-12-16
+## Version 1.4.0 - 2026-01-05
 
 ### New Features
 
@@ -20,7 +20,7 @@
 - Better visualisation of lowest health and level stats.
 - Reverse dependencies for options menu.
 - Remove unused tabs in settings menu.
-- Fixed display of checkboxes in statistics tab.
+- Fixed checkboxes borders in statistics tab not showing correctly.
 
 ## Version 1.3.0 - 2025-12-05
 

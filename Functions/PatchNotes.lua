@@ -1,7 +1,7 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
   version = '1.4.0',
-  date = '2025-12-16',
+  date = '2026-01-05',
   notes = {
     'NEW FEATURES:',
     '• Statistics tier rewards.',
@@ -20,7 +20,7 @@ PATCH_NOTES = { {
     '• Better visualisation of lowest health and level stats.',
     '• Reverse dependancies for options menu.',
     '• Remove unused tabs in settings menu.',
-    '• Fixed display of checkboxes in statistics tab.',
+    '• Fixed checkboxes borders in statistics tab not showing correctly.',
   },
 }, {
   version = '1.3.0',
