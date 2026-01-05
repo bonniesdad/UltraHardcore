@@ -50,6 +50,9 @@ function LoadDBData()
     showTargetRaidIcon = true,
     -- Misc Settings
     showOnScreenStatistics = true,
+    -- Statistics Tracking (toast notifications)
+    showStatisticsTracking = true,
+    statisticsTrackingTierOnly = false,
     showVitalsOverlay = true,
     useCustomComboFrame = true,
     minimapClockPosition = {},

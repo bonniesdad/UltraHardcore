@@ -78,6 +78,9 @@ local PRESET_SECTIONS = { {
     'showSoulshardIndicator',
   },
 }, {
+  title = 'Statistics Tracking:',
+  settings = { 'showStatisticsTracking', 'statisticsTrackingTierOnly' },
+}, {
   title = 'XP Bar:',
   settings = { 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'xpBarHeight' },
 } }
