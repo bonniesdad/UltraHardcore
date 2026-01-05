@@ -119,6 +119,7 @@ function LoadDBData()
     showMainStatisticsPanelDuelsLost = false,
     showMainStatisticsPanelDuelsWinPercent = false,
     showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelPlayer360s = false,
   }
 
   -- Get current character's GUID for per-character settings

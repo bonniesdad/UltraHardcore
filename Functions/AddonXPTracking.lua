@@ -142,7 +142,13 @@ end
 
 function AddonXPTracking:ShouldCheckStat(statName)
   local result =
-    statName ~= 'xpTotal' and statName ~= 'xpGWA' and statName ~= 'xpGWOA' and statName ~= 'playerJumps' and statName ~= 'lastSessionXP' and string.find(
+    statName ~= 'xpTotal'
+    and statName ~= 'xpGWA'
+    and statName ~= 'xpGWOA'
+    and statName ~= 'playerJumps'
+    and statName ~= 'player360s'
+    and statName ~= 'lastSessionXP'
+    and string.find(
       statName,
       'lowestHealth'
     ) == nil

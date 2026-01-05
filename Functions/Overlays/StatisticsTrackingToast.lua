@@ -18,7 +18,9 @@ local TOAST_TEXT_PADDING_LEFT = 10
 local TOAST_TEXT_PADDING_RIGHT = 10
 local TOAST_MIN_WIDTH = 10
 local TOAST_MAX_WIDTH = 460
-local TOAST_PUSH_REDUCTION_PX = 20 -- reduce how far existing toasts get pushed down when a new one arrives
+-- NOTE: This must NOT be > 0, otherwise multiple toasts created in the same moment can overlap.
+-- (Most toasts are `TOAST_MINIMAL_HEIGHT`, and reducing the push distance causes collisions.)
+local TOAST_PUSH_REDUCTION_PX = 1
 
 local STAT_ICON_SIZE = 14
 
@@ -470,8 +472,10 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
       local pushAmount =
         (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
-      if pushAmount < 0 then
-        pushAmount = 0
+      -- Prevent overlap when multiple toasts are inserted simultaneously.
+      local minPush = (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
+      if pushAmount < minPush then
+        pushAmount = minPush
       end
       pushExistingDownFromIndex(pushAmount, 1)
       insertToastAt(achievementToast, 1)
@@ -504,8 +508,10 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   do
     local pushAmount = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
-    if pushAmount < 0 then
-      pushAmount = 0
+    -- Prevent overlap when multiple toasts are inserted simultaneously.
+    local minPush = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
+    if pushAmount < minPush then
+      pushAmount = minPush
     end
     pushExistingDownFromIndex(pushAmount, 1)
   end

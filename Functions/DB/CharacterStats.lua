@@ -49,6 +49,7 @@ local CharacterStats = {
     duelsLost = 0,
     duelsWinPercent = 0,
     playerJumps = 0,
+    player360s = 0,
     mapKeyPressesWhileMapBlocked = 0,
     -- Combat statistics
     dungeonBossesKilled = 0,
@@ -224,6 +225,12 @@ end
 function CharacterStats:ResetPlayerJumps()
   local stats = self:GetCurrentCharacterStats()
   stats.playerJumps = self.defaults.playerJumps
+  SaveDBData('characterStats', UltraHardcoreDB.characterStats)
+end
+
+function CharacterStats:ResetPlayer360s()
+  local stats = self:GetCurrentCharacterStats()
+  stats.player360s = self.defaults.player360s
   SaveDBData('characterStats', UltraHardcoreDB.characterStats)
 end
 
@@ -748,6 +755,11 @@ end
 SLASH_RESETWORLDBOSSES1 = '/resetworldbosses'
 SlashCmdList['RESETWORLDBOSSES'] = function()
   CharacterStats:ResetWorldBossesSlain()
+end
+
+SLASH_RESETPLAYER360S1 = '/resetplayer360s'
+SlashCmdList['RESETPLAYER360S'] = function()
+  CharacterStats:ResetPlayer360s()
 end
 
 -- Register slash command to reset stats
