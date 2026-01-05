@@ -33,6 +33,7 @@ local STATISTIC_TOOLTIPS = {
   duelsWinPercent = 'Percentage of duels you have won',
   -- Misc section
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
+  player360s = 'Number of times you did a full 360 spin during a jump',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
   -- Network section
   lagHome = 'Latency to your home server',
@@ -257,6 +258,11 @@ local STAT_BAR_CONFIG = {
     multiplier = 3,
     valueOnly = true,
   },
+  player360s = {
+    base = 1000,
+    multiplier = 3,
+    valueOnly = true,
+  },
   mapKeyPressesWhileMapBlocked = {
     base = 50,
     multiplier = 2,
@@ -470,7 +476,12 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
 
   statBars[statKey] = bar
   if bar.tierIcon and statKey then
-    bar.tierIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. statKey .. '.png')
+    local iconKey = statKey
+    -- Reuse an existing icon if we don't ship a dedicated one.
+    if iconKey == 'player360s' then
+      iconKey = 'playerJumps'
+    end
+    bar.tierIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. iconKey .. '.png')
   end
   PositionStatBar(bar, parent, yOffset, layoutOptions)
   return bar
@@ -1601,6 +1612,12 @@ function InitializeStatisticsTab(tabContents)
     key = 'playerJumps',
     label = 'Jumps Performed:',
     tooltipKey = 'playerJumps',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'player360s',
+    label = '360s During Jumps:',
+    tooltipKey = 'player360s',
     defaultValue = 0,
     width = 1,
   }, {

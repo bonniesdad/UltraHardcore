@@ -316,6 +316,17 @@ playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
 playerJumpsValue:SetText(formatNumberWithCommas(0))
 playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
 
+-- Player 360s (full spins during jumps)
+local player360sLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+player360sLabel:SetText('Jump 360s:')
+player360sLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
+local player360sValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+player360sValue:SetText(formatNumberWithCommas(0))
+player360sValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+
 -- Blocked Map Opens (Route Planner) statistic
 local blockedMapOpensLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 blockedMapOpensLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
@@ -459,6 +470,10 @@ local statsElements = { {
   label = playerJumpsLabel,
   value = playerJumpsValue,
   setting = 'showMainStatisticsPanelPlayerJumps',
+}, {
+  label = player360sLabel,
+  value = player360sValue,
+  setting = 'showMainStatisticsPanelPlayer360s',
 }, {
   label = blockedMapOpensLabel,
   value = blockedMapOpensValue,
@@ -633,6 +648,10 @@ function UpdateStatistics()
   -- Update player jumps value
   local playerJumps = CharacterStats:GetStat('playerJumps') or 0
   playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
+
+  -- Update player 360s value
+  local player360s = CharacterStats:GetStat('player360s') or 0
+  player360sValue:SetText(formatNumberWithCommas(player360s))
 
   -- Update Blocked Map Opens value
   local blockedMapOpens = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
