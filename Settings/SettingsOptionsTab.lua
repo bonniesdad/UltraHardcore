@@ -113,6 +113,11 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showStatisticsTracking',
   tooltip = 'Show statistic update notifications (proof of concept: Enemies Slain)',
 }, {
+  name = 'Minimal Statistics Tracking',
+  dbSettingsValueName = 'minimalStatisticsTracking',
+  tooltip = 'Show “+X [icon]” only (no stat name text)',
+  dependsOn = 'showStatisticsTracking',
+}, {
   name = 'Show Only Tier Achievements',
   dbSettingsValueName = 'statisticsTrackingTierOnly',
   tooltip = 'Only show a notification when you advance to a new tier',

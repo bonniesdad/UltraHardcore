@@ -79,7 +79,7 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Statistics Tracking:',
-  settings = { 'showStatisticsTracking', 'statisticsTrackingTierOnly' },
+  settings = { 'showStatisticsTracking', 'minimalStatisticsTracking', 'statisticsTrackingTierOnly' },
 }, {
   title = 'XP Bar:',
   settings = { 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'xpBarHeight' },
