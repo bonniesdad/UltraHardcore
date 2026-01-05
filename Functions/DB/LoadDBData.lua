@@ -59,6 +59,8 @@ function LoadDBData()
     minimapMailScale = 1.0,
     announceLevelUpToGuild = true,
     autoJoinUHCChannel = true,
+    -- Hide JOIN/LEAVE spam for the 'uhc' channel in chat (client-side filter)
+    suppressUHCChannelJoinLeaveNotices = true,
     hideUIErrors = false,
     showClockEvenWhenMapHidden = false,
     showMailEvenWhenMapHidden = false,
