@@ -7,13 +7,16 @@
 - Statistics tier rewards.
   - Certain statistics now have a tier system.
 - Statistics notification toast on stat update.
+  - Minimal toast display option on by default
+  - Full toast display option
+  - Toggle on/off specific stats in the statistics panel by clicking the tier button
 - Session lowest health does not reset as often
   - Check if logged out for more than 30 minutes before resetting session lowest health.
 - PvP Flag icon on target frame
 
 ### UI Improvements
 
-- Improved display for first time users.
+- Improved menu display for first time users.
 - Better visualisation of lowest health and level stats.
 - Reverse dependencies for options menu.
 - Remove unused tabs in settings menu.
