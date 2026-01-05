@@ -7,7 +7,7 @@ local TOAST_WIDTH = 260
 local TOAST_HEIGHT = 42
 local TOAST_MINIMAL_HEIGHT = 24
 local TOAST_GAP = 4
-local TOAST_LIFETIME_SECONDS = 2
+local TOAST_LIFETIME_SECONDS = 3
 local TOAST_MOVE_SPEED = 18 -- higher = snappier smoothing toward the moving target
 local TOAST_DRIFT_PX_PER_SEC = 22 -- continuous downward drift while visible
 local TOAST_ANCHOR_X = -400 -- 200px in from the right edge
@@ -34,7 +34,9 @@ local function GetStatIconMarkup(statKey)
 end
 
 local function GetFontStringPixelWidth(fs)
-  if not fs then return 0 end
+  if not fs then
+    return 0
+  end
   if fs.GetUnboundedStringWidth then
     return fs:GetUnboundedStringWidth() or 0
   end
@@ -45,8 +47,12 @@ local function GetFontStringPixelWidth(fs)
 end
 
 local function Clamp(n, minV, maxV)
-  if n < minV then return minV end
-  if n > maxV then return maxV end
+  if n < minV then
+    return minV
+  end
+  if n > maxV then
+    return maxV
+  end
   return n
 end
 
@@ -98,8 +104,12 @@ local function GetTierName(tier)
 end
 
 local function ClampInt(n, minV, maxV)
-  if n < minV then return minV end
-  if n > maxV then return maxV end
+  if n < minV then
+    return minV
+  end
+  if n > maxV then
+    return maxV
+  end
   return n
 end
 
@@ -147,21 +157,7 @@ local function GetTierDisplayName(tier)
   return tostring(name)
 end
 
-local EXCLUDED_STATS = {
-  lowestHealth = true,
-  lowestHealthThisLevel = true,
-  lowestHealthThisSession = true,
-  highestHealCritValue = true,
-  highestCritValue = true,
-  partyMemberDeaths = true,
-  duelsTotal = true,
-  duelsWon = true,
-  duelsLost = true,
-  duelsWinPercent = true,
-  mapKeyPressesWhileMapBlocked = true,
-  lagHome = true,
-  lagWorld = true,
-}
+local EXCLUDED_STATS = { duelsWinPercent = true }
 
 local function formatNumber(n)
   if _G.formatNumberWithCommas then
@@ -210,11 +206,18 @@ local function EnsureFrames()
   if StatisticsTrackingToast.frame then
     -- Allow live repositioning if this file is reloaded / settings change
     StatisticsTrackingToast.frame:ClearAllPoints()
-    StatisticsTrackingToast.frame:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+    StatisticsTrackingToast.frame:SetPoint(
+      'TOPRIGHT',
+      UIParent,
+      'TOPRIGHT',
+      TOAST_ANCHOR_X,
+      TOAST_ANCHOR_Y
+    )
     return
   end
 
-  local f = CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
+  local f =
+    CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
   f:SetSize(TOAST_WIDTH, 10)
   f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
   f:SetFrameStrata('DIALOG')
@@ -313,7 +316,12 @@ local function CreateToast()
     tile = true,
     tileSize = 8,
     edgeSize = 10,
-    insets = { left = 3, right = 3, top = 3, bottom = 3 },
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
   })
   toast:SetBackdropColor(0.05, 0.05, 0.08, 0.65)
   toast:SetBackdropBorderColor(0.35, 0.35, 0.45, 0.9)
@@ -358,7 +366,9 @@ end
 function StatisticsTrackingToast:ClearAll()
   if not self.toasts then return end
   for _, toast in ipairs(self.toasts) do
-    if toast then toast:Hide() end
+    if toast then
+      toast:Hide()
+    end
   end
   ReflowToasts()
 end
@@ -377,8 +387,15 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     return -- not tracked in StatisticsTab config
   end
 
-  if EXCLUDED_STATS[statKey] then
-    return
+  if EXCLUDED_STATS[statKey] then return end
+
+  -- Check if toast notifications are enabled for this specific stat
+  if _G.GLOBAL_SETTINGS.statisticsToastEnabled then
+    local toastEnabled = _G.GLOBAL_SETTINGS.statisticsToastEnabled[statKey]
+    -- Default to true if not set (all stats enabled by default)
+    if toastEnabled == false then
+      return -- Toast disabled for this stat
+    end
   end
 
   local displayName = HumanizeStatKey(statKey)
@@ -387,7 +404,7 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   local tierOnly = _G.GLOBAL_SETTINGS.statisticsTrackingTierOnly or false
 
   local isPercent = (cfg.type == 'percent')
-  local hasTier = (not isPercent) and (not cfg.noTier)
+  local hasTier = not isPercent and not cfg.noTier
   local base = cfg.base or (defCfg and defCfg.base) or nil
   local multiplier = cfg.multiplier or (defCfg and defCfg.multiplier) or nil
 
@@ -422,7 +439,9 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     table.insert(self.toasts, index or 1, newToast)
     if #self.toasts > 8 then
       local old = table.remove(self.toasts)
-      if old then old:Hide() end
+      if old then
+        old:Hide()
+      end
     end
   end
 
@@ -449,9 +468,75 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     end
   end
 
+  -- Check for custom messages that should show even in tierOnly mode
+  local shouldShowCustomMessage = false
+  local customMessage = nil
+  if statKey == 'highestCritValue' then
+    local newVal = tonumber(newValue) or 0
+    local oldVal = tonumber(oldValue) or 0
+    if newVal > oldVal then
+      customMessage = string.format('New Highest crit value: %s', formatNumber(newVal))
+      shouldShowCustomMessage = true
+    end
+  elseif statKey == 'highestHealCritValue' then
+    local newVal = tonumber(newValue) or 0
+    local oldVal = tonumber(oldValue) or 0
+    if newVal > oldVal then
+      customMessage = string.format('New Highest heal crit value: %s', formatNumber(newVal))
+      shouldShowCustomMessage = true
+    end
+  elseif statKey == 'lowestHealth' then
+    local newVal = tonumber(newValue) or 100
+    local oldVal = tonumber(oldValue) or 100
+    -- Show when health gets lower (new value is less than old value)
+    if newVal < oldVal then
+      customMessage = string.format('New lowest health: %.1f%%', newVal)
+      shouldShowCustomMessage = true
+    end
+  elseif statKey == 'lowestHealthThisLevel' then
+    local newVal = tonumber(newValue) or 100
+    local oldVal = tonumber(oldValue) or 100
+    -- Show when health gets lower (new value is less than old value)
+    if newVal < oldVal then
+      customMessage = string.format('New lowest health (this level): %.1f%%', newVal)
+      shouldShowCustomMessage = true
+    end
+  elseif statKey == 'lowestHealthThisSession' then
+    local newVal = tonumber(newValue) or 100
+    local oldVal = tonumber(oldValue) or 100
+    -- Show when health gets lower (new value is less than old value)
+    if newVal < oldVal then
+      customMessage = string.format('New lowest health (this session): %.1f%%', newVal)
+      shouldShowCustomMessage = true
+    end
+  end
+
   -- If user wants ONLY tier achievements, skip the regular "+X stat" toast.
+  -- But still show custom messages for highest crit values and lowest health stats.
   if tierOnly then
-    if achievedTier then
+    if shouldShowCustomMessage then
+      -- Show custom message even in tierOnly mode
+      toast = CreateToast()
+      toast.text:SetText(customMessage)
+      toast:SetHeight(TOAST_MINIMAL_HEIGHT)
+      toast.bar:Hide()
+      toast.barBg:Hide()
+      toast.barText:Hide()
+      ResizeToastToText(toast)
+
+      local pushAmount =
+        (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
+      local minPush = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
+      if pushAmount < minPush then
+        pushAmount = minPush
+      end
+      pushExistingDownFromIndex(pushAmount, 1)
+      insertToastAt(toast, 1)
+      toast:Show()
+      ReflowToasts()
+      scheduleHide(toast)
+      return
+    elseif achievedTier then
       achievementToast = CreateToast()
       achievementToast.text:SetText(
         string.format(
@@ -491,12 +576,80 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   local sign = (delta or 0) >= 0 and '+' or ''
   local iconMarkup = GetStatIconMarkup(statKey)
-  if minimal then
+
+  -- Custom messages for specific stats (if not already set above)
+  if not customMessage then
+    if statKey == 'highestCritValue' then
+      -- Only show for increases (new highest)
+      local newVal = tonumber(newValue) or 0
+      local oldVal = tonumber(oldValue) or 0
+      if newVal > oldVal then
+        customMessage = string.format('New Highest crit value: %s', formatNumber(newVal))
+      else
+        -- Don't show toast if value didn't increase
+        toast:Hide()
+        return
+      end
+    elseif statKey == 'highestHealCritValue' then
+      -- Only show for increases (new highest)
+      local newVal = tonumber(newValue) or 0
+      local oldVal = tonumber(oldValue) or 0
+      if newVal > oldVal then
+        customMessage = string.format('New Highest heal crit value: %s', formatNumber(newVal))
+      else
+        -- Don't show toast if value didn't increase
+        toast:Hide()
+        return
+      end
+    elseif statKey == 'lowestHealth' then
+      -- Only show when health gets lower (new value is less than old value)
+      local newVal = tonumber(newValue) or 100
+      local oldVal = tonumber(oldValue) or 100
+      if newVal < oldVal then
+        customMessage = string.format('New lowest health: %.1f%%', newVal)
+      else
+        -- Don't show toast if value didn't decrease
+        toast:Hide()
+        return
+      end
+    elseif statKey == 'lowestHealthThisLevel' then
+      -- Only show when health gets lower (new value is less than old value)
+      local newVal = tonumber(newValue) or 100
+      local oldVal = tonumber(oldValue) or 100
+      if newVal < oldVal then
+        customMessage = string.format('New lowest health (this level): %.1f%%', newVal)
+      else
+        -- Don't show toast if value didn't decrease
+        toast:Hide()
+        return
+      end
+    elseif statKey == 'lowestHealthThisSession' then
+      -- Only show when health gets lower (new value is less than old value)
+      local newVal = tonumber(newValue) or 100
+      local oldVal = tonumber(oldValue) or 100
+      if newVal < oldVal then
+        customMessage = string.format('New lowest health (this session): %.1f%%', newVal)
+      else
+        -- Don't show toast if value didn't decrease
+        toast:Hide()
+        return
+      end
+    elseif cfg.noTier then
+      -- For other noTier stats, show "X updated"
+      customMessage = string.format('%s updated', displayName)
+    end
+  end
+
+  if customMessage then
+    toast.text:SetText(customMessage)
+  elseif minimal then
     -- Minimal: "+X [icon]" only
     toast.text:SetText(string.format('%s%s %s', sign, tostring(delta or 0), iconMarkup))
   else
     -- Non-minimal: "+X [icon] Stat Name"
-    toast.text:SetText(string.format('%s%s %s %s', sign, tostring(delta or 0), iconMarkup, displayName))
+    toast.text:SetText(
+      string.format('%s%s %s %s', sign, tostring(delta or 0), iconMarkup, displayName)
+    )
   end
 
   -- Text-only stat update toast (no progress bar). Minimal mode hides the stat name text.
@@ -507,7 +660,8 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   ResizeToastToText(toast)
 
   do
-    local pushAmount = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
+    local pushAmount =
+      (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
     -- Prevent overlap when multiple toasts are inserted simultaneously.
     local minPush = (toast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
     if pushAmount < minPush then
@@ -578,5 +732,3 @@ do
     end
   end)
 end
-
-

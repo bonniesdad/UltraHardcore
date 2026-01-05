@@ -1,5 +1,24 @@
 -- Statistics Tab Content - Full size scrollable frame
 
+-- Helper function to check if player has Engineering profession
+local function HasEngineering()
+  local prof1, prof2 = GetProfessions()
+  if not prof1 and not prof2 then
+    return false
+  end
+
+  local professions = { prof1, prof2 }
+  for _, profIndex in ipairs(professions) do
+    if profIndex then
+      local name, _, _, _, _, _, skillLine = GetProfessionInfo(profIndex)
+      if skillLine == 202 then -- Engineering skill line ID
+        return true
+      end
+    end
+  end
+  return false
+end
+
 -- Centralized tooltip map for all statistics
 local STATISTIC_TOOLTIPS = {
   -- Character Info section
@@ -360,30 +379,82 @@ local function CreateStatBar(parent)
   tierText.tierCurrent = 0
   tierText.tierName = ''
 
-  -- Add tooltip to tier text
+  -- Add tooltip and click handler to tier text
   tierText:SetScript('OnEnter', function(self)
+    local tooltipLines = {}
+
+    -- Add tier info if available
     local currentValue = (self.tierCurrent ~= nil) and self.tierCurrent or self.tierMin
     if currentValue ~= nil and self.tierMax ~= nil and self.tierName ~= '' then
-      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-      GameTooltip:SetText(
+      table.insert(
+        tooltipLines,
         string.format(
           '%s tier (%s/%s)',
           self.tierName,
           formatNumberWithCommas(currentValue),
           formatNumberWithCommas(self.tierMax)
-        ),
-        nil,
-        nil,
-        nil,
-        nil,
-        true
+        )
       )
+    end
+
+    -- Add toast toggle info if statKey is available
+    if self.statKey then
+      local toastEnabled =
+        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+      table.insert(tooltipLines, '')
+      table.insert(
+        tooltipLines,
+        toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications'
+      )
+    end
+
+    if #tooltipLines > 0 then
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      for i, line in ipairs(tooltipLines) do
+        if i == 1 then
+          GameTooltip:SetText(line, nil, nil, nil, nil, true)
+        else
+          GameTooltip:AddLine(line, nil, nil, nil, true)
+        end
+      end
       GameTooltip:Show()
     end
   end)
 
   tierText:SetScript('OnLeave', function(self)
     GameTooltip:Hide()
+  end)
+
+  -- Make tier text clickable to toggle toast notifications
+  tierText:EnableMouse(true)
+  tierText:SetScript('OnMouseDown', function(self, button)
+    if button == 'LeftButton' and self.statKey then
+      if not GLOBAL_SETTINGS.statisticsToastEnabled then
+        GLOBAL_SETTINGS.statisticsToastEnabled = {}
+      end
+      local current = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
+      GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
+
+      -- Update visual state immediately
+      local enabled = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+      local r, g, b = self:GetTextColor()
+      if enabled then
+        -- Restore original tier color (will be set by UpdateStatBar)
+        -- For now, just ensure it's not grey
+        if r == 0.5 and g == 0.5 and b == 0.5 then
+          self:SetTextColor(1, 1, 1, 1)
+        end
+      else
+        -- Grey out when disabled
+        self:SetTextColor(0.5, 0.5, 0.5, 1)
+      end
+
+      -- Refresh the stat bar to update colors properly
+      if UpdateStatBar and self.statKey then
+        local value = CharacterStats:GetStat(self.statKey) or 0
+        UpdateStatBar(self.statKey, value)
+      end
+    end
   end)
 
   return {
@@ -433,6 +504,17 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   bar.statKey = statKey
   bar.minText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
   bar.maxText = parent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+
+  -- Store statKey on tier text for toast toggle functionality
+  bar.tier.statKey = statKey
+
+  -- Initialize toast settings if needed (default: all enabled)
+  if not GLOBAL_SETTINGS.statisticsToastEnabled then
+    GLOBAL_SETTINGS.statisticsToastEnabled = {}
+  end
+  if GLOBAL_SETTINGS.statisticsToastEnabled[statKey] == nil then
+    GLOBAL_SETTINGS.statisticsToastEnabled[statKey] = true
+  end
 
   bar.tier:ClearAllPoints()
   bar.tier:SetPoint('TOPRIGHT', bar.frame, 'TOPRIGHT', 0, 9)
@@ -726,7 +808,14 @@ function UpdateStatBar(statKey, value)
         -- Store tier info for positioning after value text is set up
         if bar.tier then
           bar.tier:SetText(tierName)
-          bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+          -- Check if toast is disabled and grey out if so
+          local toastEnabled =
+            GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+          if toastEnabled then
+            bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+          else
+            bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
+          end
           bar.tier.tierMin = tierMin
           bar.tier.tierMax = tierMax
           bar.tier.tierCurrent = value or 0
@@ -852,7 +941,14 @@ function UpdateStatBar(statKey, value)
       local tierColorIndex = math.min(tier, #TIER_COLORS)
       tierColor = TIER_COLORS[tierColorIndex] or { 1, 1, 1, 1 }
     end
-    bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+    -- Check if toast is disabled and grey out if so
+    local toastEnabled =
+      GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+    if toastEnabled then
+      bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+    else
+      bar.tier:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when toast disabled
+    end
 
     -- Set value text color to match tier color (only if not using custom color)
     if not cfg.color then
@@ -1456,19 +1552,25 @@ function InitializeStatisticsTab(tabContents)
     tooltipKey = 'bandagesApplied',
     defaultValue = 0,
     width = 1,
-  }, {
-    key = 'targetDummiesUsed',
-    label = 'Target Dummies Used:',
-    tooltipKey = 'targetDummiesUsed',
-    defaultValue = 0,
-    width = 1,
-  }, {
-    key = 'grenadesUsed',
-    label = 'Grenades Used:',
-    tooltipKey = 'grenadesUsed',
-    defaultValue = 0,
-    width = 1,
   } }
+
+  -- Only add Engineering-related stats if player has Engineering profession
+  if HasEngineering() then
+    table.insert(survivalStats, {
+      key = 'targetDummiesUsed',
+      label = 'Target Dummies Used:',
+      tooltipKey = 'targetDummiesUsed',
+      defaultValue = 0,
+      width = 1,
+    })
+    table.insert(survivalStats, {
+      key = 'grenadesUsed',
+      label = 'Grenades Used:',
+      tooltipKey = 'grenadesUsed',
+      defaultValue = 0,
+      width = 1,
+    })
+  end
   CreateStatsGrid(survivalContent, survivalStats, { defaultWidth = 0.5 })
   -- Create modern WoW-style Social section (collapsible)
   local socialHeader = CreateFrame('Frame', nil, statsScrollChild, 'BackdropTemplate')
