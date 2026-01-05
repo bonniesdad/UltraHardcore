@@ -352,17 +352,19 @@ local function CreateStatBar(parent)
   -- Store tier range and name for tooltip directly on tierText
   tierText.tierMin = 0
   tierText.tierMax = 0
+  tierText.tierCurrent = 0
   tierText.tierName = ''
 
   -- Add tooltip to tier text
   tierText:SetScript('OnEnter', function(self)
-    if self.tierMin ~= nil and self.tierMax ~= nil and self.tierName ~= '' then
+    local currentValue = (self.tierCurrent ~= nil) and self.tierCurrent or self.tierMin
+    if currentValue ~= nil and self.tierMax ~= nil and self.tierName ~= '' then
       GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
       GameTooltip:SetText(
         string.format(
-          '%s tier is %s - %s',
+          '%s tier (%s/%s)',
           self.tierName,
-          formatNumberWithCommas(self.tierMin),
+          formatNumberWithCommas(currentValue),
           formatNumberWithCommas(self.tierMax)
         ),
         nil,
@@ -719,6 +721,7 @@ function UpdateStatBar(statKey, value)
           bar.tier:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
           bar.tier.tierMin = tierMin
           bar.tier.tierMax = tierMax
+          bar.tier.tierCurrent = value or 0
           bar.tier.tierName = tierName
         end
       else
@@ -852,6 +855,7 @@ function UpdateStatBar(statKey, value)
     if bar.tier then
       bar.tier.tierMin = tierMin
       bar.tier.tierMax = tierMax
+      bar.tier.tierCurrent = value or 0
       bar.tier.tierName = tierName
     end
 
