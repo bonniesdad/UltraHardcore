@@ -90,6 +90,9 @@ local TIER_NAMES = {
   [5] = 'Demon',
 }
 
+-- Expose tier names for other UI modules (e.g. StatisticsTrackingToast)
+_G.ULTRA_TIER_NAMES = TIER_NAMES
+
 -- Level bar color steps (blue -> red as you near cap)
 local LEVEL_COLOR_STEPS = {
   { 0.25, 0.65, 0.9, 0.95 }, -- blue
@@ -146,8 +149,8 @@ local STAT_BAR_CONFIG = {
     noTier = true,
   },
   closeEscapes = {
-    base = 10,
-    multiplier = 2,
+    base = 1,
+    multiplier = 3,
     valueOnly = true,
   },
   petDeaths = {
@@ -267,6 +270,10 @@ local STAT_BAR_CONFIG = {
     noTier = true,
   },
 }
+
+-- Expose to other modules (e.g. StatisticsTrackingToast) without having to duplicate tier config.
+-- NOTE: This file is loaded on addon load (per `.toc`), so this global is available during gameplay.
+_G.ULTRA_STAT_BAR_CONFIG = STAT_BAR_CONFIG
 
 local statBars = {}
 local UpdateStatBar
@@ -605,6 +612,24 @@ end
 
 local function CalculateTierProgress(value, base, multiplier)
   local currentValue = math.max(0, value or 0)
+  base = tonumber(base) or 0
+  multiplier = tonumber(multiplier) or 0
+
+  -- Robust handling:
+  -- - For multiplier <= 1 (or invalid), use linear tiers: tierMax = base * tier
+  --   This avoids infinite loops and still allows "tier ups" to exist.
+  if base <= 0 then
+    return 1, 0, 0, 0
+  end
+  if multiplier <= 1 then
+    local tier = math.floor(currentValue / base) + 1
+    local tierMin = (tier - 1) * base
+    local tierMax = tier * base
+    local range = tierMax - tierMin
+    local progress = range > 0 and (currentValue - tierMin) / range or 0
+    return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
+  end
+
   local tier = 1
   local tierMax = base
 
