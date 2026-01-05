@@ -72,13 +72,15 @@ local DEFAULT_BAR_ROW_HEIGHT =
   math.max(STAT_BAR_HEIGHT + 4, (LAYOUT.ROW_HEIGHT * 2) - BAR_ROW_HEIGHT_REDUCTION)
 local SECTION_CONTENT_BOTTOM_PADDING = 12 -- gap between last row and frame edge
 local SECTION_BOTTOM_PADDING = 30 -- add breathing room below each section
+local STAT_TIER_ICON_SIZE = 14
+local STAT_TIER_ICON_GAP = 12
 -- Fill colors progress from calm/neutral to impressive across tiers
 local TIER_COLORS = {
-  { 0.25, 0.65, 0.9, 0.95 }, -- tier 1: neutral blue
-  { 0.3, 0.75, 0.55, 0.95 }, -- tier 2: teal
-  { 0.9, 0.75, 0.25, 0.95 }, -- tier 3: gold
-  { 0.9, 0.45, 0.25, 0.95 }, -- tier 4: orange
-  { 0.9, 0.25, 0.25, 0.95 }, -- tier 5+: red
+  { 0.78, 0.49, 0.20, 0.95 }, -- tier 1: bronze
+  { 0.78, 0.78, 0.82, 0.95 }, -- tier 2: silver
+  { 0.95, 0.80, 0.22, 0.95 }, -- tier 3: gold
+  { 0.62, 0.36, 0.90, 0.95 }, -- tier 4: master (purple)
+  { 0.90, 0.25, 0.25, 0.95 }, -- tier 5+: demon (red)
 }
 
 -- Tier name mapping
@@ -89,6 +91,11 @@ local TIER_NAMES = {
   [4] = 'Master',
   [5] = 'Demon',
 }
+
+-- Expose tier names for other UI modules (e.g. StatisticsTrackingToast)
+_G.ULTRA_TIER_NAMES = TIER_NAMES
+-- Expose tier colors for other UI modules (e.g. StatisticsTrackingToast)
+_G.ULTRA_TIER_COLORS = TIER_COLORS
 
 -- Level bar color steps (blue -> red as you near cap)
 local LEVEL_COLOR_STEPS = {
@@ -146,8 +153,8 @@ local STAT_BAR_CONFIG = {
     noTier = true,
   },
   closeEscapes = {
-    base = 10,
-    multiplier = 2,
+    base = 1,
+    multiplier = 3,
     valueOnly = true,
   },
   petDeaths = {
@@ -268,6 +275,10 @@ local STAT_BAR_CONFIG = {
   },
 }
 
+-- Expose to other modules (e.g. StatisticsTrackingToast) without having to duplicate tier config.
+-- NOTE: This file is loaded on addon load (per `.toc`), so this global is available during gameplay.
+_G.ULTRA_STAT_BAR_CONFIG = STAT_BAR_CONFIG
+
 local statBars = {}
 local UpdateStatBar
 
@@ -312,6 +323,12 @@ local function CreateStatBar(parent)
   tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', 0, 9)
   tierText:SetDrawLayer('OVERLAY', 50) -- keep above any pill/bg/fill
   tierText:SetTextColor(1, 1, 1, 1) -- bright white for readability
+
+  local tierIcon = tierContainer:CreateTexture(nil, 'OVERLAY')
+  tierIcon:SetSize(STAT_TIER_ICON_SIZE, STAT_TIER_ICON_SIZE)
+  tierIcon:SetPoint('LEFT', tierText, 'RIGHT', STAT_TIER_ICON_GAP, 0)
+  tierIcon:Hide()
+
   -- Pill-style backdrop behind tier text
   local tierBg = CreateFrame('Frame', nil, tierContainer, 'BackdropTemplate')
   tierBg:SetFrameLevel(tierContainer:GetFrameLevel() - 1)
@@ -367,6 +384,7 @@ local function CreateStatBar(parent)
     fill = fill,
     text = text,
     tier = tierText,
+    tierIcon = tierIcon,
     tierBg = tierBg,
     tierContainer = tierContainer,
     bg = bg,
@@ -449,6 +467,9 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   end
 
   statBars[statKey] = bar
+  if bar.tierIcon and statKey then
+    bar.tierIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. statKey .. '.png')
+  end
   PositionStatBar(bar, parent, yOffset, layoutOptions)
   return bar
 end
@@ -605,10 +626,29 @@ end
 
 local function CalculateTierProgress(value, base, multiplier)
   local currentValue = math.max(0, value or 0)
+  base = tonumber(base) or 0
+  multiplier = tonumber(multiplier) or 0
+
+  -- Robust handling:
+  -- - For multiplier <= 1 (or invalid), use linear tiers: tierMax = base * tier
+  --   This avoids infinite loops and still allows "tier ups" to exist.
+  if base <= 0 then
+    return 1, 0, 0, 0
+  end
+  if multiplier <= 1 then
+    local tier = math.floor(currentValue / base) + 1
+    local tierMin = (tier - 1) * base
+    local tierMax = tier * base
+    local range = tierMax - tierMin
+    local progress = range > 0 and (currentValue - tierMin) / range or 0
+    return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
+  end
+
   local tier = 1
   local tierMax = base
 
-  while currentValue > tierMax do
+  -- Inclusive boundary: hitting the max of a tier counts as entering the next tier.
+  while currentValue >= tierMax do
     tier = tier + 1
     tierMax = tierMax * multiplier
   end
@@ -710,11 +750,17 @@ function UpdateStatBar(statKey, value)
     if cfg.type ~= 'percent' and not cfg.noTier and bar.tier and bar.tier:GetText() ~= '' then
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      -- Position tier text consistently 300px from the right
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -70, 6)
+      -- Position tier text consistently from the right
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -100, 6)
+      if bar.tierIcon then
+        bar.tierIcon:ClearAllPoints()
+        bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
+        bar.tierIcon:Show()
+      end
       if bar.tierBg then
         bar.tierBg:ClearAllPoints()
         bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
+        -- Pill should wrap tier text only (icon sits outside the pill)
         bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
         bar.tierBg:Show()
       end
@@ -849,17 +895,26 @@ function UpdateStatBar(statKey, value)
   if bar.tier then
     if cfg.type == 'percent' or cfg.noTier then
       bar.tier:Hide()
+      if bar.tierIcon then
+        bar.tierIcon:Hide()
+      end
       if bar.tierBg then
         bar.tierBg:Hide()
       end
     else
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      -- Position tier text consistently 300px from the right
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -70, 6)
+      -- Position tier text consistently from the right
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -100, 6)
+      if bar.tierIcon then
+        bar.tierIcon:ClearAllPoints()
+        bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
+        bar.tierIcon:Show()
+      end
       if bar.tierBg then
         bar.tierBg:ClearAllPoints()
         bar.tierBg:SetPoint('TOPLEFT', bar.tier, 'TOPLEFT', -8, 2)
+        -- Pill should wrap tier text only (icon sits outside the pill)
         bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
         bar.tierBg:Show()
       end
