@@ -329,7 +329,6 @@ local function CreateStatBar(parent)
   tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', 0, 9)
   tierText:SetDrawLayer('OVERLAY', 50) -- keep above any pill/bg/fill
   tierText:SetTextColor(1, 1, 1, 1) -- bright white for readability
-
   local tierIcon = tierContainer:CreateTexture(nil, 'OVERLAY')
   tierIcon:SetSize(STAT_TIER_ICON_SIZE, STAT_TIER_ICON_SIZE)
   tierIcon:SetPoint('LEFT', tierText, 'RIGHT', STAT_TIER_ICON_GAP, 0)
@@ -477,11 +476,9 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   statBars[statKey] = bar
   if bar.tierIcon and statKey then
     local iconKey = statKey
-    -- Reuse an existing icon if we don't ship a dedicated one.
-    if iconKey == 'player360s' then
-      iconKey = 'playerJumps'
-    end
-    bar.tierIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. iconKey .. '.png')
+    bar.tierIcon:SetTexture(
+      'Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. iconKey .. '.png'
+    )
   end
   PositionStatBar(bar, parent, yOffset, layoutOptions)
   return bar
