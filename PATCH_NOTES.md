@@ -4,6 +4,9 @@
 
 ### New Features
 
+- Statistics tier rewards.
+  - Certain statistics now have a tier system.
+- Statistics notification toast on stat update.
 - Session lowest health does not reset as often
   - Check if logged out for more than 30 minutes before resetting session lowest health.
 - PvP Flag icon on target frame
