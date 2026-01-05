@@ -13,11 +13,23 @@ local TOAST_DRIFT_PX_PER_SEC = 22 -- continuous downward drift while visible
 local TOAST_ANCHOR_X = -400 -- 200px in from the right edge
 local TOAST_ANCHOR_Y = 0
 local TOAST_FADE_OUT_SECONDS = 0.35 -- fade out near end of lifetime (no fade-in)
+local TOAST_ACHIEVEMENT_DELAY_SECONDS = 0.05 -- small delay so "+X" lays out before tier achievement is inserted
 local TOAST_TEXT_PADDING_LEFT = 10
 local TOAST_TEXT_PADDING_RIGHT = 10
-local TOAST_MIN_WIDTH = 100
+local TOAST_MIN_WIDTH = 10
 local TOAST_MAX_WIDTH = 460
 local TOAST_PUSH_REDUCTION_PX = 20 -- reduce how far existing toasts get pushed down when a new one arrives
+
+local STAT_ICON_SIZE = 14
+
+local function GetStatIconMarkup(statKey)
+  if type(statKey) ~= 'string' or statKey == '' then
+    return ''
+  end
+  -- Icon path convention: Textures/stats-icons/<statKey>.png
+  local path = 'Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. statKey .. '.png'
+  return string.format('|T%s:%d:%d:0:0|t', path, STAT_ICON_SIZE, STAT_ICON_SIZE)
+end
 
 local function GetFontStringPixelWidth(fs)
   if not fs then return 0 end
@@ -83,6 +95,45 @@ local function GetTierName(tier)
   return fallback[tier] or fallback[5] or tostring(tier)
 end
 
+local function ClampInt(n, minV, maxV)
+  if n < minV then return minV end
+  if n > maxV then return maxV end
+  return n
+end
+
+local function ToHexByte01(x)
+  local n = tonumber(x) or 0
+  n = math.max(0, math.min(1, n))
+  return string.format('%02x', math.floor(n * 255 + 0.5))
+end
+
+local function GetTierColorCode(tier)
+  local colors = _G.ULTRA_TIER_COLORS
+  if type(colors) ~= 'table' or #colors == 0 then
+    return 'ffffff'
+  end
+  local idx = tonumber(tier) or 1
+  idx = ClampInt(idx, 1, #colors)
+  local c = colors[idx] or { 1, 1, 1, 1 }
+  return ToHexByte01(c[1]) .. ToHexByte01(c[2]) .. ToHexByte01(c[3])
+end
+
+local function ColorizeTierText(tier, text)
+  local hex = GetTierColorCode(tier)
+  return '|cff' .. hex .. tostring(text) .. '|r'
+end
+
+local function GetTierColorRGB(tier)
+  local colors = _G.ULTRA_TIER_COLORS
+  if type(colors) ~= 'table' or #colors == 0 then
+    return 0.35, 0.35, 0.45
+  end
+  local idx = tonumber(tier) or 1
+  idx = ClampInt(idx, 1, #colors)
+  local c = colors[idx] or { 0.35, 0.35, 0.45, 1 }
+  return c[1] or 0.35, c[2] or 0.35, c[3] or 0.45
+end
+
 local function GetTierDisplayName(tier)
   local name = GetTierName(tier)
   -- After the named tiers, include the numeric tier so each upgrade is clearly distinct.
@@ -98,6 +149,16 @@ local EXCLUDED_STATS = {
   lowestHealth = true,
   lowestHealthThisLevel = true,
   lowestHealthThisSession = true,
+  highestHealCritValue = true,
+  highestCritValue = true,
+  partyMemberDeaths = true,
+  duelsTotal = true,
+  duelsWon = true,
+  duelsLost = true,
+  duelsWinPercent = true,
+  mapKeyPressesWhileMapBlocked = true,
+  lagHome = true,
+  lagWorld = true,
 }
 
 local function formatNumber(n)
@@ -130,7 +191,8 @@ local function CalculateTierProgress(value, base, multiplier)
   local tier = 1
   local tierMax = base
 
-  while currentValue > tierMax do
+  -- Inclusive boundary: hitting the max of a tier counts as entering the next tier.
+  while currentValue >= tierMax do
     tier = tier + 1
     tierMax = tierMax * multiplier
   end
@@ -319,6 +381,7 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   local displayName = HumanizeStatKey(statKey)
 
+  local minimal = _G.GLOBAL_SETTINGS.minimalStatisticsTracking ~= false
   local tierOnly = _G.GLOBAL_SETTINGS.statisticsTrackingTierOnly or false
 
   local isPercent = (cfg.type == 'percent')
@@ -328,27 +391,33 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   local achievementToast = nil
   local toast = nil
+  local achievedTier = nil
 
-  local function pushExistingDown(pixels)
+  local function pushExistingDownFromIndex(pixels, startIndex)
     if not pixels or pixels <= 0 then return end
-    for _, existing in ipairs(self.toasts or {}) do
-      if existing and existing:IsShown() then
+    local list = self.toasts or {}
+    local start = startIndex or 1
+    for i = start, #list do
+      local existing = list[i]
+      -- Push down any toast we've inserted (even if it's not shown yet),
+      -- otherwise back-to-back toasts (tier-up + "+1") can overlap.
+      if existing and existing._uhcExpireAt then
         existing._uhcBaseY = (existing._uhcBaseY or 0) + pixels
       end
     end
   end
 
-  local function insertToast(newToast)
+  local function insertToastAt(newToast, index, baseYOverride)
     newToast._uhcSpawnTime = GetTime()
     newToast._uhcExpireAt = newToast._uhcSpawnTime + TOAST_LIFETIME_SECONDS
     newToast._uhcY = nil
     -- Spawn at the anchor (y=0) in *screen space*; baseY is stored relative to the current drift offset.
     local f = StatisticsTrackingToast.frame
     local drift = (f and f._uhcDriftOffset) or 0
-    newToast._uhcBaseY = -drift
+    newToast._uhcBaseY = (baseYOverride ~= nil) and baseYOverride or -drift
     newToast:SetAlpha(1)
 
-    table.insert(self.toasts, 1, newToast) -- newest at top
+    table.insert(self.toasts, index or 1, newToast)
     if #self.toasts > 8 then
       local old = table.remove(self.toasts)
       if old then old:Hide() end
@@ -363,7 +432,10 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     end)
   end
 
-  -- Tier upgrade toast is ALWAYS shown (independent) as long as showStatisticsTracking is enabled.
+  -- Determine tier upgrade.
+  -- IMPORTANT: The achievement toast should reflect the tier you just COMPLETED.
+  -- Example: if tier 1 is 0-1000 and hitting 1000 moves you into tier 2,
+  -- then the achievement is "Bronze" (tier 1), not "Silver" (tier 2).
   if hasTier and base and base > 0 and multiplier then
     local prevVal = tonumber(oldValue) or 0
     local nextVal = tonumber(newValue) or 0
@@ -371,28 +443,39 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     local nextTier = select(1, CalculateTierProgress(nextVal, base, multiplier)) or 1
 
     if nextTier > prevTier then
-      achievementToast = CreateToast()
-      achievementToast.text:SetText(
-        string.format('You achieved %s tier for %s', GetTierDisplayName(nextTier), displayName)
-      )
-      achievementToast:SetHeight(TOAST_MINIMAL_HEIGHT)
-      achievementToast.bar:Hide()
-      achievementToast.barBg:Hide()
-      achievementToast.barText:Hide()
-      ResizeToastToText(achievementToast)
-      local pushAmount =
-        (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
-      if pushAmount < 0 then
-        pushAmount = 0
-      end
-      pushExistingDown(pushAmount)
-      insertToast(achievementToast)
+      achievedTier = math.max(1, (tonumber(nextTier) or 1) - 1)
     end
   end
 
   -- If user wants ONLY tier achievements, skip the regular "+X stat" toast.
   if tierOnly then
-    if achievementToast then
+    if achievedTier then
+      achievementToast = CreateToast()
+      achievementToast.text:SetText(
+        string.format(
+          'You achieved %s tier for %s',
+          ColorizeTierText(achievedTier, GetTierDisplayName(achievedTier)),
+          displayName
+        )
+      )
+      do
+        local r, g, b = GetTierColorRGB(achievedTier)
+        achievementToast:SetBackdropBorderColor(r, g, b, 0.95)
+      end
+      achievementToast:SetHeight(TOAST_MINIMAL_HEIGHT)
+      achievementToast.bar:Hide()
+      achievementToast.barBg:Hide()
+      achievementToast.barText:Hide()
+      ResizeToastToText(achievementToast)
+
+      local pushAmount =
+        (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP - TOAST_PUSH_REDUCTION_PX
+      if pushAmount < 0 then
+        pushAmount = 0
+      end
+      pushExistingDownFromIndex(pushAmount, 1)
+      insertToastAt(achievementToast, 1)
+
       achievementToast:Show()
       ReflowToasts()
       scheduleHide(achievementToast)
@@ -403,9 +486,16 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
   toast = CreateToast()
 
   local sign = (delta or 0) >= 0 and '+' or ''
-  toast.text:SetText(string.format('%s%s %s', sign, tostring(delta or 0), displayName))
+  local iconMarkup = GetStatIconMarkup(statKey)
+  if minimal then
+    -- Minimal: "+X [icon]" only
+    toast.text:SetText(string.format('%s%s %s', sign, tostring(delta or 0), iconMarkup))
+  else
+    -- Non-minimal: "+X [icon] Stat Name"
+    toast.text:SetText(string.format('%s%s %s %s', sign, tostring(delta or 0), iconMarkup, displayName))
+  end
 
-  -- Minimal tracking is now the default/only mode: text-only (no progress bar).
+  -- Text-only stat update toast (no progress bar). Minimal mode hides the stat name text.
   toast:SetHeight(TOAST_MINIMAL_HEIGHT)
   toast.bar:Hide()
   toast.barBg:Hide()
@@ -417,15 +507,47 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     if pushAmount < 0 then
       pushAmount = 0
     end
-    pushExistingDown(pushAmount)
+    pushExistingDownFromIndex(pushAmount, 1)
   end
-  insertToast(toast)
+  insertToastAt(toast, 1)
 
-  if achievementToast then
-    achievementToast:Show()
-  end
   toast:Show()
   ReflowToasts()
+  -- Insert the achievement toast slightly after the "+X" toast so we avoid any same-frame overlap.
+  if achievedTier then
+    C_Timer.After(TOAST_ACHIEVEMENT_DELAY_SECONDS, function()
+      -- The user may have disabled tracking during the delay.
+      if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then return end
+
+      achievementToast = CreateToast()
+      achievementToast.text:SetText(
+        string.format(
+          'You achieved %s tier for %s',
+          ColorizeTierText(achievedTier, GetTierDisplayName(achievedTier)),
+          displayName
+        )
+      )
+      do
+        local r, g, b = GetTierColorRGB(achievedTier)
+        achievementToast:SetBackdropBorderColor(r, g, b, 0.95)
+      end
+      achievementToast:SetHeight(TOAST_MINIMAL_HEIGHT)
+      achievementToast.bar:Hide()
+      achievementToast.barBg:Hide()
+      achievementToast.barText:Hide()
+      ResizeToastToText(achievementToast)
+
+      -- Use full spacing for the achievement toast so it can't overlap the toast below.
+      local pushAmount = (achievementToast:GetHeight() or TOAST_MINIMAL_HEIGHT) + TOAST_GAP
+      pushExistingDownFromIndex(pushAmount, 1)
+      insertToastAt(achievementToast, 1)
+
+      achievementToast:Show()
+      ReflowToasts()
+      scheduleHide(achievementToast)
+    end)
+  end
+
   -- In some UI states, width metrics may update next frame; refresh once more.
   C_Timer.After(0, function()
     if achievementToast and achievementToast:IsShown() then
@@ -436,9 +558,6 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     end
     ReflowToasts()
   end)
-  if achievementToast then
-    scheduleHide(achievementToast)
-  end
   scheduleHide(toast)
 end
 
