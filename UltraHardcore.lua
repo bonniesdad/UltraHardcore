@@ -119,6 +119,11 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       -- Show default WoW XP bar by default
       ShowDefaultExpBar()
     end
+
+    -- Initialize calendar button
+    if InitializeCalendarButton then
+      InitializeCalendarButton()
+    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
