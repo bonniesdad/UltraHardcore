@@ -189,7 +189,8 @@ function DeathDetails.HandlePlayerDeath(destGUID)
   -- Use " - " instead of " | " because pipe characters are used for color codes in WoW chat
   local message =
     string.format(
-      "I've been slain by %s in %s. Their health was %s!",
+      "I've been slain at level %d by %s in %s. Their health was %s!",
+      UnitLevel('player'),
       killerName,
       location,
       healthText
