@@ -205,7 +205,7 @@ function DeathDetails.HandlePlayerDeath(destGUID)
 
   -- Send to guild if player is in a guild
   local isInGuild = IsInGuild()
-  if isInGuild then
+  if isInGuild and GLOBAL_SETTINGS.announceDeathDetailsToGuild then
     SendChatMessage(message, 'GUILD')
   end
 
