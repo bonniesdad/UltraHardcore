@@ -224,13 +224,6 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showSoulshardIndicator',
   tooltip = 'Display an icon when the current target will drop a soulshard upon defeat (Warlocks only)',
 }, {
-  name = 'Hide Calendar Button',
-  dbSettingsValueName = 'hideCalendarButton',
-  tooltip = 'Hide the calendar button in the top right corner (only visible for ULTRA guild members)',
-  conditionalShow = function()
-    return IsUltraGuildMember and IsUltraGuildMember() or false
-  end,
-}, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
   tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
@@ -1097,12 +1090,6 @@ function InitializeSettingsOptionsTab(tabContents)
                   end
                 else
                   LeaveChannelByName('uhc')
-                end
-              end
-
-              if checkboxItem.dbSettingsValueName == 'hideCalendarButton' then
-                if UpdateCalendarButtonFromSettings then
-                  UpdateCalendarButtonFromSettings()
                 end
               end
 
