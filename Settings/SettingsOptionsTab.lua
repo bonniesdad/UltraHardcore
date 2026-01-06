@@ -224,6 +224,13 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showSoulshardIndicator',
   tooltip = 'Display an icon when the current target will drop a soulshard upon defeat (Warlocks only)',
 }, {
+  name = 'Hide Calendar Button',
+  dbSettingsValueName = 'hideCalendarButton',
+  tooltip = 'Hide the calendar button in the top right corner (only visible for ULTRA guild members)',
+  conditionalShow = function()
+    return IsUltraGuildMember and IsUltraGuildMember() or false
+  end,
+}, {
   name = 'Always Show Resource Map',
   dbSettingsValueName = 'alwaysShowResourceMap',
   tooltip = 'Keep the transparent resource map visible in the normal minimap location (shows resource blips only)',
@@ -1010,129 +1017,144 @@ function InitializeSettingsOptionsTab(tabContents)
         end
 
         if checkboxItem then
-          numRows = numRows + 1
-          local checkbox =
-            CreateFrame('CheckButton', nil, sectionFrame, 'ChatConfigCheckButtonTemplate')
-          checkbox:SetPoint(
-            'TOPLEFT',
-            sectionFrame,
-            'TOPLEFT',
-            10,
-            -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-          )
-          checkbox.Text:SetText(checkboxItem.name)
-          checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
-          checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
-
-          -- Precompute search blob for fast filtering
-          local n = checkboxItem.name or ''
-          local t = checkboxItem.tooltip or ''
-          local k = checkboxItem.dbSettingsValueName or ''
-          checkbox._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
-
-          -- Handle dependencies: grey out and disable if dependency is not met
-          local function updateDependencyState()
-            local shouldDisable = false
-
-            if checkboxItem.dependsOn then
-              local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
-              if not dependencyEnabled then
-                shouldDisable = true
-              end
-            end
-
-            if not shouldDisable and checkboxItem.dependsOff then
-              local blockerEnabled = tempSettings[checkboxItem.dependsOff] or false
-              if blockerEnabled then
-                shouldDisable = true
-              end
-            end
-
-            if shouldDisable then
-              checkbox:Disable()
-              checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
-              checkbox:SetChecked(false)
-              tempSettings[checkboxItem.dbSettingsValueName] = false
-              cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
-            else
-              checkbox:Enable()
-              checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
-            end
+          -- Check conditional visibility
+          local shouldShow = true
+          if checkboxItem.conditionalShow then
+            shouldShow = checkboxItem.conditionalShow()
           end
 
-          -- Check dependency on creation
-          updateDependencyState()
+          if shouldShow then
+            numRows = numRows + 1
+            local checkbox =
+              CreateFrame('CheckButton', nil, sectionFrame, 'ChatConfigCheckButtonTemplate')
+            checkbox:SetPoint(
+              'TOPLEFT',
+              sectionFrame,
+              'TOPLEFT',
+              10,
+              -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
+            )
+            checkbox.Text:SetText(checkboxItem.name)
+            checkbox.Text:SetPoint('LEFT', checkbox, 'RIGHT', 5, 0)
+            checkbox:SetChecked(tempSettings[checkboxItem.dbSettingsValueName])
 
-          checkboxes[checkboxItem.dbSettingsValueName] = checkbox
-          table.insert(sectionChildren[sectionIndex], checkbox)
-          table.insert(sectionChildSettingNames[sectionIndex], checkboxItem.dbSettingsValueName)
+            -- Precompute search blob for fast filtering
+            local n = checkboxItem.name or ''
+            local t = checkboxItem.tooltip or ''
+            local k = checkboxItem.dbSettingsValueName or ''
+            checkbox._uhcSearch = string.lower(n .. ' ' .. t .. ' ' .. k)
 
-          -- Store dependency update function for later use
-          checkbox._updateDependency = updateDependencyState
+            -- Handle dependencies: grey out and disable if dependency is not met
+            local function updateDependencyState()
+              local shouldDisable = false
 
-          checkbox:SetScript('OnClick', function(self)
-            -- Prevent clicking if dependency is not met
-            if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
-            if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
-            tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
-
-            if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
-              if self:GetChecked() then
-                if JoinUHCChannel then
-                  JoinUHCChannel(true)
-                end
-              else
-                LeaveChannelByName('uhc')
-              end
-            end
-
-            -- Update any checkboxes that depend on this one
-            cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
-
-            updateSectionCount(sectionIndex)
-          end)
-
-          checkbox:SetScript('OnEnter', function(self)
-            GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-            local tooltipText = checkboxItem.tooltip or ''
-            if checkboxItem.dependsOn then
-              local dependencyName = nil
-              for _, item in ipairs(settingsCheckboxOptions) do
-                if item.dbSettingsValueName == checkboxItem.dependsOn then
-                  dependencyName = item.name
-                  break
-                end
-              end
-              if dependencyName then
+              if checkboxItem.dependsOn then
                 local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
                 if not dependencyEnabled then
-                  tooltipText = tooltipText .. '\n\n|cFFFF0000Requires: ' .. dependencyName .. '|r'
+                  shouldDisable = true
                 end
               end
-            end
-            if checkboxItem.dependsOff then
-              local conflictName = nil
-              for _, item in ipairs(settingsCheckboxOptions) do
-                if item.dbSettingsValueName == checkboxItem.dependsOff then
-                  conflictName = item.name
-                  break
-                end
-              end
-              if conflictName then
-                local conflictEnabled = tempSettings[checkboxItem.dependsOff] or false
-                if conflictEnabled then
-                  tooltipText =
-                    tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. conflictName .. '|r'
-                end
-              end
-            end
-            GameTooltip:SetText(tooltipText)
-            GameTooltip:Show()
-          end)
 
-          checkbox:SetScript('OnLeave', function(self)
-            GameTooltip:Hide()
-          end)
+              if not shouldDisable and checkboxItem.dependsOff then
+                local blockerEnabled = tempSettings[checkboxItem.dependsOff] or false
+                if blockerEnabled then
+                  shouldDisable = true
+                end
+              end
+
+              if shouldDisable then
+                checkbox:Disable()
+                checkbox.Text:SetTextColor(0.5, 0.5, 0.5) -- Grey out text
+                checkbox:SetChecked(false)
+                tempSettings[checkboxItem.dbSettingsValueName] = false
+                cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
+              else
+                checkbox:Enable()
+                checkbox.Text:SetTextColor(1, 1, 1) -- Restore color
+              end
+            end
+
+            -- Check dependency on creation
+            updateDependencyState()
+
+            checkboxes[checkboxItem.dbSettingsValueName] = checkbox
+            table.insert(sectionChildren[sectionIndex], checkbox)
+            table.insert(sectionChildSettingNames[sectionIndex], checkboxItem.dbSettingsValueName)
+
+            -- Store dependency update function for later use
+            checkbox._updateDependency = updateDependencyState
+
+            checkbox:SetScript('OnClick', function(self)
+              -- Prevent clicking if dependency is not met
+              if checkboxItem.dependsOn and not (tempSettings[checkboxItem.dependsOn] or false) then return end
+              if checkboxItem.dependsOff and (tempSettings[checkboxItem.dependsOff] or false) then return end
+              tempSettings[checkboxItem.dbSettingsValueName] = self:GetChecked()
+
+              if checkboxItem.dbSettingsValueName == 'autoJoinUHCChannel' then
+                if self:GetChecked() then
+                  if JoinUHCChannel then
+                    JoinUHCChannel(true)
+                  end
+                else
+                  LeaveChannelByName('uhc')
+                end
+              end
+
+              if checkboxItem.dbSettingsValueName == 'hideCalendarButton' then
+                if UpdateCalendarButtonFromSettings then
+                  UpdateCalendarButtonFromSettings()
+                end
+              end
+
+              -- Update any checkboxes that depend on this one
+              cascadeDependencyUpdates(checkboxItem.dbSettingsValueName)
+
+              updateSectionCount(sectionIndex)
+            end)
+
+            checkbox:SetScript('OnEnter', function(self)
+              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+              local tooltipText = checkboxItem.tooltip or ''
+              if checkboxItem.dependsOn then
+                local dependencyName = nil
+                for _, item in ipairs(settingsCheckboxOptions) do
+                  if item.dbSettingsValueName == checkboxItem.dependsOn then
+                    dependencyName = item.name
+                    break
+                  end
+                end
+                if dependencyName then
+                  local dependencyEnabled = tempSettings[checkboxItem.dependsOn] or false
+                  if not dependencyEnabled then
+                    tooltipText =
+                      tooltipText .. '\n\n|cFFFF0000Requires: ' .. dependencyName .. '|r'
+                  end
+                end
+              end
+              if checkboxItem.dependsOff then
+                local conflictName = nil
+                for _, item in ipairs(settingsCheckboxOptions) do
+                  if item.dbSettingsValueName == checkboxItem.dependsOff then
+                    conflictName = item.name
+                    break
+                  end
+                end
+                if conflictName then
+                  local conflictEnabled = tempSettings[checkboxItem.dependsOff] or false
+                  if conflictEnabled then
+                    tooltipText =
+                      tooltipText .. '\n\n|cFFFF0000Conflicts with: ' .. conflictName .. '|r'
+                  end
+                end
+              end
+              GameTooltip:SetText(tooltipText)
+              GameTooltip:Show()
+            end)
+
+            checkbox:SetScript('OnLeave', function(self)
+              GameTooltip:Hide()
+            end)
+          end -- End of shouldShow check
         elseif sliderItem then
           numRows = numRows + 1
 
