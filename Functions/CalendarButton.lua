@@ -29,12 +29,47 @@ local function OpenCalendar()
   end
 end
 
+-- Position persistence functions
+local function SaveCalendarButtonPosition()
+  if not UltraHardcoreDB or not calendarButton then return end
+
+  local point, _, relPoint, x, y = calendarButton:GetPoint()
+  UltraHardcoreDB.calendarButtonPosition = {
+    point = point,
+    relPoint = relPoint,
+    x = x,
+    y = y,
+  }
+  if SaveDBData then
+    SaveDBData('calendarButtonPosition', UltraHardcoreDB.calendarButtonPosition)
+  end
+end
+
+local function LoadCalendarButtonPosition()
+  if not UltraHardcoreDB or not calendarButton then return end
+
+  local pos = UltraHardcoreDB.calendarButtonPosition
+  calendarButton:ClearAllPoints()
+  if pos then
+    calendarButton:SetPoint(pos.point, UIParent, pos.relPoint, pos.x, pos.y)
+  else
+    calendarButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -20)
+  end
+end
+
 local function UpdateCalendarButtonVisibility()
   if not calendarButton then return end
 
-  -- Only show button if player is in ULTRA guild
+  -- Only show button if player is in ULTRA guild AND setting is enabled
   -- Check if function exists (should be available since TradeRestriction loads first)
+  local shouldShow = false
   if IsUltraGuildMember and IsUltraGuildMember() then
+    -- Check if calendar button is enabled in settings (default to true if not set)
+    local hideCalendar = GLOBAL_SETTINGS and GLOBAL_SETTINGS.hideCalendarButton
+    shouldShow = not hideCalendar
+  end
+
+  if shouldShow then
     calendarButton:Show()
   else
     calendarButton:Hide()
@@ -47,9 +82,15 @@ local function CreateCalendarButton()
   -- Create the button frame
   calendarButton = CreateFrame('Button', 'UltraHardcoreCalendarButton', UIParent)
   calendarButton:SetSize(64, 64)
-  calendarButton:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', -20, -20)
   calendarButton:SetFrameStrata('HIGH')
   calendarButton:SetFrameLevel(10)
+  calendarButton:SetMovable(true)
+  calendarButton:SetClampedToScreen(true)
+  calendarButton:EnableMouse(true)
+  calendarButton:RegisterForDrag('LeftButton')
+
+  -- Load saved position or use default
+  LoadCalendarButtonPosition()
 
   -- Create the icon texture
   local icon = calendarButton:CreateTexture(nil, 'ARTWORK')
@@ -87,6 +128,16 @@ local function CreateCalendarButton()
     end
   end)
 
+  -- Make draggable and save position
+  calendarButton:SetScript('OnDragStart', function(self)
+    self:StartMoving()
+  end)
+
+  calendarButton:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+    SaveCalendarButtonPosition()
+  end)
+
   -- Register for guild events to update visibility
   local eventFrame = CreateFrame('Frame')
   eventFrame:RegisterEvent('PLAYER_GUILD_UPDATE')
@@ -96,6 +147,11 @@ local function CreateCalendarButton()
   end)
 
   -- Set initial visibility based on guild membership
+  UpdateCalendarButtonVisibility()
+end
+
+-- Function to update calendar button visibility when setting changes
+function UpdateCalendarButtonFromSettings()
   UpdateCalendarButtonVisibility()
 end
 
