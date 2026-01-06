@@ -16,6 +16,7 @@ local CharacterStats = {
     xpGainedWithoutOptionShowOnScreenStatistics = 0,
     xpGainedWithoutOptionShowTunnelVision = 0,
     xpGainedWithoutOptionAnnounceLevelUpToGuild = 0,
+    xpGainedWithoutOptionAnnounceDeathDetailsToGuild = 0,
     xpGainedWithoutOptionTunnelVisionMaxStrata = 0,
     xpGainedWithoutOptionHideTargetFrame = 0,
     xpGainedWithoutOptionHideTargetTooltip = 0,
