@@ -62,6 +62,7 @@ local PRESET_SECTIONS = { {
     'useCustomComboFrame',
     'hideComboFrame',
     'announceLevelUpToGuild',
+    'announceDeathDetailsToGuild',
     'autoJoinUHCChannel',
     'hideUIErrors',
     'showClockEvenWhenMapHidden',
