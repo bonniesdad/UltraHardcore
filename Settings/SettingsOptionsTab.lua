@@ -139,6 +139,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'announceLevelUpToGuild',
   tooltip = 'Announces level ups to guild chat every 10th level',
 }, {
+  name = 'Announce Death Details to Guild',
+  dbSettingsValueName = 'announceDeathDetailsToGuild',
+  tooltip = 'Announces death details to guild chat when you die',
+}, {
   name = 'Auto Join ULTRA Channel',
   dbSettingsValueName = 'autoJoinUHCChannel',
   tooltip = 'Automatically join the ULTRA chat channel on login',
