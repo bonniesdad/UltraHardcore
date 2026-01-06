@@ -120,10 +120,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       ShowDefaultExpBar()
     end
 
-    -- Initialize calendar button
-    if InitializeCalendarButton then
-      InitializeCalendarButton()
-    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)

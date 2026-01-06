@@ -76,7 +76,6 @@ local PRESET_SECTIONS = { {
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
     'showSoulshardIndicator',
-    'hideCalendarButton',
   },
 }, {
   title = 'Statistics Tracking:',
