@@ -60,9 +60,11 @@ end
 
 -- Show PVP icon
 local function ApplyPVPIcon()
-  local pvpIcon = _G.TargetFrameTextureFramePVPIcon
-  if pvpIcon then
-    pvpIcon:SetAlpha(1)
+  if not GLOBAL_SETTINGS.completelyRemoveTargetFrame then
+    local pvpIcon = _G.TargetFrameTextureFramePVPIcon
+    if pvpIcon then
+      pvpIcon:SetAlpha(1)
+    end
   end
 end
 
