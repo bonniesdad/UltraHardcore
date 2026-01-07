@@ -16,11 +16,74 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE =
     'ManaBar',
     'Texture',
     'Background',
+    'PartyMemberOverlay',
     'PetFrameBackground',
     'PetFrameTexture',
     'PetFrameHealthBar',
     'PetFrameManaBar',
   }
+
+-- Party frame compatibility (Classic vs TBC+ UI layouts)
+-- Classic: global frames like PartyMemberFrame1HealthBar, PartyMemberFrame1Name, etc.
+-- TBC+: party frames are children of PartyFrame, e.g. PartyFrame.MemberFrame1 (and children by name)
+local function UHC_GetPartyMemberFrame(n)
+  local classic = _G['PartyMemberFrame' .. n]
+  if classic then
+    return classic
+  end
+
+  if _G.PartyFrame then
+    local modern = _G.PartyFrame['MemberFrame' .. n]
+    if modern then
+      return modern
+    end
+  end
+
+  return nil
+end
+
+local function UHC_GetPartyMemberSubFrame(n, suffix)
+  -- Try classic global naming first
+  local classic = _G['PartyMemberFrame' .. n .. suffix]
+  if classic then
+    return classic
+  end
+
+  local member = UHC_GetPartyMemberFrame(n)
+  if not member then
+    return nil
+  end
+
+  -- Try "memberFrameName + suffix" pattern (works when children are still globally named)
+  if member.GetName then
+    local name = member:GetName()
+    if name then
+      local byName = _G[name .. suffix]
+      if byName then
+        return byName
+      end
+    end
+  end
+
+  -- Try direct field access (varies by client)
+  local direct = member[suffix] or member[string.lower(suffix)]
+  if direct then
+    return direct
+  end
+
+  -- Common mappings (defensive)
+  if suffix == 'HealthBar' then
+    return member.healthBar or member.HealthBar
+  end
+  if suffix == 'ManaBar' then
+    return member.manaBar or member.powerBar or member.ManaBar or member.PowerBar
+  end
+  if suffix == 'Name' then
+    return member.name or member.Name
+  end
+
+  return nil
+end
 
 -- Fix for PartyMemberHealthCheck error when health bars are reparented
 -- Blizzard's PartyMemberHealthCheck tries to access fields on the health bar's parent,
@@ -29,7 +92,7 @@ PARTY_MEMBER_SUBFRAMES_TO_HIDE =
 local partyHealthBarsHooked = {}
 local function HookPartyHealthBarValueChanged()
   for i = 1, 5 do
-    local healthBar = _G['PartyMemberFrame' .. i .. 'HealthBar']
+    local healthBar = UHC_GetPartyMemberSubFrame(i, 'HealthBar')
     if healthBar and healthBar.GetScript and not partyHealthBarsHooked[i] then
       local originalOnValueChanged = healthBar:GetScript('OnValueChanged')
       if originalOnValueChanged then
@@ -79,7 +142,7 @@ end
 -- Try to hook party health bars when frames are available
 local function TryHookPartyHealthBars()
   -- Check if at least one party frame exists
-  if _G['PartyMemberFrame1HealthBar'] then
+  if UHC_GetPartyMemberSubFrame(1, 'HealthBar') then
     HookPartyHealthBarValueChanged()
     return true
   end
@@ -113,7 +176,7 @@ function SetPartyFrameInfo(n)
     HidePartySubFrame(n, subFrame)
 
     -- Move Name subframe down a few pixels to be centered with the portrait
-    local nameFrame = _G['PartyMemberFrame' .. n .. 'Name']
+    local nameFrame = UHC_GetPartyMemberSubFrame(n, 'Name')
 
     if nameFrame and nameFrame.SetPoint and nameFrame.ClearAllPoints then
       nameFrame:ClearAllPoints()
@@ -122,7 +185,7 @@ function SetPartyFrameInfo(n)
   end
 
   -- Move the entire party frame to the right by 100px and stack vertically
-  local partyFrame = _G['PartyMemberFrame' .. n]
+  local partyFrame = UHC_GetPartyMemberFrame(n)
   if partyFrame and partyFrame.SetPoint and partyFrame.ClearAllPoints then
     -- Clear any existing anchor points to prevent anchor family connection errors
     partyFrame:ClearAllPoints()
@@ -146,7 +209,7 @@ function SetPartyFrameInfo(n)
 end
 
 function HidePartySubFrame(n, subFrame)
-  local frame = _G['PartyMemberFrame' .. n .. subFrame]
+  local frame = UHC_GetPartyMemberSubFrame(n, subFrame)
   if frame then
     ForceHideFrame(frame)
   end
