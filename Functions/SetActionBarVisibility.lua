@@ -5,7 +5,7 @@
 ]]
 
 -- with lvl6, hide bars and show popup to explain how to get to them
-MIN_LEVEL_HIDE_ACTION_BARS = 1
+MIN_LEVEL_HIDE_ACTION_BARS = 6
 
 -- all frames to hide
 ACTIOBAR_FRAMES_TO_HIDE =
