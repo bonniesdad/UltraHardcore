@@ -11,6 +11,7 @@ function JoinUHCChannel(force)
         C_Timer.After(0.5, function()
           -- Check if UHC channel is already configured in any chat frame
           local channelAlreadyConfigured = false
+          local channelConfiguredInShownFrame = false
           for i = 1, NUM_CHAT_WINDOWS do
             local chatFrame = _G['ChatFrame' .. i]
             if chatFrame and chatFrame.channelList then
@@ -18,17 +19,24 @@ function JoinUHCChannel(force)
                 -- Only check for UHC channels specifically
                 if channel == channelName then
                   channelAlreadyConfigured = true
+                  if chatFrame.IsShown and chatFrame:IsShown() then
+                    channelConfiguredInShownFrame = true
+                  end
                   break
                 end
               end
             end
-            if channelAlreadyConfigured then
+            if channelAlreadyConfigured and channelConfiguredInShownFrame then
               break
             end
           end
 
-          -- Only add to default frame if not already configured elsewhere
-          if not channelAlreadyConfigured then
+          local function EnsureChannelVisibleInDefaultChatFrame()
+            -- Also ensure the chat frame is allowed to display channel messages at all.
+            if ChatFrame_AddMessageGroup and DEFAULT_CHAT_FRAME then
+              ChatFrame_AddMessageGroup(DEFAULT_CHAT_FRAME, 'CHANNEL')
+            end
+
             -- Client compatibility:
             -- - Some clients expose ChatFrame_AddChannel(chatFrame, channelName)
             -- - TBC-era clients commonly use AddChatWindowChannel(windowIndex, channelName)
@@ -41,6 +49,12 @@ function JoinUHCChannel(force)
               end
               AddChatWindowChannel(windowIndex, channelName)
             end
+          end
+
+          -- Only skip adding to default if it's already configured in a visible chat window.
+          -- This avoids the "joined but can't see messages anywhere" situation.
+          if not channelConfiguredInShownFrame then
+            EnsureChannelVisibleInDefaultChatFrame()
           end
         end)
       end
