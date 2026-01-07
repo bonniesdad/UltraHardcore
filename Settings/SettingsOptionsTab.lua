@@ -1623,6 +1623,58 @@ function InitializeSettingsOptionsTab(tabContents)
 
   tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
 
+  -- Helper function to apply resource bar colors instantly
+  local function ApplyResourceBarColorsInstantly()
+    -- Update GLOBAL_SETTINGS immediately so colors are applied
+    if not GLOBAL_SETTINGS.resourceBarColors then
+      GLOBAL_SETTINGS.resourceBarColors = {}
+    end
+    for key, value in pairs(tempSettings.resourceBarColors) do
+      GLOBAL_SETTINGS.resourceBarColors[key] = value
+    end
+    -- Remove keys that are nil in tempSettings
+    for key, _ in pairs(GLOBAL_SETTINGS.resourceBarColors) do
+      if tempSettings.resourceBarColors[key] == nil then
+        GLOBAL_SETTINGS.resourceBarColors[key] = nil
+      end
+    end
+
+    -- Update resource bars immediately
+    local resourceBar = _G['UltraHardcoreResourceBar']
+    if resourceBar and resourceBar:IsShown() then
+      local powerType = GetCurrentResourceType()
+      if powerType then
+        local r, g, b = GetPowerTypeColor(powerType)
+        resourceBar:SetStatusBarColor(r, g, b)
+      end
+    end
+
+    -- Update pet resource bar
+    local petBar = _G['UltraHardcorePetResourceBar']
+    if petBar and petBar:IsShown() then
+      local pr, pg, pb = 0.5, 0, 1
+      if GLOBAL_SETTINGS.resourceBarColors and GLOBAL_SETTINGS.resourceBarColors.PET then
+        local c = GLOBAL_SETTINGS.resourceBarColors.PET
+        if type(c) == 'table' and #c >= 3 then
+          pr, pg, pb = c[1], c[2], c[3]
+        end
+      end
+      petBar:SetStatusBarColor(pr, pg, pb)
+    end
+
+    -- Update druid form resource bar
+    local druidBar = _G['UltraHardcoreDruidFormResourceBar']
+    if druidBar and druidBar:IsShown() then
+      local r, g, b = GetPowerTypeColor('MANA')
+      druidBar:SetStatusBarColor(r, g, b)
+    end
+
+    -- Update XP bar color if it exists
+    if _G.UHC_XPBar and _G.UHC_XPBar.SetBarColor then
+      _G.UHC_XPBar:SetBarColor()
+    end
+  end
+
   local lockResourceBarCheckbox =
     CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
   -- Position will be handled by reflow
@@ -1796,6 +1848,9 @@ function InitializeSettingsOptionsTab(tabContents)
         tempSettings.resourceBarColors[activePowerKey] = { r, g, b }
         activeSetSwatchColor(r, g, b)
 
+        -- Apply color instantly
+        ApplyResourceBarColorsInstantly()
+
         -- Update RGB boxes
         for i, box in ipairs(inputs.rgb) do
           local val = math.floor((i == 1 and r or i == 2 and g or b) * 255 + 0.5)
@@ -1870,6 +1925,8 @@ function InitializeSettingsOptionsTab(tabContents)
         prev = prev or activeOriginalColor
         tempSettings.resourceBarColors[powerKey] = { prev.r, prev.g, prev.b }
         setSwatchColor(prev.r, prev.g, prev.b)
+        -- Revert color instantly
+        ApplyResourceBarColorsInstantly()
       end
 
       ColorPickerFrame:SetColorRGB(r, g, b)
@@ -1888,6 +1945,8 @@ function InitializeSettingsOptionsTab(tabContents)
       if c then
         tempSettings.resourceBarColors[powerKey] = { c.r, c.g, c.b }
         setSwatchColor(c.r, c.g, c.b)
+        -- Apply color instantly
+        ApplyResourceBarColorsInstantly()
       end
     end)
 
@@ -1899,6 +1958,8 @@ function InitializeSettingsOptionsTab(tabContents)
     resetButton:SetScript('OnClick', function()
       tempSettings.resourceBarColors[powerKey] = nil
       setSwatchColor(getDefaultColor())
+      -- Apply reset instantly
+      ApplyResourceBarColorsInstantly()
     end)
 
     addUIRow(row, labelText .. ' color resource bar', resourceSubHeader)
@@ -1975,6 +2036,11 @@ function InitializeSettingsOptionsTab(tabContents)
     local pct = math.floor(val + 0.5)
     percentText:SetText(pct .. '%')
     tempSettings.statisticsBackgroundOpacity = pct / 100
+    -- Apply opacity instantly
+    GLOBAL_SETTINGS.statisticsBackgroundOpacity = tempSettings.statisticsBackgroundOpacity
+    if _G.ApplyStatsBackgroundOpacity then
+      _G.ApplyStatsBackgroundOpacity()
+    end
   end)
 
   addUIRow(opacityRow, 'statistics background opacity transparency', statsSubHeader)
@@ -1990,7 +2056,7 @@ function InitializeSettingsOptionsTab(tabContents)
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
-  minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
+  minimapClockScaleRow:SetPoint('TOPLEFT', scaleSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH2 = LAYOUT.LABEL_WIDTH
   local GAP2 = 12
@@ -2043,13 +2109,18 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapClockScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapClockScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapClockScale = tempSettings.minimapClockScale
+    if TimeManagerClockButton then
+      TimeManagerClockButton:SetScale(GLOBAL_SETTINGS.minimapClockScale)
+    end
   end)
-  addUIRow(minimapClockScaleRow, 'minimap clock scale size', clockSubHeader)
+  addUIRow(minimapClockScaleRow, 'minimap clock scale size', scaleSubHeader)
 
-  local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleSlider)
+  local minimapMailScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
-  minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+  minimapMailScaleRow:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', 0, -6)
 
   local minimapMailScaleLabel =
     minimapMailScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -2093,12 +2164,18 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapMailScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapMailScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapMailScale = tempSettings.minimapMailScale
+    if MiniMapMailFrame then
+      MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale)
+    end
   end)
-  addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
+  addUIRow(minimapMailScaleRow, 'minimap mail scale size', scaleSubHeader)
 
-  local minimapTrackingScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
+  local minimapTrackingScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapTrackingScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
-  minimapTrackingScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+  -- Position will be handled by reflow
+  minimapTrackingScaleRow:SetPoint('TOPLEFT', minimapMailScaleRow, 'BOTTOMLEFT', 0, -6)
 
   local minimapTrackingScaleLabel =
     minimapTrackingScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -2150,8 +2227,13 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapTrackingScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapTrackingScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapTrackingScale = tempSettings.minimapTrackingScale
+    if MiniMapTracking then
+      MiniMapTracking:SetScale(GLOBAL_SETTINGS.minimapTrackingScale)
+    end
   end)
-  addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', mailSubHeader)
+  addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', scaleSubHeader)
 
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
