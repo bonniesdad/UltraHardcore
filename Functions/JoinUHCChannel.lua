@@ -29,7 +29,18 @@ function JoinUHCChannel(force)
 
           -- Only add to default frame if not already configured elsewhere
           if not channelAlreadyConfigured then
-            ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+            -- Client compatibility:
+            -- - Some clients expose ChatFrame_AddChannel(chatFrame, channelName)
+            -- - TBC-era clients commonly use AddChatWindowChannel(windowIndex, channelName)
+            if ChatFrame_AddChannel and DEFAULT_CHAT_FRAME then
+              ChatFrame_AddChannel(DEFAULT_CHAT_FRAME, channelName)
+            elseif AddChatWindowChannel then
+              local windowIndex = 1
+              if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.GetID then
+                windowIndex = DEFAULT_CHAT_FRAME:GetID() or 1
+              end
+              AddChatWindowChannel(windowIndex, channelName)
+            end
           end
         end)
       end
