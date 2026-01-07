@@ -801,7 +801,7 @@ end
 SLASH_POSTVERSION1 = '/uhcversion'
 SLASH_POSTVERSION2 = '/uhcv'
 SlashCmdList['POSTVERSION'] = function()
-  local version = GetAddOnMetadata('UltraHardcore', 'Version') or 'Unknown'
+  local version = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version') or 'Unknown'
   local playerName = UnitName('player')
   local message = playerName .. ' is using UltraHardcore version ' .. version
 
