@@ -14,7 +14,7 @@ function InitializeInfoTab(tabContents)
   philosophyText:SetPoint('TOP', tabContents[3], 'TOP', 0, -70)
   philosophyText:SetWidth(500)
   philosophyText:SetText(
-    'UltraHardcore Addon\nVersion: ' .. GetAddOnMetadata('UltraHardcore', 'Version')
+    'UltraHardcore Addon\nVersion: ' .. C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
   )
   philosophyText:SetJustifyH('CENTER')
   philosophyText:SetNonSpaceWrap(true)
