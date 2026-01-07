@@ -116,22 +116,7 @@ function ShowVersionUpdateDialog()
     return
   end
 
-  -- Get current version from TOC
-  local function GetAddonVersion(name)
-    -- Newer clients (some Classic branches included) moved addon APIs under C_AddOns
-    if C_AddOns and C_AddOns.GetAddOnMetadata then
-      return C_AddOns.GetAddOnMetadata(name, 'Version')
-    end
-
-    -- Older clients expose this as a global
-    if GetAddOnMetadata then
-      return GetAddOnMetadata(name, 'Version')
-    end
-
-    return nil
-  end
-
-  local currentVersion = GetAddonVersion(addonName) or 'unknown'
+  local currentVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
 
   -- Get last seen version from database
   local lastSeenVersion = UltraHardcoreDB.lastSeenVersion
