@@ -116,8 +116,7 @@ function ShowVersionUpdateDialog()
     return
   end
 
-  -- Get current version from TOC
-  local currentVersion = GetAddOnMetadata(addonName, 'Version')
+  local currentVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
 
   -- Get last seen version from database
   local lastSeenVersion = UltraHardcoreDB.lastSeenVersion

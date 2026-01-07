@@ -9,7 +9,22 @@ MIN_LEVEL_HIDE_ACTION_BARS = 6
 
 -- all frames to hide
 ACTIOBAR_FRAMES_TO_HIDE =
-  { MainMenuBar, MultiBarBottomLeft, MultiBarBottomRight, MultiBarLeft, MultiBarRight }
+  { 
+    -- Classic Frames
+    MainMenuBar,
+    MultiBarBottomLeft,
+    MultiBarBottomRight,
+    MultiBarLeft,
+    MultiBarRight,
+    -- TBC Frames 
+    MicroMenu,
+    MainActionBar,
+    BagsBar,
+    MainStatusTrackingBarContainer,
+    MultiBar5,
+    MultiBar6,
+    MultiBar7,
+ }
 
 --[[
   Main functions
