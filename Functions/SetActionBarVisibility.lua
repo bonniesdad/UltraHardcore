@@ -5,11 +5,26 @@
 ]]
 
 -- with lvl6, hide bars and show popup to explain how to get to them
-MIN_LEVEL_HIDE_ACTION_BARS = 6
+MIN_LEVEL_HIDE_ACTION_BARS = 1
 
 -- all frames to hide
 ACTIOBAR_FRAMES_TO_HIDE =
-  { MainMenuBar, MultiBarBottomLeft, MultiBarBottomRight, MultiBarLeft, MultiBarRight }
+  { 
+    -- Classic Frames
+    MainMenuBar,
+    MultiBarBottomLeft,
+    MultiBarBottomRight,
+    MultiBarLeft,
+    MultiBarRight,
+    -- TBC Frames 
+    MicroMenu,
+    MainActionBar,
+    BagsBar,
+    MainStatusTrackingBarContainer,
+    MultiBar5,
+    MultiBar6,
+    MultiBar7,
+ }
 
 --[[
   Main functions
