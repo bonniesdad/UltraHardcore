@@ -249,8 +249,35 @@ local function ApplyMask()
   HideTargetOfTargetFrames()
 end
 
-hooksecurefunc('TargetFrame_Update', ApplyMask)
-hooksecurefunc('TargetFrame_UpdateAuras', ApplyMask)
+-- In some clients (notably TBC variants), parts of Blizzard's TargetFrame implementation
+-- are not exposed as globals, so hooksecurefunc("TargetFrame_Update") can fail.
+-- Prefer hooking when the function exists; otherwise rely on our event-driven ApplyMask.
+local function TryHookGlobal(funcName, hookFn)
+  if type(funcName) ~= 'string' then
+    return false
+  end
+  if type(_G[funcName]) == 'function' then
+    hooksecurefunc(funcName, hookFn)
+    return true
+  end
+  return false
+end
+
+local function TryHookMethod(obj, methodName, hookFn)
+  if not obj or type(methodName) ~= 'string' then
+    return false
+  end
+  if type(obj[methodName]) == 'function' then
+    hooksecurefunc(obj, methodName, hookFn)
+    return true
+  end
+  return false
+end
+
+TryHookGlobal('TargetFrame_Update', ApplyMask)
+TryHookGlobal('TargetFrame_UpdateAuras', ApplyMask)
+TryHookMethod(TargetFrame, 'Update', ApplyMask)
+TryHookMethod(TargetFrame, 'UpdateAuras', ApplyMask)
 
 -- Hook TargetFrameToT_Update if it exists
 if _G.TargetFrameToT_Update then
@@ -269,9 +296,24 @@ function SetTargetFrameDisplay(mask)
     targetFrameEventFrame = CreateFrame('Frame')
     targetFrameEventFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
     targetFrameEventFrame:RegisterEvent('GROUP_ROSTER_UPDATE')
+    -- Keep aura/portrait/raid-icon masking up to date in clients where TargetFrame_Update*
+    -- can't be hooked (e.g., functions are local instead of global).
+    targetFrameEventFrame:RegisterEvent('UNIT_AURA')
+    targetFrameEventFrame:RegisterEvent('UNIT_FACTION')
+    targetFrameEventFrame:RegisterEvent('UNIT_PORTRAIT_UPDATE')
+    targetFrameEventFrame:RegisterEvent('UNIT_TARGET') -- keeps Target-of-Target state fresh
+    targetFrameEventFrame:RegisterEvent('RAID_TARGET_UPDATE')
     targetFrameEventFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
-    targetFrameEventFrame:SetScript('OnEvent', function(_, event)
+    targetFrameEventFrame:SetScript('OnEvent', function(_, event, unit)
       if event == 'PLAYER_TARGET_CHANGED' or event == 'GROUP_ROSTER_UPDATE' then
+        ApplyMask()
+      elseif
+        event == 'UNIT_AURA' or event == 'UNIT_FACTION' or event == 'UNIT_PORTRAIT_UPDATE' or
+          event == 'UNIT_TARGET' then
+        if unit == 'target' or unit == 'targettarget' then
+          ApplyMask()
+        end
+      elseif event == 'RAID_TARGET_UPDATE' then
         ApplyMask()
       elseif event == 'PLAYER_REGEN_DISABLED' then
         -- Reapply mask immediately when entering combat
