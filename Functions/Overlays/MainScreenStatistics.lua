@@ -1,10 +1,25 @@
 -- Main Screen Statistics Display
 -- Shows the same statistics that appear in the settings panel, but on the main screen at all times
 
--- Create the main statistics frame (invisible container for positioning)
-local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent)
-statsFrame:SetSize(200, 360) -- Increased height to accommodate all statistics including tunnel vision overlay
+-- Create the main statistics frame with backdrop styling
+local statsFrame = CreateFrame('Frame', 'UltraHardcoreStatsFrame', UIParent, 'BackdropTemplate')
+statsFrame:SetSize(220, 360) -- Increased width for better spacing
 statsFrame:SetPoint('TOPLEFT', UIParent, 'TOPLEFT', 130, -10)
+
+-- Enhanced backdrop styling with decorative border
+statsFrame:SetBackdrop({
+  bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+  edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+  tile = true,
+  tileSize = 32,
+  edgeSize = 16,
+  insets = {
+    left = 8,
+    right = 8,
+    top = 8,
+    bottom = 8,
+  },
+})
 
 -- Background behind statistics with configurable opacity
 local statsBackground = statsFrame:CreateTexture(nil, 'BACKGROUND')
@@ -26,471 +41,477 @@ local function ApplyStatsBackgroundOpacity()
     alpha = 1
   end
   statsBackground:SetColorTexture(0, 0, 0, alpha)
+  -- Also update backdrop color
+  statsFrame:SetBackdropColor(0.1, 0.1, 0.1, alpha * 0.9)
+  statsFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 0.9) -- Light grey decorative border
 end
+
+-- Expose globally for instant UI updates
+_G.ApplyStatsBackgroundOpacity = ApplyStatsBackgroundOpacity
 
 ApplyStatsBackgroundOpacity()
 
 -- Make the frame draggable
 MakeFrameDraggable(statsFrame)
 
+-- Helper function to create font strings with standard WoW font
+-- Available fonts: FRIZQT__.TTF (standard), ARIALN.TTF (narrow), MORPHEUS.TTF (serif), SKURRI.TTF
+-- Available styles: '' (none), 'OUTLINE', 'THICKOUTLINE', 'MONOCHROME', 'MONOCHROME,OUTLINE'
+local function CreatePixelFontString(parent, layer, template)
+  local fontString = parent:CreateFontString(nil, layer, template)
+  -- Use standard WoW font with slightly larger size for better readability
+  fontString:SetFont('Fonts\\FRIZQT__.TTF', 13, 'OUTLINE')
+  fontString:SetTextColor(0.9, 0.9, 0.85, 1) -- Slightly off-white for better contrast
+  return fontString
+end
+
 -- Create statistics text elements
 -- Character Level at the top
-local levelLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-levelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -5)
+local levelLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+levelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -8)
 levelLabel:SetText('Level:')
-levelLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local levelValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-levelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -5)
+levelLabel:SetTextColor(1, 0.9, 0.5, 1) -- Gold color for labels
+local levelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+levelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -8)
 levelValue:SetText(formatNumberWithCommas(1))
-levelValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local totalHPLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -20)
+levelValue:SetTextColor(1, 1, 1, 1) -- White for values
+local totalHPLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+totalHPLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -23)
 totalHPLabel:SetText('Total HP:')
-totalHPLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+totalHPLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local totalHPValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-totalHPValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -20)
+local totalHPValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+totalHPValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -23)
 totalHPValue:SetText(formatNumberWithCommas(UnitHealthMax('player') or 0))
-totalHPValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local totalManaLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-totalManaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+totalHPValue:SetTextColor(1, 0.2, 0.2, 1) -- Red tint for HP
+local totalManaLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+totalManaLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -38)
 totalManaLabel:SetText('Total Mana:')
-totalManaLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+totalManaLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local totalManaValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-totalManaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+local totalManaValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+totalManaValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -38)
 totalManaValue:SetText(formatNumberWithCommas(UnitPowerMax('player', MANA_POWER_TYPE) or 0))
-totalManaValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local lowestHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -20)
+totalManaValue:SetTextColor(0.3, 0.7, 1, 1) -- Blue tint for mana
+local lowestHealthLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -53)
 lowestHealthLabel:SetText('Lowest Health:')
-lowestHealthLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+lowestHealthLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local lowestHealthValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -20)
+local lowestHealthValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lowestHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -53)
 lowestHealthValue:SetText('100.0%')
-lowestHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local sessionHealthLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-sessionHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -35)
+lowestHealthValue:SetTextColor(1, 0.3, 0.3, 1) -- Red tint for low health warning
+local sessionHealthLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+sessionHealthLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -68)
 sessionHealthLabel:SetText('Session Lowest:')
-sessionHealthLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+sessionHealthLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local sessionHealthValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -35)
+local sessionHealthValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+sessionHealthValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -68)
 sessionHealthValue:SetText('100.0%')
-sessionHealthValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+sessionHealthValue:SetTextColor(1, 1, 1, 1)
 
 -- This Level (Beta) statistic
-local thisLevelLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-thisLevelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -50)
+local thisLevelLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+thisLevelLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -83)
 thisLevelLabel:SetText('Level Lowest:')
-thisLevelLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+thisLevelLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local thisLevelValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-thisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -50)
+local thisLevelValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+thisLevelValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -83)
 thisLevelValue:SetText('100.0%')
-thisLevelValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+thisLevelValue:SetTextColor(1, 1, 1, 1)
 
-local enemiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -65)
+local enemiesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+enemiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -98)
 enemiesLabel:SetText('Enemies Slain:')
-enemiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
+enemiesLabel:SetTextColor(1, 0.9, 0.5, 1)
 
-local enemiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -65)
+local enemiesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+enemiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -98)
 enemiesValue:SetText(formatNumberWithCommas(0))
-enemiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
+enemiesValue:SetTextColor(1, 1, 1, 1)
 
-local dungeonsCompletedLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -80)
+local dungeonsCompletedLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -113)
 dungeonsCompletedLabel:SetText('Dungeons Completed:')
-dungeonsCompletedLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local dungeonsCompletedValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -80)
+dungeonsCompletedLabel:SetTextColor(1, 0.9, 0.5, 1)
+local dungeonsCompletedValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+dungeonsCompletedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -113)
 dungeonsCompletedValue:SetText(formatNumberWithCommas(0))
-dungeonsCompletedValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+dungeonsCompletedValue:SetTextColor(1, 1, 1, 1)
 -- Additional statistics rows
-local petDeathsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-petDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -95)
+local petDeathsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+petDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -128)
 petDeathsLabel:SetText('Pet Deaths:')
-petDeathsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local petDeathsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-petDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -95)
+petDeathsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local petDeathsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+petDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -128)
 petDeathsValue:SetText(formatNumberWithCommas(0))
-petDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local elitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -110)
+petDeathsValue:SetTextColor(1, 0.3, 0.3, 1)
+local elitesSlainLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+elitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -143)
 elitesSlainLabel:SetText('Elites Slain:')
-elitesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local elitesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-elitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -110)
+elitesSlainLabel:SetTextColor(1, 0.9, 0.5, 1)
+local elitesSlainValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+elitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -143)
 elitesSlainValue:SetText(formatNumberWithCommas(0))
-elitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local rareElitesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-rareElitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -125)
+elitesSlainValue:SetTextColor(1, 1, 1, 1)
+local rareElitesSlainLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+rareElitesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -158)
 rareElitesSlainLabel:SetText('Rare Elites Slain:')
-rareElitesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local rareElitesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-rareElitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -125)
+rareElitesSlainLabel:SetTextColor(1, 0.9, 0.5, 1)
+local rareElitesSlainValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+rareElitesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -158)
 rareElitesSlainValue:SetText(formatNumberWithCommas(0))
-rareElitesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local worldBossesSlainLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-worldBossesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -140)
+rareElitesSlainValue:SetTextColor(1, 0.8, 0.2, 1) -- Gold tint for rare
+local worldBossesSlainLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+worldBossesSlainLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -173)
 worldBossesSlainLabel:SetText('World Bosses Slain:')
-worldBossesSlainLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local worldBossesSlainValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-worldBossesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -140)
+worldBossesSlainLabel:SetTextColor(1, 0.9, 0.5, 1)
+local worldBossesSlainValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+worldBossesSlainValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -173)
 worldBossesSlainValue:SetText(formatNumberWithCommas(0))
-worldBossesSlainValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local dungeonBossesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -155)
+worldBossesSlainValue:SetTextColor(1, 0.5, 0, 1) -- Orange tint for world bosses
+local dungeonBossesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -188)
 dungeonBossesLabel:SetText('Dungeon Bosses:')
-dungeonBossesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local dungeonBossesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -155)
+dungeonBossesLabel:SetTextColor(1, 0.9, 0.5, 1)
+local dungeonBossesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+dungeonBossesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -188)
 dungeonBossesValue:SetText(formatNumberWithCommas(0))
-dungeonBossesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+dungeonBossesValue:SetTextColor(0.8, 0.2, 0.8, 1) -- Purple tint for dungeon bosses
 -- Survival statistics rows
-local healthPotionsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-healthPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -170)
+local healthPotionsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+healthPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -203)
 healthPotionsLabel:SetText('Health Potions:')
-healthPotionsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local healthPotionsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
+healthPotionsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local healthPotionsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+healthPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -203)
 healthPotionsValue:SetText(formatNumberWithCommas(0))
-healthPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local manaPotionsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-manaPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -170)
+healthPotionsValue:SetTextColor(1, 0.3, 0.3, 1)
+local manaPotionsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+manaPotionsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -218)
 manaPotionsLabel:SetText('Mana Potions:')
-manaPotionsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local manaPotionsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-manaPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -170)
+manaPotionsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local manaPotionsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+manaPotionsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -218)
 manaPotionsValue:SetText(formatNumberWithCommas(0))
-manaPotionsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local bandagesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bandagesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -185)
+manaPotionsValue:SetTextColor(0.3, 0.7, 1, 1)
+local bandagesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+bandagesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -233)
 bandagesLabel:SetText('Bandages Used:')
-bandagesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local bandagesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-bandagesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -185)
+bandagesLabel:SetTextColor(1, 0.9, 0.5, 1)
+local bandagesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+bandagesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -233)
 bandagesValue:SetText(formatNumberWithCommas(0))
-bandagesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local targetDummiesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-targetDummiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -200)
+bandagesValue:SetTextColor(1, 1, 1, 1)
+local targetDummiesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+targetDummiesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -248)
 targetDummiesLabel:SetText('Target Dummies:')
-targetDummiesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local targetDummiesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-targetDummiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -200)
+targetDummiesLabel:SetTextColor(1, 0.9, 0.5, 1)
+local targetDummiesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+targetDummiesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -248)
 targetDummiesValue:SetText(formatNumberWithCommas(0))
-targetDummiesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local grenadesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-grenadesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -215)
+targetDummiesValue:SetTextColor(1, 1, 1, 1)
+local grenadesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+grenadesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -263)
 grenadesLabel:SetText('Grenades Used:')
-grenadesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local grenadesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-grenadesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -215)
+grenadesLabel:SetTextColor(1, 0.9, 0.5, 1)
+local grenadesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+grenadesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -263)
 grenadesValue:SetText(formatNumberWithCommas(0))
-grenadesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local partyDeathsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-partyDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -230)
+grenadesValue:SetTextColor(1, 0.5, 0, 1) -- Orange for grenades
+local partyDeathsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+partyDeathsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -278)
 partyDeathsLabel:SetText('Party Deaths:')
-partyDeathsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local partyDeathsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -230)
+partyDeathsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local partyDeathsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+partyDeathsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -278)
 partyDeathsValue:SetText(formatNumberWithCommas(0))
-partyDeathsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+partyDeathsValue:SetTextColor(1, 0.2, 0.2, 1) -- Red for deaths
 -- Highest crit value row
-local highestCritLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local highestCritLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+highestCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -293)
 highestCritLabel:SetText('Highest Crit:')
-highestCritLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local highestCritValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+highestCritLabel:SetTextColor(1, 0.9, 0.5, 1)
+local highestCritValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+highestCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -293)
 highestCritValue:SetText(formatNumberWithCommas(0))
-highestCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+highestCritValue:SetTextColor(1, 0.8, 0, 1) -- Gold for crits
 -- Highest heal crit value row
-local highestHealCritLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestHealCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local highestHealCritLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+highestHealCritLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -308)
 highestHealCritLabel:SetText('Highest Heal Crit:')
-highestHealCritLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local highestHealCritValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-highestHealCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+highestHealCritLabel:SetTextColor(1, 0.9, 0.5, 1)
+local highestHealCritValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+highestHealCritValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -308)
 highestHealCritValue:SetText(formatNumberWithCommas(0))
-highestHealCritValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+highestHealCritValue:SetTextColor(0.2, 1, 0.2, 1) -- Green for heals
 -- Close escape count row
-local closeEscapesLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-closeEscapesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -260)
+local closeEscapesLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+closeEscapesLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -323)
 closeEscapesLabel:SetText('Close Escapes:')
-closeEscapesLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local closeEscapesValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-closeEscapesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -260)
+closeEscapesLabel:SetTextColor(1, 0.9, 0.5, 1)
+local closeEscapesValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+closeEscapesValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -323)
 closeEscapesValue:SetText(formatNumberWithCommas(0))
-closeEscapesValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+closeEscapesValue:SetTextColor(0.5, 1, 0.5, 1) -- Light green for escapes
 -- Duels Total value row
-local duelsTotalLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsTotalLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local duelsTotalLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsTotalLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -338)
 duelsTotalLabel:SetText('Duels Total:')
-duelsTotalLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local duelsTotalValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsTotalValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsTotalLabel:SetTextColor(1, 0.9, 0.5, 1)
+local duelsTotalValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsTotalValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -338)
 duelsTotalValue:SetText(formatNumberWithCommas(0))
-duelsTotalValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+duelsTotalValue:SetTextColor(1, 1, 1, 1)
 -- Duels Won value row
-local duelsWonLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsWonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local duelsWonLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsWonLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -353)
 duelsWonLabel:SetText('Duels Won:')
-duelsWonLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local duelsWonValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsWonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsWonLabel:SetTextColor(1, 0.9, 0.5, 1)
+local duelsWonValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsWonValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -353)
 duelsWonValue:SetText(formatNumberWithCommas(0))
-duelsWonValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+duelsWonValue:SetTextColor(0.2, 1, 0.2, 1) -- Green for wins
 -- Duels Lost value row
-local duelsLostLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsLostLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local duelsLostLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsLostLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -368)
 duelsLostLabel:SetText('Duels Lost:')
-duelsLostLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local duelsLostValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsLostValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsLostLabel:SetTextColor(1, 0.9, 0.5, 1)
+local duelsLostValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsLostValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -368)
 duelsLostValue:SetText(formatNumberWithCommas(0))
-duelsLostValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+duelsLostValue:SetTextColor(1, 0.3, 0.3, 1) -- Red for losses
 -- Duels Win Percentage
-local duelsWinPercentLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsWinPercentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local duelsWinPercentLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsWinPercentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -383)
 duelsWinPercentLabel:SetText('Duel Win Percent:')
-duelsWinPercentLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local duelsWinPercentValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+duelsWinPercentLabel:SetTextColor(1, 0.9, 0.5, 1)
+local duelsWinPercentValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+duelsWinPercentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -383)
 duelsWinPercentValue:SetText('100%')
-duelsWinPercentValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+duelsWinPercentValue:SetTextColor(1, 1, 1, 1)
 -- Player Jumps because who doesn't want to know how much they jump. ;)
-local playerJumpsLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-playerJumpsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local playerJumpsLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerJumpsLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -398)
 playerJumpsLabel:SetText('Jumps:')
-playerJumpsLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local playerJumpsValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+playerJumpsLabel:SetTextColor(1, 0.9, 0.5, 1)
+local playerJumpsValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+playerJumpsValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -398)
 playerJumpsValue:SetText(formatNumberWithCommas(0))
-playerJumpsValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+playerJumpsValue:SetTextColor(1, 1, 1, 1)
 -- Player 360s (full spins during jumps)
-local player360sLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local player360sLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+player360sLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -413)
 player360sLabel:SetText('Jump 360s:')
-player360sLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local player360sValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+player360sLabel:SetTextColor(1, 0.9, 0.5, 1)
+local player360sValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+player360sValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -413)
 player360sValue:SetText(formatNumberWithCommas(0))
-player360sValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+player360sValue:SetTextColor(1, 1, 1, 1)
 -- Blocked Map Opens (Route Planner) statistic
-local blockedMapOpensLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-blockedMapOpensLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local blockedMapOpensLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+blockedMapOpensLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -428)
 blockedMapOpensLabel:SetText('Map Attempts:')
-blockedMapOpensLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local blockedMapOpensValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+blockedMapOpensLabel:SetTextColor(1, 0.9, 0.5, 1)
+local blockedMapOpensValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -428)
 blockedMapOpensValue:SetText(formatNumberWithCommas(0))
-blockedMapOpensValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+blockedMapOpensValue:SetTextColor(1, 1, 1, 1)
 -- Network statistics
-local lagHomeLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lagHomeLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+local lagHomeLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lagHomeLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -443)
 lagHomeLabel:SetText('Home Latency:')
-lagHomeLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local lagHomeValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lagHomeValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+lagHomeLabel:SetTextColor(1, 0.9, 0.5, 1)
+local lagHomeValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lagHomeValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -443)
 lagHomeValue:SetText(formatNumberWithCommas(0) .. ' ms')
-lagHomeValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local lagWorldLabel = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lagWorldLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, -245)
+lagHomeValue:SetTextColor(0.5, 0.8, 1, 1) -- Light blue for latency
+local lagWorldLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lagWorldLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -458)
 lagWorldLabel:SetText('World Latency:')
-lagWorldLabel:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
-local lagWorldValue = statsFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-lagWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, -245)
+lagWorldLabel:SetTextColor(1, 0.9, 0.5, 1)
+local lagWorldValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+lagWorldValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -458)
 lagWorldValue:SetText(formatNumberWithCommas(0) .. ' ms')
-lagWorldValue:SetFont('Fonts\\FRIZQT__.TTF', 14)
-
+lagWorldValue:SetTextColor(0.5, 0.8, 1, 1) -- Light blue for latency
 -- XP Gained With Addon
 
 -- Store all statistics elements for easy management
-local statsElements = { {
+-- Non-tier stats first (noTier flag, percent types, or not in config), then tiered stats
+local statsElements = { -- Non-tier stats (no tier system)
+{
   label = levelLabel,
   value = levelValue,
   setting = 'showMainStatisticsPanelLevel',
+  statKey = 'level',
 }, {
   label = totalHPLabel,
   value = totalHPValue,
   setting = 'showMainStatisticsPanelTotalHP',
+  statKey = 'totalHP',
 }, {
   label = totalManaLabel,
   value = totalManaValue,
   setting = 'showMainStatisticsPanelTotalMana',
+  statKey = 'totalMana',
 }, {
   label = lowestHealthLabel,
   value = lowestHealthValue,
   setting = 'showMainStatisticsPanelLowestHealth',
+  statKey = 'lowestHealth',
 }, {
   label = thisLevelLabel,
   value = thisLevelValue,
   setting = 'showMainStatisticsPanelThisLevel',
+  statKey = 'lowestHealthThisLevel',
 }, {
   label = sessionHealthLabel,
   value = sessionHealthValue,
   setting = 'showMainStatisticsPanelSessionHealth',
+  statKey = 'lowestHealthThisSession',
 }, {
   label = petDeathsLabel,
   value = petDeathsValue,
   setting = 'showMainStatisticsPanelPetDeaths',
-}, {
-  label = enemiesLabel,
-  value = enemiesValue,
-  setting = 'showMainStatisticsPanelEnemiesSlain',
-}, {
-  label = elitesSlainLabel,
-  value = elitesSlainValue,
-  setting = 'showMainStatisticsPanelElitesSlain',
-}, {
-  label = rareElitesSlainLabel,
-  value = rareElitesSlainValue,
-  setting = 'showMainStatisticsPanelRareElitesSlain',
-}, {
-  label = worldBossesSlainLabel,
-  value = worldBossesSlainValue,
-  setting = 'showMainStatisticsPanelWorldBossesSlain',
-}, {
-  label = dungeonBossesLabel,
-  value = dungeonBossesValue,
-  setting = 'showMainStatisticsPanelDungeonBosses',
-}, {
-  label = dungeonsCompletedLabel,
-  value = dungeonsCompletedValue,
-  setting = 'showMainStatisticsPanelDungeonsCompleted',
-}, {
-  label = healthPotionsLabel,
-  value = healthPotionsValue,
-  setting = 'showMainStatisticsPanelHealthPotionsUsed',
-}, {
-  label = manaPotionsLabel,
-  value = manaPotionsValue,
-  setting = 'showMainStatisticsPanelManaPotionsUsed',
-}, {
-  label = bandagesLabel,
-  value = bandagesValue,
-  setting = 'showMainStatisticsPanelBandagesUsed',
-}, {
-  label = targetDummiesLabel,
-  value = targetDummiesValue,
-  setting = 'showMainStatisticsPanelTargetDummiesUsed',
-}, {
-  label = grenadesLabel,
-  value = grenadesValue,
-  setting = 'showMainStatisticsPanelGrenadesUsed',
+  statKey = 'petDeaths',
 }, {
   label = partyDeathsLabel,
   value = partyDeathsValue,
   setting = 'showMainStatisticsPanelPartyMemberDeaths',
+  statKey = 'partyMemberDeaths',
 }, {
   label = highestCritLabel,
   value = highestCritValue,
   setting = 'showMainStatisticsPanelHighestCritValue',
+  statKey = 'highestCritValue',
 }, {
   label = highestHealCritLabel,
   value = highestHealCritValue,
   setting = 'showMainStatisticsPanelHighestHealCritValue',
-}, {
-  label = closeEscapesLabel,
-  value = closeEscapesValue,
-  setting = 'showMainStatisticsPanelCloseEscapes',
+  statKey = 'highestHealCritValue',
 }, {
   label = duelsTotalLabel,
   value = duelsTotalValue,
   setting = 'showMainStatisticsPanelDuelsTotal',
+  statKey = 'duelsTotal',
 }, {
   label = duelsWonLabel,
   value = duelsWonValue,
   setting = 'showMainStatisticsPanelDuelsWon',
+  statKey = 'duelsWon',
 }, {
   label = duelsLostLabel,
   value = duelsLostValue,
   setting = 'showMainStatisticsPanelDuelsLost',
+  statKey = 'duelsLost',
 }, {
   label = duelsWinPercentLabel,
   value = duelsWinPercentValue,
   setting = 'showMainStatisticsPanelDuelsWinPercent',
-}, {
-  label = playerJumpsLabel,
-  value = playerJumpsValue,
-  setting = 'showMainStatisticsPanelPlayerJumps',
-}, {
-  label = player360sLabel,
-  value = player360sValue,
-  setting = 'showMainStatisticsPanelPlayer360s',
+  statKey = 'duelsWinPercent',
 }, {
   label = blockedMapOpensLabel,
   value = blockedMapOpensValue,
   setting = 'showMainStatisticsPanelMapKeyPressesWhileMapBlocked',
+  statKey = 'mapKeyPressesWhileMapBlocked',
 }, {
   label = lagHomeLabel,
   value = lagHomeValue,
   setting = 'showMainStatisticsPanelLagHome',
+  statKey = 'lagHome',
 }, {
   label = lagWorldLabel,
   value = lagWorldValue,
   setting = 'showMainStatisticsPanelLagWorld',
+  statKey = 'lagWorld',
+}, {
+  -- Tiered stats (with tier system)
+  label = enemiesLabel,
+  value = enemiesValue,
+  setting = 'showMainStatisticsPanelEnemiesSlain',
+  statKey = 'enemiesSlain',
+}, {
+  label = elitesSlainLabel,
+  value = elitesSlainValue,
+  setting = 'showMainStatisticsPanelElitesSlain',
+  statKey = 'elitesSlain',
+}, {
+  label = rareElitesSlainLabel,
+  value = rareElitesSlainValue,
+  setting = 'showMainStatisticsPanelRareElitesSlain',
+  statKey = 'rareElitesSlain',
+}, {
+  label = worldBossesSlainLabel,
+  value = worldBossesSlainValue,
+  setting = 'showMainStatisticsPanelWorldBossesSlain',
+  statKey = 'worldBossesSlain',
+}, {
+  label = dungeonBossesLabel,
+  value = dungeonBossesValue,
+  setting = 'showMainStatisticsPanelDungeonBosses',
+  statKey = 'dungeonBossesKilled',
+}, {
+  label = dungeonsCompletedLabel,
+  value = dungeonsCompletedValue,
+  setting = 'showMainStatisticsPanelDungeonsCompleted',
+  statKey = 'dungeonsCompleted',
+}, {
+  label = healthPotionsLabel,
+  value = healthPotionsValue,
+  setting = 'showMainStatisticsPanelHealthPotionsUsed',
+  statKey = 'healthPotionsUsed',
+}, {
+  label = manaPotionsLabel,
+  value = manaPotionsValue,
+  setting = 'showMainStatisticsPanelManaPotionsUsed',
+  statKey = 'manaPotionsUsed',
+}, {
+  label = bandagesLabel,
+  value = bandagesValue,
+  setting = 'showMainStatisticsPanelBandagesUsed',
+  statKey = 'bandagesUsed',
+}, {
+  label = targetDummiesLabel,
+  value = targetDummiesValue,
+  setting = 'showMainStatisticsPanelTargetDummiesUsed',
+  statKey = 'targetDummiesUsed',
+}, {
+  label = grenadesLabel,
+  value = grenadesValue,
+  setting = 'showMainStatisticsPanelGrenadesUsed',
+  statKey = 'grenadesUsed',
+}, {
+  label = closeEscapesLabel,
+  value = closeEscapesValue,
+  setting = 'showMainStatisticsPanelCloseEscapes',
+  statKey = 'closeEscapes',
+}, {
+  label = playerJumpsLabel,
+  value = playerJumpsValue,
+  setting = 'showMainStatisticsPanelPlayerJumps',
+  statKey = 'playerJumps',
+}, {
+  label = player360sLabel,
+  value = player360sValue,
+  setting = 'showMainStatisticsPanelPlayer360s',
+  statKey = 'player360s',
 } }
+
+-- Create lookup table to reduce upvalues
+local statLookup = {}
+for _, element in ipairs(statsElements) do
+  if element.statKey then
+    statLookup[element.statKey] = element
+  end
+end
 
 -- Function to update row visibility and positioning
 local function UpdateRowVisibility()
-  local yOffset = -5
+  local yOffset = -8
   local visibleRows = 0
 
   for _, element in ipairs(statsElements) do
@@ -507,11 +528,11 @@ local function UpdateRowVisibility()
       -- Clear previous anchors to avoid conflicting points building up over time
       element.label:ClearAllPoints()
       element.value:ClearAllPoints()
-      element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 10, yOffset)
-      element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -10, yOffset)
+      element.label:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, yOffset)
+      element.value:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, yOffset)
       element.label:Show()
       element.value:Show()
-      yOffset = yOffset - 15
+      yOffset = yOffset - 16
       visibleRows = visibleRows + 1
     else
       element.label:Hide()
@@ -520,8 +541,8 @@ local function UpdateRowVisibility()
   end
 
   -- Adjust frame height based on visible rows
-  local newHeight = math.max(20, visibleRows * 15 + 10)
-  statsFrame:SetSize(200, newHeight)
+  local newHeight = math.max(20, visibleRows * 16 + 16)
+  statsFrame:SetSize(220, newHeight)
 end
 
 -- Make UpdateRowVisibility globally accessible
@@ -539,131 +560,352 @@ local function CheckAddonEnabled()
   end
 end
 
--- Function to update all statistics
+-- Helper function to calculate tier color for a statistic (using same logic as StatisticsTab.lua)
+local function GetTierColorForStat(statKey, value)
+  -- Use global tier configs from StatisticsTab.lua if available
+  if not _G.ULTRA_STAT_BAR_CONFIG or not _G.ULTRA_TIER_COLORS then
+    return nil -- Fallback to default colors if not available
+  end
+
+  local cfg = _G.ULTRA_STAT_BAR_CONFIG[statKey] or _G.ULTRA_STAT_BAR_CONFIG.default
+
+  -- Skip tier calculation for percent stats or stats with noTier flag
+  if cfg.type == 'percent' or cfg.noTier then
+    return nil
+  end
+
+  -- Calculate tier using the same logic as StatisticsTab.lua
+  local base = cfg.base or _G.ULTRA_STAT_BAR_CONFIG.default.base
+  local multiplier = cfg.multiplier or _G.ULTRA_STAT_BAR_CONFIG.default.multiplier
+  if multiplier <= 1 then
+    multiplier = _G.ULTRA_STAT_BAR_CONFIG.default.multiplier
+  end
+
+  local currentValue = math.max(0, value or 0)
+  if base <= 0 then
+    return nil
+  end
+
+  local tier = 1
+  local tierMax = base
+
+  -- Inclusive boundary: hitting the max of a tier counts as entering the next tier
+  while currentValue >= tierMax do
+    tier = tier + 1
+    tierMax = tierMax * multiplier
+  end
+
+  -- Get tier color
+  local tierColorIndex = math.min(tier, #_G.ULTRA_TIER_COLORS)
+  return _G.ULTRA_TIER_COLORS[tierColorIndex] or nil
+end
+
+-- Helper function to apply tier color to label and value
+local function ApplyTierColor(statKey, value, label, valueElement)
+  local tierColor = GetTierColorForStat(statKey, value)
+  if tierColor then
+    -- Apply tier color to both label and value
+    label:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+    valueElement:SetTextColor(tierColor[1], tierColor[2], tierColor[3], 1)
+  else
+    -- Use default colors if no tier
+    label:SetTextColor(1, 0.9, 0.5, 1) -- Gold for labels
+    valueElement:SetTextColor(1, 1, 1, 1) -- White for values
+  end
+end
+
+-- Function to update all statistics (refactored to reduce upvalues)
 function UpdateStatistics()
   if not UltraHardcoreDB then return end
 
+  -- Helper to get stat element from lookup table
+  local function getStat(statKey)
+    return statLookup[statKey]
+  end
+
   -- Update character level
   local playerLevel = UnitLevel('player') or 1
-  levelValue:SetText(formatNumberWithCommas(playerLevel))
+  local levelStat = getStat('level')
+  if levelStat then
+    levelStat.value:SetText(formatNumberWithCommas(playerLevel))
+    levelStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    levelStat.value:SetTextColor(1, 1, 1, 1)
+  end
 
-  -- Update total HP and Mana
+  -- Update total HP and Mana (these don't use tier colors)
   local maxHealth = UnitHealthMax('player') or 0
-  totalHPValue:SetText(formatNumberWithCommas(maxHealth))
+  local totalHPStat = getStat('totalHP')
+  if totalHPStat then
+    totalHPStat.value:SetText(formatNumberWithCommas(maxHealth))
+    totalHPStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    totalHPStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
   local maxMana = UnitPowerMax('player', MANA_POWER_TYPE) or 0
-  totalManaValue:SetText(formatNumberWithCommas(maxMana))
+  local totalManaStat = getStat('totalMana')
+  if totalManaStat then
+    totalManaStat.value:SetText(formatNumberWithCommas(maxMana))
+    totalManaStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    totalManaStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update lowest health
+  -- Update lowest health (percent stats don't use tier colors)
   local currentLowestHealth = CharacterStats:GetStat('lowestHealth') or 100
-  lowestHealthValue:SetText(string.format('%.1f', currentLowestHealth) .. '%')
+  local lowestHealthStat = getStat('lowestHealth')
+  if lowestHealthStat then
+    lowestHealthStat.value:SetText(string.format('%.1f', currentLowestHealth) .. '%')
+    lowestHealthStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lowestHealthStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
   -- Update session lowest health
   local currentSessionLowestHealth = CharacterStats:GetStat('lowestHealthThisSession') or 100
-  sessionHealthValue:SetText(string.format('%.1f', currentSessionLowestHealth) .. '%')
+  local sessionHealthStat = getStat('lowestHealthThisSession')
+  if sessionHealthStat then
+    sessionHealthStat.value:SetText(string.format('%.1f', currentSessionLowestHealth) .. '%')
+    sessionHealthStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    sessionHealthStat.value:SetTextColor(1, 1, 1, 1)
+  end
 
   -- Update this level lowest health
   local currentThisLevelHealth = CharacterStats:GetStat('lowestHealthThisLevel') or 100
-  thisLevelValue:SetText(string.format('%.1f', currentThisLevelHealth) .. '%')
+  local thisLevelStat = getStat('lowestHealthThisLevel')
+  if thisLevelStat then
+    thisLevelStat.value:SetText(string.format('%.1f', currentThisLevelHealth) .. '%')
+    thisLevelStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    thisLevelStat.value:SetTextColor(1, 1, 1, 1)
+  end
 
   -- Update enemies slain
   local enemies = CharacterStats:GetStat('enemiesSlain') or 0
-  enemiesValue:SetText(formatNumberWithCommas(enemies))
+  local enemiesStat = getStat('enemiesSlain')
+  if enemiesStat then
+    enemiesStat.value:SetText(formatNumberWithCommas(enemies))
+    ApplyTierColor('enemiesSlain', enemies, enemiesStat.label, enemiesStat.value)
+  end
 
   -- Update dungeons completed
   local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
-  dungeonsCompletedValue:SetText(formatNumberWithCommas(dungeonsCompleted))
+  local dungeonsStat = getStat('dungeonsCompleted')
+  if dungeonsStat then
+    dungeonsStat.value:SetText(formatNumberWithCommas(dungeonsCompleted))
+    ApplyTierColor('dungeonsCompleted', dungeonsCompleted, dungeonsStat.label, dungeonsStat.value)
+  end
 
-  -- Update pet deaths
+  -- Update pet deaths (noTier flag)
   local petDeaths = CharacterStats:GetStat('petDeaths') or 0
-  petDeathsValue:SetText(formatNumberWithCommas(petDeaths))
+  local petDeathsStat = getStat('petDeaths')
+  if petDeathsStat then
+    petDeathsStat.value:SetText(formatNumberWithCommas(petDeaths))
+    petDeathsStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    petDeathsStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
   -- Update elites slain
   local elitesSlain = CharacterStats:GetStat('elitesSlain') or 0
-  elitesSlainValue:SetText(formatNumberWithCommas(elitesSlain))
+  local elitesStat = getStat('elitesSlain')
+  if elitesStat then
+    elitesStat.value:SetText(formatNumberWithCommas(elitesSlain))
+    ApplyTierColor('elitesSlain', elitesSlain, elitesStat.label, elitesStat.value)
+  end
 
   -- Update rare elites slain
   local rareElitesSlain = CharacterStats:GetStat('rareElitesSlain') or 0
-  rareElitesSlainValue:SetText(formatNumberWithCommas(rareElitesSlain))
+  local rareElitesStat = getStat('rareElitesSlain')
+  if rareElitesStat then
+    rareElitesStat.value:SetText(formatNumberWithCommas(rareElitesSlain))
+    ApplyTierColor('rareElitesSlain', rareElitesSlain, rareElitesStat.label, rareElitesStat.value)
+  end
 
   -- Update world bosses slain
   local worldBossesSlain = CharacterStats:GetStat('worldBossesSlain') or 0
-  worldBossesSlainValue:SetText(formatNumberWithCommas(worldBossesSlain))
+  local worldBossesStat = getStat('worldBossesSlain')
+  if worldBossesStat then
+    worldBossesStat.value:SetText(formatNumberWithCommas(worldBossesSlain))
+    ApplyTierColor(
+      'worldBossesSlain',
+      worldBossesSlain,
+      worldBossesStat.label,
+      worldBossesStat.value
+    )
+  end
 
   -- Update dungeon bosses slain
   local dungeonBosses = CharacterStats:GetStat('dungeonBossesKilled') or 0
-  dungeonBossesValue:SetText(formatNumberWithCommas(dungeonBosses))
+  local dungeonBossesStat = getStat('dungeonBossesKilled')
+  if dungeonBossesStat then
+    dungeonBossesStat.value:SetText(formatNumberWithCommas(dungeonBosses))
+    ApplyTierColor(
+      'dungeonBossesKilled',
+      dungeonBosses,
+      dungeonBossesStat.label,
+      dungeonBossesStat.value
+    )
+  end
 
   -- Update survival statistics
   local healthPotions = CharacterStats:GetStat('healthPotionsUsed') or 0
-  healthPotionsValue:SetText(formatNumberWithCommas(healthPotions))
+  local healthPotionsStat = getStat('healthPotionsUsed')
+  if healthPotionsStat then
+    healthPotionsStat.value:SetText(formatNumberWithCommas(healthPotions))
+    ApplyTierColor(
+      'healthPotionsUsed',
+      healthPotions,
+      healthPotionsStat.label,
+      healthPotionsStat.value
+    )
+  end
 
   local manaPotions = CharacterStats:GetStat('manaPotionsUsed') or 0
-  manaPotionsValue:SetText(formatNumberWithCommas(manaPotions))
+  local manaPotionsStat = getStat('manaPotionsUsed')
+  if manaPotionsStat then
+    manaPotionsStat.value:SetText(formatNumberWithCommas(manaPotions))
+    ApplyTierColor('manaPotionsUsed', manaPotions, manaPotionsStat.label, manaPotionsStat.value)
+  end
 
   local bandages = CharacterStats:GetStat('bandagesUsed') or 0
-  bandagesValue:SetText(formatNumberWithCommas(bandages))
+  local bandagesStat = getStat('bandagesUsed')
+  if bandagesStat then
+    bandagesStat.value:SetText(formatNumberWithCommas(bandages))
+    ApplyTierColor('bandagesUsed', bandages, bandagesStat.label, bandagesStat.value)
+  end
 
   local targetDummies = CharacterStats:GetStat('targetDummiesUsed') or 0
-  targetDummiesValue:SetText(formatNumberWithCommas(targetDummies))
+  local targetDummiesStat = getStat('targetDummiesUsed')
+  if targetDummiesStat then
+    targetDummiesStat.value:SetText(formatNumberWithCommas(targetDummies))
+    ApplyTierColor(
+      'targetDummiesUsed',
+      targetDummies,
+      targetDummiesStat.label,
+      targetDummiesStat.value
+    )
+  end
 
   local grenades = CharacterStats:GetStat('grenadesUsed') or 0
-  grenadesValue:SetText(formatNumberWithCommas(grenades))
+  local grenadesStat = getStat('grenadesUsed')
+  if grenadesStat then
+    grenadesStat.value:SetText(formatNumberWithCommas(grenades))
+    ApplyTierColor('grenadesUsed', grenades, grenadesStat.label, grenadesStat.value)
+  end
 
   local partyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
-  partyDeathsValue:SetText(formatNumberWithCommas(partyDeaths))
+  local partyDeathsStat = getStat('partyMemberDeaths')
+  if partyDeathsStat then
+    partyDeathsStat.value:SetText(formatNumberWithCommas(partyDeaths))
+    -- Party deaths has noTier flag
+    partyDeathsStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    partyDeathsStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update highest crit value
+  -- Update highest crit value (noTier flag)
   local highestCrit = CharacterStats:GetStat('highestCritValue') or 0
-  highestCritValue:SetText(formatNumberWithCommas(highestCrit))
+  local highestCritStat = getStat('highestCritValue')
+  if highestCritStat then
+    highestCritStat.value:SetText(formatNumberWithCommas(highestCrit))
+    highestCritStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    highestCritStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update highest heal crit value
+  -- Update highest heal crit value (noTier flag)
   local highestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
-  highestHealCritValue:SetText(formatNumberWithCommas(highestHealCrit))
+  local highestHealCritStat = getStat('highestHealCritValue')
+  if highestHealCritStat then
+    highestHealCritStat.value:SetText(formatNumberWithCommas(highestHealCrit))
+    highestHealCritStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    highestHealCritStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
   -- Update close escape count
   local closeEscapes = CharacterStats:GetStat('closeEscapes') or 0
-  closeEscapesValue:SetText(formatNumberWithCommas(closeEscapes))
+  local closeEscapesStat = getStat('closeEscapes')
+  if closeEscapesStat then
+    closeEscapesStat.value:SetText(formatNumberWithCommas(closeEscapes))
+    ApplyTierColor('closeEscapes', closeEscapes, closeEscapesStat.label, closeEscapesStat.value)
+  end
 
-  -- Update Duels Total value
+  -- Update Duels Total value (noTier flag)
   local duelsTotal = CharacterStats:GetStat('duelsTotal') or 0
-  duelsTotalValue:SetText(formatNumberWithCommas(duelsTotal))
+  local duelsTotalStat = getStat('duelsTotal')
+  if duelsTotalStat then
+    duelsTotalStat.value:SetText(formatNumberWithCommas(duelsTotal))
+    duelsTotalStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    duelsTotalStat.value:SetTextColor(1, 1, 1, 1)
+  end
 
-  -- Update Duels Won value
+  -- Update Duels Won value (noTier flag)
   local duelsWon = CharacterStats:GetStat('duelsWon') or 0
-  duelsWonValue:SetText(formatNumberWithCommas(duelsWon))
+  local duelsWonStat = getStat('duelsWon')
+  if duelsWonStat then
+    duelsWonStat.value:SetText(formatNumberWithCommas(duelsWon))
+    duelsWonStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    duelsWonStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update Duels Lost value
+  -- Update Duels Lost value (noTier flag)
   local duelsLost = CharacterStats:GetStat('duelsLost') or 0
-  duelsLostValue:SetText(formatNumberWithCommas(duelsLost))
+  local duelsLostStat = getStat('duelsLost')
+  if duelsLostStat then
+    duelsLostStat.value:SetText(formatNumberWithCommas(duelsLost))
+    duelsLostStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    duelsLostStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update Duels Win Percentage value
+  -- Update Duels Win Percentage value (percent stat)
   local duelsWinPercent = CharacterStats:GetStat('duelsWinPercent') or 0
-  if duelsWinPercent % 1 == 0 then
-    duelsWinPercentValue:SetText(string.format('%d%%', duelsWinPercent))
-  else
-    duelsWinPercentValue:SetText(string.format('%.1f%%', duelsWinPercent))
+  local duelsWinPercentStat = getStat('duelsWinPercent')
+  if duelsWinPercentStat then
+    if duelsWinPercent % 1 == 0 then
+      duelsWinPercentStat.value:SetText(string.format('%d%%', duelsWinPercent))
+    else
+      duelsWinPercentStat.value:SetText(string.format('%.1f%%', duelsWinPercent))
+    end
+    duelsWinPercentStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    duelsWinPercentStat.value:SetTextColor(1, 1, 1, 1)
   end
 
   -- Update player jumps value
   local playerJumps = CharacterStats:GetStat('playerJumps') or 0
-  playerJumpsValue:SetText(formatNumberWithCommas(playerJumps))
+  local playerJumpsStat = getStat('playerJumps')
+  if playerJumpsStat then
+    playerJumpsStat.value:SetText(formatNumberWithCommas(playerJumps))
+    ApplyTierColor('playerJumps', playerJumps, playerJumpsStat.label, playerJumpsStat.value)
+  end
 
   -- Update player 360s value
   local player360s = CharacterStats:GetStat('player360s') or 0
-  player360sValue:SetText(formatNumberWithCommas(player360s))
+  local player360sStat = getStat('player360s')
+  if player360sStat then
+    player360sStat.value:SetText(formatNumberWithCommas(player360s))
+    ApplyTierColor('player360s', player360s, player360sStat.label, player360sStat.value)
+  end
 
-  -- Update Blocked Map Opens value
+  -- Update Blocked Map Opens value (noTier flag)
   local blockedMapOpens = CharacterStats:GetStat('mapKeyPressesWhileMapBlocked') or 0
-  blockedMapOpensValue:SetText(formatNumberWithCommas(blockedMapOpens))
+  local blockedMapOpensStat = getStat('mapKeyPressesWhileMapBlocked')
+  if blockedMapOpensStat then
+    blockedMapOpensStat.value:SetText(formatNumberWithCommas(blockedMapOpens))
+    blockedMapOpensStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    blockedMapOpensStat.value:SetTextColor(1, 1, 1, 1)
+  end
 
-  -- Update Lag Home value
+  -- Update Lag Home value (noTier flag)
   local lagHome = select(3, GetNetStats()) or 0
-  lagHomeValue:SetText(formatNumberWithCommas(lagHome) .. ' ms')
+  local lagHomeStat = getStat('lagHome')
+  if lagHomeStat then
+    lagHomeStat.value:SetText(formatNumberWithCommas(lagHome) .. ' ms')
+    lagHomeStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lagHomeStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
-  -- Update Lag World value
+  -- Update Lag World value (noTier flag)
   local lagWorld = select(4, GetNetStats()) or 0
-  lagWorldValue:SetText(formatNumberWithCommas(lagWorld) .. ' ms')
+  local lagWorldStat = getStat('lagWorld')
+  if lagWorldStat then
+    lagWorldStat.value:SetText(formatNumberWithCommas(lagWorld) .. ' ms')
+    lagWorldStat.label:SetTextColor(1, 0.9, 0.5, 1)
+    lagWorldStat.value:SetTextColor(1, 1, 1, 1) -- White for non-tier stats
+  end
 
   -- Update row visibility after updating values
   UpdateRowVisibility()
