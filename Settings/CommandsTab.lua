@@ -157,8 +157,12 @@ function InitializeCommandsTab(tabContents)
       },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
       {
+        '/resetstatisticstrackingtoast, /rstt',
+        'Reset the Statistics Tracking Toast position to its default.',
+      },
+      {
         '/resetui, /rui',
-        'Reset all draggable UI element positions to default (ULTRA Menu, clock, mail, tracking, resource bar, resource indicator, soulshard indicator, and statistics panel).',
+        'Reset all draggable UI element positions to default (ULTRA Menu, clock, mail, tracking, resource bar, resource indicator, soulshard indicator, statistics panel, and statistics tracking toast).',
       },
     },
   } }

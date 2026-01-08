@@ -10,7 +10,7 @@ local TOAST_GAP = 4
 local TOAST_LIFETIME_SECONDS = 3
 local TOAST_MOVE_SPEED = 18 -- higher = snappier smoothing toward the moving target
 local TOAST_DRIFT_PX_PER_SEC = 22 -- continuous downward drift while visible
-local TOAST_ANCHOR_X = -400 -- 200px in from the right edge
+local TOAST_ANCHOR_X = -400 -- 200px in from the right edge (default, can be overridden by saved position)
 local TOAST_ANCHOR_Y = 0
 local TOAST_FADE_OUT_SECONDS = 0.35 -- fade out near end of lifetime (no fade-in)
 local TOAST_ACHIEVEMENT_DELAY_SECONDS = 0.05 -- small delay so "+X" lays out before tier achievement is inserted
@@ -202,32 +202,204 @@ local function CalculateTierProgress(value, base, multiplier)
   return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
 end
 
+-- Position persistence functions
+local function SaveStatisticsTrackingToastPosition()
+  local f = StatisticsTrackingToast.frame
+  if not f or not UltraHardcoreDB then
+    return -- Frame or database not initialized yet, skip saving
+  end
+
+  local point, relativeTo, relativePoint, xOfs, yOfs = f:GetPoint()
+  -- Always save UIParent as the relativeTo frame to avoid reference issues
+  UltraHardcoreDB.statisticsTrackingToastPosition = {
+    point = point,
+    relativeTo = 'UIParent',
+    relativePoint = relativePoint,
+    xOfs = xOfs,
+    yOfs = yOfs,
+  }
+
+  if SaveDBData then
+    SaveDBData('statisticsTrackingToastPosition', UltraHardcoreDB.statisticsTrackingToastPosition)
+  end
+end
+
+local function LoadStatisticsTrackingToastPosition()
+  local f = StatisticsTrackingToast.frame
+  if not f or not UltraHardcoreDB then
+    return -- Frame or database not initialized yet, skip loading
+  end
+
+  local pos = UltraHardcoreDB.statisticsTrackingToastPosition
+  f:ClearAllPoints()
+
+  -- If no saved position exists, use default position
+  if not pos then
+    f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  else
+    -- Always anchor to UIParent to avoid frame reference issues
+    f:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+  end
+end
+
+-- Reset Statistics Tracking Toast position to default
+local function ResetStatisticsTrackingToastPosition()
+  -- Clear saved position from database first
+  if UltraHardcoreDB then
+    UltraHardcoreDB.statisticsTrackingToastPosition = nil
+  end
+  
+  if SaveDBData then
+    SaveDBData('statisticsTrackingToastPosition', nil)
+  end
+  
+  -- Reset frame position if it exists
+  local f = StatisticsTrackingToast.frame
+  if f then
+    f:ClearAllPoints()
+    f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  end
+  
+  print('|cfff44336[ULTRA]|r Statistics Tracking Toast position reset to default.')
+end
+
+-- Make ResetStatisticsTrackingToastPosition globally accessible for reset commands
+_G.ResetStatisticsTrackingToastPosition = ResetStatisticsTrackingToastPosition
+
+-- Slash command to reset Statistics Tracking Toast position
+SLASH_RESETSTATISTICSTRACKINGTOAST1 = '/resetstatisticstrackingtoast'
+SLASH_RESETSTATISTICSTRACKINGTOAST2 = '/rstt'
+SlashCmdList['RESETSTATISTICSTRACKINGTOAST'] = ResetStatisticsTrackingToastPosition
+
 local function EnsureFrames()
   if StatisticsTrackingToast.frame then
     -- Allow live repositioning if this file is reloaded / settings change
-    StatisticsTrackingToast.frame:ClearAllPoints()
-    StatisticsTrackingToast.frame:SetPoint(
-      'TOPRIGHT',
-      UIParent,
-      'TOPRIGHT',
-      TOAST_ANCHOR_X,
-      TOAST_ANCHOR_Y
-    )
+    LoadStatisticsTrackingToastPosition()
     return
   end
 
   local f =
     CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
-  f:SetSize(TOAST_WIDTH, 10)
-  f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  f:SetSize(TOAST_WIDTH, 30) -- Minimum height to ensure easy hovering
   f:SetFrameStrata('DIALOG')
-  f:Hide()
+  f:Show() -- Always show so it can receive mouse events for dragging
+  f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events when no notifications
+  f:EnableMouse(true) -- Always enable mouse for hover detection
+  -- Make sure the frame can receive mouse events even when nearly invisible
+  f:SetMouseClickEnabled(true)
 
   StatisticsTrackingToast.frame = f
   StatisticsTrackingToast.toasts = {}
 
   f._uhcAnimating = false
   f._uhcDriftOffset = 0
+
+  -- Load saved position or use default
+  LoadStatisticsTrackingToastPosition()
+
+  -- Make the frame draggable
+  f:SetMovable(true)
+  f:EnableMouse(true)
+  f:RegisterForDrag('LeftButton')
+  f:SetScript('OnDragStart', function(self)
+    if not self:IsMovable() then return end
+    self:StartMoving()
+  end)
+  f:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+    SaveStatisticsTrackingToastPosition()
+  end)
+
+  -- Create drag button that is always visible and interactive
+  local dragButton = CreateFrame('Button', nil, f, 'BackdropTemplate')
+  dragButton:SetSize(50, 20)
+  dragButton:SetPoint('TOPRIGHT', f, 'TOPRIGHT', -4, -4)
+  dragButton:SetFrameStrata('DIALOG')
+  dragButton:SetFrameLevel(f:GetFrameLevel() + 10) -- Ensure it's above everything
+  dragButton:EnableMouse(true) -- Always enable mouse on the button
+  dragButton:SetIgnoreParentAlpha(true) -- Don't inherit parent's alpha
+  
+  -- Style the button
+  dragButton:SetBackdrop({
+    bgFile = 'Interface\\Buttons\\WHITE8X8',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+    tile = true,
+    tileSize = 8,
+    edgeSize = 8,
+    insets = {
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
+    },
+  })
+  dragButton:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
+  dragButton:SetBackdropBorderColor(0.5, 0.5, 0.5, 0.9)
+  
+  -- Add "drag" text
+  local dragText = dragButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
+  dragText:SetPoint('CENTER', dragButton, 'CENTER', 0, 0)
+  dragText:SetText('drag')
+  dragText:SetTextColor(1, 1, 1, 1)
+  dragButton.text = dragText
+  
+  -- Hide the button by default, only show on hover
+  dragButton:Hide()
+  dragButton:EnableMouse(true) -- Always enable mouse on the button itself
+  f.dragButton = dragButton
+  
+  -- Make the drag button also draggable (forward drag events to parent)
+  dragButton:SetMovable(false) -- Don't make button itself movable
+  dragButton:RegisterForDrag('LeftButton')
+  dragButton:SetScript('OnDragStart', function(self)
+    local parent = self:GetParent()
+    if parent and parent:IsMovable() then
+      parent:StartMoving()
+    end
+  end)
+  dragButton:SetScript('OnDragStop', function(self)
+    local parent = self:GetParent()
+    if parent then
+      parent:StopMovingOrSizing()
+      SaveStatisticsTrackingToastPosition()
+    end
+  end)
+
+  -- Show drag button on hover
+  f:SetScript('OnEnter', function(self)
+    if self.dragButton then
+      self.dragButton:Show()
+      self.dragButton:SetAlpha(1.0) -- Full opacity on hover
+    end
+  end)
+  
+  -- Ensure the frame can receive mouse events even when nearly transparent
+  -- Set a minimal hit rect area to make hovering easier
+  f:SetHitRectInsets(0, 0, 0, 0)
+
+  -- Hide drag button when not hovering the frame
+  f:SetScript('OnLeave', function(self)
+    if self.dragButton then
+      -- Use a small delay to check if mouse moved to the button
+      C_Timer.After(0.05, function()
+        if self.dragButton and not self.dragButton:IsMouseOver() then
+          self.dragButton:Hide()
+        end
+      end)
+    end
+  end)
+  
+  -- Also handle hover on the drag button itself - keep it visible when hovering button
+  dragButton:SetScript('OnEnter', function(self)
+    -- Show and make fully visible when hovering over the button
+    self:Show()
+    self:SetAlpha(1.0)
+  end)
+  
+  dragButton:SetScript('OnLeave', function(self)
+    -- Hide when leaving the button
+    self:Hide()
+  end)
   f:SetScript('OnUpdate', function(self, elapsed)
     if not self._uhcAnimating then return end
 
@@ -276,7 +448,11 @@ local function EnsureFrames()
     if not anyVisible then
       self._uhcAnimating = false
       self._uhcDriftOffset = 0
-      self:Hide()
+      -- Keep frame visible but nearly transparent so it can still receive mouse events for dragging
+      self:Show()
+      self:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events
+      -- Ensure mouse is always enabled for hover/drag
+      self:EnableMouse(true)
     end
   end)
 end
@@ -297,11 +473,18 @@ local function ReflowToasts()
 
   if anyVisible then
     f:Show()
+    f:SetAlpha(1)
     f._uhcAnimating = true
+    -- Don't auto-show drag button, only show on hover
   else
-    f:Hide()
+    -- Keep frame visible but nearly transparent so it can still receive mouse events for dragging
+    f:Show()
+    f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events
     f._uhcAnimating = false
     f._uhcDriftOffset = 0
+    -- Ensure mouse is always enabled for hover/drag
+    f:EnableMouse(true)
+    -- Hide drag button when no notifications (unless hovering)
   end
 end
 
@@ -727,6 +910,8 @@ do
   gate:RegisterEvent('PLAYER_LOGIN')
   gate:SetScript('OnEvent', function()
     EnsureFrames()
+    -- Load position after database is ready
+    LoadStatisticsTrackingToastPosition()
     if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then
       StatisticsTrackingToast:ClearAll()
     end
