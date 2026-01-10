@@ -280,7 +280,7 @@ local function EnsureFrames()
 
   local f =
     CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
-  f:SetSize(TOAST_WIDTH, 30) -- Minimum height to ensure easy hovering
+  f:SetSize(50, 30) -- Minimum height to ensure easy hovering
   f:SetFrameStrata('DIALOG')
   f:Show() -- Always show so it can receive mouse events for dragging
   f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events when no notifications
