@@ -65,8 +65,12 @@ end
 -- Suppress channel notice spam for the 'uhc' channel (optional; defaults ON via DB setting).
 local function ShouldSuppressUHCJoinLeaveNotices()
   -- If settings haven't loaded yet, default to "true" so we don't spam on login.
-  if not GLOBAL_SETTINGS then return true end
-  if GLOBAL_SETTINGS.suppressUHCChannelJoinLeaveNotices == nil then return true end
+  if not GLOBAL_SETTINGS then
+    return true
+  end
+  if GLOBAL_SETTINGS.suppressUHCChannelJoinLeaveNotices == nil then
+    return true
+  end
   return GLOBAL_SETTINGS.suppressUHCChannelJoinLeaveNotices == true
 end
 
@@ -82,43 +86,52 @@ local function EventHasChannelName(targetChannelName, ...)
 end
 
 local function UHCChannelNoticeFilter(_, event, ...)
-  if not ShouldSuppressUHCJoinLeaveNotices() then return false end
+  if not ShouldSuppressUHCJoinLeaveNotices() then
+    return false
+  end
 
   local noticeType = ...
   -- Hide common channel-notice spam (varies slightly by client/version).
   -- JOIN/LEAVE: join/leave spam
   -- MODERATOR/OWNER: moderator privileges, owner changes
-  if noticeType ~= 'JOIN'
-    and noticeType ~= 'LEAVE'
-    and noticeType ~= 'MODERATOR'
-    and noticeType ~= 'OWNER'
-    and noticeType ~= 'YOU_CHANGED'
-  then
+  if noticeType ~= 'JOIN' and noticeType ~= 'LEAVE' and noticeType ~= 'MODERATOR' and noticeType ~= 'OWNER' and noticeType ~= 'YOU_CHANGED' then
     return false
   end
 
   -- We avoid relying on argument positions by scanning for the channel name.
-  if not EventHasChannelName('uhc', ...) then return false end
+  if not EventHasChannelName('uhc', ...) then
+    return false
+  end
 
   return true
 end
 
 -- Some moderation/owner messages arrive as CHAT_MSG_SYSTEM rather than channel notice events.
 local function UHCSystemMessageFilter(_, event, message, ...)
-  if not ShouldSuppressUHCJoinLeaveNotices() then return false end
-  if type(message) ~= 'string' then return false end
+  if not ShouldSuppressUHCJoinLeaveNotices() then
+    return false
+  end
+  if type(message) ~= 'string' then
+    return false
+  end
 
   -- Only apply when the player is actually in the UHC channel.
   local channelID = select(1, GetChannelName('uhc'))
-  if not channelID or channelID == 0 then return false end
+  if not channelID or channelID == 0 then
+    return false
+  end
 
   -- English client strings. These are intentionally broad to match minor punctuation differences.
   -- Examples:
   -- "Moderation privileges given to X."
   -- "Owner changed to Y."
   local msg = message:lower()
-  if msg:find('moderation privileges given to', 1, true) then return true end
-  if msg:find('owner changed to', 1, true) then return true end
+  if msg:find('moderation privileges given to', 1, true) then
+    return true
+  end
+  if msg:find('owner changed to', 1, true) then
+    return true
+  end
 
   return false
 end
