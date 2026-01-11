@@ -113,6 +113,7 @@ Settings/StatisticsTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
+Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
 Settings/XFoundMode.lua
 Settings/XFoundMode/IntroPage.lua

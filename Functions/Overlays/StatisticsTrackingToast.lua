@@ -266,6 +266,114 @@ end
 -- Make ResetStatisticsTrackingToastPosition globally accessible for reset commands
 _G.ResetStatisticsTrackingToastPosition = ResetStatisticsTrackingToastPosition
 
+-- Enable repositioning mode - highlights the frame and makes it draggable
+function StatisticsTrackingToast:EnableRepositioningMode()
+  local f = self.frame
+  if not f then
+    EnsureFrames()
+    f = self.frame
+  end
+  if not f then return end
+
+  -- Enable dragging
+  f._uhcRepositioningMode = true
+  f:EnableMouse(true)
+  f:RegisterForDrag('LeftButton')
+  f:SetScript('OnDragStart', function(self)
+    if not self:IsMovable() then return end
+    self:StartMoving()
+  end)
+  f:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+    -- Don't save yet - wait for confirm
+  end)
+
+  -- Create or show highlight
+  if not f._uhcHighlight then
+    local highlight = f:CreateTexture(nil, 'OVERLAY')
+    highlight:SetAllPoints(f)
+    highlight:SetColorTexture(1, 1, 0, 0.4) -- Yellow highlight
+    highlight:SetBlendMode('ADD')
+    f._uhcHighlight = highlight
+    
+    -- Create border effect using backdrop
+    f:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Buttons\\WHITE8X8',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 3,
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
+    })
+    f:SetBackdropColor(1, 1, 0, 0.2)
+    f:SetBackdropBorderColor(1, 1, 0, 1)
+  end
+  f._uhcHighlight:Show()
+  f:SetAlpha(1) -- Make frame fully visible
+
+  -- Create or show confirm button
+  if not f._uhcConfirmButton then
+    local confirmButton = CreateFrame('Button', nil, f, 'UIPanelButtonTemplate')
+    confirmButton:SetSize(80, 25)
+    confirmButton:SetPoint('CENTER', f, 'CENTER', 0, 0)
+    confirmButton:SetText('Confirm')
+    confirmButton:SetFrameStrata('DIALOG')
+    confirmButton:SetFrameLevel(f:GetFrameLevel() + 20)
+    confirmButton:SetScript('OnClick', function()
+      SaveStatisticsTrackingToastPosition()
+      StatisticsTrackingToast:DisableRepositioningMode()
+      print('|cfff44336[ULTRA]|r Statistics Tracking Toast position saved.')
+    end)
+    f._uhcConfirmButton = confirmButton
+  end
+  f._uhcConfirmButton:Show()
+end
+
+-- Disable repositioning mode - removes highlight and makes frame non-draggable
+function StatisticsTrackingToast:DisableRepositioningMode()
+  local f = self.frame
+  if not f then return end
+
+  f._uhcRepositioningMode = false
+  f:EnableMouse(false)
+  f:SetScript('OnDragStart', nil)
+  f:SetScript('OnDragStop', nil)
+
+  -- Hide highlight
+  if f._uhcHighlight then
+    f._uhcHighlight:Hide()
+  end
+  
+  -- Remove backdrop if it was added
+  f:SetBackdrop(nil)
+
+  -- Hide confirm button
+  if f._uhcConfirmButton then
+    f._uhcConfirmButton:Hide()
+  end
+
+  -- Restore frame alpha based on notification state
+  if not f._uhcAnimating then
+    f:SetAlpha(0.01)
+  else
+    f:SetAlpha(1)
+  end
+end
+
+-- Make functions globally accessible
+_G.EnableStatisticsTrackingToastRepositioning = function()
+  StatisticsTrackingToast:EnableRepositioningMode()
+end
+
+_G.DisableStatisticsTrackingToastRepositioning = function()
+  StatisticsTrackingToast:DisableRepositioningMode()
+end
+
 -- Slash command to reset Statistics Tracking Toast position
 SLASH_RESETSTATISTICSTRACKINGTOAST1 = '/resetstatisticstrackingtoast'
 SLASH_RESETSTATISTICSTRACKINGTOAST2 = '/rstt'
@@ -280,13 +388,11 @@ local function EnsureFrames()
 
   local f =
     CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
-  f:SetSize(50, 30) -- Minimum height to ensure easy hovering
+  f:SetSize(TOAST_WIDTH, 30) -- Frame size for notifications
   f:SetFrameStrata('DIALOG')
-  f:Show() -- Always show so it can receive mouse events for dragging
-  f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events when no notifications
-  f:EnableMouse(true) -- Always enable mouse for hover detection
-  -- Make sure the frame can receive mouse events even when nearly invisible
-  f:SetMouseClickEnabled(true)
+  f:Show() -- Always show
+  f:SetAlpha(0.01) -- Very low alpha (not 0) when no notifications
+  f:EnableMouse(false) -- Disabled by default, enabled only in repositioning mode
 
   StatisticsTrackingToast.frame = f
   StatisticsTrackingToast.toasts = {}
@@ -297,109 +403,12 @@ local function EnsureFrames()
   -- Load saved position or use default
   LoadStatisticsTrackingToastPosition()
 
-  -- Make the frame draggable
+  -- Frame is not draggable by default - only when repositioning mode is active
   f:SetMovable(true)
-  f:EnableMouse(true)
-  f:RegisterForDrag('LeftButton')
-  f:SetScript('OnDragStart', function(self)
-    if not self:IsMovable() then return end
-    self:StartMoving()
-  end)
-  f:SetScript('OnDragStop', function(self)
-    self:StopMovingOrSizing()
-    SaveStatisticsTrackingToastPosition()
-  end)
-
-  -- Create drag button that is always visible and interactive
-  local dragButton = CreateFrame('Button', nil, f, 'BackdropTemplate')
-  dragButton:SetSize(50, 20)
-  dragButton:SetPoint('TOPRIGHT', f, 'TOPRIGHT', -4, -4)
-  dragButton:SetFrameStrata('DIALOG')
-  dragButton:SetFrameLevel(f:GetFrameLevel() + 10) -- Ensure it's above everything
-  dragButton:EnableMouse(true) -- Always enable mouse on the button
-  dragButton:SetIgnoreParentAlpha(true) -- Don't inherit parent's alpha
-  
-  -- Style the button
-  dragButton:SetBackdrop({
-    bgFile = 'Interface\\Buttons\\WHITE8X8',
-    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-    tile = true,
-    tileSize = 8,
-    edgeSize = 8,
-    insets = {
-      left = 3,
-      right = 3,
-      top = 3,
-      bottom = 3,
-    },
-  })
-  dragButton:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-  dragButton:SetBackdropBorderColor(0.5, 0.5, 0.5, 0.9)
-  
-  -- Add "drag" text
-  local dragText = dragButton:CreateFontString(nil, 'OVERLAY', 'GameFontNormalSmall')
-  dragText:SetPoint('CENTER', dragButton, 'CENTER', 0, 0)
-  dragText:SetText('drag')
-  dragText:SetTextColor(1, 1, 1, 1)
-  dragButton.text = dragText
-  
-  -- Hide the button by default, only show on hover
-  dragButton:Hide()
-  dragButton:EnableMouse(true) -- Always enable mouse on the button itself
-  f.dragButton = dragButton
-  
-  -- Make the drag button also draggable (forward drag events to parent)
-  dragButton:SetMovable(false) -- Don't make button itself movable
-  dragButton:RegisterForDrag('LeftButton')
-  dragButton:SetScript('OnDragStart', function(self)
-    local parent = self:GetParent()
-    if parent and parent:IsMovable() then
-      parent:StartMoving()
-    end
-  end)
-  dragButton:SetScript('OnDragStop', function(self)
-    local parent = self:GetParent()
-    if parent then
-      parent:StopMovingOrSizing()
-      SaveStatisticsTrackingToastPosition()
-    end
-  end)
-
-  -- Show drag button on hover
-  f:SetScript('OnEnter', function(self)
-    if self.dragButton then
-      self.dragButton:Show()
-      self.dragButton:SetAlpha(1.0) -- Full opacity on hover
-    end
-  end)
-  
-  -- Ensure the frame can receive mouse events even when nearly transparent
-  -- Set a minimal hit rect area to make hovering easier
-  f:SetHitRectInsets(0, 0, 0, 0)
-
-  -- Hide drag button when not hovering the frame
-  f:SetScript('OnLeave', function(self)
-    if self.dragButton then
-      -- Use a small delay to check if mouse moved to the button
-      C_Timer.After(0.05, function()
-        if self.dragButton and not self.dragButton:IsMouseOver() then
-          self.dragButton:Hide()
-        end
-      end)
-    end
-  end)
-  
-  -- Also handle hover on the drag button itself - keep it visible when hovering button
-  dragButton:SetScript('OnEnter', function(self)
-    -- Show and make fully visible when hovering over the button
-    self:Show()
-    self:SetAlpha(1.0)
-  end)
-  
-  dragButton:SetScript('OnLeave', function(self)
-    -- Hide when leaving the button
-    self:Hide()
-  end)
+  f:EnableMouse(false) -- Disable mouse by default
+  f._uhcRepositioningMode = false
+  f._uhcHighlight = nil
+  f._uhcConfirmButton = nil
   f:SetScript('OnUpdate', function(self, elapsed)
     if not self._uhcAnimating then return end
 
@@ -448,11 +457,12 @@ local function EnsureFrames()
     if not anyVisible then
       self._uhcAnimating = false
       self._uhcDriftOffset = 0
-      -- Keep frame visible but nearly transparent so it can still receive mouse events for dragging
+      -- Keep frame visible but nearly transparent
       self:Show()
-      self:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events
-      -- Ensure mouse is always enabled for hover/drag
-      self:EnableMouse(true)
+      if not self._uhcRepositioningMode then
+        self:SetAlpha(0.01) -- Very low alpha (not 0)
+        self:EnableMouse(false) -- Only enable mouse if in repositioning mode
+      end
     end
   end)
 end
@@ -473,18 +483,22 @@ local function ReflowToasts()
 
   if anyVisible then
     f:Show()
-    f:SetAlpha(1)
+    if not f._uhcRepositioningMode then
+      f:SetAlpha(1)
+    end
     f._uhcAnimating = true
-    -- Don't auto-show drag button, only show on hover
   else
-    -- Keep frame visible but nearly transparent so it can still receive mouse events for dragging
+    -- Keep frame visible but nearly transparent
     f:Show()
-    f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events
+    if not f._uhcRepositioningMode then
+      f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events if needed
+    end
     f._uhcAnimating = false
     f._uhcDriftOffset = 0
-    -- Ensure mouse is always enabled for hover/drag
-    f:EnableMouse(true)
-    -- Hide drag button when no notifications (unless hovering)
+    -- Only enable mouse if in repositioning mode
+    if not f._uhcRepositioningMode then
+      f:EnableMouse(false)
+    end
   end
 end
 
