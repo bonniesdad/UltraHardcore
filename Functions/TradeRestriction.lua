@@ -55,10 +55,16 @@ end
 
 -- Helper: treat players in guild "U L T R A" as Guild Found
 function IsUltraGuildMember()
+  local isHardcoreActive = C_GameRules.IsHardcoreActive()
+  if not isHardcoreActive then
+    return false
+  end
+
   local guildName = GetGuildInfo and GetGuildInfo('player')
   if not guildName then
     return false
   end
+
   return guildName == 'U L T R A'
 end
 

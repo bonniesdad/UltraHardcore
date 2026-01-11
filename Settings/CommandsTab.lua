@@ -28,8 +28,10 @@ function InitializeCommandsTab(tabContents)
 
   -- Create main container frame with background (similar to StatisticsTab and SettingsOptionsTab)
   local commandsFrame = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
-  commandsFrame:SetPoint('TOPLEFT', explainer, 'BOTTOMLEFT', 20, -20)
-  commandsFrame:SetPoint('BOTTOMRIGHT', parent, 'BOTTOMRIGHT', -10, -25)
+  commandsFrame:SetPoint('TOP', explainer, 'BOTTOM', 0, -20)
+  commandsFrame:SetPoint('LEFT', parent, 'LEFT', 10, 0)
+  commandsFrame:SetPoint('RIGHT', parent, 'RIGHT', -10, 0)
+  commandsFrame:SetPoint('BOTTOM', parent, 'BOTTOM', 0, -25)
   commandsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -157,8 +159,12 @@ function InitializeCommandsTab(tabContents)
       },
       { '/resetresourcebar, /rrb', 'Reset the custom resource bar to its default position.' },
       {
+        '/resetstatisticstrackingtoast, /rstt',
+        'Reset the Statistics Tracking Toast position to its default.',
+      },
+      {
         '/resetui, /rui',
-        'Reset all draggable UI element positions to default (ULTRA Menu, clock, mail, tracking, resource bar, resource indicator, soulshard indicator, and statistics panel).',
+        'Reset all draggable UI element positions to default (ULTRA Menu, clock, mail, tracking, resource bar, resource indicator, soulshard indicator, statistics panel, and statistics tracking toast).',
       },
     },
   } }

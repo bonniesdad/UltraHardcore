@@ -109,16 +109,16 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'showOnScreenStatistics',
   tooltip = 'Show important ULTRA statistics on the screen at all times',
 }, {
-  name = 'Show Statistics Tracking',
+  name = 'Show Statistics Notifications',
   dbSettingsValueName = 'showStatisticsTracking',
   tooltip = 'Show statistic update notifications (proof of concept: Enemies Slain)',
 }, {
-  name = 'Minimal Statistics Tracking',
+  name = 'Minimal Style Notifications',
   dbSettingsValueName = 'minimalStatisticsTracking',
   tooltip = 'Show “+X [icon]” only (no stat name text)',
   dependsOn = 'showStatisticsTracking',
 }, {
-  name = 'Show Only Tier Achievements',
+  name = 'Only Show Tier Notifications',
   dbSettingsValueName = 'statisticsTrackingTierOnly',
   tooltip = 'Only show a notification when you advance to a new tier',
   dependsOn = 'showStatisticsTracking',
@@ -810,8 +810,10 @@ function InitializeSettingsOptionsTab(tabContents)
 
   -- Create main container frame with background (similar to StatisticsTab)
   local optionsFrame = CreateFrame('Frame', nil, tabContents[2], 'BackdropTemplate')
-  optionsFrame:SetPoint('TOPLEFT', searchBox, 'BOTTOMLEFT', -6, -10)
-  optionsFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
+  optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
+  optionsFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
+  optionsFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
+  optionsFrame:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -819,10 +821,10 @@ function InitializeSettingsOptionsTab(tabContents)
     tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 5,
-      right = 5,
-      top = 5,
-      bottom = 5,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
   optionsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
@@ -1146,6 +1148,53 @@ function InitializeSettingsOptionsTab(tabContents)
               GameTooltip:Hide()
             end)
           end -- End of shouldShow check
+          -- Add reposition button after the last Statistics Tracking checkbox
+          if checkboxItem.dbSettingsValueName == 'statisticsTrackingTierOnly' then
+            numRows = numRows + 1
+            local repositionButton =
+              CreateFrame('Button', nil, sectionFrame, 'UIPanelButtonTemplate')
+            repositionButton:SetSize(180, 25)
+            repositionButton:SetPoint(
+              'TOPLEFT',
+              sectionFrame,
+              'TOPLEFT',
+              10,
+              -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
+            )
+            repositionButton:SetText('Reposition Statistics Toast')
+            repositionButton:SetScript('OnClick', function()
+              if _G.EnableStatisticsTrackingToastRepositioning then
+                _G.EnableStatisticsTrackingToastRepositioning()
+                print(
+                  '|cfff44336[ULTRA]|r Statistics Tracking Toast repositioning mode enabled. Drag the highlighted area and click Confirm to save.'
+                )
+              end
+            end)
+            repositionButton:SetScript('OnEnter', function(self)
+              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+              GameTooltip:SetText('Reposition Statistics Toast', 1, 1, 1)
+              GameTooltip:AddLine(
+                'Highlights the Statistics Tracking Toast area and makes it draggable.',
+                1,
+                1,
+                1,
+                true
+              )
+              GameTooltip:AddLine(
+                'Drag it to your desired position and click Confirm to save.',
+                0.8,
+                0.8,
+                0.8
+              )
+              GameTooltip:Show()
+            end)
+            repositionButton:SetScript('OnLeave', function()
+              GameTooltip:Hide()
+            end)
+            table.insert(sectionChildren[sectionIndex], repositionButton)
+            -- Add to search tags
+            repositionButton._uhcSearch = 'reposition statistics toast notification position'
+          end
         elseif sliderItem then
           numRows = numRows + 1
 
@@ -1413,10 +1462,42 @@ function InitializeSettingsOptionsTab(tabContents)
     _G.__UHC_SectionTitles = sectionTitles
   end
 
+  -- Function to check if player is in combat
+  local function isPlayerInCombat()
+    return UnitAffectingCombat('player') == true
+  end
+
+  -- Create save button
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
   saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
   saveButton:SetText('Save and Reload')
+  
+  -- Function to update save button state (defined after saveButton is created)
+  local function updateSaveButtonState()
+    if not saveButton then return end
+    local inCombat = isPlayerInCombat()
+    
+    saveButton:SetEnabled(not inCombat)
+    
+    if inCombat then
+      saveButton:SetText('In Combat')
+    else
+      saveButton:SetText('Save and Reload')
+    end
+  end
+  
+  -- Register for combat events
+  local combatFrame = CreateFrame('Frame')
+  combatFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- Entered combat
+  combatFrame:RegisterEvent('PLAYER_REGEN_ENABLED') -- Left combat
+  combatFrame:SetScript('OnEvent', function()
+    updateSaveButtonState()
+  end)
+  
+  -- Initial state
+  updateSaveButtonState()
+  
   saveButton:SetScript('OnClick', function()
     if ShowConfirmationDialog then
       ShowConfirmationDialog(
@@ -1623,6 +1704,58 @@ function InitializeSettingsOptionsTab(tabContents)
 
   tempSettings.resourceBarColors = tempSettings.resourceBarColors or {}
 
+  -- Helper function to apply resource bar colors instantly
+  local function ApplyResourceBarColorsInstantly()
+    -- Update GLOBAL_SETTINGS immediately so colors are applied
+    if not GLOBAL_SETTINGS.resourceBarColors then
+      GLOBAL_SETTINGS.resourceBarColors = {}
+    end
+    for key, value in pairs(tempSettings.resourceBarColors) do
+      GLOBAL_SETTINGS.resourceBarColors[key] = value
+    end
+    -- Remove keys that are nil in tempSettings
+    for key, _ in pairs(GLOBAL_SETTINGS.resourceBarColors) do
+      if tempSettings.resourceBarColors[key] == nil then
+        GLOBAL_SETTINGS.resourceBarColors[key] = nil
+      end
+    end
+
+    -- Update resource bars immediately
+    local resourceBar = _G['UltraHardcoreResourceBar']
+    if resourceBar and resourceBar:IsShown() then
+      local powerType = GetCurrentResourceType()
+      if powerType then
+        local r, g, b = GetPowerTypeColor(powerType)
+        resourceBar:SetStatusBarColor(r, g, b)
+      end
+    end
+
+    -- Update pet resource bar
+    local petBar = _G['UltraHardcorePetResourceBar']
+    if petBar and petBar:IsShown() then
+      local pr, pg, pb = 0.5, 0, 1
+      if GLOBAL_SETTINGS.resourceBarColors and GLOBAL_SETTINGS.resourceBarColors.PET then
+        local c = GLOBAL_SETTINGS.resourceBarColors.PET
+        if type(c) == 'table' and #c >= 3 then
+          pr, pg, pb = c[1], c[2], c[3]
+        end
+      end
+      petBar:SetStatusBarColor(pr, pg, pb)
+    end
+
+    -- Update druid form resource bar
+    local druidBar = _G['UltraHardcoreDruidFormResourceBar']
+    if druidBar and druidBar:IsShown() then
+      local r, g, b = GetPowerTypeColor('MANA')
+      druidBar:SetStatusBarColor(r, g, b)
+    end
+
+    -- Update XP bar color if it exists
+    if _G.UHC_XPBar and _G.UHC_XPBar.SetBarColor then
+      _G.UHC_XPBar:SetBarColor()
+    end
+  end
+
   local lockResourceBarCheckbox =
     CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
   -- Position will be handled by reflow
@@ -1796,6 +1929,9 @@ function InitializeSettingsOptionsTab(tabContents)
         tempSettings.resourceBarColors[activePowerKey] = { r, g, b }
         activeSetSwatchColor(r, g, b)
 
+        -- Apply color instantly
+        ApplyResourceBarColorsInstantly()
+
         -- Update RGB boxes
         for i, box in ipairs(inputs.rgb) do
           local val = math.floor((i == 1 and r or i == 2 and g or b) * 255 + 0.5)
@@ -1870,6 +2006,8 @@ function InitializeSettingsOptionsTab(tabContents)
         prev = prev or activeOriginalColor
         tempSettings.resourceBarColors[powerKey] = { prev.r, prev.g, prev.b }
         setSwatchColor(prev.r, prev.g, prev.b)
+        -- Revert color instantly
+        ApplyResourceBarColorsInstantly()
       end
 
       ColorPickerFrame:SetColorRGB(r, g, b)
@@ -1888,6 +2026,8 @@ function InitializeSettingsOptionsTab(tabContents)
       if c then
         tempSettings.resourceBarColors[powerKey] = { c.r, c.g, c.b }
         setSwatchColor(c.r, c.g, c.b)
+        -- Apply color instantly
+        ApplyResourceBarColorsInstantly()
       end
     end)
 
@@ -1899,6 +2039,8 @@ function InitializeSettingsOptionsTab(tabContents)
     resetButton:SetScript('OnClick', function()
       tempSettings.resourceBarColors[powerKey] = nil
       setSwatchColor(getDefaultColor())
+      -- Apply reset instantly
+      ApplyResourceBarColorsInstantly()
     end)
 
     addUIRow(row, labelText .. ' color resource bar', resourceSubHeader)
@@ -1975,6 +2117,11 @@ function InitializeSettingsOptionsTab(tabContents)
     local pct = math.floor(val + 0.5)
     percentText:SetText(pct .. '%')
     tempSettings.statisticsBackgroundOpacity = pct / 100
+    -- Apply opacity instantly
+    GLOBAL_SETTINGS.statisticsBackgroundOpacity = tempSettings.statisticsBackgroundOpacity
+    if _G.ApplyStatsBackgroundOpacity then
+      _G.ApplyStatsBackgroundOpacity()
+    end
   end)
 
   addUIRow(opacityRow, 'statistics background opacity transparency', statsSubHeader)
@@ -1990,7 +2137,7 @@ function InitializeSettingsOptionsTab(tabContents)
   local minimapClockScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapClockScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
-  minimapClockScaleRow:SetPoint('TOPLEFT', clockSubHeader, 'BOTTOMLEFT', 14, -6)
+  minimapClockScaleRow:SetPoint('TOPLEFT', scaleSubHeader, 'BOTTOMLEFT', 14, -6)
 
   local LABEL_WIDTH2 = LAYOUT.LABEL_WIDTH
   local GAP2 = 12
@@ -2043,13 +2190,18 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapClockScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapClockScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapClockScale = tempSettings.minimapClockScale
+    if TimeManagerClockButton then
+      TimeManagerClockButton:SetScale(GLOBAL_SETTINGS.minimapClockScale)
+    end
   end)
-  addUIRow(minimapClockScaleRow, 'minimap clock scale size', clockSubHeader)
+  addUIRow(minimapClockScaleRow, 'minimap clock scale size', scaleSubHeader)
 
-  local minimapMailScaleRow = CreateFrame('Frame', nil, minimapClockScaleSlider)
+  local minimapMailScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapMailScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT) -- Increased width to match new layout
   -- Position will be handled by reflow
-  minimapMailScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+  minimapMailScaleRow:SetPoint('TOPLEFT', minimapClockScaleRow, 'BOTTOMLEFT', 0, -6)
 
   local minimapMailScaleLabel =
     minimapMailScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -2093,12 +2245,18 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapMailScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapMailScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapMailScale = tempSettings.minimapMailScale
+    if MiniMapMailFrame then
+      MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale)
+    end
   end)
-  addUIRow(minimapMailScaleRow, 'minimap mail scale size', mailSubHeader)
+  addUIRow(minimapMailScaleRow, 'minimap mail scale size', scaleSubHeader)
 
-  local minimapTrackingScaleRow = CreateFrame('Frame', nil, minimapMailScaleSlider)
+  local minimapTrackingScaleRow = CreateFrame('Frame', nil, colorSectionFrame)
   minimapTrackingScaleRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
-  minimapTrackingScaleRow:SetPoint('TOPLEFT', mailSubHeader, 'BOTTOMLEFT', 14, -6)
+  -- Position will be handled by reflow
+  minimapTrackingScaleRow:SetPoint('TOPLEFT', minimapMailScaleRow, 'BOTTOMLEFT', 0, -6)
 
   local minimapTrackingScaleLabel =
     minimapTrackingScaleRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -2150,8 +2308,13 @@ function InitializeSettingsOptionsTab(tabContents)
     local steps = math.floor(val + 0.5)
     minimapTrackingScalePercentText:SetText((steps * 10) .. '%')
     tempSettings.minimapTrackingScale = steps / 10
+    -- Apply scale instantly
+    GLOBAL_SETTINGS.minimapTrackingScale = tempSettings.minimapTrackingScale
+    if MiniMapTracking then
+      MiniMapTracking:SetScale(GLOBAL_SETTINGS.minimapTrackingScale)
+    end
   end)
-  addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', mailSubHeader)
+  addUIRow(minimapTrackingScaleRow, 'minimap tracking scale size', scaleSubHeader)
 
   -- Dynamic Reflow Function
   -- Stacks visible UI elements vertically. When searching, headers only appear if their children match.
@@ -2297,6 +2460,7 @@ function InitializeSettingsOptionsTab(tabContents)
     GameTooltip:AddLine('• Resource Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Soulshard Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Statistics Panel', 0.8, 0.8, 0.8)
+    GameTooltip:AddLine('• Statistics Tracking Toast', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• ULTRA Menu', 0.8, 0.8, 0.8)
     GameTooltip:AddLine(' ')
     GameTooltip:AddLine('Note: This does not reset scale settings.', 1, 0.5, 0.5)

@@ -233,6 +233,9 @@ end
 -- Hide/Show the default WoW experience bar
 function UHC_XPBar:HideDefaultXPBar()
   C_Timer.After(0.1, function()
+    if StatusTrackingBarManager and StatusTrackingBarManager:IsShown() then
+      StatusTrackingBarManager:Hide()
+    end
     if MainMenuExpBar then
       ForceHideFrame(MainMenuExpBar)
     end

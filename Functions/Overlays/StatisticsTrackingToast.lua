@@ -10,7 +10,7 @@ local TOAST_GAP = 4
 local TOAST_LIFETIME_SECONDS = 3
 local TOAST_MOVE_SPEED = 18 -- higher = snappier smoothing toward the moving target
 local TOAST_DRIFT_PX_PER_SEC = 22 -- continuous downward drift while visible
-local TOAST_ANCHOR_X = -400 -- 200px in from the right edge
+local TOAST_ANCHOR_X = -400 -- 200px in from the right edge (default, can be overridden by saved position)
 local TOAST_ANCHOR_Y = 0
 local TOAST_FADE_OUT_SECONDS = 0.35 -- fade out near end of lifetime (no fade-in)
 local TOAST_ACHIEVEMENT_DELAY_SECONDS = 0.05 -- small delay so "+X" lays out before tier achievement is inserted
@@ -202,32 +202,213 @@ local function CalculateTierProgress(value, base, multiplier)
   return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
 end
 
+-- Position persistence functions
+local function SaveStatisticsTrackingToastPosition()
+  local f = StatisticsTrackingToast.frame
+  if not f or not UltraHardcoreDB then
+    return -- Frame or database not initialized yet, skip saving
+  end
+
+  local point, relativeTo, relativePoint, xOfs, yOfs = f:GetPoint()
+  -- Always save UIParent as the relativeTo frame to avoid reference issues
+  UltraHardcoreDB.statisticsTrackingToastPosition = {
+    point = point,
+    relativeTo = 'UIParent',
+    relativePoint = relativePoint,
+    xOfs = xOfs,
+    yOfs = yOfs,
+  }
+
+  if SaveDBData then
+    SaveDBData('statisticsTrackingToastPosition', UltraHardcoreDB.statisticsTrackingToastPosition)
+  end
+end
+
+local function LoadStatisticsTrackingToastPosition()
+  local f = StatisticsTrackingToast.frame
+  if not f or not UltraHardcoreDB then
+    return -- Frame or database not initialized yet, skip loading
+  end
+
+  local pos = UltraHardcoreDB.statisticsTrackingToastPosition
+  f:ClearAllPoints()
+
+  -- If no saved position exists, use default position
+  if not pos then
+    f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  else
+    -- Always anchor to UIParent to avoid frame reference issues
+    f:SetPoint(pos.point, UIParent, pos.relativePoint, pos.xOfs, pos.yOfs)
+  end
+end
+
+-- Reset Statistics Tracking Toast position to default
+local function ResetStatisticsTrackingToastPosition()
+  -- Clear saved position from database first
+  if UltraHardcoreDB then
+    UltraHardcoreDB.statisticsTrackingToastPosition = nil
+  end
+  
+  if SaveDBData then
+    SaveDBData('statisticsTrackingToastPosition', nil)
+  end
+  
+  -- Reset frame position if it exists
+  local f = StatisticsTrackingToast.frame
+  if f then
+    f:ClearAllPoints()
+    f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  end
+  
+  print('|cfff44336[ULTRA]|r Statistics Tracking Toast position reset to default.')
+end
+
+-- Make ResetStatisticsTrackingToastPosition globally accessible for reset commands
+_G.ResetStatisticsTrackingToastPosition = ResetStatisticsTrackingToastPosition
+
+-- Enable repositioning mode - highlights the frame and makes it draggable
+function StatisticsTrackingToast:EnableRepositioningMode()
+  local f = self.frame
+  if not f then
+    EnsureFrames()
+    f = self.frame
+  end
+  if not f then return end
+
+  -- Enable dragging
+  f._uhcRepositioningMode = true
+  f:EnableMouse(true)
+  f:RegisterForDrag('LeftButton')
+  f:SetScript('OnDragStart', function(self)
+    if not self:IsMovable() then return end
+    self:StartMoving()
+  end)
+  f:SetScript('OnDragStop', function(self)
+    self:StopMovingOrSizing()
+    -- Don't save yet - wait for confirm
+  end)
+
+  -- Create or show highlight
+  if not f._uhcHighlight then
+    local highlight = f:CreateTexture(nil, 'OVERLAY')
+    highlight:SetAllPoints(f)
+    highlight:SetColorTexture(1, 1, 0, 0.4) -- Yellow highlight
+    highlight:SetBlendMode('ADD')
+    f._uhcHighlight = highlight
+    
+    -- Create border effect using backdrop
+    f:SetBackdrop({
+      bgFile = 'Interface\\Buttons\\WHITE8X8',
+      edgeFile = 'Interface\\Buttons\\WHITE8X8',
+      tile = true,
+      tileSize = 8,
+      edgeSize = 3,
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
+    })
+    f:SetBackdropColor(1, 1, 0, 0.2)
+    f:SetBackdropBorderColor(1, 1, 0, 1)
+  end
+  f._uhcHighlight:Show()
+  f:SetAlpha(1) -- Make frame fully visible
+
+  -- Create or show confirm button
+  if not f._uhcConfirmButton then
+    local confirmButton = CreateFrame('Button', nil, f, 'UIPanelButtonTemplate')
+    confirmButton:SetSize(80, 25)
+    confirmButton:SetPoint('CENTER', f, 'CENTER', 0, 0)
+    confirmButton:SetText('Confirm')
+    confirmButton:SetFrameStrata('DIALOG')
+    confirmButton:SetFrameLevel(f:GetFrameLevel() + 20)
+    confirmButton:SetScript('OnClick', function()
+      SaveStatisticsTrackingToastPosition()
+      StatisticsTrackingToast:DisableRepositioningMode()
+      print('|cfff44336[ULTRA]|r Statistics Tracking Toast position saved.')
+    end)
+    f._uhcConfirmButton = confirmButton
+  end
+  f._uhcConfirmButton:Show()
+end
+
+-- Disable repositioning mode - removes highlight and makes frame non-draggable
+function StatisticsTrackingToast:DisableRepositioningMode()
+  local f = self.frame
+  if not f then return end
+
+  f._uhcRepositioningMode = false
+  f:EnableMouse(false)
+  f:SetScript('OnDragStart', nil)
+  f:SetScript('OnDragStop', nil)
+
+  -- Hide highlight
+  if f._uhcHighlight then
+    f._uhcHighlight:Hide()
+  end
+  
+  -- Remove backdrop if it was added
+  f:SetBackdrop(nil)
+
+  -- Hide confirm button
+  if f._uhcConfirmButton then
+    f._uhcConfirmButton:Hide()
+  end
+
+  -- Restore frame alpha based on notification state
+  if not f._uhcAnimating then
+    f:SetAlpha(0.01)
+  else
+    f:SetAlpha(1)
+  end
+end
+
+-- Make functions globally accessible
+_G.EnableStatisticsTrackingToastRepositioning = function()
+  StatisticsTrackingToast:EnableRepositioningMode()
+end
+
+_G.DisableStatisticsTrackingToastRepositioning = function()
+  StatisticsTrackingToast:DisableRepositioningMode()
+end
+
+-- Slash command to reset Statistics Tracking Toast position
+SLASH_RESETSTATISTICSTRACKINGTOAST1 = '/resetstatisticstrackingtoast'
+SLASH_RESETSTATISTICSTRACKINGTOAST2 = '/rstt'
+SlashCmdList['RESETSTATISTICSTRACKINGTOAST'] = ResetStatisticsTrackingToastPosition
+
 local function EnsureFrames()
   if StatisticsTrackingToast.frame then
     -- Allow live repositioning if this file is reloaded / settings change
-    StatisticsTrackingToast.frame:ClearAllPoints()
-    StatisticsTrackingToast.frame:SetPoint(
-      'TOPRIGHT',
-      UIParent,
-      'TOPRIGHT',
-      TOAST_ANCHOR_X,
-      TOAST_ANCHOR_Y
-    )
+    LoadStatisticsTrackingToastPosition()
     return
   end
 
   local f =
     CreateFrame('Frame', 'UltraHardcoreStatisticsTrackingFrame', UIParent, 'BackdropTemplate')
-  f:SetSize(TOAST_WIDTH, 10)
-  f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
+  f:SetSize(TOAST_WIDTH, 30) -- Frame size for notifications
   f:SetFrameStrata('DIALOG')
-  f:Hide()
+  f:Show() -- Always show
+  f:SetAlpha(0.01) -- Very low alpha (not 0) when no notifications
+  f:EnableMouse(false) -- Disabled by default, enabled only in repositioning mode
 
   StatisticsTrackingToast.frame = f
   StatisticsTrackingToast.toasts = {}
 
   f._uhcAnimating = false
   f._uhcDriftOffset = 0
+
+  -- Load saved position or use default
+  LoadStatisticsTrackingToastPosition()
+
+  -- Frame is not draggable by default - only when repositioning mode is active
+  f:SetMovable(true)
+  f:EnableMouse(false) -- Disable mouse by default
+  f._uhcRepositioningMode = false
+  f._uhcHighlight = nil
+  f._uhcConfirmButton = nil
   f:SetScript('OnUpdate', function(self, elapsed)
     if not self._uhcAnimating then return end
 
@@ -276,7 +457,12 @@ local function EnsureFrames()
     if not anyVisible then
       self._uhcAnimating = false
       self._uhcDriftOffset = 0
-      self:Hide()
+      -- Keep frame visible but nearly transparent
+      self:Show()
+      if not self._uhcRepositioningMode then
+        self:SetAlpha(0.01) -- Very low alpha (not 0)
+        self:EnableMouse(false) -- Only enable mouse if in repositioning mode
+      end
     end
   end)
 end
@@ -297,11 +483,22 @@ local function ReflowToasts()
 
   if anyVisible then
     f:Show()
+    if not f._uhcRepositioningMode then
+      f:SetAlpha(1)
+    end
     f._uhcAnimating = true
   else
-    f:Hide()
+    -- Keep frame visible but nearly transparent
+    f:Show()
+    if not f._uhcRepositioningMode then
+      f:SetAlpha(0.01) -- Very low alpha (not 0) so it can receive mouse events if needed
+    end
     f._uhcAnimating = false
     f._uhcDriftOffset = 0
+    -- Only enable mouse if in repositioning mode
+    if not f._uhcRepositioningMode then
+      f:EnableMouse(false)
+    end
   end
 end
 
@@ -727,6 +924,8 @@ do
   gate:RegisterEvent('PLAYER_LOGIN')
   gate:SetScript('OnEvent', function()
     EnsureFrames()
+    -- Load position after database is ready
+    LoadStatisticsTrackingToastPosition()
     if not _G.GLOBAL_SETTINGS or not _G.GLOBAL_SETTINGS.showStatisticsTracking then
       StatisticsTrackingToast:ClearAll()
     end
