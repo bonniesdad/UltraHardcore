@@ -1057,8 +1057,10 @@ function InitializeStatisticsTab(tabContents)
   tabContents[1].initialized = true
 
   local statsFrame = CreateFrame('Frame', nil, tabContents[1], 'BackdropTemplate')
-  statsFrame:SetSize(600, 540) -- Increased width and height to match new layout
   statsFrame:SetPoint('TOP', tabContents[1], 'TOP', 0, -55) -- Moved up 10px
+  statsFrame:SetPoint('LEFT', tabContents[1], 'LEFT', 10, 0)
+  statsFrame:SetPoint('RIGHT', tabContents[1], 'RIGHT', -10, 0)
+  statsFrame:SetHeight(540) -- Height fixed, width set by LEFT/RIGHT anchors
   statsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
