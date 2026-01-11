@@ -53,7 +53,7 @@ function InitializeInfoTab(tabContents)
 
   -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
   local patchNotesFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
-  patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -5)
+  patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -17)
   patchNotesFrame:SetPoint('LEFT', tabContents[3], 'LEFT', 10, 0)
   patchNotesFrame:SetPoint('RIGHT', tabContents[3], 'RIGHT', -10, 0)
   patchNotesFrame:SetHeight(380)
