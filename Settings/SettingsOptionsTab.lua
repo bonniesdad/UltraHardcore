@@ -810,8 +810,10 @@ function InitializeSettingsOptionsTab(tabContents)
 
   -- Create main container frame with background (similar to StatisticsTab)
   local optionsFrame = CreateFrame('Frame', nil, tabContents[2], 'BackdropTemplate')
-  optionsFrame:SetPoint('TOPLEFT', searchBox, 'BOTTOMLEFT', -6, -10)
-  optionsFrame:SetPoint('BOTTOMRIGHT', tabContents[2], 'BOTTOMRIGHT', -30, 10)
+  optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
+  optionsFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
+  optionsFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
+  optionsFrame:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -819,10 +821,10 @@ function InitializeSettingsOptionsTab(tabContents)
     tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 5,
-      right = 5,
-      top = 5,
-      bottom = 5,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
   optionsFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95) -- Darker, more solid background
@@ -1460,10 +1462,42 @@ function InitializeSettingsOptionsTab(tabContents)
     _G.__UHC_SectionTitles = sectionTitles
   end
 
+  -- Function to check if player is in combat
+  local function isPlayerInCombat()
+    return UnitAffectingCombat('player') == true
+  end
+
+  -- Create save button
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
   saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
   saveButton:SetText('Save and Reload')
+  
+  -- Function to update save button state (defined after saveButton is created)
+  local function updateSaveButtonState()
+    if not saveButton then return end
+    local inCombat = isPlayerInCombat()
+    
+    saveButton:SetEnabled(not inCombat)
+    
+    if inCombat then
+      saveButton:SetText('In Combat')
+    else
+      saveButton:SetText('Save and Reload')
+    end
+  end
+  
+  -- Register for combat events
+  local combatFrame = CreateFrame('Frame')
+  combatFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- Entered combat
+  combatFrame:RegisterEvent('PLAYER_REGEN_ENABLED') -- Left combat
+  combatFrame:SetScript('OnEvent', function()
+    updateSaveButtonState()
+  end)
+  
+  -- Initial state
+  updateSaveButtonState()
+  
   saveButton:SetScript('OnClick', function()
     if ShowConfirmationDialog then
       ShowConfirmationDialog(

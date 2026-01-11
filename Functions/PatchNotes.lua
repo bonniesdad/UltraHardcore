@@ -14,6 +14,8 @@ PATCH_NOTES = { {
     '  • Check if logged out for more than 30 minutes before resetting session lowest health.',
     '• PvP Flag icon on target frame',
     '• Supress UHC channel join/leave notices',
+    '• Disable Guild Found on non-Hardcore servers',
+    '• Disable "Save and Reload" button when in combat',
     '',
     'UI IMPROVEMENTS:',
     '• Improved menu display for first time users.',
