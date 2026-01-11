@@ -18,19 +18,19 @@ function InitializeCreditsTab(tabContents)
   contentBackground:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -30)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
+    tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  contentBackground:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-  contentBackground:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  contentBackground:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+  contentBackground:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
   -- About the Author section (reusable component, wider)
   local aboutAuthorFrame =

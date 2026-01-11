@@ -53,23 +53,25 @@ function InitializeInfoTab(tabContents)
 
   -- Create patch notes display at bottom (larger to fill space left by removing Twitch button)
   local patchNotesFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
-  patchNotesFrame:SetSize(600, 380)
   patchNotesFrame:SetPoint('TOP', patchNotesTitle, 'BOTTOM', 0, -5)
+  patchNotesFrame:SetPoint('LEFT', tabContents[3], 'LEFT', 10, 0)
+  patchNotesFrame:SetPoint('RIGHT', tabContents[3], 'RIGHT', -10, 0)
+  patchNotesFrame:SetHeight(380)
   patchNotesFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
+    edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
     tile = true,
-    tileSize = 32,
+    tileSize = 64,
     edgeSize = 16,
     insets = {
-      left = 4,
-      right = 4,
-      top = 4,
-      bottom = 4,
+      left = 3,
+      right = 3,
+      top = 3,
+      bottom = 3,
     },
   })
-  patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.8)
-  patchNotesFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 1)
+  patchNotesFrame:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
+  patchNotesFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
   -- Create patch notes display using reusable component (larger to fill new space)
   CreatePatchNotesDisplay(patchNotesFrame, 560, 360, 10, -10)

@@ -4,23 +4,28 @@
 
 ### New Features
 
+- Statistics notifications
+  - This can be turned off in the settings menu!
+  - Minimal display version (icon only)
+  - Turn off individual stats by clicking the tier button in Statistics tab
 - Statistics tier rewards.
-  - Certain statistics now have a tier system.
-- Statistics notification toast on stat update.
-  - Minimal toast display option on by default
-  - Full toast display option
-  - Toggle on/off specific stats in the statistics panel by clicking the tier button
-- Session lowest health does not reset as often
+  - Statistics now have a tier system.
+- Session lowest health does not reset as often.
   - Check if logged out for more than 30 minutes before resetting session lowest health.
 - PvP Flag icon on target frame
+- Supress UHC channel join/leave notices
+- Disable Guild Found on non-Hardcore servers
+- Disable "Save and Reload" button when in combat
 
 ### UI Improvements
 
 - Improved menu display for first time users.
-- Better visualisation of lowest health and level stats.
-- Reverse dependencies for options menu.
 - Remove unused tabs in settings menu.
 - Fixed checkboxes borders in statistics tab not showing correctly.
+
+### Dev Improvements
+
+- Reverse dependancies for options menu.
 
 ## Version 1.3.0 - 2025-12-05
 
