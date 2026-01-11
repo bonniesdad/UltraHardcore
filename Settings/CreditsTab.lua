@@ -15,7 +15,7 @@ function InitializeCreditsTab(tabContents)
   contentBackground:SetPoint('TOP', tabContents[5], 'TOP', 0, -60)
   contentBackground:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
   contentBackground:SetPoint('RIGHT', tabContents[5], 'RIGHT', -10, 0)
-  contentBackground:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -30)
+  contentBackground:SetPoint('BOTTOM', tabContents[5], 'BOTTOM', 0, -25)
   contentBackground:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -77,7 +77,7 @@ function InitializeCreditsTab(tabContents)
 
   -- Join the Developer text (wider, centered in tab)
   local joinDeveloperText = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  joinDeveloperText:SetPoint('TOP', qaNames, 'BOTTOM', 240, -20)
+  joinDeveloperText:SetPoint('TOP', qaNames, 'BOTTOM', 240, -30)
   joinDeveloperText:SetText(
     'Join the developers discord community and twitch channel to help \nsupport us and have your own say on the future of this addon!'
   )

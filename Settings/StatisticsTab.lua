@@ -1060,7 +1060,7 @@ function InitializeStatisticsTab(tabContents)
   statsFrame:SetPoint('TOP', tabContents[1], 'TOP', 0, -55) -- Moved up 10px
   statsFrame:SetPoint('LEFT', tabContents[1], 'LEFT', 10, 0)
   statsFrame:SetPoint('RIGHT', tabContents[1], 'RIGHT', -10, 0)
-  statsFrame:SetHeight(540) -- Height fixed, width set by LEFT/RIGHT anchors
+  statsFrame:SetHeight(535) -- Height fixed, width set by LEFT/RIGHT anchors
   statsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -2060,7 +2060,7 @@ function InitializeStatisticsTab(tabContents)
   -- Share button for Statistics tab
   local shareButton = CreateFrame('Button', nil, tabContents[1], 'UIPanelButtonTemplate')
   shareButton:SetSize(80, 30)
-  shareButton:SetPoint('BOTTOM', tabContents[1], 'BOTTOM', 0, -40)
+  shareButton:SetPoint('BOTTOM', tabContents[1], 'BOTTOM', 0, -35)
   shareButton:SetText('Share')
 
   -- Add tooltip

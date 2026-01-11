@@ -1470,7 +1470,7 @@ function InitializeSettingsOptionsTab(tabContents)
   -- Create save button
   local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
-  saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -40)
+  saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -35)
   saveButton:SetText('Save and Reload')
   
   -- Function to update save button state (defined after saveButton is created)
