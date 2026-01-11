@@ -157,7 +157,11 @@ local function GetTierDisplayName(tier)
   return tostring(name)
 end
 
-local EXCLUDED_STATS = { duelsWinPercent = true }
+local EXCLUDED_STATS = {
+  duelsWinPercent = true,
+  lagHome = true,
+  lagWorld = true,
+}
 
 local function formatNumber(n)
   if _G.formatNumberWithCommas then
@@ -248,18 +252,18 @@ local function ResetStatisticsTrackingToastPosition()
   if UltraHardcoreDB then
     UltraHardcoreDB.statisticsTrackingToastPosition = nil
   end
-  
+
   if SaveDBData then
     SaveDBData('statisticsTrackingToastPosition', nil)
   end
-  
+
   -- Reset frame position if it exists
   local f = StatisticsTrackingToast.frame
   if f then
     f:ClearAllPoints()
     f:SetPoint('TOPRIGHT', UIParent, 'TOPRIGHT', TOAST_ANCHOR_X, TOAST_ANCHOR_Y)
   end
-  
+
   print('|cfff44336[ULTRA]|r Statistics Tracking Toast position reset to default.')
 end
 
@@ -295,7 +299,7 @@ function StatisticsTrackingToast:EnableRepositioningMode()
     highlight:SetColorTexture(1, 1, 0, 0.4) -- Yellow highlight
     highlight:SetBlendMode('ADD')
     f._uhcHighlight = highlight
-    
+
     -- Create border effect using backdrop
     f:SetBackdrop({
       bgFile = 'Interface\\Buttons\\WHITE8X8',
@@ -315,7 +319,6 @@ function StatisticsTrackingToast:EnableRepositioningMode()
   end
   f._uhcHighlight:Show()
   f:SetAlpha(1) -- Make frame fully visible
-
   -- Create or show confirm button
   if not f._uhcConfirmButton then
     local confirmButton = CreateFrame('Button', nil, f, 'UIPanelButtonTemplate')
@@ -348,7 +351,7 @@ function StatisticsTrackingToast:DisableRepositioningMode()
   if f._uhcHighlight then
     f._uhcHighlight:Hide()
   end
-  
+
   -- Remove backdrop if it was added
   f:SetBackdrop(nil)
 
@@ -393,7 +396,6 @@ local function EnsureFrames()
   f:Show() -- Always show
   f:SetAlpha(0.01) -- Very low alpha (not 0) when no notifications
   f:EnableMouse(false) -- Disabled by default, enabled only in repositioning mode
-
   StatisticsTrackingToast.frame = f
   StatisticsTrackingToast.toasts = {}
 
@@ -706,6 +708,31 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
       customMessage = string.format('New lowest health (this session): %.1f%%', newVal)
       shouldShowCustomMessage = true
     end
+  elseif statKey == 'petDeaths' then
+    local newVal = tonumber(newValue) or 0
+    customMessage = string.format('Your pet has died')
+    shouldShowCustomMessage = true
+  elseif statKey == 'partyMemberDeaths' then
+    local newVal = tonumber(newValue) or 0
+    customMessage = string.format('You have witnessed a party member death')
+    shouldShowCustomMessage = true
+  elseif statKey == 'duelsTotal' then
+    local newVal = tonumber(newValue) or 0
+    customMessage = string.format('You have dueled %s times', formatNumber(newVal))
+    shouldShowCustomMessage = true
+  elseif statKey == 'duelsWon' then
+    customMessage = string.format('You won a duel')
+    shouldShowCustomMessage = true
+  elseif statKey == 'duelsLost' then
+    customMessage = string.format('You lost a duel')
+    shouldShowCustomMessage = true
+  elseif statKey == 'mapKeyPressesWhileMapBlocked' then
+    customMessage = string.format('The map is blocked by the route planner setting')
+    shouldShowCustomMessage = true
+  elseif statKey == 'level' then
+    local newVal = tonumber(newValue) or 1
+    customMessage = string.format('You are now level %s', formatNumber(newVal))
+    shouldShowCustomMessage = true
   end
 
   -- If user wants ONLY tier achievements, skip the regular "+X stat" toast.
@@ -831,9 +858,44 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
         toast:Hide()
         return
       end
+    elseif statKey == 'petDeaths' then
+      local newVal = tonumber(newValue) or 0
+      customMessage = string.format('Your pet has died')
+    elseif statKey == 'partyMemberDeaths' then
+      local newVal = tonumber(newValue) or 0
+      customMessage = string.format('You have witnessed a party member death')
+    elseif statKey == 'duelsTotal' then
+      local newVal = tonumber(newValue) or 0
+      customMessage = string.format('You have dueled %s times', formatNumber(newVal))
+    elseif statKey == 'duelsWon' then
+      customMessage = string.format('You won a duel')
+    elseif statKey == 'duelsLost' then
+      customMessage = string.format('You lost a duel')
+    elseif statKey == 'mapKeyPressesWhileMapBlocked' then
+      customMessage = string.format('The map is blocked by the route planner setting')
+    elseif statKey == 'level' then
+      local newVal = tonumber(newValue) or 1
+      customMessage = string.format('You are now level %s', formatNumber(newVal))
     elseif cfg.noTier then
-      -- For other noTier stats, show "X updated"
-      customMessage = string.format('%s updated', displayName)
+      -- For other noTier stats that don't have custom messages above, show "X updated"
+      -- Exclude stats that already have custom messages
+      local statsWithCustomMessages = {
+        petDeaths = true,
+        partyMemberDeaths = true,
+        duelsTotal = true,
+        duelsWon = true,
+        duelsLost = true,
+        mapKeyPressesWhileMapBlocked = true,
+        level = true,
+        highestCritValue = true,
+        highestHealCritValue = true,
+        lowestHealth = true,
+        lowestHealthThisLevel = true,
+        lowestHealthThisSession = true,
+      }
+      if not statsWithCustomMessages[statKey] then
+        customMessage = string.format('%s updated', displayName)
+      end
     end
   end
 
