@@ -14,16 +14,17 @@ statsFrame:SetBackdrop({
   tileSize = 32,
   edgeSize = 16,
   insets = {
-    left = 8,
-    right = 8,
-    top = 8,
-    bottom = 8,
+    left = 6,
+    right = 6,
+    top = 6,
+    bottom = 6,
   },
 })
 
 -- Background behind statistics with configurable opacity
 local statsBackground = statsFrame:CreateTexture(nil, 'BACKGROUND')
-statsBackground:SetAllPoints(statsFrame)
+statsBackground:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 2, -2)
+statsBackground:SetPoint('BOTTOMRIGHT', statsFrame, 'BOTTOMRIGHT', -2, 2)
 statsBackground:SetColorTexture(0, 0, 0, 0.3)
 
 local MANA_POWER_TYPE = Enum and Enum.PowerType and Enum.PowerType.Mana or 0
