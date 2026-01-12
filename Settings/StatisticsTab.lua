@@ -54,6 +54,9 @@ local STATISTIC_TOOLTIPS = {
   playerJumps = 'Number of jumps you have performed.  Work that jump key!',
   player360s = 'Number of times you did a full 360 spin during a jump',
   mapKeyPressesWhileMapBlocked = 'Times you pressed M while Route Planner blocked the map',
+  -- Economy section
+  goldGained = 'Total money gained (copper). Tracked via PLAYER_MONEY deltas.',
+  goldSpent = 'Total money spent (copper). Tracked via PLAYER_MONEY deltas.',
   -- Network section
   lagHome = 'Latency to your home server',
   lagWorld = 'Latency to the world server',
@@ -287,6 +290,18 @@ local STAT_BAR_CONFIG = {
     multiplier = 2,
     valueOnly = true,
     noTier = true,
+  },
+  goldGained = {
+    type = 'money',
+    base = 100000, -- 10g
+    multiplier = 2,
+    valueOnly = true,
+  },
+  goldSpent = {
+    type = 'money',
+    base = 100000, -- 10g
+    multiplier = 2,
+    valueOnly = true,
   },
   lagHome = {
     valueOnly = true,
@@ -752,6 +767,32 @@ local function CalculateTierProgress(value, base, multiplier)
   return tier, tierMin, tierMax, math.min(math.max(progress, 0), 1)
 end
 
+local function FormatMoneyText(copper)
+  copper = tonumber(copper) or 0
+  if copper < 0 then
+    copper = -copper
+  end
+  if copper == 0 then
+    return '-'
+  end
+  local g = math.floor(copper / 10000)
+  local s = math.floor((copper % 10000) / 100)
+  local c = math.floor(copper % 100)
+
+  local parts = {}
+  if g > 0 then
+    table.insert(parts, string.format('%dg', g))
+  end
+  if s > 0 then
+    table.insert(parts, string.format('%ds', s))
+  end
+  -- Only show copper if it's non-zero.
+  if c > 0 then
+    table.insert(parts, string.format('%dc', c))
+  end
+  return (#parts > 0) and table.concat(parts, ' ') or '-'
+end
+
 function UpdateStatBar(statKey, value)
   local bar = statBars[statKey]
   if not bar then return end
@@ -787,8 +828,12 @@ function UpdateStatBar(statKey, value)
         bar.tierBg:Hide()
       end
     else
-      local suffix = cfg.suffix or ''
-      displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
+      if cfg.type == 'money' then
+        displayText = isZero and '-' or FormatMoneyText(rawValue)
+      else
+        local suffix = cfg.suffix or ''
+        displayText = isZero and '-' or (formatNumberWithCommas(rawValue) .. suffix)
+      end
 
       -- Calculate and show tier for non-percent valueOnly stats (unless noTier is set)
       if not cfg.noTier then
@@ -1725,6 +1770,18 @@ function InitializeStatisticsTab(tabContents)
     key = 'mapKeyPressesWhileMapBlocked',
     label = 'Blocked Map Opens (Route Planner):',
     tooltipKey = 'mapKeyPressesWhileMapBlocked',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'goldGained',
+    label = 'Gold Gained:',
+    tooltipKey = 'goldGained',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'goldSpent',
+    label = 'Gold Spent:',
+    tooltipKey = 'goldSpent',
     defaultValue = 0,
     width = 1,
   } }
