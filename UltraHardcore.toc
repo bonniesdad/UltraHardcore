@@ -53,6 +53,7 @@ Functions/Statistics/TrackLowestHealth.lua
 Functions/Statistics/TrackXPPerSetting.lua
 Functions/Statistics/TrackJumps.lua
 Functions/Statistics/Track360s.lua
+Functions/Statistics/TrackGold.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua

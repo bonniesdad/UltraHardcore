@@ -59,6 +59,9 @@ local CharacterStats = {
     highestHealCritValue = 0,
     rareElitesSlain = 0,
     worldBossesSlain = 0,
+    -- Economy statistics (stored as COPPER)
+    goldGained = 0,
+    goldSpent = 0,
     -- Add more stats here as needed
     lastLogoutTime = 0,
   },

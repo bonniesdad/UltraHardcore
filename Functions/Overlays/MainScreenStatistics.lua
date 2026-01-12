@@ -322,6 +322,26 @@ local blockedMapOpensValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameF
 blockedMapOpensValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -428)
 blockedMapOpensValue:SetText(formatNumberWithCommas(0))
 blockedMapOpensValue:SetTextColor(1, 1, 1, 1)
+
+-- Economy statistics
+local goldGainedLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+goldGainedLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -443)
+goldGainedLabel:SetText('Gold Gained:')
+goldGainedLabel:SetTextColor(1, 0.9, 0.5, 1)
+local goldGainedValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+goldGainedValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -443)
+goldGainedValue:SetText('-')
+goldGainedValue:SetTextColor(1, 1, 1, 1)
+
+local goldSpentLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+goldSpentLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -458)
+goldSpentLabel:SetText('Gold Spent:')
+goldSpentLabel:SetTextColor(1, 0.9, 0.5, 1)
+local goldSpentValue = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
+goldSpentValue:SetPoint('TOPRIGHT', statsFrame, 'TOPRIGHT', -12, -458)
+goldSpentValue:SetText('-')
+goldSpentValue:SetTextColor(1, 1, 1, 1)
+
 -- Network statistics
 local lagHomeLabel = CreatePixelFontString(statsFrame, 'OVERLAY', 'GameFontHighlight')
 lagHomeLabel:SetPoint('TOPLEFT', statsFrame, 'TOPLEFT', 12, -443)
@@ -419,6 +439,16 @@ local statsElements = { -- Non-tier stats (no tier system)
   value = blockedMapOpensValue,
   setting = 'showMainStatisticsPanelMapKeyPressesWhileMapBlocked',
   statKey = 'mapKeyPressesWhileMapBlocked',
+}, {
+  label = goldGainedLabel,
+  value = goldGainedValue,
+  setting = 'showMainStatisticsPanelGoldGained',
+  statKey = 'goldGained',
+}, {
+  label = goldSpentLabel,
+  value = goldSpentValue,
+  setting = 'showMainStatisticsPanelGoldSpent',
+  statKey = 'goldSpent',
 }, {
   label = lagHomeLabel,
   value = lagHomeValue,
@@ -613,6 +643,32 @@ local function ApplyTierColor(statKey, value, label, valueElement)
     label:SetTextColor(1, 0.9, 0.5, 1) -- Gold for labels
     valueElement:SetTextColor(1, 1, 1, 1) -- White for values
   end
+end
+
+local function FormatMoneyText(copper)
+  copper = tonumber(copper) or 0
+  if copper < 0 then
+    copper = -copper
+  end
+  if copper == 0 then
+    return '-'
+  end
+  local g = math.floor(copper / 10000)
+  local s = math.floor((copper % 10000) / 100)
+  local c = math.floor(copper % 100)
+
+  local parts = {}
+  if g > 0 then
+    table.insert(parts, string.format('%dg', g))
+  end
+  if s > 0 then
+    table.insert(parts, string.format('%ds', s))
+  end
+  -- Only show copper if it's non-zero.
+  if c > 0 then
+    table.insert(parts, string.format('%dc', c))
+  end
+  return (#parts > 0) and table.concat(parts, ' ') or '-'
 end
 
 -- Function to update all statistics (refactored to reduce upvalues)
@@ -888,6 +944,21 @@ function UpdateStatistics()
     blockedMapOpensStat.value:SetText(formatNumberWithCommas(blockedMapOpens))
     blockedMapOpensStat.label:SetTextColor(1, 0.9, 0.5, 1)
     blockedMapOpensStat.value:SetTextColor(1, 1, 1, 1)
+  end
+
+  -- Economy stats (money)
+  local goldGained = CharacterStats:GetStat('goldGained') or 0
+  local goldGainedStat = getStat('goldGained')
+  if goldGainedStat then
+    goldGainedStat.value:SetText(FormatMoneyText(goldGained))
+    ApplyTierColor('goldGained', goldGained, goldGainedStat.label, goldGainedStat.value)
+  end
+
+  local goldSpent = CharacterStats:GetStat('goldSpent') or 0
+  local goldSpentStat = getStat('goldSpent')
+  if goldSpentStat then
+    goldSpentStat.value:SetText(FormatMoneyText(goldSpent))
+    ApplyTierColor('goldSpent', goldSpent, goldSpentStat.label, goldSpentStat.value)
   end
 
   -- Update Lag Home value (noTier flag)
