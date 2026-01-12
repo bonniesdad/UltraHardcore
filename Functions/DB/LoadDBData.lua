@@ -59,6 +59,7 @@ function LoadDBData()
     minimapClockPosition = {},
     minimapMailPosition = {},
     statisticsBackgroundOpacity = 0.3,
+    statisticsBorderOpacity = 0.9,
     minimapClockScale = 1.0,
     minimapMailScale = 1.0,
     announceLevelUpToGuild = true,
