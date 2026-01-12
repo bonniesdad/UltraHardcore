@@ -28,6 +28,11 @@ local function GetStatIconMarkup(statKey)
   if type(statKey) ~= 'string' or statKey == '' then
     return ''
   end
+  -- Prefer a built-in icon for money stats so we don't require custom textures.
+  if statKey == 'goldGained' or statKey == 'goldSpent' then
+    local goldIconPath = 'Interface\\MoneyFrame\\UI-GoldIcon'
+    return string.format('|T%s:%d:%d:0:0|t', goldIconPath, STAT_ICON_SIZE, STAT_ICON_SIZE)
+  end
   -- Icon path convention: Textures/stats-icons/<statKey>.png
   local path = 'Interface\\AddOns\\UltraHardcore\\Textures\\stats-icons\\' .. statKey .. '.png'
   return string.format('|T%s:%d:%d:0:0|t', path, STAT_ICON_SIZE, STAT_ICON_SIZE)
@@ -168,6 +173,47 @@ local function formatNumber(n)
     return _G.formatNumberWithCommas(n)
   end
   return tostring(n or 0)
+end
+
+local function FormatMoneyText(copper)
+  copper = tonumber(copper) or 0
+  if copper < 0 then
+    copper = -copper
+  end
+  if copper == 0 then
+    return '-'
+  end
+  local g = math.floor(copper / 10000)
+  local s = math.floor((copper % 10000) / 100)
+  local c = math.floor(copper % 100)
+
+  local parts = {}
+  if g > 0 then
+    table.insert(parts, string.format('%dg', g))
+  end
+  if s > 0 then
+    table.insert(parts, string.format('%ds', s))
+  end
+  -- Only show copper if it's non-zero.
+  if c > 0 then
+    table.insert(parts, string.format('%dc', c))
+  end
+  return (#parts > 0) and table.concat(parts, ' ') or '-'
+end
+
+local function FormatSignedMoney(delta, forcedSign)
+  delta = tonumber(delta) or 0
+  local sign
+  if forcedSign == '+' or forcedSign == '-' then
+    sign = forcedSign
+  else
+    sign = delta >= 0 and '+' or '-'
+  end
+  local absText = FormatMoneyText(math.abs(delta))
+  if absText == '-' then
+    absText = '0'
+  end
+  return sign .. absText
 end
 
 local function CalculateTierProgress(value, base, multiplier)
@@ -798,7 +844,20 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
 
   toast = CreateToast()
 
-  local sign = (delta or 0) >= 0 and '+' or ''
+  local deltaText
+  if cfg.type == 'money' then
+    -- These are cumulative totals that increase, but semantically represent "loss" to the player.
+    local forcedSign = nil
+    if statKey == 'goldSpent' then
+      forcedSign = '-'
+    elseif statKey == 'goldGained' then
+      forcedSign = '+'
+    end
+    deltaText = FormatSignedMoney(delta or 0, forcedSign)
+  else
+    local sign = (delta or 0) >= 0 and '+' or ''
+    deltaText = sign .. tostring(delta or 0)
+  end
   local iconMarkup = GetStatIconMarkup(statKey)
 
   -- Custom messages for specific stats (if not already set above)
@@ -903,11 +962,11 @@ function StatisticsTrackingToast:NotifyStatDelta(statKey, delta, newValue, oldVa
     toast.text:SetText(customMessage)
   elseif minimal then
     -- Minimal: "+X [icon]" only
-    toast.text:SetText(string.format('%s%s %s', sign, tostring(delta or 0), iconMarkup))
+    toast.text:SetText(string.format('%s %s', deltaText, iconMarkup))
   else
     -- Non-minimal: "+X [icon] Stat Name"
     toast.text:SetText(
-      string.format('%s%s %s %s', sign, tostring(delta or 0), iconMarkup, displayName)
+      string.format('%s %s %s', deltaText, iconMarkup, displayName)
     )
   end
 
