@@ -79,7 +79,7 @@ function InitializeCreditsTab(tabContents)
   local joinDeveloperText = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   joinDeveloperText:SetPoint('TOP', qaNames, 'BOTTOM', 240, -30)
   joinDeveloperText:SetText(
-    'Join the developers discord community and twitch channel to help \nsupport us and have your own say on the future of this addon!'
+    'Join the developers\' Discord community and Twitch channel to help \nsupport us and have your say on the future of this addon!'
   )
   joinDeveloperText:SetJustifyH('CENTER')
   joinDeveloperText:SetTextColor(0.95, 0.95, 0.9)

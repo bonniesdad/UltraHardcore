@@ -1,5 +1,26 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '2.0.0',
+  date = '2026-01-13',
+  expansion = 'TBC',
+  notes = {
+    'TBC Initial Release',
+    '• Initial release of the addon for TBC.',
+    '• All of the features from the Classic version are now available in TBC.',
+  },
+}, {
+  version = '2.0.0',
+  date = '2026-01-13',
+  notes = {
+    'NEW FEATURES:',
+    '• TBC Compatible version.',
+    '',
+    'UI Improvements:',
+    '• Intro dialog for new users.',
+    '• Gold gained icons for each type of coin.',
+    '• Update content of "Need Help?" tab.',
+  },
+}, {
   version = '1.4.0',
   date = '2026-01-05',
   notes = {
