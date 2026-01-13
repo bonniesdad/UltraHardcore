@@ -38,13 +38,13 @@ function UHC_CreateAboutAuthorSection(parent, point, relativeTo, relativePoint, 
     aboutAuthorFrame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
   aboutAuthorTitle:SetPoint('LEFT', profilePictureFrame, 'RIGHT', 15, 0)
   aboutAuthorTitle:SetPoint('TOP', profilePictureFrame, 'TOP', 0, 0)
-  aboutAuthorTitle:SetText('About the Author')
+  aboutAuthorTitle:SetText('Need Help? Ask the author!')
   aboutAuthorTitle:SetTextColor(0.922, 0.871, 0.761)
 
   -- Bonnie's Dad streams text (right of profile picture, below About the Author)
   local streamsTitle = aboutAuthorFrame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   streamsTitle:SetPoint('TOPLEFT', aboutAuthorTitle, 'BOTTOMLEFT', 0, -8)
-  streamsTitle:SetText('BonniesDadTV streams on twitch')
+  streamsTitle:SetText('BonniesDadTV streams on Twitch')
   streamsTitle:SetTextColor(0.922, 0.871, 0.761)
 
   -- Stream schedule text
@@ -58,7 +58,7 @@ function UHC_CreateAboutAuthorSection(parent, point, relativeTo, relativePoint, 
   aboutText:SetPoint('TOPLEFT', profilePictureFrame, 'BOTTOMLEFT', 0, -15)
   aboutText:SetWidth(width) -- Full width
   aboutText:SetText(
-    'What started as learning .lua code between his day job as a developer has grown into something much bigger.\n\nWith help from the community sharing ideas and feedback, ULTRA evolved from a simple pet project into the addon you see today.\n\nWe have since grown into a team of developers who are passionate about creating a fun and challenging experience for players.\n\nYou can catch us coding live on stream. We fix bugs in real-time, chat about new features, and turn your suggestions into reality. Feel free to drop by!'
+    'BonniesDadTV develops this addon live on Twitch and is always happy to answer any questions about the addon.\n\nFound a bug? Report bugs directly to him and he will fix them live. New suggestions are a great way to keep the addon alive, so please feel free to pop by and give yours.\n\nWant to contribute? You are more than welcome, and wouldn\'t be the first! We have built a friendly, lively community from people wanting to get involved and learn more about development and addon creation.'
   )
   aboutText:SetJustifyH('LEFT')
   aboutText:SetNonSpaceWrap(false) -- Allow line breaks

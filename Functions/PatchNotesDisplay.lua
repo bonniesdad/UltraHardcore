@@ -67,40 +67,54 @@ function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
     local yOffset = 0
 
     for i, patch in ipairs(PATCH_NOTES) do
-      -- Version header
-      local versionHeader =
-        patchNotesScrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-      versionHeader:SetPoint('TOPLEFT', patchNotesScrollChild, 'TOPLEFT', 0, yOffset)
-      versionHeader:SetWidth(width)
-      versionHeader:SetJustifyH('LEFT')
-      local font, _, flags = versionHeader:GetFont()
-      versionHeader:SetFont(font, 14, flags)
-      versionHeader:SetTextColor(1, 1, 0)
-      versionHeader:SetText('Version ' .. patch.version .. ' (' .. patch.date .. ')')
-
-      -- Calculate actual height of version header
-      local headerHeight = versionHeader:GetStringHeight()
-      yOffset = yOffset - headerHeight - 12
-
-      -- Patch notes with improved bullet formatting
-      for j, note in ipairs(patch.notes) do
-        -- Add extra gap before main bullet points (level 0)
-        local spaces = string.match(note, '^%s*')
-        local indentLevel = spaces and math.floor(#spaces / 2) or 0
-        if indentLevel == 0 and j > 1 then
-          yOffset = yOffset - 8 -- Extra gap before main bullet points
-        end
-
-        local noteText =
-          createBulletText(patchNotesScrollChild, note, yOffset, 13, { 0.9, 0.9, 0.9 })
-
-        -- Calculate actual height of note text (handles wrapping)
-        local noteHeight = noteText:GetStringHeight()
-        yOffset = yOffset - noteHeight - 3
+      -- Filter patch notes based on expansion
+      -- Skip TBC notes if we're in Classic
+      -- Skip Classic notes (no expansion field) if we're in TBC
+      local shouldSkip = false
+      if patch.expansion == 'TBC' and not IsTBC() then
+        -- Skip TBC notes in Classic
+        shouldSkip = true
+      elseif not patch.expansion and IsTBC() then
+        -- Skip Classic notes (no expansion field) in TBC
+        shouldSkip = true
       end
 
-      -- Add spacing between versions
-      yOffset = yOffset - 12
+      if not shouldSkip then
+        -- Version header
+        local versionHeader =
+          patchNotesScrollChild:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+        versionHeader:SetPoint('TOPLEFT', patchNotesScrollChild, 'TOPLEFT', 0, yOffset)
+        versionHeader:SetWidth(width)
+        versionHeader:SetJustifyH('LEFT')
+        local font, _, flags = versionHeader:GetFont()
+        versionHeader:SetFont(font, 14, flags)
+        versionHeader:SetTextColor(1, 1, 0)
+        versionHeader:SetText('Version ' .. patch.version .. ' (' .. patch.date .. ')')
+
+        -- Calculate actual height of version header
+        local headerHeight = versionHeader:GetStringHeight()
+        yOffset = yOffset - headerHeight - 12
+
+        -- Patch notes with improved bullet formatting
+        for j, note in ipairs(patch.notes) do
+          -- Add extra gap before main bullet points (level 0)
+          local spaces = string.match(note, '^%s*')
+          local indentLevel = spaces and math.floor(#spaces / 2) or 0
+          if indentLevel == 0 and j > 1 then
+            yOffset = yOffset - 8 -- Extra gap before main bullet points
+          end
+
+          local noteText =
+            createBulletText(patchNotesScrollChild, note, yOffset, 13, { 0.9, 0.9, 0.9 })
+
+          -- Calculate actual height of note text (handles wrapping)
+          local noteHeight = noteText:GetStringHeight()
+          yOffset = yOffset - noteHeight - 3
+        end
+
+        -- Add spacing between versions
+        yOffset = yOffset - 12
+      end
     end
 
     -- Update scroll child height based on content

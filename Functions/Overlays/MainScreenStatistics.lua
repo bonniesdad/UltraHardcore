@@ -658,15 +658,19 @@ local function FormatMoneyText(copper)
   local c = math.floor(copper % 100)
 
   local parts = {}
+  local iconSize = 12
   if g > 0 then
-    table.insert(parts, string.format('%dg', g))
+    local goldIcon = string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', g, goldIcon))
   end
   if s > 0 then
-    table.insert(parts, string.format('%ds', s))
+    local silverIcon = string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', s, silverIcon))
   end
   -- Only show copper if it's non-zero.
   if c > 0 then
-    table.insert(parts, string.format('%dc', c))
+    local copperIcon = string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', c, copperIcon))
   end
   return (#parts > 0) and table.concat(parts, ' ') or '-'
 end

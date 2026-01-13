@@ -137,7 +137,7 @@ function TabManagerInitializeTabs(settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
   tabButtons[3] = createTabButton('Info', 3, settingsFrame)
   tabButtons[4] = createTabButton('Commands', 4, settingsFrame)
-  tabButtons[5] = createTabButton('Credits', 5, settingsFrame)
+  tabButtons[5] = createTabButton('Need Help?', 5, settingsFrame)
 
   -- Create tab content frames
   tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab

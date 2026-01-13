@@ -360,13 +360,21 @@ local function CreateStatBar(parent)
   tierContainer:SetFrameLevel(barFrame:GetFrameLevel() + 20)
 
   local tierText = tierContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', 0, 9)
+  tierText:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', -30, 9)
   tierText:SetDrawLayer('OVERLAY', 50) -- keep above any pill/bg/fill
   tierText:SetTextColor(1, 1, 1, 1) -- bright white for readability
   local tierIcon = tierContainer:CreateTexture(nil, 'OVERLAY')
   tierIcon:SetSize(STAT_TIER_ICON_SIZE, STAT_TIER_ICON_SIZE)
   tierIcon:SetPoint('LEFT', tierText, 'RIGHT', STAT_TIER_ICON_GAP, 0)
   tierIcon:Hide()
+
+  -- Toast button for non-tier stats (when showStatisticsTracking is enabled)
+  local toastButton = tierContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  toastButton:SetPoint('TOPRIGHT', barFrame, 'TOPRIGHT', -30, 9)
+  toastButton:SetDrawLayer('OVERLAY', 50)
+  toastButton:SetText('Toast')
+  toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
+  toastButton:Hide()
 
   -- Pill-style backdrop behind tier text
   local tierBg = CreateFrame('Frame', nil, tierContainer, 'BackdropTemplate')
@@ -414,13 +422,19 @@ local function CreateStatBar(parent)
 
     -- Add toast toggle info if statKey is available
     if self.statKey then
-      local toastEnabled =
-        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
-      table.insert(tooltipLines, '')
-      table.insert(
-        tooltipLines,
-        toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications'
-      )
+      local showStatisticsTracking = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+      if showStatisticsTracking then
+        local toastEnabled =
+          GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+        table.insert(tooltipLines, '')
+        table.insert(
+          tooltipLines,
+          toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications'
+        )
+      else
+        table.insert(tooltipLines, '')
+        table.insert(tooltipLines, 'Statistics notifications are disabled')
+      end
     end
 
     if #tooltipLines > 0 then
@@ -444,6 +458,11 @@ local function CreateStatBar(parent)
   tierText:EnableMouse(true)
   tierText:SetScript('OnMouseDown', function(self, button)
     if button == 'LeftButton' and self.statKey then
+      -- Don't allow toggling if showStatisticsTracking is disabled
+      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then
+        return
+      end
+
       if not GLOBAL_SETTINGS.statisticsToastEnabled then
         GLOBAL_SETTINGS.statisticsToastEnabled = {}
       end
@@ -472,6 +491,58 @@ local function CreateStatBar(parent)
     end
   end)
 
+  -- Add tooltip and click handler to toast button
+  toastButton:SetScript('OnEnter', function(self)
+    if self.statKey then
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      local showStatisticsTracking = GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking
+      if showStatisticsTracking then
+        local toastEnabled =
+          GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+        GameTooltip:SetText(
+          toastEnabled and 'Click to disable toast notifications' or 'Click to enable toast notifications',
+          nil,
+          nil,
+          nil,
+          nil,
+          true
+        )
+      else
+        GameTooltip:SetText('Statistics notifications are disabled', nil, nil, nil, nil, true)
+      end
+      GameTooltip:Show()
+    end
+  end)
+
+  toastButton:SetScript('OnLeave', function(self)
+    GameTooltip:Hide()
+  end)
+
+  -- Make toast button clickable to toggle toast notifications
+  toastButton:EnableMouse(true)
+  toastButton:SetScript('OnMouseDown', function(self, button)
+    if button == 'LeftButton' and self.statKey then
+      -- Don't allow toggling if showStatisticsTracking is disabled
+      if not GLOBAL_SETTINGS or not GLOBAL_SETTINGS.showStatisticsTracking then
+        return
+      end
+
+      if not GLOBAL_SETTINGS.statisticsToastEnabled then
+        GLOBAL_SETTINGS.statisticsToastEnabled = {}
+      end
+      local current = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey]
+      GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] = not (current ~= false)
+
+      -- Update visual state immediately
+      local enabled = GLOBAL_SETTINGS.statisticsToastEnabled[self.statKey] ~= false
+      if enabled then
+        self:SetTextColor(0.7, 0.7, 0.7, 1)
+      else
+        self:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
+      end
+    end
+  end)
+
   return {
     frame = barFrame,
     fill = fill,
@@ -481,6 +552,7 @@ local function CreateStatBar(parent)
     tierBg = tierBg,
     tierContainer = tierContainer,
     bg = bg,
+    toastButton = toastButton,
   }
 end
 
@@ -523,6 +595,11 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   -- Store statKey on tier text for toast toggle functionality
   bar.tier.statKey = statKey
 
+  -- Store statKey on toast button for toast toggle functionality
+  if bar.toastButton then
+    bar.toastButton.statKey = statKey
+  end
+
   -- Initialize toast settings if needed (default: all enabled)
   if not GLOBAL_SETTINGS.statisticsToastEnabled then
     GLOBAL_SETTINGS.statisticsToastEnabled = {}
@@ -532,7 +609,7 @@ local function CreateBarRow(parent, statKey, yOffset, isLast, layoutOptions)
   end
 
   bar.tier:ClearAllPoints()
-  bar.tier:SetPoint('TOPRIGHT', bar.frame, 'TOPRIGHT', 0, 9)
+  bar.tier:SetPoint('TOPRIGHT', bar.frame, 'TOPRIGHT', -30, 9)
 
   bar.minText:SetPoint('BOTTOMLEFT', bar.frame, 'TOPLEFT', 0, 4)
   -- Show the max value inside the bar on the right
@@ -780,15 +857,19 @@ local function FormatMoneyText(copper)
   local c = math.floor(copper % 100)
 
   local parts = {}
+  local iconSize = 12
   if g > 0 then
-    table.insert(parts, string.format('%dg', g))
+    local goldIcon = string.format('|TInterface\\MoneyFrame\\UI-GoldIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', g, goldIcon))
   end
   if s > 0 then
-    table.insert(parts, string.format('%ds', s))
+    local silverIcon = string.format('|TInterface\\MoneyFrame\\UI-SilverIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', s, silverIcon))
   end
   -- Only show copper if it's non-zero.
   if c > 0 then
-    table.insert(parts, string.format('%dc', c))
+    local copperIcon = string.format('|TInterface\\MoneyFrame\\UI-CopperIcon:%d:%d:0:0|t', iconSize, iconSize)
+    table.insert(parts, string.format('%d%s', c, copperIcon))
   end
   return (#parts > 0) and table.concat(parts, ' ') or '-'
 end
@@ -827,6 +908,10 @@ function UpdateStatBar(statKey, value)
       if bar.tierBg then
         bar.tierBg:Hide()
       end
+      if bar.tierIcon then
+        bar.tierIcon:Hide()
+      end
+      -- Don't hide toast button here - it will be handled in the toast button section below
     else
       if cfg.type == 'money' then
         displayText = isZero and '-' or FormatMoneyText(rawValue)
@@ -875,6 +960,9 @@ function UpdateStatBar(statKey, value)
         if bar.tierBg then
           bar.tierBg:Hide()
         end
+        if bar.tierIcon then
+          bar.tierIcon:Hide()
+        end
       end
     end
     if bar.minText then
@@ -895,8 +983,8 @@ function UpdateStatBar(statKey, value)
     if cfg.type ~= 'percent' and not cfg.noTier and bar.tier and bar.tier:GetText() ~= '' then
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      -- Position tier text consistently from the right
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -100, 6)
+      -- Position tier text consistently from the right (moved 30px left)
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
       if bar.tierIcon then
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
@@ -909,6 +997,42 @@ function UpdateStatBar(statKey, value)
         bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
         bar.tierBg:Show()
       end
+    end
+
+    -- Show toast button for non-tier stats and certain percent stats when showStatisticsTracking is enabled
+    -- Exclude latency stats (lagHome, lagWorld) from showing toast buttons
+    local shouldShowToastButton = false
+    if bar.toastButton and GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking then
+      local isLatency = (statKey == 'lagHome' or statKey == 'lagWorld')
+      if not isLatency then
+        -- Show for noTier stats or percent stats that should have toast buttons
+        local percentStatsWithToast = {
+          lowestHealth = true,
+          lowestHealthThisLevel = true,
+          lowestHealthThisSession = true,
+          duelsWinPercent = true,
+        }
+        if cfg.noTier or percentStatsWithToast[statKey] then
+          shouldShowToastButton = true
+        end
+      end
+    end
+
+    if shouldShowToastButton then
+      bar.toastButton:Show()
+      bar.toastButton:ClearAllPoints()
+      -- Position toast button consistently from the right (moved 30px left)
+      bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
+      -- Update visual state based on toast enabled status
+      local toastEnabled =
+        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+      if toastEnabled then
+        bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
+      else
+        bar.toastButton:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
+      end
+    elseif bar.toastButton then
+      bar.toastButton:Hide()
     end
 
     -- Keep bar height consistent
@@ -952,6 +1076,7 @@ function UpdateStatBar(statKey, value)
       bar.text:SetText(string.format('%.1f%%', percent))
     end
     bar.tier:SetText('')
+    -- Don't hide toast button here - it will be handled in the toast button section below
     if bar.minText then
       bar.minText:SetText('0')
     end
@@ -1057,8 +1182,8 @@ function UpdateStatBar(statKey, value)
     else
       bar.tier:Show()
       bar.tier:ClearAllPoints()
-      -- Position tier text consistently from the right
-      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -100, 6)
+      -- Position tier text consistently from the right (moved 30px left)
+      bar.tier:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
       if bar.tierIcon then
         bar.tierIcon:ClearAllPoints()
         bar.tierIcon:SetPoint('LEFT', bar.tier, 'RIGHT', STAT_TIER_ICON_GAP, 0)
@@ -1071,6 +1196,44 @@ function UpdateStatBar(statKey, value)
         bar.tierBg:SetPoint('BOTTOMRIGHT', bar.tier, 'BOTTOMRIGHT', 8, -2)
         bar.tierBg:Show()
       end
+    end
+  end
+
+  -- Show toast button for non-tier stats and certain percent stats when showStatisticsTracking is enabled
+  -- Exclude latency stats (lagHome, lagWorld) from showing toast buttons
+  if bar.toastButton then
+    local shouldShowToastButton = false
+    if GLOBAL_SETTINGS and GLOBAL_SETTINGS.showStatisticsTracking then
+      local isLatency = (statKey == 'lagHome' or statKey == 'lagWorld')
+      if not isLatency then
+        -- Show for noTier stats or percent stats that should have toast buttons
+        local percentStatsWithToast = {
+          lowestHealth = true,
+          lowestHealthThisLevel = true,
+          lowestHealthThisSession = true,
+          duelsWinPercent = true,
+        }
+        if cfg.noTier or percentStatsWithToast[statKey] then
+          shouldShowToastButton = true
+        end
+      end
+    end
+
+    if shouldShowToastButton then
+      bar.toastButton:Show()
+      bar.toastButton:ClearAllPoints()
+      -- Position toast button consistently from the right (moved 30px left)
+      bar.toastButton:SetPoint('RIGHT', bar.frame, 'RIGHT', -130, 6)
+      -- Update visual state based on toast enabled status
+      local toastEnabled =
+        GLOBAL_SETTINGS.statisticsToastEnabled and GLOBAL_SETTINGS.statisticsToastEnabled[statKey] ~= false
+      if toastEnabled then
+        bar.toastButton:SetTextColor(0.7, 0.7, 0.7, 1)
+      else
+        bar.toastButton:SetTextColor(0.5, 0.5, 0.5, 1) -- Grey when disabled
+      end
+    else
+      bar.toastButton:Hide()
     end
   end
   bar.text:ClearAllPoints()
@@ -1767,12 +1930,6 @@ function InitializeStatisticsTab(tabContents)
     defaultValue = 0,
     width = 1,
   }, {
-    key = 'mapKeyPressesWhileMapBlocked',
-    label = 'Blocked Map Opens (Route Planner):',
-    tooltipKey = 'mapKeyPressesWhileMapBlocked',
-    defaultValue = 0,
-    width = 1,
-  }, {
     key = 'goldGained',
     label = 'Gold Gained:',
     tooltipKey = 'goldGained',
@@ -1782,6 +1939,12 @@ function InitializeStatisticsTab(tabContents)
     key = 'goldSpent',
     label = 'Gold Spent:',
     tooltipKey = 'goldSpent',
+    defaultValue = 0,
+    width = 1,
+  }, {
+    key = 'mapKeyPressesWhileMapBlocked',
+    label = 'Blocked Map Opens (Route Planner):',
+    tooltipKey = 'mapKeyPressesWhileMapBlocked',
     defaultValue = 0,
     width = 1,
   } }
