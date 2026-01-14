@@ -17,6 +17,8 @@ ACTIOBAR_FRAMES_TO_HIDE =
     MultiBarLeft,
     MultiBarRight,
     -- TBC Frames 
+    PetActionBar,
+    StanceBar,
     MicroMenu,
     MainActionBar,
     BagsBar,
@@ -25,6 +27,14 @@ ACTIOBAR_FRAMES_TO_HIDE =
     MultiBar6,
     MultiBar7,
  }
+
+-- TBC-only: remember which Blizzard UI elements were enabled/visible before Ultra hides them,
+-- so when we "show bars" in rested areas we don't force-show bars the user has hidden via
+-- Blizzard options (e.g. edit mode / hide bar art).
+local tbcBlizzVisibilitySnapshot = {}
+local function IsTBCClient()
+  return type(IsTBC) == 'function' and IsTBC()
+end
 
 --[[
   Main functions
@@ -47,6 +57,15 @@ function SetActionBarVisibility(hideActionBars, playerLevel)
 end
 
 function HideActionBars()
+  if IsTBCClient() then
+    for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
+      if frame and frame.IsShown then
+        -- Snapshot what the Blizzard UI is currently showing (before we hide everything).
+        tbcBlizzVisibilitySnapshot[frame] = frame:IsShown() == true
+      end
+    end
+  end
+
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
     -- Force Hide will unregister to avoid protected function errors
     ForceHideFrame(frame)
@@ -54,6 +73,32 @@ function HideActionBars()
 end
 
 function ShowActionBars()
+  if IsTBCClient() then
+    -- If we haven't taken a snapshot yet (e.g. login while resting), take one now.
+    -- In that case the bars are still in their Blizzard-configured state.
+    if not tbcBlizzVisibilitySnapshot._initialized then
+      for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
+        if frame and frame.IsShown then
+          tbcBlizzVisibilitySnapshot[frame] = frame:IsShown() == true
+        end
+      end
+      tbcBlizzVisibilitySnapshot._initialized = true
+    end
+
+    for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
+      if frame then
+        -- Restore parent first (so Hide() doesn't leave it under UltraHiddenParent).
+        RestoreAndShowFrame(frame)
+        -- Then respect Blizzard's visibility choice.
+        local shouldShow = tbcBlizzVisibilitySnapshot[frame]
+        if shouldShow == false and frame.Hide then
+          frame:Hide()
+        end
+      end
+    end
+    return
+  end
+
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
     RestoreAndShowFrame(frame)
   end
