@@ -213,6 +213,7 @@ function ToggleSettings()
 end
 
 SLASH_TOGGLESETTINGS1 = '/uhc'
+SLASH_TOGGLESETTINGS2 = '/ultra'
 SlashCmdList['TOGGLESETTINGS'] = ToggleSettings
 
 -- Function to open settings and switch to a specific tab

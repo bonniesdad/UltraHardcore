@@ -15,6 +15,15 @@ local TargetFrame, TargetFrameTextureFrame, TargetFramePortrait
 local TargetFrameToT, TargetFrameToTTextureFrame, TargetFrameToTPortrait
 local TargetFrameTextureFrameRaidTargetIcon
 
+-- TBC: Focus frame equivalents
+local FocusFrame, FocusFrameTextureFrame, FocusFramePortrait
+local FocusFrameToT, FocusFrameToTTextureFrame, FocusFrameToTPortrait
+local FocusFrameTextureFrameRaidTargetIcon
+
+local function IsTBCClient()
+  return type(IsTBC) == 'function' and IsTBC()
+end
+
 -- Update cached frame references
 local function UpdateCachedFrames()
   TargetFrame = _G.TargetFrame
@@ -24,6 +33,18 @@ local function UpdateCachedFrames()
   TargetFrameToTTextureFrame = _G.TargetFrameToTTextureFrame
   TargetFrameToTPortrait = _G.TargetFrameToTPortrait
   TargetFrameTextureFrameRaidTargetIcon = _G.TargetFrameTextureFrameRaidTargetIcon
+
+  if IsTBCClient() then
+    FocusFrame = _G.FocusFrame
+    FocusFrameTextureFrame = _G.FocusFrameTextureFrame
+    -- Focus portrait globals vary by client/build; try a few common names.
+    -- FocusFramePortrait = _G.FocusFramePortrait or _G.FocusFrameTextureFramePortrait or _G.FocusFramePortraitFramePortrait
+    FocusFrameToT = _G.FocusFrameToT
+    FocusFrameToTTextureFrame = _G.FocusFrameToTTextureFrame
+    FocusFrameToTPortrait = _G.FocusFrameToTPortrait or _G.FocusFrameToTTextureFramePortrait
+    FocusFrameTextureFrameRaidTargetIcon =
+      _G.FocusFrameTextureFrameRaidTargetIcon or _G.FocusFrameTextureFrameRaidIcon
+  end
 end
 
 -- Hide all texture regions inside frame except portrait, raid icon
@@ -39,6 +60,34 @@ local function HideTextureRegions(frame)
   end
 end
 
+-- Hide texture regions but keep specific region objects visible (e.g. portrait/raid icon).
+local function HideTextureRegionsExcept(frame, exceptions)
+  if not frame or targetFrameMask.all then return end
+
+  local keep = {}
+  if type(exceptions) == 'table' then
+    for i = 1, #exceptions do
+      local obj = exceptions[i]
+      if obj then
+        keep[obj] = true
+      end
+    end
+  end
+
+  local regions = { frame:GetRegions() }
+  for i = 1, #regions do
+    local region = regions[i]
+    if region and not keep[region] and not region:IsProtected() then
+      region:SetAlpha(0)
+    end
+  end
+end
+
+local function GetFocusPortrait()
+  -- Focus portrait globals vary by client/build.
+  return _G.FocusFramePortrait or _G.FocusFrameTextureFramePortrait or _G.FocusFramePortraitFramePortrait
+end
+
 -- Apply alpha to hide subframes
 local function HideSubFrames(framePrefix)
   if targetFrameMask.all then return end
@@ -52,9 +101,9 @@ local function HideSubFrames(framePrefix)
 end
 
 -- Show/hide portrait
-local function ApplyPortrait()
-  if TargetFramePortrait then
-    TargetFramePortrait:SetAlpha(targetFrameMask.portrait and 1 or 0)
+local function ApplyPortraitFor(portraitFrame)
+  if portraitFrame then
+    portraitFrame:SetAlpha(targetFrameMask.portrait and 1 or 0)
   end
 end
 
@@ -150,9 +199,84 @@ local function PositionAuras()
 end
 
 -- Show/hide raid icon
-local function ApplyRaidIcon()
-  if TargetFrameTextureFrameRaidTargetIcon then
-    TargetFrameTextureFrameRaidTargetIcon:SetAlpha(targetFrameMask.raidIcon and 1 or 0)
+local function ApplyRaidIconFor(raidIconFrame)
+  if raidIconFrame then
+    raidIconFrame:SetAlpha(targetFrameMask.raidIcon and 1 or 0)
+  end
+end
+
+local function ApplyAurasFor(framePrefix, showBuffs, showDebuffs)
+  for i = 1, maxBuffs do
+    local buff = _G[framePrefix .. 'Buff' .. i]
+    if buff then
+      buff:SetAlpha(showBuffs and 1 or 0)
+    end
+  end
+
+  for i = 1, maxDebuffs do
+    local debuff = _G[framePrefix .. 'Debuff' .. i]
+    if debuff then
+      debuff:SetAlpha(showDebuffs and 1 or 0)
+    end
+  end
+end
+
+local function PositionAurasFor(framePrefix, portraitFrame, showBuffs, showDebuffs)
+  if not portraitFrame then return end
+
+  local spacing = 5 -- spacing between icons
+  local size = 16 -- icon size
+  local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
+
+  -- Buffs
+  local buffRowsUsed = 0
+  if showBuffs then
+    local shownIndex = 0
+    for i = 1, maxBuffs do
+      local buff = _G[framePrefix .. 'Buff' .. i]
+      if buff and buff:IsShown() then
+        shownIndex = shownIndex + 1
+
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
+
+        buff:ClearAllPoints()
+        buff:SetPoint(
+          'LEFT',
+          portraitFrame,
+          'RIGHT',
+          spacing + col * (size + spacing),
+          15 - row * (size + spacing)
+        )
+
+        buffRowsUsed = row + 1
+      end
+    end
+  end
+
+  -- Debuffs
+  if showDebuffs then
+    local shownIndex = 0
+    local baseYOffset = 5 - buffRowsUsed * (size + spacing) - spacing
+
+    for i = 1, maxDebuffs do
+      local debuff = _G[framePrefix .. 'Debuff' .. i]
+      if debuff and debuff:IsShown() then
+        shownIndex = shownIndex + 1
+
+        local row = math.floor((shownIndex - 1) / maxPerRow)
+        local col = (shownIndex - 1) % maxPerRow
+
+        debuff:ClearAllPoints()
+        debuff:SetPoint(
+          'LEFT',
+          portraitFrame,
+          'RIGHT',
+          spacing + col * (size + spacing),
+          baseYOffset - row * (size + spacing)
+        )
+      end
+    end
   end
 end
 
@@ -204,7 +328,58 @@ local function HideTargetOfTargetFrames()
 
   -- Show/hide portrait based on mask (same as target frame)
   if TargetFrameToTPortrait then
-    TargetFrameToTPortrait:SetAlpha(targetFrameMask.portrait and 1 or 0)
+    ApplyPortraitFor(TargetFrameToTPortrait)
+  end
+end
+
+local function HideFocusTargetOfTargetFrames()
+  if targetFrameMask.all then return end
+  if not IsTBCClient() then return end
+
+  if FocusFrameToT then
+    FocusFrameToT:SetAlpha(1)
+  end
+
+  -- Hide all FocusFrameToT subframes (best-effort; names vary by client/build)
+  HideSubFrames('FocusFrameToT')
+
+  local totBackground = _G.FocusFrameToTBackground
+  if totBackground and not totBackground:IsProtected() then
+    totBackground:SetAlpha(0)
+  end
+
+  local totHealthBar = _G.FocusFrameToTHealthBar
+  if totHealthBar then
+    HideTextureRegions(totHealthBar)
+    local healthBarBg = _G.FocusFrameToTHealthBarBackground
+    if healthBarBg and not healthBarBg:IsProtected() then
+      healthBarBg:SetAlpha(0)
+    end
+  end
+
+  local totManaBar = _G.FocusFrameToTManaBar
+  if totManaBar then
+    HideTextureRegions(totManaBar)
+    local manaBarBg = _G.FocusFrameToTManaBarBackground
+    if manaBarBg and not manaBarBg:IsProtected() then
+      manaBarBg:SetAlpha(0)
+    end
+  end
+
+  if FocusFrameToTTextureFrame then
+    -- Only wipe texture regions if we can restore the portrait; some TBC builds
+    -- embed the portrait within the texture frame regions.
+    if FocusFrameToTPortrait then
+      HideTextureRegions(FocusFrameToTTextureFrame)
+    end
+    local totTexture = _G.FocusFrameToTTextureFrameTexture
+    if totTexture and not totTexture:IsProtected() then
+      totTexture:SetAlpha(0)
+    end
+  end
+
+  if FocusFrameToTPortrait then
+    ApplyPortraitFor(FocusFrameToTPortrait)
   end
 end
 
@@ -220,35 +395,72 @@ local function ApplyMask()
     TargetFrameTextureFrame:SetAlpha(1)
   end
 
-  -- If mask is set to show all, do nothing (show Blizzard default frames)
-  if targetFrameMask.all then
-    if TargetFrameToT then
-      TargetFrameToT:SetAlpha(1)
+  local function ApplyTargetMask()
+    if targetFrameMask.all then
+      if TargetFrame then TargetFrame:SetAlpha(1) end
+      if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(1) end
+      if TargetFrameToT then TargetFrameToT:SetAlpha(1) end
+      return
     end
-    return
+
+    if not UnitExists('target') then
+      if TargetFrame then TargetFrame:SetAlpha(0) end
+      if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(0) end
+      if TargetFrameToT then TargetFrameToT:SetAlpha(0) end
+      return
+    end
+
+    HideSubFrames('TargetFrame')
+    HideTextureRegions(TargetFrameTextureFrame)
+    ApplyPVPIcon()
+    ApplyPortraitFor(TargetFramePortrait)
+    ApplyRaidIconFor(TargetFrameTextureFrameRaidTargetIcon)
+    ApplyAuras()
+    PositionAuras()
+    HideTargetOfTargetFrames()
   end
 
-  if not UnitExists('target') then
-    if TargetFrame then
-      TargetFrame:SetAlpha(0)
+  local function ApplyFocusMask()
+    if not IsTBCClient() or not FocusFrame then
+      return
     end
-    if TargetFrameTextureFrame then
-      TargetFrameTextureFrame:SetAlpha(0)
+
+    if targetFrameMask.all then
+      FocusFrame:SetAlpha(1)
+      if FocusFrameTextureFrame then FocusFrameTextureFrame:SetAlpha(1) end
+      if FocusFrameToT then FocusFrameToT:SetAlpha(1) end
+      return
     end
-    if TargetFrameToT then
-      TargetFrameToT:SetAlpha(0)
+
+    if not UnitExists('focus') then
+      FocusFrame:SetAlpha(0)
+      if FocusFrameTextureFrame then FocusFrameTextureFrame:SetAlpha(0) end
+      if FocusFrameToT then FocusFrameToT:SetAlpha(0) end
+      return
     end
-    return
+
+    -- Focus exists: keep the main art container visible.
+    FocusFrame:SetAlpha(1)
+    if FocusFrameTextureFrame then
+      FocusFrameTextureFrame:SetAlpha(1)
+    end
+
+    -- Best-effort: mirror the same hiding we do for target.
+    local focusPortrait = GetFocusPortrait()
+    HideSubFrames('FocusFrame')
+    -- Hide the focus frame artwork textures but keep the portrait visible.
+    if FocusFrameTextureFrame then
+      HideTextureRegionsExcept(FocusFrameTextureFrame, { focusPortrait, FocusFrameTextureFrameRaidTargetIcon })
+    end
+    ApplyPortraitFor(focusPortrait)
+    ApplyRaidIconFor(FocusFrameTextureFrameRaidTargetIcon)
+    ApplyAurasFor('FocusFrame', targetFrameMask.buffs, targetFrameMask.debuffs)
+    PositionAurasFor('FocusFrame', focusPortrait, targetFrameMask.buffs, targetFrameMask.debuffs)
+    HideFocusTargetOfTargetFrames()
   end
 
-  HideSubFrames('TargetFrame')
-  HideTextureRegions(TargetFrameTextureFrame)
-  ApplyPVPIcon()
-  ApplyPortrait()
-  ApplyRaidIcon()
-  ApplyAuras()
-  PositionAuras()
-  HideTargetOfTargetFrames()
+  ApplyTargetMask()
+  ApplyFocusMask()
 end
 
 -- In some clients (notably TBC variants), parts of Blizzard's TargetFrame implementation
@@ -281,6 +493,10 @@ TryHookGlobal('TargetFrame_UpdateAuras', ApplyMask)
 TryHookMethod(TargetFrame, 'Update', ApplyMask)
 TryHookMethod(TargetFrame, 'UpdateAuras', ApplyMask)
 
+-- TBC: Focus frame hook points (best-effort; functions vary by client/build)
+TryHookGlobal('FocusFrame_Update', ApplyMask)
+TryHookGlobal('FocusFrame_UpdateAuras', ApplyMask)
+
 -- Hook TargetFrameToT_Update if it exists
 if _G.TargetFrameToT_Update then
   hooksecurefunc('TargetFrameToT_Update', ApplyMask)
@@ -297,6 +513,9 @@ function SetTargetFrameDisplay(mask)
   if not targetFrameEventFrame then
     targetFrameEventFrame = CreateFrame('Frame')
     targetFrameEventFrame:RegisterEvent('PLAYER_TARGET_CHANGED')
+    if IsTBCClient() then
+      targetFrameEventFrame:RegisterEvent('PLAYER_FOCUS_CHANGED')
+    end
     targetFrameEventFrame:RegisterEvent('GROUP_ROSTER_UPDATE')
     -- Keep aura/portrait/raid-icon masking up to date in clients where TargetFrame_Update*
     -- can't be hooked (e.g., functions are local instead of global).
@@ -309,10 +528,12 @@ function SetTargetFrameDisplay(mask)
     targetFrameEventFrame:SetScript('OnEvent', function(_, event, unit)
       if event == 'PLAYER_TARGET_CHANGED' or event == 'GROUP_ROSTER_UPDATE' then
         ApplyMask()
+      elseif event == 'PLAYER_FOCUS_CHANGED' then
+        ApplyMask()
       elseif
         event == 'UNIT_AURA' or event == 'UNIT_FACTION' or event == 'UNIT_PORTRAIT_UPDATE' or
           event == 'UNIT_TARGET' then
-        if unit == 'target' or unit == 'targettarget' then
+        if unit == 'target' or unit == 'targettarget' or unit == 'focus' or unit == 'focustarget' then
           ApplyMask()
         end
       elseif event == 'RAID_TARGET_UPDATE' then
