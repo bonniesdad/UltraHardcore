@@ -44,7 +44,20 @@ local function ApplyStatsBackgroundOpacity()
   statsBackground:SetColorTexture(0, 0, 0, alpha)
   -- Also update backdrop color
   statsFrame:SetBackdropColor(0.1, 0.1, 0.1, alpha * 0.9)
-  statsFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, 0.9) -- Light grey decorative border
+  
+  -- Border opacity
+  local borderAlpha = 0.9
+  if GLOBAL_SETTINGS and GLOBAL_SETTINGS.statisticsBorderOpacity ~= nil then
+    borderAlpha = GLOBAL_SETTINGS.statisticsBorderOpacity
+  end
+  -- Clamp between 0 and 1
+  if borderAlpha < 0 then
+    borderAlpha = 0
+  end
+  if borderAlpha > 1 then
+    borderAlpha = 1
+  end
+  statsFrame:SetBackdropBorderColor(0.6, 0.6, 0.6, borderAlpha) -- Light grey decorative border
 end
 
 -- Expose globally for instant UI updates

@@ -2126,6 +2126,60 @@ function InitializeSettingsOptionsTab(tabContents)
 
   addUIRow(opacityRow, 'statistics background opacity transparency', statsSubHeader)
 
+  -- Border opacity row
+  local borderOpacityRow = CreateFrame('Frame', nil, colorSectionFrame)
+  borderOpacityRow:SetSize(LAYOUT.ROW_WIDTH, LAYOUT.COLOR_ROW_HEIGHT)
+  -- Position will be handled by reflow
+  borderOpacityRow:SetPoint('TOPLEFT', opacityRow, 'BOTTOMLEFT', 0, -6)
+
+  local borderOpacityLabel = borderOpacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  borderOpacityLabel:SetPoint('LEFT', borderOpacityRow, 'LEFT', 0, 0)
+  borderOpacityLabel:SetWidth(LABEL_WIDTH)
+  borderOpacityLabel:SetJustifyH('LEFT')
+  borderOpacityLabel:SetText('Border Opacity')
+
+  if tempSettings.statisticsBorderOpacity == nil then
+    tempSettings.statisticsBorderOpacity = GLOBAL_SETTINGS.statisticsBorderOpacity or 0.9
+  end
+
+  local borderPercentText = borderOpacityRow:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  borderPercentText:SetPoint('LEFT', borderOpacityRow, 'LEFT', LABEL_WIDTH + GAP, 0)
+  borderPercentText:SetWidth(40)
+  borderPercentText:SetJustifyH('LEFT')
+  borderPercentText:SetText(
+    tostring(math.floor((tempSettings.statisticsBorderOpacity or 0.9) * 100)) .. '%'
+  )
+
+  local borderSlider = CreateFrame('Slider', nil, borderOpacityRow, 'OptionsSliderTemplate')
+  borderSlider:SetPoint('LEFT', borderPercentText, 'RIGHT', 10, 0)
+  borderSlider:SetSize(180, 16)
+  borderSlider:SetMinMaxValues(0, 100)
+  borderSlider:SetValueStep(1)
+  borderSlider:SetObeyStepOnDrag(true)
+  borderSlider:SetValue((tempSettings.statisticsBorderOpacity or 0.9) * 100)
+  if borderSlider.Low then
+    borderSlider.Low:SetText('0%')
+  end
+  if borderSlider.High then
+    borderSlider.High:SetText('100%')
+  end
+  if borderSlider.Text then
+    borderSlider.Text:SetText('')
+  end
+
+  borderSlider:SetScript('OnValueChanged', function(self, val)
+    local pct = math.floor(val + 0.5)
+    borderPercentText:SetText(pct .. '%')
+    tempSettings.statisticsBorderOpacity = pct / 100
+    -- Apply opacity instantly
+    GLOBAL_SETTINGS.statisticsBorderOpacity = tempSettings.statisticsBorderOpacity
+    if _G.ApplyStatsBackgroundOpacity then
+      _G.ApplyStatsBackgroundOpacity()
+    end
+  end)
+
+  addUIRow(borderOpacityRow, 'statistics border opacity transparency', statsSubHeader)
+
   -- Scale subheader
   local scaleSubHeader = colorSectionFrame:CreateFontString(nil, 'OVERLAY', SUBHEADER_FONT)
   -- Position will be handled by reflow
