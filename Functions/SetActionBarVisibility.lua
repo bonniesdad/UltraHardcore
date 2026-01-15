@@ -64,6 +64,10 @@ function HideActionBars()
         tbcBlizzVisibilitySnapshot[frame] = frame:IsShown() == true
       end
     end
+    -- Mark initialized here because this snapshot is taken from the true Blizzard state
+    -- (before Ultra hides frames). If we don't, ShowActionBars() can overwrite the snapshot
+    -- while everything is hidden, causing bars to never reappear.
+    tbcBlizzVisibilitySnapshot._initialized = true
   end
 
   for _, frame in ipairs(ACTIOBAR_FRAMES_TO_HIDE) do
@@ -134,7 +138,7 @@ function OnPlayerLevelUpEvent(self, event, newLevel)
 end
 
 local function OnPlayerUnitAuraEvent(self, unit)
-  if unit == 'player' then
+  if unit == 'player' then  
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
   end
 end
@@ -146,14 +150,31 @@ f:RegisterEvent('PLAYER_REGEN_DISABLED') -- entering combat
 f:RegisterEvent('PLAYER_REGEN_ENABLED') -- leaving combat
 f:RegisterEvent('PLAYER_CONTROL_LOST') -- starting taxi/control loss
 f:RegisterEvent('PLAYER_CONTROL_GAINED') -- ending taxi/control gain
-f:RegisterEvent('PLAYER_ENTERING_WORLD') -- ensure state correct on reload/login
+f:RegisterEvent('PLAYER_LOGIN') -- ensure state correct on reload/login (after UI is available)
 f:SetScript('OnEvent', function(self, event, ...)
   if event == 'UNIT_AURA' then
     OnPlayerUnitAuraEvent(self, ...)
   elseif event == 'PLAYER_REGEN_DISABLED' or event == 'PLAYER_REGEN_ENABLED' then
     SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
-  elseif event == 'PLAYER_ENTERING_WORLD' then
-    SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars)
+  elseif event == 'PLAYER_LOGIN' then
+    -- Small delay to let UltraHardcore's PLAYER_LOGIN handler load DB/settings first.
+    if C_Timer and C_Timer.After then
+      C_Timer.After(0.1, function()
+        if IsTBCClient() then
+          -- TBC: briefly show bars on login/reload, then apply the normal visibility rules.
+          -- This helps users quickly access bars after /reload or logging in.
+          ShowActionBars()
+          C_Timer.After(1, function()
+            SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
+          end)
+        else
+          SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
+        end
+      end)
+    else
+      -- Fallback: apply immediately
+      SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
+    end
   elseif event == 'PLAYER_CONTROL_GAINED' or event == 'PLAYER_CONTROL_LOST' then
     -- We need a slight delay after getting on a taxi before UnitOnTaxi will return true
     if C_Timer and C_Timer.After then

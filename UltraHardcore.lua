@@ -78,7 +78,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
 
     SetTargetTooltipDisplay(GLOBAL_SETTINGS.hideTargetTooltip or false)
     SetUIErrorsDisplay(GLOBAL_SETTINGS.hideUIErrors or false)
-    SetActionBarVisibility(GLOBAL_SETTINGS.hideActionBars or false)
     SetNameplateDisabled(GLOBAL_SETTINGS.disableNameplateHealth or false)
     HidePlayerCastBar()
     ForceFirstPersonCamera(GLOBAL_SETTINGS.setFirstPersonCamera or false)
