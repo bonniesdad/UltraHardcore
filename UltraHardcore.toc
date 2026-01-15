@@ -28,6 +28,7 @@ Functions/OnCombatLogEvent.lua
 Functions/PatchNotes.lua
 Functions/PatchNotesDisplay.lua
 Functions/VersionUpdateDialog.lua
+Functions/IntroPanel.lua
 Functions/Utils/AudioUtils.lua
 Functions/HidePlayerCastBar.lua
 Functions/JoinParty.lua

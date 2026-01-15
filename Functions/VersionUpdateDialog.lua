@@ -116,6 +116,11 @@ function ShowVersionUpdateDialog()
     return
   end
 
+  -- Don't show patch notes if intro panel is showing
+  if IsIntroPanelShowing and IsIntroPanelShowing() then
+    return
+  end
+
   local currentVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
 
   -- Get last seen version from database
