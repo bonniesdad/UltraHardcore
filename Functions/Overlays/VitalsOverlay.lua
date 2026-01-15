@@ -7,6 +7,14 @@ local overlayEventFrame = CreateFrame('Frame')
 overlayEventFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
 overlayEventFrame:RegisterEvent('ADDON_LOADED')
 
+local function getVitalsOverlayYOffset()
+  -- TBC UI sits slightly differently; move the overlay up a bit only on TBC clients.
+  if type(IsTBC) == 'function' and IsTBC() then
+    return 15
+  end
+  return 0
+end
+
 local resourceEvents = {
   UNIT_MAXHEALTH = true,
   UNIT_MAXPOWER = true,
@@ -176,6 +184,7 @@ local function createOverlayFrame()
 
   local characterModelFrame = _G.CharacterModelFrame
   local playerParent = characterModelFrame or CharacterFrame
+  local yOffset = getVitalsOverlayYOffset()
 
   -- Determine pet parent: prefer PetFrame, fallback to characterModelFrame then CharacterFrame
   local petModelFrame = _G.PetModelFrame
@@ -187,19 +196,19 @@ local function createOverlayFrame()
       if overlayFrame.healthText then
         overlayFrame.healthText:SetParent(characterModelFrame)
         overlayFrame.healthText:ClearAllPoints()
-        overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 34)
+        overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 34 + yOffset)
         overlayFrame.healthIcon:SetParent(characterModelFrame)
         overlayFrame.healthIcon:ClearAllPoints()
-        overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34)
+        overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34 + yOffset)
       end
 
       if overlayFrame.manaText then
         overlayFrame.manaText:SetParent(characterModelFrame)
         overlayFrame.manaText:ClearAllPoints()
-        overlayFrame.manaText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 18)
+        overlayFrame.manaText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 18 + yOffset)
         overlayFrame.manaIcon:SetParent(characterModelFrame)
         overlayFrame.manaIcon:ClearAllPoints()
-        overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 18)
+        overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 18 + yOffset)
       end
 
       if overlayFrame.petHealthText then
@@ -233,10 +242,10 @@ local function createOverlayFrame()
   -- Player health icon + text (bottom-left)
   overlayFrame.healthIcon = playerParent:CreateTexture(nil, 'OVERLAY')
   overlayFrame.healthIcon:SetSize(12, 12)
-  overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 34)
+  overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 34 + yOffset)
   overlayFrame.healthIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\health64.png')
   overlayFrame.healthText = playerParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  overlayFrame.healthText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 34)
+  overlayFrame.healthText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 34 + yOffset)
   overlayFrame.healthText:SetJustifyH('LEFT')
   overlayFrame.healthText:SetJustifyV('BOTTOM')
   overlayFrame.healthText:SetTextColor(0.04, 0.84, 0.13)
@@ -244,10 +253,10 @@ local function createOverlayFrame()
   -- Player power icon + text (bottom-left under health)
   overlayFrame.manaIcon = playerParent:CreateTexture(nil, 'OVERLAY')
   overlayFrame.manaIcon:SetSize(12, 12)
-  overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 18)
+  overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 6, 18 + yOffset)
   overlayFrame.manaIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\mana64.png')
   overlayFrame.manaText = playerParent:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  overlayFrame.manaText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 18)
+  overlayFrame.manaText:SetPoint('BOTTOMLEFT', playerParent, 'BOTTOMLEFT', 20, 18 + yOffset)
   overlayFrame.manaText:SetJustifyH('LEFT')
   overlayFrame.manaText:SetJustifyV('BOTTOM')
   overlayFrame.manaText:SetTextColor(0.5, 0.8, 1)
