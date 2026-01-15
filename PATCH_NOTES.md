@@ -1,5 +1,19 @@
 # Patch Notes
 
+## Version 2.1.0 - 2026-01-14 (TBC)
+
+### Bug Fixes
+
+- Fix: Party health visible on raid style frames.
+- Fix: Set Focus frame showing health etc.
+- Fix: With hide action bars, rested zone repositions bars.
+- Fix: When HideActionBars enabled, blizzard artwork always reappears when resting.
+- Fix: Vitals overlay hidden behind TBC dropdown.
+
+### Other
+
+- Added /ultra command to open settings menu.
+
 ## Version 1.4.0 - 2026-01-05
 
 ### New Features

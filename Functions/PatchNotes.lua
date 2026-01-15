@@ -1,25 +1,20 @@
 -- Patch notes data structure - update this for each release
-PATCH_NOTES = { 
-  {
-    version = '2.1.0',
-    date = '2026-01-14',
-    expansion = 'TBC',
-    notes = {
-      'TODO:',
-      '• Buff bar doesnt work on TBC.',
-      '',
-      'BUG FIXES:',
-      '• Fix: Party health visible on raid style frames.',
-      '• Fix: Set Focus frame showing health etc.',
-      '• Fix: With hide action bars, rested zone repositions bars.',
-      '• Fix: When HideActionBars enabled, blizzard artwork always reappears when resting.',
-      '• Fix: Vitals overlay hidden behind TBC dropdown.',
-      '',
-      'OTHER:',
-      '• Added /ultra commant to open settings menu.',
-    },
+PATCH_NOTES = { {
+  version = '2.1.0',
+  date = '2026-01-14',
+  expansion = 'TBC',
+  notes = {
+    'BUG FIXES:',
+    '• Fix: Party health visible on raid style frames.',
+    '• Fix: Set Focus frame showing health etc.',
+    '• Fix: With hide action bars, rested zone repositions bars.',
+    '• Fix: When HideActionBars enabled, blizzard artwork always reappears when resting.',
+    '• Fix: Vitals overlay hidden behind TBC dropdown.',
+    '',
+    'OTHER:',
+    '• Added /ultra commant to open settings menu.',
   },
-  {
+}, {
   version = '2.0.0',
   date = '2026-01-13',
   expansion = 'TBC',
