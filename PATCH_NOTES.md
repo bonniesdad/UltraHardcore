@@ -1,5 +1,11 @@
 # Patch Notes
 
+## Version 2.1.1 - 2026-01-14 (TBC)
+
+### Bug Fixes
+
+- Fix: Party health on party, raid and compact variants.
+
 ## Version 2.1.0 - 2026-01-14 (TBC)
 
 ### Bug Fixes

@@ -1,5 +1,13 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '2.1.1',
+  date = '2026-01-14',
+  expansion = 'TBC',
+  notes = {
+    'BUG FIXES:',
+    '• Fix: Party health on party, raid and compact variants.',
+  },
+}, {
   version = '2.1.0',
   date = '2026-01-14',
   expansion = 'TBC',
