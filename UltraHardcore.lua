@@ -35,7 +35,22 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   if event == 'PLAYER_LOGIN' then
     LoadDBData()
     HidePlayerMapIndicators()
-    ShowVersionUpdateDialog()
+    -- Show intro panel first if it's a first time character
+    -- Delay slightly to ensure UnitGUID is available
+    if ShowIntroPanel then
+      C_Timer.After(0.1, function()
+        ShowIntroPanel()
+        -- Check if intro panel is showing after a brief delay
+        C_Timer.After(0.2, function()
+          if not (IsIntroPanelShowing and IsIntroPanelShowing()) then
+            ShowVersionUpdateDialog()
+          end
+        end)
+      end)
+    else
+      -- If ShowIntroPanel doesn't exist, show version dialog normally
+      ShowVersionUpdateDialog()
+    end
     SetPlayerFrameDisplay()
 
     if SetVitalsOverlayEnabled then
