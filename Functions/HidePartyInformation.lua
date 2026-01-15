@@ -294,9 +294,36 @@ local function UHC_UpdateRaidOfflineStatus(frame)
   end
 end
 
+-- Compact group frame compatibility:
+-- Some clients/builds (notably TBC variants and "compact party frames") expose the visible compact
+-- unit frames as CompactPartyFrameMember{n} instead of CompactRaidFrame{n}.
+local function UHC_GetCompactGroupFramePrefix()
+  -- Prefer actual raid frames when they exist (prevents breaking raid mode if both exist)
+  if _G['CompactRaidFrame1'] then
+    return 'CompactRaidFrame'
+  end
+
+  if type(IsTBC) == 'function' and IsTBC() then
+    if _G['CompactPartyFrameMember1'] then
+      return 'CompactPartyFrameMember'
+    end
+  end
+
+  if _G['CompactPartyFrameMember1'] then
+    return 'CompactPartyFrameMember'
+  end
+
+  return 'CompactRaidFrame'
+end
+
+local function UHC_GetCompactGroupFrame(i)
+  local prefix = UHC_GetCompactGroupFramePrefix()
+  return _G[prefix .. i], prefix
+end
+
 -- Raid (Compact) Frames: Hide only the health bar so the name remains visible
 local function HideRaidHealthBar(i)
-  local frame = _G['CompactRaidFrame' .. i]
+  local frame, prefix = UHC_GetCompactGroupFrame(i)
   if frame then
     -- Hide all health-related elements defensively
     local elements =
@@ -319,11 +346,12 @@ local function HideRaidHealthBar(i)
     end
   else
     -- Fallback to global-named health bar if direct frame not available
-    local healthBar = _G['CompactRaidFrame' .. i .. 'HealthBar']
+    local usePrefix = prefix or UHC_GetCompactGroupFramePrefix()
+    local healthBar = _G[usePrefix .. i .. 'HealthBar']
     if healthBar then
       UHC_SetElementSuppressed(healthBar, true)
     end
-    local healthText = _G['CompactRaidFrame' .. i .. 'HealthBarText']
+    local healthText = _G[usePrefix .. i .. 'HealthBarText']
     if healthText then
       UHC_SetElementSuppressed(healthText, true)
     end
@@ -331,7 +359,7 @@ local function HideRaidHealthBar(i)
 end
 
 local function ShowRaidHealthBar(i)
-  local frame = _G['CompactRaidFrame' .. i]
+  local frame, prefix = UHC_GetCompactGroupFrame(i)
   if frame then
     local elements =
       {
@@ -352,11 +380,12 @@ local function ShowRaidHealthBar(i)
       UHC_SetElementSuppressed(frame.statusText, false)
     end
   else
-    local healthBar = _G['CompactRaidFrame' .. i .. 'HealthBar']
+    local usePrefix = prefix or UHC_GetCompactGroupFramePrefix()
+    local healthBar = _G[usePrefix .. i .. 'HealthBar']
     if healthBar then
       UHC_SetElementSuppressed(healthBar, false)
     end
-    local healthText = _G['CompactRaidFrame' .. i .. 'HealthBarText']
+    local healthText = _G[usePrefix .. i .. 'HealthBarText']
     if healthText then
       UHC_SetElementSuppressed(healthText, false)
     end
@@ -373,13 +402,19 @@ function SetRaidFramesInfo(hideGroupHealth)
     end
   end
 
-  local containerBorder = _G['CompactRaidFrameContainerBorderFrame']
-  if containerBorder then
-    UHC_SetElementSuppressed(containerBorder, hideGroupHealth)
-  end
-  local raidBackground = _G['CompactRaidFrameBackground']
-  if raidBackground then
-    UHC_SetElementSuppressed(raidBackground, hideGroupHealth)
+  -- Container/background global names vary by client/build; suppress what exists.
+  local globalsToSuppress =
+    {
+      'CompactRaidFrameContainerBorderFrame',
+      'CompactRaidFrameBackground',
+      'CompactPartyFrameContainerBorderFrame',
+      'CompactPartyFrameBackground',
+    }
+  for _, gName in ipairs(globalsToSuppress) do
+    local g = _G[gName]
+    if g then
+      UHC_SetElementSuppressed(g, hideGroupHealth)
+    end
   end
 end
 
@@ -467,6 +502,10 @@ local function HookCompactRaidHealthHiding()
     if name:match('^CompactRaidFrame') or name:match('^CompactRaidGroup') then
       return true
     end
+    -- TBC/compact-party variants
+    if name:match('^CompactPartyFrameMember') or name:match('^CompactPartyFrame') then
+      return true
+    end
     return false
   end
   local function UHC_UpdateRaidCircleAndIndicatorSizes(frame)
@@ -552,6 +591,12 @@ local function HookCompactRaidHealthHiding()
     end
     if _G['CompactRaidFrameContainerBorderFrame'] then
       UHC_SetElementSuppressed(_G['CompactRaidFrameContainerBorderFrame'], true)
+    end
+    if _G['CompactPartyFrameBackground'] then
+      UHC_SetElementSuppressed(_G['CompactPartyFrameBackground'], true)
+    end
+    if _G['CompactPartyFrameContainerBorderFrame'] then
+      UHC_SetElementSuppressed(_G['CompactPartyFrameContainerBorderFrame'], true)
     end
     -- Add circular frame if not present
     if not frame.uhcCircle then

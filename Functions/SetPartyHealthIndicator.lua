@@ -47,7 +47,38 @@ PET_TARGET_HIGHLIGHT_FRAMES = {}
 -- Cache of all raid health indicators
 RAID_HEALTH_INDICATOR_FRAMES = {}
 
--- Helper to get a CompactRaidFrame's unit, being tolerant of different fields
+-- Compact group frame compatibility:
+-- Some clients/builds (notably TBC variants and "compact party frames") expose the visible compact
+-- unit frames as CompactPartyFrameMember{n} instead of CompactRaidFrame{n}.
+local function UHC_GetCompactGroupFramePrefix()
+  -- Prefer actual raid frames when they exist (prevents breaking raid mode if both exist)
+  if _G['CompactRaidFrame1'] then
+    return 'CompactRaidFrame'
+  end
+
+  -- On TBC clients, compact party frame members are commonly the visible compact frames
+  if type(IsTBC) == 'function' and IsTBC() then
+    if _G['CompactPartyFrameMember1'] then
+      return 'CompactPartyFrameMember'
+    end
+  end
+
+  -- Fallback: if compact party frames exist at all, use them
+  if _G['CompactPartyFrameMember1'] then
+    return 'CompactPartyFrameMember'
+  end
+
+  return 'CompactRaidFrame'
+end
+
+local function UHC_GetCompactGroupFrame(raidIndex)
+  local prefix = UHC_GetCompactGroupFramePrefix()
+  local frame = _G[prefix .. raidIndex]
+  local nameFrame = _G[prefix .. raidIndex .. 'Name']
+  return frame, nameFrame, prefix
+end
+
+-- Helper to get a compact group frame's unit, being tolerant of different fields
 local function GetRaidFrameUnit(frame, fallbackIndex)
   if not frame then
     return fallbackIndex and ('raid' .. fallbackIndex) or nil
@@ -66,8 +97,7 @@ end
 
 -- Create or update an indicator for a specific CompactRaidFrame index
 function SetRaidHealthIndicator(enabled, raidIndex)
-  local raidFrame = _G['CompactRaidFrame' .. raidIndex]
-  local nameFrame = _G['CompactRaidFrame' .. raidIndex .. 'Name']
+  local raidFrame, nameFrame = UHC_GetCompactGroupFrame(raidIndex)
   if not raidFrame or not nameFrame then return end
 
   if not enabled then
@@ -80,6 +110,13 @@ function SetRaidHealthIndicator(enabled, raidIndex)
   end
 
   local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
+  -- If the underlying frame implementation changed (e.g. swapping between CompactRaidFrame and
+  -- CompactPartyFrameMember), recreate the texture so it attaches to the correct parent.
+  if indicator and indicator.GetParent and indicator:GetParent() ~= raidFrame then
+    indicator:Hide()
+    RAID_HEALTH_INDICATOR_FRAMES[raidIndex] = nil
+    indicator = nil
+  end
   if not indicator then
     indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
     indicator:SetSize(30, 30)
@@ -103,7 +140,7 @@ function UpdateRaidHealthIndicator(raidIndex)
   local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
   if not indicator then return end
 
-  local raidFrame = _G['CompactRaidFrame' .. raidIndex]
+  local raidFrame = (select(1, UHC_GetCompactGroupFrame(raidIndex)))
   if not raidFrame then
     indicator:Hide()
     return
@@ -149,7 +186,7 @@ end
 function UpdateRaidHealthIndicatorForUnit(unit)
   -- Find all compact raid frames that correspond to this unit and update
   for i = 1, 40 do
-    local raidFrame = _G['CompactRaidFrame' .. i]
+    local raidFrame = (select(1, UHC_GetCompactGroupFrame(i)))
     if raidFrame then
       local frameUnit = GetRaidFrameUnit(raidFrame, nil)
       if frameUnit == unit then
@@ -172,10 +209,14 @@ function SetAllRaidHealthIndicators(enabled)
   end
 
   for i = 1, 40 do
-    local raidFrame = _G['CompactRaidFrame' .. i]
-    local nameFrame = _G['CompactRaidFrame' .. i .. 'Name']
+    local raidFrame, nameFrame = UHC_GetCompactGroupFrame(i)
     if raidFrame and nameFrame then
       local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
+      if indicator and indicator.GetParent and indicator:GetParent() ~= raidFrame then
+        indicator:Hide()
+        RAID_HEALTH_INDICATOR_FRAMES[i] = nil
+        indicator = nil
+      end
       if not indicator then
         indicator = raidFrame:CreateTexture(nil, 'OVERLAY')
         indicator:SetSize(30, 30)
