@@ -47,35 +47,106 @@ PET_TARGET_HIGHLIGHT_FRAMES = {}
 -- Cache of all raid health indicators
 RAID_HEALTH_INDICATOR_FRAMES = {}
 
--- Compact group frame compatibility:
--- Some clients/builds (notably TBC variants and "compact party frames") expose the visible compact
--- unit frames as CompactPartyFrameMember{n} instead of CompactRaidFrame{n}.
-local function UHC_GetCompactGroupFramePrefix()
-  -- Prefer actual raid frames when they exist (prevents breaking raid mode if both exist)
-  if _G['CompactRaidFrame1'] then
-    return 'CompactRaidFrame'
+-- Party frame compatibility (Classic global frames vs TBC+ PartyFrame.MemberFrameN layouts)
+local function UHC_GetPartyMemberFrame(partyIndex)
+  local classic = _G['PartyMemberFrame' .. partyIndex]
+  if classic then
+    return classic
   end
 
-  -- On TBC clients, compact party frame members are commonly the visible compact frames
-  if type(IsTBC) == 'function' and IsTBC() then
-    if _G['CompactPartyFrameMember1'] then
-      return 'CompactPartyFrameMember'
+  local partyFrame = _G.PartyFrame
+  if partyFrame then
+    local modern = partyFrame['MemberFrame' .. partyIndex]
+    if modern then
+      return modern
+    end
+    -- Defensive: sometimes the child uses older naming but is parented under PartyFrame
+    local alt = partyFrame['PartyMemberFrame' .. partyIndex]
+    if alt then
+      return alt
     end
   end
 
-  -- Fallback: if compact party frames exist at all, use them
-  if _G['CompactPartyFrameMember1'] then
+  return nil
+end
+
+local function UHC_GetPartyMemberPetFrame(partyIndex)
+  local classic = _G['PartyMemberFrame' .. partyIndex .. 'PetFrame']
+  if classic then
+    return classic
+  end
+
+  local member = UHC_GetPartyMemberFrame(partyIndex)
+  if not member then
+    return nil
+  end
+
+  -- Common field names across client builds (best-effort)
+  return member.PetFrame or member.petFrame or member.pet or member.Pet
+end
+
+-- Compact group frame compatibility:
+-- Some clients/builds (notably TBC variants and "compact party frames") expose the visible compact
+-- unit frames as CompactPartyFrameMember{n} instead of CompactRaidFrame{n}.
+local function UHC_GetCompactGroupFrameScheme()
+  -- In party: if raid-style party frames are enabled, these are the visible compact frames.
+  local useCompactParty = false
+  if type(GetCVar) == 'function' then
+    useCompactParty = (GetCVar('useCompactPartyFrames') == '1')
+  end
+
+  local inRaid = (type(IsInRaid) == 'function' and IsInRaid()) or false
+
+  if inRaid then
+    -- Different clients expose raid compact frames differently:
+    -- - CompactRaidFrame1..40
+    -- - CompactRaidGroup{g}Member{m}
+    if _G['CompactRaidGroup1Member1'] then
+      return 'CompactRaidGroupMember'
+    end
+    if _G['CompactRaidFrame1'] then
+      return 'CompactRaidFrame'
+    end
+    return 'CompactRaidFrame'
+  end
+
+  if useCompactParty and _G['CompactPartyFrameMember1'] then
     return 'CompactPartyFrameMember'
   end
 
+  -- Fallback ordering when not in a raid
+  if _G['CompactPartyFrameMember1'] then
+    return 'CompactPartyFrameMember'
+  end
+  if _G['CompactRaidFrame1'] then
+    return 'CompactRaidFrame'
+  end
+  if _G['CompactRaidGroup1Member1'] then
+    return 'CompactRaidGroupMember'
+  end
   return 'CompactRaidFrame'
 end
 
-local function UHC_GetCompactGroupFrame(raidIndex)
-  local prefix = UHC_GetCompactGroupFramePrefix()
-  local frame = _G[prefix .. raidIndex]
-  local nameFrame = _G[prefix .. raidIndex .. 'Name']
-  return frame, nameFrame, prefix
+local function UHC_GetCompactGroupFrame(index)
+  local scheme = UHC_GetCompactGroupFrameScheme()
+  if scheme == 'CompactRaidGroupMember' then
+    -- Raid group frames are organized as 8 groups * 5 members = 40.
+    local group = math.floor((index - 1) / 5) + 1
+    local member = ((index - 1) % 5) + 1
+    local frame = _G['CompactRaidGroup' .. group .. 'Member' .. member]
+    return frame, scheme
+  end
+
+  local frame = _G[scheme .. index]
+  return frame, scheme
+end
+
+local function UHC_GetCompactGroupMaxIndex()
+  local scheme = UHC_GetCompactGroupFrameScheme()
+  if scheme == 'CompactPartyFrameMember' then
+    return 5
+  end
+  return 40
 end
 
 -- Helper to get a compact group frame's unit, being tolerant of different fields
@@ -89,6 +160,13 @@ local function GetRaidFrameUnit(frame, fallbackIndex)
   if frame.unit and type(frame.unit) == 'string' then
     return frame.unit
   end
+  -- Some CompactUnitFrame implementations store the unit on the secure attribute.
+  if frame.GetAttribute then
+    local ok, attrUnit = pcall(frame.GetAttribute, frame, 'unit')
+    if ok and type(attrUnit) == 'string' then
+      return attrUnit
+    end
+  end
   if fallbackIndex then
     return 'raid' .. fallbackIndex
   end
@@ -97,8 +175,8 @@ end
 
 -- Create or update an indicator for a specific CompactRaidFrame index
 function SetRaidHealthIndicator(enabled, raidIndex)
-  local raidFrame, nameFrame = UHC_GetCompactGroupFrame(raidIndex)
-  if not raidFrame or not nameFrame then return end
+  local raidFrame = (select(1, UHC_GetCompactGroupFrame(raidIndex)))
+  if not raidFrame then return end
 
   if not enabled then
     local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
@@ -166,7 +244,7 @@ function UpdateRaidHealthIndicator(raidIndex)
 
   local alpha = 0.0
   local texture = nil
-  for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
+  for _, step in ipairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
       texture = step.texture
@@ -185,7 +263,7 @@ end
 
 function UpdateRaidHealthIndicatorForUnit(unit)
   -- Find all compact raid frames that correspond to this unit and update
-  for i = 1, 40 do
+  for i = 1, UHC_GetCompactGroupMaxIndex() do
     local raidFrame = (select(1, UHC_GetCompactGroupFrame(i)))
     if raidFrame then
       local frameUnit = GetRaidFrameUnit(raidFrame, nil)
@@ -194,6 +272,41 @@ function UpdateRaidHealthIndicatorForUnit(unit)
       end
     end
   end
+end
+
+-- In some TBC/Classic builds, compact frames don't expose a stable .unit/.displayedUnit.
+-- Prefer mapping directly from the unit token to the compact-frame index.
+local function UHC_TryUpdateCompactIndicatorForUnit(unit)
+  if type(unit) ~= 'string' then
+    return false
+  end
+
+  local scheme = UHC_GetCompactGroupFrameScheme()
+
+  -- Raid-style party frames: CompactPartyFrameMember1..5 (5 is player in many layouts)
+  if scheme == 'CompactPartyFrameMember' then
+    -- Different clients order these frames differently (sometimes player is Member1).
+    -- Scan the 5 frames and update whichever one corresponds to this unit token.
+    local updated = false
+    for i = 1, 5 do
+      local frame = (select(1, UHC_GetCompactGroupFrame(i)))
+      local frameUnit = GetRaidFrameUnit(frame, nil)
+      if frameUnit == unit then
+        UpdateRaidHealthIndicator(i)
+        updated = true
+      end
+    end
+    return updated
+  end
+
+  -- Raid frames: raid1..raid40 map 1:1 to our indicator index
+  local ridx = tonumber(unit:match('^raid(%d+)$'))
+  if ridx and ridx >= 1 and ridx <= 40 then
+    UpdateRaidHealthIndicator(ridx)
+    return true
+  end
+
+  return false
 end
 
 function SetAllRaidHealthIndicators(enabled)
@@ -208,9 +321,9 @@ function SetAllRaidHealthIndicators(enabled)
     return
   end
 
-  for i = 1, 40 do
-    local raidFrame, nameFrame = UHC_GetCompactGroupFrame(i)
-    if raidFrame and nameFrame then
+  for i = 1, UHC_GetCompactGroupMaxIndex() do
+    local raidFrame = (select(1, UHC_GetCompactGroupFrame(i)))
+    if raidFrame then
       local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
       if indicator and indicator.GetParent and indicator:GetParent() ~= raidFrame then
         indicator:Hide()
@@ -238,22 +351,15 @@ function SetAllRaidHealthIndicators(enabled)
 
   -- Try again shortly in case frames are created asynchronously
   C_Timer.After(0.5, function()
-    for i = 1, 40 do
+    for i = 1, UHC_GetCompactGroupMaxIndex() do
       UpdateRaidHealthIndicator(i)
     end
   end)
 end
 
 function SetPartyHealthIndicator(enabled, partyIndex)
-  local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then
-    -- Try alternative party frame names
-    partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
-    if not partyFrame then
-      partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
-    end
-    if not partyFrame then return end
-  end
+  local partyFrame = UHC_GetPartyMemberFrame(partyIndex)
+  if not partyFrame then return end
 
   -- If health indicator is disabled, hide existing indicators
   if not enabled then
@@ -307,7 +413,7 @@ function UpdatePartyHealthIndicator(partyIndex)
   local alpha = 0.0
   local texture = nil
 
-  for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
+  for _, step in ipairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
       texture = step.texture
@@ -341,7 +447,7 @@ function SetPetHealthIndicator(enabled, petType, petIndex)
     petFrame = PetFrame
     petUnit = 'pet'
   elseif petType == 'party' then
-    petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
+    petFrame = UHC_GetPartyMemberPetFrame(petIndex)
     petUnit = 'partypet' .. petIndex
   end
 
@@ -404,7 +510,7 @@ function UpdatePetHealthIndicator(petType, petIndex)
   local alpha = 0.0
   local texture = nil
 
-  for _, step in pairs(PARTY_HEALTH_INDICATOR_STEPS) do
+  for _, step in ipairs(PARTY_HEALTH_INDICATOR_STEPS) do
     if healthRatio <= step.health then
       alpha = step.alpha
       texture = step.texture
@@ -463,7 +569,7 @@ function SetAllPetHealthIndicators(enabled)
 
   -- Create health indicators for party pets
   for i = 1, 4 do
-    local partyPetFrame = _G['PartyMemberFrame' .. i .. 'PetFrame']
+    local partyPetFrame = UHC_GetPartyMemberPetFrame(i)
     if partyPetFrame then
       local healthIndicator = PET_HEALTH_INDICATOR_FRAMES['party' .. i]
       if not healthIndicator then
@@ -506,14 +612,7 @@ function SetAllPartyHealthIndicators(enabled)
 
   -- Create health indicators for all party members and update them based on actual health
   for i = 1, 4 do -- Party members 1-4
-    local partyFrame = _G['PartyMemberFrame' .. i]
-    if not partyFrame then
-      -- Try alternative party frame names
-      partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
-      if not partyFrame then
-        partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
-      end
-    end
+    local partyFrame = UHC_GetPartyMemberFrame(i)
 
     if partyFrame then
       -- Create or get existing health indicator
@@ -537,14 +636,7 @@ function SetAllPartyHealthIndicators(enabled)
   -- Also try with a delay in case party frames aren't ready yet
   C_Timer.After(0.5, function()
     for i = 1, 4 do -- Party members 1-4
-      local partyFrame = _G['PartyMemberFrame' .. i]
-      if not partyFrame then
-        -- Try alternative party frame names
-        partyFrame = _G['PartyMemberFrame' .. i .. 'Portrait']
-        if not partyFrame then
-          partyFrame = _G['PartyMemberFrame' .. i .. 'HealthBar']
-        end
-      end
+      local partyFrame = UHC_GetPartyMemberFrame(i)
 
       if partyFrame then
         -- Create or get existing health indicator
@@ -569,15 +661,8 @@ end
 
 -- Function to create target highlight for a party member
 function CreatePartyTargetHighlight(partyIndex)
-  local partyFrame = _G['PartyMemberFrame' .. partyIndex]
-  if not partyFrame then
-    -- Try alternative party frame names
-    partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'Portrait']
-    if not partyFrame then
-      partyFrame = _G['PartyMemberFrame' .. partyIndex .. 'HealthBar']
-    end
-    if not partyFrame then return end
-  end
+  local partyFrame = UHC_GetPartyMemberFrame(partyIndex)
+  if not partyFrame then return end
 
   local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[partyIndex]
   if not highlight then
@@ -610,7 +695,7 @@ function CreatePetTargetHighlight(petType)
     petFrame = PetFrame
   elseif petType:match('^party%d+$') then
     local petIndex = petType:match('party(%d+)')
-    petFrame = _G['PartyMemberFrame' .. petIndex .. 'PetFrame']
+    petFrame = UHC_GetPartyMemberPetFrame(petIndex)
   end
 
   if not petFrame then
@@ -679,7 +764,7 @@ function UpdatePartyTargetHighlights()
       end
       if highlight then
         -- Ensure highlight is properly positioned
-        local partyFrame = _G['PartyMemberFrame' .. i]
+        local partyFrame = UHC_GetPartyMemberFrame(i)
         if partyFrame then
           highlight:SetPoint('CENTER', partyFrame, 'CENTER', -40, 0)
         end
@@ -815,7 +900,12 @@ function SetAllGroupIndicators()
   SetAllPartyTargetHighlights(true)
   SetAllPetTargetHighlights(true)
   -- Only enable raid health indicators when group health is hidden
-  if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+  local useCompactParty = false
+  if type(GetCVar) == 'function' then
+    useCompactParty = (GetCVar('useCompactPartyFrames') == '1')
+  end
+  local inRaid = (type(IsInRaid) == 'function' and IsInRaid()) or false
+  if inRaid or useCompactParty or (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false)) then
     SetAllRaidHealthIndicators(true)
   else
     SetAllRaidHealthIndicators(false)
@@ -827,7 +917,7 @@ function RepositionAllPartyTargetHighlights()
   for i = 1, 4 do
     local highlight = PARTY_TARGET_HIGHLIGHT_FRAMES[i]
     if highlight then
-      local partyFrame = _G['PartyMemberFrame' .. i]
+      local partyFrame = UHC_GetPartyMemberFrame(i)
       if partyFrame then
         highlight:SetPoint('CENTER', partyFrame, 'CENTER', 0, 0)
       end
@@ -850,10 +940,24 @@ partyHealthFrame:RegisterEvent('ADDON_LOADED')
 partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
   if event == 'UNIT_HEALTH_FREQUENT' or event == 'UNIT_HEALTH' then
     -- Raid member health updates
-    local raidFrameInParty = GetCVar('useCompactPartyFrames')
-    if unit and (unit:match('^raid%d+$') or raidFrameInParty) then
-      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
-        UpdateRaidHealthIndicatorForUnit(unit)
+    local raidFrameInParty = false
+    if type(GetCVar) == 'function' then
+      raidFrameInParty = (GetCVar('useCompactPartyFrames') == '1')
+    end
+    local shouldUpdateCompact = false
+    local inRaid = (type(IsInRaid) == 'function' and IsInRaid()) or false
+    if inRaid or raidFrameInParty then
+      shouldUpdateCompact = true
+    elseif GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+      shouldUpdateCompact = true
+    end
+    if shouldUpdateCompact and unit then
+      -- Fast path: map unit token to index
+      if not UHC_TryUpdateCompactIndicatorForUnit(unit) then
+        -- Fallback: scan compact frames for matching unit
+        if unit:match('^raid%d+$') or raidFrameInParty then
+          UpdateRaidHealthIndicatorForUnit(unit)
+        end
       end
     end
     -- Check if this is a party member
@@ -878,7 +982,12 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
       UpdatePartyTargetHighlights()
-      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+      local useCompactParty = false
+      if type(GetCVar) == 'function' then
+        useCompactParty = (GetCVar('useCompactPartyFrames') == '1')
+      end
+      local inRaid = (type(IsInRaid) == 'function' and IsInRaid()) or false
+      if inRaid or useCompactParty or (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false)) then
         SetAllRaidHealthIndicators(true)
       end
     end)
@@ -890,7 +999,12 @@ partyHealthFrame:SetScript('OnEvent', function(self, event, unit)
     C_Timer.After(1.0, function()
       UpdateAllPartyHealthIndicators()
       UpdateAllPetHealthIndicators()
-      if GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false) then
+      local useCompactParty = false
+      if type(GetCVar) == 'function' then
+        useCompactParty = (GetCVar('useCompactPartyFrames') == '1')
+      end
+      local inRaid = (type(IsInRaid) == 'function' and IsInRaid()) or false
+      if inRaid or useCompactParty or (GLOBAL_SETTINGS and (GLOBAL_SETTINGS.hideGroupHealth or false)) then
         SetAllRaidHealthIndicators(true)
       end
     end)
