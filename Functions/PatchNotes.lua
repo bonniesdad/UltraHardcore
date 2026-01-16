@@ -1,5 +1,9 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '2.1.3',
+  date = '2026-01-16',
+  notes = { 'UI IMPROVEMENTS:', '• Better intro panel for first time characters.' },
+}, {
   version = '2.1.2',
   date = '2026-01-16',
   notes = { 'UI IMPROVEMENTS:', '• Intro panel for first time characters.' },
