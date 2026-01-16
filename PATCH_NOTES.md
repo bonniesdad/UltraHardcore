@@ -1,5 +1,11 @@
 # Patch Notes
 
+## Version 2.1.3 - 2026-01-16
+
+### UI Improvements
+
+- Better intro panel for first time characters.
+
 ## Version 2.1.2 - 2026-01-16
 
 ### UI Improvements
