@@ -48,25 +48,238 @@ local presets = { {
   routePlanner = true,
 } }
 
+-- Preset names and descriptions
+local presetData = { {
+  name = 'Lite',
+  description = 'Your own health bar is hidden and your screen gets darker as your health drops.',
+}, {
+  name = 'Recommended',
+  description = 'The above and - Enemy health bars and levels are hidden. Party members health is replaced with an estimation indicator.',
+}, {
+  name = 'Extreme',
+  description = 'All of the above and - Action bars and the map post level 6 are hidden when not in a rested zone.',
+}, {
+  name = 'Choose Later',
+  description = 'Every option is toggleable and can be updated at any time.',
+} }
+
+-- Helper function to get default settings
+local function getDefaultSettings()
+  return {
+    -- Lite Preset Settings
+    hidePlayerFrame = true,
+    showTunnelVision = true,
+    -- Recommended Preset Settings
+    hideMinimap = true,
+    hideTargetFrame = true,
+    hideTargetTooltip = true,
+    disableNameplateHealth = true,
+    showDazedEffect = true,
+    hideGroupHealth = true,
+    -- Ultra Preset Settings
+    petsDiePermanently = false,
+    hideActionBars = false,
+    tunnelVisionMaxStrata = false,
+    routePlanner = false,
+    -- Experimental Preset Settings
+    showCritScreenMoveEffect = false,
+    showFullHealthIndicator = false,
+    hideCustomResourceBar = false,
+    showHealingIndicator = false,
+    setFirstPersonCamera = false,
+    completelyRemovePlayerFrame = false,
+    completelyRemoveTargetFrame = false,
+    routePlannerCompass = false,
+    showTargetBuffs = true,
+    showTargetDebuffs = true,
+    showTargetRaidIcon = true,
+    -- Misc Settings
+    showOnScreenStatistics = true,
+    -- Statistics Tracking (toast notifications)
+    showStatisticsTracking = true,
+    minimalStatisticsTracking = true,
+    statisticsTrackingTierOnly = false,
+    showVitalsOverlay = true,
+    useCustomComboFrame = true,
+    minimapClockPosition = {},
+    minimapMailPosition = {},
+    statisticsBackgroundOpacity = 0.3,
+    statisticsBorderOpacity = 0.9,
+    minimapClockScale = 1.0,
+    minimapMailScale = 1.0,
+    announceLevelUpToGuild = true,
+    announceDeathDetailsToGuild = true,
+    autoJoinUHCChannel = true,
+    suppressUHCChannelJoinLeaveNotices = true,
+    hideUIErrors = false,
+    showClockEvenWhenMapHidden = false,
+    showMailEvenWhenMapHidden = false,
+    announcePartyDeathsOnGroupJoin = false,
+    announceDungeonsCompletedOnGroupJoin = false,
+    newHighCritAppreciationSoundbite = false,
+    buffBarOnResourceBar = false,
+    playPartyDeathSoundbite = false,
+    playPlayerDeathSoundbite = false,
+    spookyTunnelVision = false,
+    roachHearthstoneInPartyCombat = false,
+    guildSelfFound = false,
+    groupSelfFound = false,
+    showDruidFormResourceBar = true,
+    showSoulshardIndicator = true,
+    hideComboFrame = false,
+    -- XP Bar
+    showExpBar = false,
+    showXpBarToolTip = false,
+    hideDefaultExpBar = false,
+    xpBarHeight = 3,
+    -- Statistics Row Visibility Settings
+    showMainStatisticsPanelLevel = true,
+    showMainStatisticsPanelLowestHealth = true,
+    showMainStatisticsPanelSessionHealth = true,
+    showMainStatisticsPanelThisLevel = false,
+    -- HP/Mana Totals
+    showMainStatisticsPanelTotalHP = false,
+    showMainStatisticsPanelTotalMana = false,
+    -- Fighting stats
+    showMainStatisticsPanelEnemiesSlain = true,
+    showMainStatisticsPanelDungeonsCompleted = false,
+    showMainStatisticsPanelPetDeaths = false,
+    showMainStatisticsPanelElitesSlain = false,
+    showMainStatisticsPanelDungeonBosses = false,
+    showMainStatisticsPanelRareElitesSlain = false,
+    showMainStatisticsPanelWorldBossesSlain = false,
+    showMainStatisticsPanelHighestCritValue = true,
+    showMainStatisticsPanelHighestHealCritValue = false,
+    -- Survival Statistics Row Visibility Settings
+    showMainStatisticsPanelHealthPotionsUsed = false,
+    showMainStatisticsPanelManaPotionsUsed = false,
+    showMainStatisticsPanelBandagesUsed = false,
+    showMainStatisticsPanelTargetDummiesUsed = false,
+    showMainStatisticsPanelGrenadesUsed = false,
+    showMainStatisticsPanelPartyMemberDeaths = false,
+    showMainStatisticsPanelCloseEscapes = false,
+    showMainStatisticsPanelDuelsTotal = false,
+    showMainStatisticsPanelDuelsWon = false,
+    showMainStatisticsPanelDuelsLost = false,
+    showMainStatisticsPanelDuelsWinPercent = false,
+    showMainStatisticsPanelPlayerJumps = false,
+    showMainStatisticsPanelPlayer360s = false,
+    -- Economy stats
+    showMainStatisticsPanelGoldGained = false,
+    showMainStatisticsPanelGoldSpent = false,
+  }
+end
+
+-- Helper function to clear all checkbox settings (set all booleans to false)
+local function clearAllCheckboxes()
+  -- List of all checkbox settings to clear
+  local checkboxSettings = { -- Lite Preset Settings
+  'hidePlayerFrame', 'showTunnelVision', 'hideMinimap', 'hideTargetFrame', 'hideTargetTooltip', 'disableNameplateHealth', 'showDazedEffect', 'hideGroupHealth', 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner', 'showCritScreenMoveEffect', 'showFullHealthIndicator', 'hideCustomResourceBar', 'showHealingIndicator', 'setFirstPersonCamera', 'completelyRemovePlayerFrame', 'completelyRemoveTargetFrame', 'routePlannerCompass', 'showTargetBuffs', 'showTargetDebuffs', 'showTargetRaidIcon', 'showOnScreenStatistics', 'showStatisticsTracking', 'minimalStatisticsTracking', 'statisticsTrackingTierOnly', 'showVitalsOverlay', 'useCustomComboFrame', 'announceLevelUpToGuild', 'announceDeathDetailsToGuild', 'autoJoinUHCChannel', 'suppressUHCChannelJoinLeaveNotices', 'hideUIErrors', 'showClockEvenWhenMapHidden', 'showMailEvenWhenMapHidden', 'announcePartyDeathsOnGroupJoin', 'announceDungeonsCompletedOnGroupJoin', 'newHighCritAppreciationSoundbite', 'buffBarOnResourceBar', 'playPartyDeathSoundbite', 'playPlayerDeathSoundbite', 'spookyTunnelVision', 'roachHearthstoneInPartyCombat', 'guildSelfFound', 'groupSelfFound', 'showDruidFormResourceBar', 'showSoulshardIndicator', 'hideComboFrame', 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'showMainStatisticsPanelLevel', 'showMainStatisticsPanelLowestHealth', 'showMainStatisticsPanelSessionHealth', 'showMainStatisticsPanelThisLevel', 'showMainStatisticsPanelTotalHP', 'showMainStatisticsPanelTotalMana', 'showMainStatisticsPanelEnemiesSlain', 'showMainStatisticsPanelDungeonsCompleted', 'showMainStatisticsPanelPetDeaths', 'showMainStatisticsPanelElitesSlain', 'showMainStatisticsPanelDungeonBosses', 'showMainStatisticsPanelRareElitesSlain', 'showMainStatisticsPanelWorldBossesSlain', 'showMainStatisticsPanelHighestCritValue', 'showMainStatisticsPanelHighestHealCritValue', 'showMainStatisticsPanelHealthPotionsUsed', 'showMainStatisticsPanelManaPotionsUsed', 'showMainStatisticsPanelBandagesUsed', 'showMainStatisticsPanelTargetDummiesUsed', 'showMainStatisticsPanelGrenadesUsed', 'showMainStatisticsPanelPartyMemberDeaths', 'showMainStatisticsPanelCloseEscapes', 'showMainStatisticsPanelDuelsTotal', 'showMainStatisticsPanelDuelsWon', 'showMainStatisticsPanelDuelsLost', 'showMainStatisticsPanelDuelsWinPercent', 'showMainStatisticsPanelPlayerJumps', 'showMainStatisticsPanelPlayer360s', 'showMainStatisticsPanelGoldGained', 'showMainStatisticsPanelGoldSpent' } -- Recommended Preset Settings -- Ultra Preset Settings -- Experimental Preset Settings -- Misc Settings -- XP Bar -- Statistics Row Visibility Settings
+  -- Clear all checkbox settings in tempSettings
+  if _G.tempSettings then
+    for _, settingName in ipairs(checkboxSettings) do
+      _G.tempSettings[settingName] = false
+    end
+    _G.tempSettings.selectedDifficulty = nil -- Clear selected difficulty
+  end
+
+  -- Clear all checkbox settings in GLOBAL_SETTINGS
+  if GLOBAL_SETTINGS then
+    for _, settingName in ipairs(checkboxSettings) do
+      GLOBAL_SETTINGS[settingName] = false
+    end
+    GLOBAL_SETTINGS.selectedDifficulty = nil -- Clear selected difficulty
+  end
+
+  -- Update checkboxes if the update function exists
+  if _G.updateCheckboxes then
+    _G.updateCheckboxes()
+  end
+
+  -- Save the settings
+  if SaveCharacterSettings then
+    SaveCharacterSettings(GLOBAL_SETTINGS)
+  end
+end
+
 function CreateIntroPanel()
-  local frame =
-    CreateFrame('Frame', 'UltraHardcoreIntroPanel', UIParent, 'BackdropTemplate')
-  tinsert(UISpecialFrames, 'UltraHardcoreIntroPanel')
-  frame:SetSize(500, 600)
+  -- Create a nice custom panel frame
+  local frame = CreateFrame('Frame', 'UltraHardcoreIntroPanel', UIParent, 'BackdropTemplate')
+
+  -- Consistent content width for alignment - all sections use this exact width
+  local CONTENT_WIDTH = 480
+  local FRAME_PADDING = 20
+  local FRAME_WIDTH = CONTENT_WIDTH + (FRAME_PADDING * 2)
+
+  -- Frame height will be calculated dynamically based on content
+  frame:SetSize(FRAME_WIDTH, 500) -- Initial height, will expand as needed
   frame:SetPoint('CENTER', UIParent, 'CENTER', 0, 40)
-  frame:SetBackdrop({
-    bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-    edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-    tile = true,
-    tileSize = 32,
-    edgeSize = 32,
-    insets = {
-      left = 8,
-      right = 8,
-      top = 8,
-      bottom = 8,
-    },
-  })
+  frame:SetClipsChildren(true)
+
+  -- Class-specific background texture (same as settings panel)
+  local CLASS_BACKGROUND_MAP = {
+    WARRIOR = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warrior.png',
+    PALADIN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_pally.png',
+    HUNTER = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_hunter.png',
+    ROGUE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_rogue.png',
+    PRIEST = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_priest.png',
+    MAGE = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_mage.png',
+    WARLOCK = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warlock.png',
+    DRUID = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_druid.png',
+    SHAMAN = 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_shaman.png',
+  }
+  local CLASS_BACKGROUND_ASPECT_RATIO = 1200 / 700
+
+  local function getClassBackgroundTexture()
+    local _, classFileName = UnitClass('player')
+    if classFileName and CLASS_BACKGROUND_MAP[classFileName] then
+      return CLASS_BACKGROUND_MAP[classFileName]
+    end
+    return 'Interface\\AddOns\\UltraHardcore\\Textures\\bg_warrior.png' -- Default fallback
+  end
+
+  local frameBackground = frame:CreateTexture(nil, 'BACKGROUND')
+  frameBackground:SetPoint('CENTER', frame, 'CENTER')
+  frameBackground:SetTexCoord(0, 1, 0, 1)
+
+  local function updateFrameBackdrop()
+    frameBackground:SetTexture(getClassBackgroundTexture())
+    local frameHeight = frame:GetHeight()
+    frameBackground:SetSize(frameHeight * CLASS_BACKGROUND_ASPECT_RATIO, frameHeight)
+
+    frame:SetBackdrop({
+      edgeFile = 'Interface\\Buttons\\WHITE8x8',
+      tile = false,
+      edgeSize = 2,
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
+    })
+    frame:SetBackdropBorderColor(0, 0, 0, 1)
+  end
+  updateFrameBackdrop()
+
+  -- Add close button
+  local closeButton = CreateFrame('Button', nil, frame, 'UIPanelCloseButton')
+  closeButton:SetPoint('TOPRIGHT', frame, 'TOPRIGHT', -5, -5)
+  closeButton:SetScript('OnClick', function()
+    -- Mark intro as seen for this character (without applying preset)
+    local characterGUID = UnitGUID('player')
+    if not UltraHardcoreDB.introSeen then
+      UltraHardcoreDB.introSeen = {}
+    end
+    UltraHardcoreDB.introSeen[characterGUID] = true
+    if SaveDBData then
+      SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+    end
+    frame:Hide()
+    introPanelOpen = false
+  end)
+
+  tinsert(UISpecialFrames, 'UltraHardcoreIntroPanel')
   frame:SetMovable(true)
   frame:EnableMouse(true)
   frame:RegisterForDrag('LeftButton')
@@ -75,158 +288,265 @@ function CreateIntroPanel()
   frame:SetFrameStrata('DIALOG')
   frame:SetFrameLevel(20)
 
-  -- Handle ESC key to close panel (mark as seen but don't apply preset)
+  -- Handle keyboard input (Enter to continue if preset selected)
+  -- Only capture Enter if chat edit box is not active
   frame:SetScript('OnKeyDown', function(self, key)
-    if key == 'ESCAPE' then
-      -- Mark intro as seen for this character (without applying preset)
-      local characterGUID = UnitGUID('player')
-      if not UltraHardcoreDB.introSeen then
-        UltraHardcoreDB.introSeen = {}
-      end
-      UltraHardcoreDB.introSeen[characterGUID] = true
-      if SaveDBData then
-        SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+    if (key == 'ENTER' or key == 'NUMPADENTER') then
+      -- Check if chat edit box is active - if so, don't capture Enter
+      local chatFrame = _G.ChatFrame1EditBox
+      if chatFrame and chatFrame:IsVisible() and chatFrame:HasFocus() then
+        -- Let chat handle Enter, don't capture it
+        return
       end
 
-      -- Hide the intro panel
-      frame:Hide()
-      introPanelOpen = false
+      -- If a preset is selected and continue button is enabled, trigger it
+      if selectedPresetIndex and frame.continueButton and frame.continueButton:IsEnabled() then
+        frame.continueButton:Click()
+      end
     end
   end)
-  frame:EnableKeyboard(true)
+  -- Only enable keyboard after a short delay to avoid capturing Enter from chat command
+  if C_Timer and C_Timer.After then
+    C_Timer.After(0.1, function()
+      frame:EnableKeyboard(true)
+    end)
+  else
+    frame:EnableKeyboard(true)
+  end
 
-  -- Icon in top left
-  local icon = frame:CreateTexture(nil, 'OVERLAY')
-  icon:SetSize(64, 64)
-  icon:SetPoint('TOPLEFT', frame, 'TOPLEFT', 20, -20)
-  icon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png')
-
-  -- Title
-  local title = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  title:SetPoint('TOP', frame, 'TOP', 0, -20)
-  title:SetWidth(460)
+  -- Title with nice styling (centered)
+  local title = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalHuge')
+  title:SetPoint('TOP', frame, 'TOP', 0, -25)
+  title:SetWidth(CONTENT_WIDTH)
   title:SetJustifyH('CENTER')
-  local font, _, flags = title:GetFont()
-  title:SetFont(font, 18, flags)
-  title:SetTextColor(1, 1, 0)
   title:SetText('Welcome to ULTRA!')
+  title:SetTextColor(1, 0.82, 0)
+  title:SetShadowOffset(2, -2)
+  title:SetShadowColor(0, 0, 0, 1)
 
-  -- "Choose your playstyle" text
-  local playstyleText = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  playstyleText:SetPoint('TOP', title, 'BOTTOM', 0, -20)
-  playstyleText:SetWidth(460)
-  playstyleText:SetJustifyH('CENTER')
-  local font, _, flags = playstyleText:GetFont()
-  playstyleText:SetFont(font, 14, flags)
-  playstyleText:SetTextColor(0.9, 0.9, 0.9)
-  playstyleText:SetText('Choose your playstyle')
+  -- Subtitle (centered)
+  local subtitle = frame:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  subtitle:SetPoint('TOP', title, 'BOTTOM', 0, -12)
+  subtitle:SetWidth(CONTENT_WIDTH)
+  subtitle:SetJustifyH('CENTER')
+  subtitle:SetText('Choose your playstyle')
+  subtitle:SetTextColor(0.95, 0.95, 0.95)
+  subtitle:SetShadowOffset(1, -1)
+  subtitle:SetShadowColor(0, 0, 0, 0.9)
 
-  -- Container for the three skull icons
-  local iconsContainer = CreateFrame('Frame', nil, frame)
-  iconsContainer:SetSize(400, 120)
-  iconsContainer:SetPoint('TOP', playstyleText, 'BOTTOM', 0, -20)
-
+  -- Create container for preset entries (centered, exact width)
+  local presetContainer = CreateFrame('Frame', nil, frame)
+  presetContainer:SetPoint('TOP', subtitle, 'BOTTOM', 0, -20)
+  presetContainer:SetPoint('LEFT', frame, 'LEFT', FRAME_PADDING, 0)
+  presetContainer:SetPoint('RIGHT', frame, 'RIGHT', -FRAME_PADDING, 0)
+  presetContainer:SetHeight(380) -- More space for 4 buttons with improved layout
   -- Preset icons
   local presetIcons = {
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull1_100.png',
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull2_100.png',
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
+    nil, -- No icon for "None" option
   }
 
-  local buttonSize = 100
-  local spacing = 20
   local presetButtons = {}
+  local currentYOffset = -5
 
-  -- Create three preset buttons
-  for i = 1, 3 do
-    local button = CreateFrame('Button', nil, iconsContainer, 'BackdropTemplate')
-    button:SetSize(buttonSize, buttonSize)
+  -- Create preset entry buttons with nice styling (exact width match)
+  for i = 1, 4 do
+    -- Create preset entry button with backdrop (full width of container)
+    local presetButton = CreateFrame('Button', nil, presetContainer, 'BackdropTemplate')
+    presetButton:SetWidth(CONTENT_WIDTH) -- Exact same width as all sections
+    presetButton:SetHeight(75) -- Better height for two lines
+    presetButton:SetPoint('TOP', presetContainer, 'TOP', 0, currentYOffset)
 
-    if i == 1 then
-      button:SetPoint('LEFT', iconsContainer, 'CENTER', -buttonSize - spacing / 2, 0)
-    elseif i == 2 then
-      button:SetPoint('CENTER', iconsContainer, 'CENTER', 0, 0)
-    elseif i == 3 then
-      button:SetPoint('RIGHT', iconsContainer, 'CENTER', buttonSize + spacing / 2, 0)
+    -- Improved button backdrop with cleaner look
+    presetButton:SetBackdrop({
+      bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      tile = true,
+      tileSize = 16,
+      edgeSize = 16,
+      insets = {
+        left = 0,
+        right = 0,
+        top = 0,
+        bottom = 0,
+      },
+    })
+    presetButton:SetBackdropColor(0.18, 0.18, 0.18, 0.9)
+    presetButton:SetBackdropBorderColor(0.45, 0.45, 0.45, 0.8)
+
+    -- Hover highlight (fills entire button)
+    local highlight = presetButton:CreateTexture(nil, 'HIGHLIGHT')
+    highlight:SetAllPoints(presetButton)
+    highlight:SetTexture('Interface\\Buttons\\UI-Listbox-Highlight')
+    highlight:SetBlendMode('ADD')
+    highlight:SetAlpha(0.3)
+
+    -- Selected background (fills entire button)
+    local selectedBg = presetButton:CreateTexture(nil, 'BACKGROUND')
+    selectedBg:SetAllPoints(presetButton)
+    selectedBg:SetTexture('Interface\\Buttons\\UI-Listbox-Highlight')
+    selectedBg:SetBlendMode('ADD')
+    selectedBg:SetAlpha(0.5)
+    selectedBg:Hide()
+    presetButton.selectedBg = selectedBg
+
+    -- Selected border highlight (fills entire button)
+    local selectedBorder = presetButton:CreateTexture(nil, 'OVERLAY')
+    selectedBorder:SetAllPoints(presetButton)
+    selectedBorder:SetTexture('Interface\\Buttons\\UI-Listbox-Highlight')
+    selectedBorder:SetBlendMode('ADD')
+    selectedBorder:SetAlpha(0.6)
+    selectedBorder:Hide()
+    presetButton.selectedBorder = selectedBorder
+
+    -- Preset icon (skull icon) with better padding (only if icon exists)
+    local presetIcon = nil
+    if presetIcons[i] then
+      presetIcon = presetButton:CreateTexture(nil, 'ARTWORK')
+      presetIcon:SetSize(48, 48)
+      presetIcon:SetPoint('LEFT', presetButton, 'LEFT', 18, 0)
+      presetIcon:SetTexture(presetIcons[i])
     end
 
-    button:SetBackdrop({
-      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
-      edgeSize = 10,
-    })
-    button:SetBackdropBorderColor(0.5, 0.5, 0.5)
+    -- Content area for text (aligned properly)
+    local textContainer = CreateFrame('Frame', nil, presetButton)
+    if presetIcon then
+      textContainer:SetPoint('LEFT', presetIcon, 'RIGHT', 18, 0)
+      textContainer:SetPoint('RIGHT', presetButton, 'RIGHT', -18, 0)
+    else
+      -- For "None" button, center the text container
+      textContainer:SetPoint('CENTER', presetButton, 'CENTER', 0, 0)
+      textContainer:SetWidth(CONTENT_WIDTH - 36) -- Same width as other buttons' text area
+    end
+    textContainer:SetPoint('TOP', presetButton, 'TOP', 0, 0)
+    textContainer:SetPoint('BOTTOM', presetButton, 'BOTTOM', 0, 0)
 
-    local iconTexture = button:CreateTexture(nil, 'ARTWORK')
-    iconTexture:SetAllPoints()
-    iconTexture:SetTexture(presetIcons[i])
+    -- Preset title text with improved styling (larger font)
+    local presetTitle = textContainer:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+    if i == 4 then
+      -- Center text for "Choose Later" button
+      presetTitle:SetPoint('TOP', textContainer, 'TOP', 0, -12)
+      presetTitle:SetPoint('LEFT', textContainer, 'LEFT', 0, 0)
+      presetTitle:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+      presetTitle:SetJustifyH('CENTER')
+    else
+      -- Left align for other buttons
+      presetTitle:SetPoint('TOPLEFT', textContainer, 'TOPLEFT', 0, -12)
+      presetTitle:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+      presetTitle:SetJustifyH('LEFT')
+    end
+    presetTitle:SetText(presetData[i].name)
+    presetTitle:SetTextColor(0.95, 0.85, 0.5) -- Softer, more muted gold color
+    presetTitle:SetShadowOffset(1, -1)
+    presetTitle:SetShadowColor(0, 0, 0, 0.8)
 
-    -- Button click handler will be set after continueButton is created
+    -- Preset description text with better styling (larger font)
+    local presetDesc = textContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    if i == 4 then
+      -- Center text for "None" button
+      presetDesc:SetPoint('TOP', presetTitle, 'BOTTOM', 0, -6)
+      presetDesc:SetPoint('LEFT', textContainer, 'LEFT', 0, 0)
+      presetDesc:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+      presetDesc:SetJustifyH('CENTER')
+    else
+      -- Left align for other buttons
+      presetDesc:SetPoint('TOPLEFT', presetTitle, 'BOTTOMLEFT', 0, -6)
+      presetDesc:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+      presetDesc:SetJustifyH('LEFT')
+    end
+    presetDesc:SetText(presetData[i].description)
+    presetDesc:SetTextColor(0.75, 0.75, 0.75) -- Muted gray for description
+    presetDesc:SetNonSpaceWrap(true)
+    presetDesc:SetSpacing(1)
 
-    button:SetScript('OnEnter', function()
-      if selectedPresetIndex ~= i then
-        button:SetBackdropBorderColor(0.8, 0.8, 0.8) -- Light grey on hover
+    -- Ensure button height accommodates two lines of content with proper padding
+    local titleHeight = presetTitle:GetStringHeight()
+    local descHeight = presetDesc:GetStringHeight()
+    presetButton:SetHeight(
+      math.max(75, titleHeight + descHeight + 32) -- Ensure space for two lines with padding
+    )
+
+    -- Click handler
+    presetButton:SetScript('OnClick', function()
+      -- Reset all buttons
+      for j = 1, 4 do
+        if presetButtons[j] then
+          if presetButtons[j].selectedBg then
+            presetButtons[j].selectedBg:Hide()
+          end
+          if presetButtons[j].selectedBorder then
+            presetButtons[j].selectedBorder:Hide()
+          end
+          -- Reset button backdrop color
+          presetButtons[j]:SetBackdropBorderColor(0.45, 0.45, 0.45, 0.8)
+        end
+      end
+      -- Highlight selected button
+      selectedBg:Show()
+      selectedBorder:Show()
+      presetButton:SetBackdropBorderColor(1, 0.85, 0.3, 1) -- Gold border when selected
+      selectedPresetIndex = i
+
+      -- If "Choose Later" (index 4) is selected, immediately clear all checkboxes
+      if i == 4 then
+        clearAllCheckboxes()
+      end
+
+      -- Enable continue button (even for "Choose Later" option)
+      if frame.continueButton then
+        frame.continueButton:Enable()
       end
     end)
 
-    button:SetScript('OnLeave', function()
+    -- Hover effects
+    presetButton:SetScript('OnEnter', function()
       if selectedPresetIndex ~= i then
-        button:SetBackdropBorderColor(0.5, 0.5, 0.5) -- Reset to default
+        highlight:Show()
+        presetButton:SetBackdropBorderColor(0.65, 0.65, 0.65, 1)
+        presetButton:SetBackdropColor(0.22, 0.22, 0.22, 0.95)
       end
     end)
 
-    presetButtons[i] = button
+    presetButton:SetScript('OnLeave', function()
+      highlight:Hide()
+      if selectedPresetIndex ~= i then
+        presetButton:SetBackdropBorderColor(0.45, 0.45, 0.45, 0.8)
+        presetButton:SetBackdropColor(0.18, 0.18, 0.18, 0.9)
+      end
+    end)
+
+    presetButtons[i] = presetButton
+    currentYOffset = currentYOffset - presetButton:GetHeight() - 14 -- Better spacing between buttons
   end
 
-  -- Description text
-  local desc1 = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  desc1:SetPoint('TOP', iconsContainer, 'BOTTOM', 0, -30)
-  desc1:SetWidth(460)
-  desc1:SetJustifyH('LEFT')
-  local font, _, flags = desc1:GetFont()
-  desc1:SetFont(font, 12, flags)
-  desc1:SetTextColor(0.9, 0.9, 0.9)
-  desc1:SetText(
-    'The Ultra addon is designed to enhance the player experience by providing greater immersion and a more challenging way of playing.'
-  )
-  desc1:SetNonSpaceWrap(true)
-
-  local desc2 = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  desc2:SetPoint('TOP', desc1, 'BOTTOM', 0, -15)
-  desc2:SetWidth(460)
-  desc2:SetJustifyH('LEFT')
-  local font, _, flags = desc2:GetFont()
-  desc2:SetFont(font, 12, flags)
-  desc2:SetTextColor(0.9, 0.9, 0.9)
-  desc2:SetText(
-    'There is no one way to play. We encourage you to chose as many or as little options as you find most enjoyable.'
-  )
-  desc2:SetNonSpaceWrap(true)
-
-  local desc3 = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  desc3:SetPoint('TOP', desc2, 'BOTTOM', 0, -15)
-  desc3:SetWidth(460)
-  desc3:SetJustifyH('LEFT')
-  local font, _, flags = desc3:GetFont()
-  desc3:SetFont(font, 12, flags)
-  desc3:SetTextColor(0.9, 0.9, 0.9)
-  desc3:SetText(
-    'The addons works well with the one life hardcore system, though it is not essential.'
-  )
-  desc3:SetNonSpaceWrap(true)
-
-  -- Continue Button
+  -- Continue Button with nice styling (centered, positioned below preset buttons)
   local continueButton = CreateFrame('Button', nil, frame, 'UIPanelButtonTemplate')
-  continueButton:SetSize(200, 25)
-  continueButton:SetPoint('BOTTOM', frame, 'BOTTOM', 0, 25)
+  continueButton:SetSize(200, 32)
+  continueButton:SetPoint('TOP', presetContainer, 'BOTTOM', 0, -5)
+
+  -- Calculate total frame height needed and adjust frame size
+  local continueButtonBottom = continueButton:GetBottom()
+  local frameTop = frame:GetTop()
+  local totalHeight = frameTop - continueButtonBottom + 15 -- Reduced bottom padding
+  frame:SetHeight(totalHeight)
+
+  -- Update background texture size after frame height is set
+  updateFrameBackdrop()
   continueButton:SetText('Continue')
   continueButton:Disable() -- Disabled by default
-
+  -- Style the button text
+  local buttonText = continueButton:GetFontString()
+  if buttonText then
+    buttonText:SetFontObject('GameFontNormalLarge')
+  end
   -- Store reference to continue button for use in click handlers
   frame.continueButton = continueButton
 
   continueButton:SetScript('OnClick', function()
     -- Apply selected preset if one was chosen
-    if selectedPresetIndex and presets[selectedPresetIndex] then
+    if selectedPresetIndex and selectedPresetIndex <= 3 and presets[selectedPresetIndex] then
       local preset = presets[selectedPresetIndex]
       local difficultyNames = { 'lite', 'recommended', 'extreme' }
       local selectedDifficulty = difficultyNames[selectedPresetIndex]
@@ -251,6 +571,10 @@ function CreateIntroPanel()
       if SaveCharacterSettings then
         SaveCharacterSettings(GLOBAL_SETTINGS)
       end
+    elseif selectedPresetIndex == 4 then
+      -- If "Choose Later" (index 4) was selected, checkboxes were already cleared when button was clicked
+      -- Just ensure they're still cleared (in case user clicked continue without selecting it first)
+      clearAllCheckboxes()
     end
 
     -- Mark intro as seen for this character
@@ -273,31 +597,11 @@ function CreateIntroPanel()
     end
   end)
 
-  -- Set button click handlers to use frame.continueButton
-  for i = 1, 3 do
-    local button = presetButtons[i]
-    button:SetScript('OnClick', function()
-      -- Reset all buttons
-      for j = 1, 3 do
-        presetButtons[j]:SetBackdropBorderColor(0.5, 0.5, 0.5)
-      end
-      -- Highlight selected button
-      button:SetBackdropBorderColor(1, 1, 0) -- Yellow border
-      selectedPresetIndex = i
-      -- Enable continue button
-      if frame.continueButton then
-        frame.continueButton:Enable()
-      end
-    end)
-  end
-
   return frame
 end
 
-function ShowIntroPanel()
-  if not UltraHardcoreDB then
-    return
-  end
+function ShowIntroPanel(forceShow)
+  if not UltraHardcoreDB then return end
 
   -- Initialize introSeen if it doesn't exist
   if not UltraHardcoreDB.introSeen then
@@ -306,21 +610,63 @@ function ShowIntroPanel()
 
   -- Get character GUID - may be nil if called too early
   local characterGUID = UnitGUID('player')
-  
+
   -- If GUID is not available yet, delay the check
   if not characterGUID then
     -- Try again after a short delay
     if C_Timer and C_Timer.After then
       C_Timer.After(0.5, function()
-        ShowIntroPanel()
+        ShowIntroPanel(forceShow)
       end)
     end
     return
   end
 
-  -- Check if this character has already seen the intro
-  if UltraHardcoreDB.introSeen[characterGUID] then
-    return
+  -- Check if this character has already seen the intro (unless forced)
+  if not forceShow and UltraHardcoreDB.introSeen[characterGUID] then return end
+
+  -- Check if character has played before by checking stats (jumps or kills)
+  -- Only show intro panel if stats are empty (new character) - unless forced
+  if not forceShow then
+    -- Try to check stats if CharacterStats is available
+    local hasPlayed = false
+    if _G.CharacterStats and _G.CharacterStats.GetStat then
+      local success, jumps, kills = pcall(function()
+        return _G.CharacterStats:GetStat('playerJumps') or 0, _G.CharacterStats:GetStat(
+          'enemiesSlain'
+        ) or 0
+      end)
+
+      if success then
+        -- If player has jumps or kills, they've played before
+        if (jumps and jumps > 0) or (kills and kills > 0) then
+          hasPlayed = true
+        end
+      end
+    else
+      -- If CharacterStats is not available, check database directly
+      if UltraHardcoreDB and UltraHardcoreDB.characterStats and characterGUID then
+        local stats = UltraHardcoreDB.characterStats[characterGUID]
+        if stats then
+          local jumps = stats.playerJumps or 0
+          local kills = stats.enemiesSlain or 0
+          if jumps > 0 or kills > 0 then
+            hasPlayed = true
+          end
+        end
+      end
+    -- If we can't check stats at all, assume new character and show panel
+    end
+
+    -- If player has played before, don't show intro
+    if hasPlayed then
+      -- Mark as seen so we don't check again
+      UltraHardcoreDB.introSeen[characterGUID] = true
+      if SaveDBData then
+        SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+      end
+      return
+    end
   end
 
   -- Only show if not already open
@@ -345,11 +691,7 @@ end
 -- Debug command to manually show intro panel (for testing)
 SLASH_SHOWINTRO1 = '/showintro'
 SlashCmdList['SHOWINTRO'] = function()
-  -- Temporarily mark as not seen to allow showing
-  local characterGUID = UnitGUID('player')
-  if characterGUID and UltraHardcoreDB and UltraHardcoreDB.introSeen then
-    UltraHardcoreDB.introSeen[characterGUID] = nil
-  end
+  -- Force show the intro panel (bypass all checks)
   introPanelOpen = false
-  ShowIntroPanel()
+  ShowIntroPanel(true) -- Pass true to force show
 end

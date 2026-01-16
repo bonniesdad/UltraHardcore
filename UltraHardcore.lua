@@ -36,9 +36,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
     LoadDBData()
     HidePlayerMapIndicators()
     -- Show intro panel first if it's a first time character
-    -- Delay slightly to ensure UnitGUID is available
+    -- Delay 1 second to ensure everything is loaded
     if ShowIntroPanel then
-      C_Timer.After(0.1, function()
+      C_Timer.After(1.0, function()
         ShowIntroPanel()
         -- Check if intro panel is showing after a brief delay
         C_Timer.After(0.2, function()
@@ -133,7 +133,6 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       -- Show default WoW XP bar by default
       ShowDefaultExpBar()
     end
-
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
