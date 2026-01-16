@@ -58,9 +58,6 @@ local presetData = { {
 }, {
   name = 'Extreme',
   description = 'All of the above and - Action bars and the map post level 6 are hidden when not in a rested zone.',
-}, {
-  name = 'Choose Later',
-  description = 'Every option is toggleable and can be updated at any time.',
 } }
 
 -- Helper function to get default settings
@@ -171,37 +168,6 @@ local function getDefaultSettings()
 end
 
 -- Helper function to clear all checkbox settings (set all booleans to false)
-local function clearAllCheckboxes()
-  -- List of all checkbox settings to clear
-  local checkboxSettings = { -- Lite Preset Settings
-  'hidePlayerFrame', 'showTunnelVision', 'hideMinimap', 'hideTargetFrame', 'hideTargetTooltip', 'disableNameplateHealth', 'showDazedEffect', 'hideGroupHealth', 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner', 'showCritScreenMoveEffect', 'showFullHealthIndicator', 'hideCustomResourceBar', 'showHealingIndicator', 'setFirstPersonCamera', 'completelyRemovePlayerFrame', 'completelyRemoveTargetFrame', 'routePlannerCompass', 'showTargetBuffs', 'showTargetDebuffs', 'showTargetRaidIcon', 'showOnScreenStatistics', 'showStatisticsTracking', 'minimalStatisticsTracking', 'statisticsTrackingTierOnly', 'showVitalsOverlay', 'useCustomComboFrame', 'announceLevelUpToGuild', 'announceDeathDetailsToGuild', 'autoJoinUHCChannel', 'suppressUHCChannelJoinLeaveNotices', 'hideUIErrors', 'showClockEvenWhenMapHidden', 'showMailEvenWhenMapHidden', 'announcePartyDeathsOnGroupJoin', 'announceDungeonsCompletedOnGroupJoin', 'newHighCritAppreciationSoundbite', 'buffBarOnResourceBar', 'playPartyDeathSoundbite', 'playPlayerDeathSoundbite', 'spookyTunnelVision', 'roachHearthstoneInPartyCombat', 'guildSelfFound', 'groupSelfFound', 'showDruidFormResourceBar', 'showSoulshardIndicator', 'hideComboFrame', 'showExpBar', 'showXpBarToolTip', 'hideDefaultExpBar', 'showMainStatisticsPanelLevel', 'showMainStatisticsPanelLowestHealth', 'showMainStatisticsPanelSessionHealth', 'showMainStatisticsPanelThisLevel', 'showMainStatisticsPanelTotalHP', 'showMainStatisticsPanelTotalMana', 'showMainStatisticsPanelEnemiesSlain', 'showMainStatisticsPanelDungeonsCompleted', 'showMainStatisticsPanelPetDeaths', 'showMainStatisticsPanelElitesSlain', 'showMainStatisticsPanelDungeonBosses', 'showMainStatisticsPanelRareElitesSlain', 'showMainStatisticsPanelWorldBossesSlain', 'showMainStatisticsPanelHighestCritValue', 'showMainStatisticsPanelHighestHealCritValue', 'showMainStatisticsPanelHealthPotionsUsed', 'showMainStatisticsPanelManaPotionsUsed', 'showMainStatisticsPanelBandagesUsed', 'showMainStatisticsPanelTargetDummiesUsed', 'showMainStatisticsPanelGrenadesUsed', 'showMainStatisticsPanelPartyMemberDeaths', 'showMainStatisticsPanelCloseEscapes', 'showMainStatisticsPanelDuelsTotal', 'showMainStatisticsPanelDuelsWon', 'showMainStatisticsPanelDuelsLost', 'showMainStatisticsPanelDuelsWinPercent', 'showMainStatisticsPanelPlayerJumps', 'showMainStatisticsPanelPlayer360s', 'showMainStatisticsPanelGoldGained', 'showMainStatisticsPanelGoldSpent' } -- Recommended Preset Settings -- Ultra Preset Settings -- Experimental Preset Settings -- Misc Settings -- XP Bar -- Statistics Row Visibility Settings
-  -- Clear all checkbox settings in tempSettings
-  if _G.tempSettings then
-    for _, settingName in ipairs(checkboxSettings) do
-      _G.tempSettings[settingName] = false
-    end
-    _G.tempSettings.selectedDifficulty = nil -- Clear selected difficulty
-  end
-
-  -- Clear all checkbox settings in GLOBAL_SETTINGS
-  if GLOBAL_SETTINGS then
-    for _, settingName in ipairs(checkboxSettings) do
-      GLOBAL_SETTINGS[settingName] = false
-    end
-    GLOBAL_SETTINGS.selectedDifficulty = nil -- Clear selected difficulty
-  end
-
-  -- Update checkboxes if the update function exists
-  if _G.updateCheckboxes then
-    _G.updateCheckboxes()
-  end
-
-  -- Save the settings
-  if SaveCharacterSettings then
-    SaveCharacterSettings(GLOBAL_SETTINGS)
-  end
-end
-
 function CreateIntroPanel()
   -- Create a nice custom panel frame
   local frame = CreateFrame('Frame', 'UltraHardcoreIntroPanel', UIParent, 'BackdropTemplate')
@@ -339,20 +305,19 @@ function CreateIntroPanel()
   presetContainer:SetPoint('TOP', subtitle, 'BOTTOM', 0, -20)
   presetContainer:SetPoint('LEFT', frame, 'LEFT', FRAME_PADDING, 0)
   presetContainer:SetPoint('RIGHT', frame, 'RIGHT', -FRAME_PADDING, 0)
-  presetContainer:SetHeight(380) -- More space for 4 buttons with improved layout
+  presetContainer:SetHeight(1) -- Will be resized to fit its 3 buttons
   -- Preset icons
   local presetIcons = {
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull1_100.png',
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull2_100.png',
     'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
-    nil, -- No icon for "None" option
   }
 
   local presetButtons = {}
   local currentYOffset = -5
 
   -- Create preset entry buttons with nice styling (exact width match)
-  for i = 1, 4 do
+  for i = 1, 3 do
     -- Create preset entry button with backdrop (full width of container)
     local presetButton = CreateFrame('Button', nil, presetContainer, 'BackdropTemplate')
     presetButton:SetWidth(CONTENT_WIDTH) -- Exact same width as all sections
@@ -416,27 +381,18 @@ function CreateIntroPanel()
       textContainer:SetPoint('LEFT', presetIcon, 'RIGHT', 18, 0)
       textContainer:SetPoint('RIGHT', presetButton, 'RIGHT', -18, 0)
     else
-      -- For "None" button, center the text container
-      textContainer:SetPoint('CENTER', presetButton, 'CENTER', 0, 0)
-      textContainer:SetWidth(CONTENT_WIDTH - 36) -- Same width as other buttons' text area
+      textContainer:SetPoint('LEFT', presetButton, 'LEFT', 18, 0)
+      textContainer:SetPoint('RIGHT', presetButton, 'RIGHT', -18, 0)
     end
     textContainer:SetPoint('TOP', presetButton, 'TOP', 0, 0)
     textContainer:SetPoint('BOTTOM', presetButton, 'BOTTOM', 0, 0)
 
     -- Preset title text with improved styling (larger font)
     local presetTitle = textContainer:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-    if i == 4 then
-      -- Center text for "Choose Later" button
-      presetTitle:SetPoint('TOP', textContainer, 'TOP', 0, -12)
-      presetTitle:SetPoint('LEFT', textContainer, 'LEFT', 0, 0)
-      presetTitle:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
-      presetTitle:SetJustifyH('CENTER')
-    else
-      -- Left align for other buttons
-      presetTitle:SetPoint('TOPLEFT', textContainer, 'TOPLEFT', 0, -12)
-      presetTitle:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
-      presetTitle:SetJustifyH('LEFT')
-    end
+    -- Left align for preset buttons
+    presetTitle:SetPoint('TOPLEFT', textContainer, 'TOPLEFT', 0, -12)
+    presetTitle:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+    presetTitle:SetJustifyH('LEFT')
     presetTitle:SetText(presetData[i].name)
     presetTitle:SetTextColor(0.95, 0.85, 0.5) -- Softer, more muted gold color
     presetTitle:SetShadowOffset(1, -1)
@@ -444,18 +400,10 @@ function CreateIntroPanel()
 
     -- Preset description text with better styling (larger font)
     local presetDesc = textContainer:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-    if i == 4 then
-      -- Center text for "None" button
-      presetDesc:SetPoint('TOP', presetTitle, 'BOTTOM', 0, -6)
-      presetDesc:SetPoint('LEFT', textContainer, 'LEFT', 0, 0)
-      presetDesc:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
-      presetDesc:SetJustifyH('CENTER')
-    else
-      -- Left align for other buttons
-      presetDesc:SetPoint('TOPLEFT', presetTitle, 'BOTTOMLEFT', 0, -6)
-      presetDesc:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
-      presetDesc:SetJustifyH('LEFT')
-    end
+    -- Left align for preset buttons
+    presetDesc:SetPoint('TOPLEFT', presetTitle, 'BOTTOMLEFT', 0, -6)
+    presetDesc:SetPoint('RIGHT', textContainer, 'RIGHT', 0, 0)
+    presetDesc:SetJustifyH('LEFT')
     presetDesc:SetText(presetData[i].description)
     presetDesc:SetTextColor(0.75, 0.75, 0.75) -- Muted gray for description
     presetDesc:SetNonSpaceWrap(true)
@@ -471,7 +419,7 @@ function CreateIntroPanel()
     -- Click handler
     presetButton:SetScript('OnClick', function()
       -- Reset all buttons
-      for j = 1, 4 do
+      for j = 1, 3 do
         if presetButtons[j] then
           if presetButtons[j].selectedBg then
             presetButtons[j].selectedBg:Hide()
@@ -489,12 +437,7 @@ function CreateIntroPanel()
       presetButton:SetBackdropBorderColor(1, 0.85, 0.3, 1) -- Gold border when selected
       selectedPresetIndex = i
 
-      -- If "Choose Later" (index 4) is selected, immediately clear all checkboxes
-      if i == 4 then
-        clearAllCheckboxes()
-      end
-
-      -- Enable continue button (even for "Choose Later" option)
+      -- Enable continue button
       if frame.continueButton then
         frame.continueButton:Enable()
       end
@@ -521,10 +464,30 @@ function CreateIntroPanel()
     currentYOffset = currentYOffset - presetButton:GetHeight() - 14 -- Better spacing between buttons
   end
 
+  -- Resize the container to tightly fit the buttons (removes extra blank space)
+  do
+    local lastButton = presetButtons[3]
+    if lastButton and presetContainer.GetTop and lastButton.GetBottom then
+      local containerTop = presetContainer:GetTop()
+      local lastBottom = lastButton:GetBottom()
+      if containerTop and lastBottom then
+        presetContainer:SetHeight(containerTop - lastBottom + 6)
+      end
+    end
+  end
+
+  -- Informational note (replaces removed "Choose Later" option)
+  local chooseLaterText = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  chooseLaterText:SetPoint('TOP', presetContainer, 'BOTTOM', 0, -20)
+  chooseLaterText:SetWidth(CONTENT_WIDTH)
+  chooseLaterText:SetJustifyH('CENTER')
+  chooseLaterText:SetTextColor(0.82, 0.82, 0.82)
+  chooseLaterText:SetText('Every option is toggleable and can be updated at any time.')
+
   -- Continue Button with nice styling (centered, positioned below preset buttons)
   local continueButton = CreateFrame('Button', nil, frame, 'UIPanelButtonTemplate')
   continueButton:SetSize(200, 32)
-  continueButton:SetPoint('TOP', presetContainer, 'BOTTOM', 0, -5)
+  continueButton:SetPoint('TOP', chooseLaterText, 'BOTTOM', 0, -10)
 
   -- Calculate total frame height needed and adjust frame size
   local continueButtonBottom = continueButton:GetBottom()
@@ -571,10 +534,6 @@ function CreateIntroPanel()
       if SaveCharacterSettings then
         SaveCharacterSettings(GLOBAL_SETTINGS)
       end
-    elseif selectedPresetIndex == 4 then
-      -- If "Choose Later" (index 4) was selected, checkboxes were already cleared when button was clicked
-      -- Just ensure they're still cleared (in case user clicked continue without selecting it first)
-      clearAllCheckboxes()
     end
 
     -- Mark intro as seen for this character
