@@ -2,6 +2,11 @@
 PATCH_NOTES = { {
   version = '2.1.3',
   date = '2026-01-16',
+  expansion = 'TBC',
+  notes = { 'UI IMPROVEMENTS:', '• Better intro panel for first time characters.' },
+}, {
+  version = '2.1.3',
+  date = '2026-01-16',
   notes = { 'UI IMPROVEMENTS:', '• Better intro panel for first time characters.' },
 }, {
   version = '2.1.2',
