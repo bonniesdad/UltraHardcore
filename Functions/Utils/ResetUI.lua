@@ -36,11 +36,6 @@ local function ResetUI()
     _G.ResetStatsFramePosition()
   end
 
-  -- Reset statistics tracking toast
-  if _G.ResetStatisticsTrackingToastPosition then
-    _G.ResetStatisticsTrackingToastPosition()
-  end
-
   -- Reset ULTRA Menu frame
   if _G.ResetULTRAMenuFramesPosition then
     _G.ResetULTRAMenuFramesPosition()

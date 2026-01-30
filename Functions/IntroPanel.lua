@@ -60,113 +60,6 @@ local presetData = { {
   description = 'All of the above and - Action bars and the map post level 6 are hidden when not in a rested zone.',
 } }
 
--- Helper function to get default settings
-local function getDefaultSettings()
-  return {
-    -- Lite Preset Settings
-    hidePlayerFrame = true,
-    showTunnelVision = true,
-    -- Recommended Preset Settings
-    hideMinimap = true,
-    hideTargetFrame = true,
-    hideTargetTooltip = true,
-    disableNameplateHealth = true,
-    showDazedEffect = true,
-    hideGroupHealth = true,
-    -- Ultra Preset Settings
-    petsDiePermanently = false,
-    hideActionBars = false,
-    tunnelVisionMaxStrata = false,
-    routePlanner = false,
-    -- Experimental Preset Settings
-    showCritScreenMoveEffect = false,
-    showFullHealthIndicator = false,
-    hideCustomResourceBar = false,
-    showHealingIndicator = false,
-    setFirstPersonCamera = false,
-    completelyRemovePlayerFrame = false,
-    completelyRemoveTargetFrame = false,
-    routePlannerCompass = false,
-    showTargetBuffs = true,
-    showTargetDebuffs = true,
-    showTargetRaidIcon = true,
-    -- Misc Settings
-    showOnScreenStatistics = true,
-    -- Statistics Tracking (toast notifications)
-    showStatisticsTracking = true,
-    minimalStatisticsTracking = true,
-    statisticsTrackingTierOnly = false,
-    showVitalsOverlay = true,
-    useCustomComboFrame = true,
-    minimapClockPosition = {},
-    minimapMailPosition = {},
-    statisticsBackgroundOpacity = 0.3,
-    statisticsBorderOpacity = 0.9,
-    minimapClockScale = 1.0,
-    minimapMailScale = 1.0,
-    announceLevelUpToGuild = true,
-    announceDeathDetailsToGuild = true,
-    autoJoinUHCChannel = true,
-    suppressUHCChannelJoinLeaveNotices = true,
-    hideUIErrors = false,
-    showClockEvenWhenMapHidden = false,
-    showMailEvenWhenMapHidden = false,
-    announcePartyDeathsOnGroupJoin = false,
-    announceDungeonsCompletedOnGroupJoin = false,
-    newHighCritAppreciationSoundbite = false,
-    buffBarOnResourceBar = false,
-    playPartyDeathSoundbite = false,
-    playPlayerDeathSoundbite = false,
-    spookyTunnelVision = false,
-    roachHearthstoneInPartyCombat = false,
-    guildSelfFound = false,
-    groupSelfFound = false,
-    showDruidFormResourceBar = true,
-    showSoulshardIndicator = true,
-    hideComboFrame = false,
-    -- XP Bar
-    showExpBar = false,
-    showXpBarToolTip = false,
-    hideDefaultExpBar = false,
-    xpBarHeight = 3,
-    -- Statistics Row Visibility Settings
-    showMainStatisticsPanelLevel = true,
-    showMainStatisticsPanelLowestHealth = true,
-    showMainStatisticsPanelSessionHealth = true,
-    showMainStatisticsPanelThisLevel = false,
-    -- HP/Mana Totals
-    showMainStatisticsPanelTotalHP = false,
-    showMainStatisticsPanelTotalMana = false,
-    -- Fighting stats
-    showMainStatisticsPanelEnemiesSlain = true,
-    showMainStatisticsPanelDungeonsCompleted = false,
-    showMainStatisticsPanelPetDeaths = false,
-    showMainStatisticsPanelElitesSlain = false,
-    showMainStatisticsPanelDungeonBosses = false,
-    showMainStatisticsPanelRareElitesSlain = false,
-    showMainStatisticsPanelWorldBossesSlain = false,
-    showMainStatisticsPanelHighestCritValue = true,
-    showMainStatisticsPanelHighestHealCritValue = false,
-    -- Survival Statistics Row Visibility Settings
-    showMainStatisticsPanelHealthPotionsUsed = false,
-    showMainStatisticsPanelManaPotionsUsed = false,
-    showMainStatisticsPanelBandagesUsed = false,
-    showMainStatisticsPanelTargetDummiesUsed = false,
-    showMainStatisticsPanelGrenadesUsed = false,
-    showMainStatisticsPanelPartyMemberDeaths = false,
-    showMainStatisticsPanelCloseEscapes = false,
-    showMainStatisticsPanelDuelsTotal = false,
-    showMainStatisticsPanelDuelsWon = false,
-    showMainStatisticsPanelDuelsLost = false,
-    showMainStatisticsPanelDuelsWinPercent = false,
-    showMainStatisticsPanelPlayerJumps = false,
-    showMainStatisticsPanelPlayer360s = false,
-    -- Economy stats
-    showMainStatisticsPanelGoldGained = false,
-    showMainStatisticsPanelGoldSpent = false,
-  }
-end
-
 -- Helper function to clear all checkbox settings (set all booleans to false)
 function CreateIntroPanel()
   -- Create a nice custom panel frame
@@ -307,11 +200,12 @@ function CreateIntroPanel()
   presetContainer:SetPoint('RIGHT', frame, 'RIGHT', -FRAME_PADDING, 0)
   presetContainer:SetHeight(1) -- Will be resized to fit its 3 buttons
   -- Preset icons
-  local presetIcons = {
-    'Interface\\AddOns\\UltraHardcore\\Textures\\skull1_100.png',
-    'Interface\\AddOns\\UltraHardcore\\Textures\\skull2_100.png',
-    'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
-  }
+  local presetIcons =
+    {
+      'Interface\\AddOns\\UltraHardcore\\Textures\\skull1_100.png',
+      'Interface\\AddOns\\UltraHardcore\\Textures\\skull2_100.png',
+      'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
+    }
 
   local presetButtons = {}
   local currentYOffset = -5

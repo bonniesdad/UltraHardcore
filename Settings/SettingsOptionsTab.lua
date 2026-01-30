@@ -104,25 +104,6 @@ local settingsCheckboxOptions = { {
   tooltip = 'Show raid icon on the target frame',
   dependsOn = 'hideTargetFrame',
 }, {
-  -- Misc Settings (no preset button)
-  name = 'On Screen Statistics',
-  dbSettingsValueName = 'showOnScreenStatistics',
-  tooltip = 'Show important ULTRA statistics on the screen at all times',
-}, {
-  name = 'Show Statistics Notifications',
-  dbSettingsValueName = 'showStatisticsTracking',
-  tooltip = 'Show statistic update notifications (proof of concept: Enemies Slain)',
-}, {
-  name = 'Minimal Style Notifications',
-  dbSettingsValueName = 'minimalStatisticsTracking',
-  tooltip = 'Show “+X [icon]” only (no stat name text)',
-  dependsOn = 'showStatisticsTracking',
-}, {
-  name = 'Only Show Tier Notifications',
-  dbSettingsValueName = 'statisticsTrackingTierOnly',
-  tooltip = 'Only show a notification when you advance to a new tier',
-  dependsOn = 'showStatisticsTracking',
-}, {
   name = 'Use Custom Combo Frame',
   dbSettingsValueName = 'useCustomComboFrame',
   tooltip = 'Use a custom combo frame instead of the default Blizzard combo frame',
@@ -1148,53 +1129,6 @@ function InitializeSettingsOptionsTab(tabContents)
               GameTooltip:Hide()
             end)
           end -- End of shouldShow check
-          -- Add reposition button after the last Statistics Tracking checkbox
-          if checkboxItem.dbSettingsValueName == 'statisticsTrackingTierOnly' then
-            numRows = numRows + 1
-            local repositionButton =
-              CreateFrame('Button', nil, sectionFrame, 'UIPanelButtonTemplate')
-            repositionButton:SetSize(180, 25)
-            repositionButton:SetPoint(
-              'TOPLEFT',
-              sectionFrame,
-              'TOPLEFT',
-              10,
-              -(HEADER_HEIGHT + HEADER_CONTENT_GAP + ((numRows - 1) * ROW_HEIGHT))
-            )
-            repositionButton:SetText('Reposition Statistics Toast')
-            repositionButton:SetScript('OnClick', function()
-              if _G.EnableStatisticsTrackingToastRepositioning then
-                _G.EnableStatisticsTrackingToastRepositioning()
-                print(
-                  '|cfff44336[ULTRA]|r Statistics Tracking Toast repositioning mode enabled. Drag the highlighted area and click Confirm to save.'
-                )
-              end
-            end)
-            repositionButton:SetScript('OnEnter', function(self)
-              GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-              GameTooltip:SetText('Reposition Statistics Toast', 1, 1, 1)
-              GameTooltip:AddLine(
-                'Highlights the Statistics Tracking Toast area and makes it draggable.',
-                1,
-                1,
-                1,
-                true
-              )
-              GameTooltip:AddLine(
-                'Drag it to your desired position and click Confirm to save.',
-                0.8,
-                0.8,
-                0.8
-              )
-              GameTooltip:Show()
-            end)
-            repositionButton:SetScript('OnLeave', function()
-              GameTooltip:Hide()
-            end)
-            table.insert(sectionChildren[sectionIndex], repositionButton)
-            -- Add to search tags
-            repositionButton._uhcSearch = 'reposition statistics toast notification position'
-          end
         elseif sliderItem then
           numRows = numRows + 1
 
@@ -1472,21 +1406,21 @@ function InitializeSettingsOptionsTab(tabContents)
   saveButton:SetSize(120, 30)
   saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -35)
   saveButton:SetText('Save and Reload')
-  
+
   -- Function to update save button state (defined after saveButton is created)
   local function updateSaveButtonState()
     if not saveButton then return end
     local inCombat = isPlayerInCombat()
-    
+
     saveButton:SetEnabled(not inCombat)
-    
+
     if inCombat then
       saveButton:SetText('In Combat')
     else
       saveButton:SetText('Save and Reload')
     end
   end
-  
+
   -- Register for combat events
   local combatFrame = CreateFrame('Frame')
   combatFrame:RegisterEvent('PLAYER_REGEN_DISABLED') -- Entered combat
@@ -1494,10 +1428,10 @@ function InitializeSettingsOptionsTab(tabContents)
   combatFrame:SetScript('OnEvent', function()
     updateSaveButtonState()
   end)
-  
+
   -- Initial state
   updateSaveButtonState()
-  
+
   saveButton:SetScript('OnClick', function()
     if ShowConfirmationDialog then
       ShowConfirmationDialog(
@@ -2514,7 +2448,6 @@ function InitializeSettingsOptionsTab(tabContents)
     GameTooltip:AddLine('• Resource Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Soulshard Indicator', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• Statistics Panel', 0.8, 0.8, 0.8)
-    GameTooltip:AddLine('• Statistics Tracking Toast', 0.8, 0.8, 0.8)
     GameTooltip:AddLine('• ULTRA Menu', 0.8, 0.8, 0.8)
     GameTooltip:AddLine(' ')
     GameTooltip:AddLine('Note: This does not reset scale settings.', 1, 0.5, 0.5)
