@@ -22,7 +22,7 @@ local presets = { {
   -- Preset 2: Recommended
   hidePlayerFrame = true,
   showTunnelVision = true,
-  hideMinimap = true,
+  hideMinimap = false,
   hideTargetFrame = true,
   hideTargetTooltip = true,
   disableNameplateHealth = true,
@@ -402,7 +402,7 @@ function CreateIntroPanel()
   frame.continueButton = continueButton
 
   continueButton:SetScript('OnClick', function()
-    -- Apply selected preset if one was chosen
+    -- Apply selected preset if one was chosen (Lite, Recommended, or Extreme)
     if selectedPresetIndex and selectedPresetIndex <= 3 and presets[selectedPresetIndex] then
       local preset = presets[selectedPresetIndex]
       local difficultyNames = { 'lite', 'recommended', 'extreme' }
@@ -444,9 +444,14 @@ function CreateIntroPanel()
     frame:Hide()
     introPanelOpen = false
 
-    -- Open settings to tab 2 (Settings Options tab)
-    if OpenSettingsToTab then
-      OpenSettingsToTab(2)
+    -- If a preset (Lite, Recommended, Extreme) was selected, reload UI to apply settings
+    if selectedPresetIndex and selectedPresetIndex <= 3 then
+      ReloadUI()
+    else
+      -- Choose Later or no preset: open settings to tab 2 (Settings Options tab)
+      if OpenSettingsToTab then
+        OpenSettingsToTab(2)
+      end
     end
   end)
 
@@ -528,6 +533,17 @@ function ShowIntroPanel(forceShow)
     selectedPresetIndex = nil -- Reset selection
     local introFrame = CreateIntroPanel()
     if introFrame then
+      -- Set lastSeenVersion so we don't show the patch notes modal for this first-time character
+      local addonVersion
+      if C_AddOns and C_AddOns.GetAddOnMetadata then
+        addonVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
+      end
+      if addonVersion then
+        UltraHardcoreDB.lastSeenVersion = addonVersion
+        if SaveDBData then
+          SaveDBData('lastSeenVersion', addonVersion)
+        end
+      end
       introFrame:Show()
     else
       -- If frame creation failed, reset the flag

@@ -17,11 +17,10 @@ local PRESET_SECTIONS = { {
     'disableNameplateHealth',
     'showDazedEffect',
     'hideGroupHealth',
-    'hideMinimap',
   },
 }, {
   title = 'Extreme:',
-  settings = { 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner' },
+  settings = { 'hideMinimap', 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner' },
 }, {
   title = 'Experimental:',
   settings = {
