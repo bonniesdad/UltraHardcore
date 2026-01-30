@@ -29,11 +29,11 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'hideGroupHealth',
   tooltip = 'Party healthbars are hidden and replaced with a custom health indicator',
 }, {
+  -- Extreme Preset Settings
   name = 'Hide Minimap',
   dbSettingsValueName = 'hideMinimap',
   tooltip = 'Hides the minimap. See Maps section for additional resource tracking options',
 }, {
-  -- Extreme Preset Settings {
   name = 'Pets Die Permanently',
   dbSettingsValueName = 'petsDiePermanently',
   tooltip = "Pets can't be resurrected when they are killed",
@@ -265,7 +265,7 @@ local presets = { {
   hidePlayerFrame = true,
   showTunnelVision = true,
   -- Recommended Preset Settings
-  hideMinimap = true,
+  hideMinimap = false,
   hideTargetFrame = true,
   hideTargetTooltip = true,
   disableNameplateHealth = true,

@@ -25,7 +25,7 @@ function LoadDBData()
     hidePlayerFrame = true,
     showTunnelVision = true,
     -- Recommended Preset Settings
-    hideMinimap = true,
+    hideMinimap = false,
     hideTargetFrame = true,
     hideTargetTooltip = true,
     disableNameplateHealth = true,
