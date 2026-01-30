@@ -57,7 +57,6 @@ local PRESET_SECTIONS = { {
 }, {
   title = 'Misc:',
   settings = {
-    'showOnScreenStatistics',
     'showVitalsOverlay',
     'useCustomComboFrame',
     'hideComboFrame',
@@ -77,13 +76,6 @@ local PRESET_SECTIONS = { {
     'roachHearthstoneInPartyCombat',
     'showDruidFormResourceBar',
     'showSoulshardIndicator',
-  },
-}, {
-  title = 'Statistics Tracking:',
-  settings = {
-    'showStatisticsTracking',
-    'minimalStatisticsTracking',
-    'statisticsTrackingTierOnly',
   },
 }, {
   title = 'XP Bar:',

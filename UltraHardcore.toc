@@ -47,14 +47,6 @@ Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
 Functions/ExpBar.lua
-Functions/TradeRestriction.lua
-Functions/AddonXPTracking.lua
-
-Functions/Statistics/TrackLowestHealth.lua
-Functions/Statistics/TrackXPPerSetting.lua
-Functions/Statistics/TrackJumps.lua
-Functions/Statistics/Track360s.lua
-Functions/Statistics/TrackGold.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua
@@ -71,17 +63,14 @@ Functions/Utils/RotateScreenEffect.lua
 Functions/Utils/FormatNumber.lua
 Functions/Utils/ExpansionCheck.lua
 Functions/Utils/NormalizeName.lua
-Functions/Utils/BitMask.lua
 Functions/Utils/DiscordInvite.lua
 Functions/Utils/TwitchInvite.lua
-Functions/Utils/TbcQuestionnaire.lua
 Functions/Utils/AboutAuthor.lua
 Functions/Utils/ConfirmationDialog.lua
 Functions/Utils/ResetUI.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
-Functions/DB/CharacterStats.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
@@ -102,8 +91,6 @@ Functions/Overlays/ShowTunnelVision.lua
 Functions/Overlays/RemoveTunnelVision.lua
 Functions/Overlays/UpdateResourceIndicator.lua
 Functions/Overlays/CustomResourceBar.lua
-Functions/Overlays/MainScreenStatistics.lua
-Functions/Overlays/StatisticsTrackingToast.lua
 Functions/Overlays/ShowDazedOverlay.lua
 Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
@@ -118,11 +105,6 @@ Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
-Settings/XFoundMode.lua
-Settings/XFoundMode/IntroPage.lua
-Settings/XFoundMode/StatusPage.lua
-Settings/XFoundMode/GuildConfirmPage.lua
-Settings/XFoundMode/GroupConfirmPage.lua
 
 ## Constants
 Constants/PresetSections.lua
