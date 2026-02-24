@@ -155,6 +155,11 @@ local settingsCheckboxOptions = { {
   tooltip = 'Position player buff bar on top of the custom resource bar',
   dependsOff = 'hideCustomResourceBar',
 }, {
+  name = 'Hide Permanent Buffs',
+  dbSettingsValueName = 'hidePermanentBuffs',
+  tooltip = 'Hides the Soul of Iron and Self-Found Adventurer buffs (requires Buff Bar on Resource Bar)',
+  dependsOn = 'buffBarOnResourceBar',
+}, {
   name = 'Hide Buffs & Debuffs',
   dbSettingsValueName = 'hideBuffsCompletely',
   tooltip = 'Hides buffs and debuffs completely',
