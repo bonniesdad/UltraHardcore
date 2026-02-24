@@ -373,6 +373,12 @@ end
 local function ShouldRepositionBuffBar()
   return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.buffBarOnResourceBar
 end
+
+-- Helper function to check if permanent buffs should be hidden
+local function ShouldHidePermanentBuffs()
+  return GLOBAL_SETTINGS and GLOBAL_SETTINGS.hidePlayerFrame and GLOBAL_SETTINGS.hidePermanentBuffs
+end
+
 local UHCBuffFrame = CreateFrame('Frame', 'UHCBuffFrame', UIParent)
 UHCBuffFrame:SetWidth(100)
 UHCBuffFrame:SetHeight(32)
@@ -407,6 +413,11 @@ local function HideDebuffs()
   end
 end
 
+local permanentBuffs = {
+    ["Self-Found Adventurer"] = true,
+    ["Soul of Iron"] = true,
+}
+
 -- Function to center buff bar above the resource bar when # of auras change
 local function CenterPlayerBuffBar()
   if ShouldHideBuffs() then
@@ -424,6 +435,7 @@ local function CenterPlayerBuffBar()
     local newWidth = 0
     local buffsPerRow = 10
     local buffCount = 0
+    local visibleBuffCount = 0
     local debuffCount = 0
     local tempEnchantCount = 0
     local xOffset = 0
@@ -436,12 +448,17 @@ local function CenterPlayerBuffBar()
     local iconSpacing = 6
     local rowSpacing = 16
 
+    local shouldHidePermanentBuffs = ShouldHidePermanentBuffs()
+
     -- Count how many buffs and debuffs we have
     for i = 0, 60 do
       local aura = C_UnitAuras.GetAuraDataBySlot('PLAYER', i)
 
       if aura and aura.isHarmful ~= true then
         buffCount = buffCount + 1
+        if not shouldHidePermanentBuffs or not permanentBuffs[aura.name] then
+          visibleBuffCount = visibleBuffCount + 1
+        end
       elseif aura and aura.isHarmful == true then
         debuffCount = debuffCount + 1
       end
@@ -459,32 +476,38 @@ local function CenterPlayerBuffBar()
         C_Timer.After(0.1, CenterPlayerBuffBar)
         return
       end
-      buff:SetParent(UHCBuffFrame)
-      buff:ClearAllPoints()
-      buff:SetPoint('BOTTOMLEFT', UHCBuffFrame, 'BOTTOMLEFT', buffOffset, buffYOffset)
-      rowIconsMoved = rowIconsMoved + 1
-      buffsMoved = i
 
-      if buffWidth == 0 then
-        buffWidth = buff:GetWidth()
-      end
-      if buffHeight == 0 then
-        buffHeight = buff:GetHeight()
-      end
+      local name = UnitBuff("player", i)
+      if shouldHidePermanentBuffs and permanentBuffs[name] then
+        buff:Hide()
+      else
+        buff:SetParent(UHCBuffFrame)
+        buff:ClearAllPoints()
+        buff:SetPoint('BOTTOMLEFT', UHCBuffFrame, 'BOTTOMLEFT', buffOffset, buffYOffset)
+        rowIconsMoved = rowIconsMoved + 1
+        buffsMoved = buffsMoved + 1
 
-      -- After placing the current buff (in SetPoint above), calculate the offset of the next buff
-      buffOffset = buffOffset + buffWidth
+        if buffWidth == 0 then
+          buffWidth = buff:GetWidth()
+        end
+        if buffHeight == 0 then
+          buffHeight = buff:GetHeight()
+        end
 
-      -- This should prevent icon spacing from being added to the last buff in each row
-      if rowIconsMoved < buffsPerRow and i < buffCount then
-        buffOffset = buffOffset + iconSpacing
-      end
+        -- After placing the current buff (in SetPoint above), calculate the offset of the next buff
+        buffOffset = buffOffset + buffWidth
 
-      if buffCount > buffsPerRow and i % buffsPerRow == 0 then
-        buffYOffset = buffYOffset + buffHeight + rowSpacing
-        buffRows = buffRows + 1
-        buffOffset = 0
-        rowIconsMoved = 0
+        -- This should prevent icon spacing from being added to the last buff in each row
+        if rowIconsMoved < buffsPerRow and buffsMoved < visibleBuffCount then
+          buffOffset = buffOffset + iconSpacing
+        end
+
+        if visibleBuffCount > buffsPerRow and buffsMoved % buffsPerRow == 0 then
+          buffYOffset = buffYOffset + buffHeight + rowSpacing
+          buffRows = buffRows + 1
+          buffOffset = 0
+          rowIconsMoved = 0
+        end
       end
     end
 
@@ -514,18 +537,18 @@ local function CenterPlayerBuffBar()
 
     if tempEnchantCount > 0 then
       -- We need to increase the buff count for temp enchants
-      buffCount = buffCount + tempEnchantCount
+      visibleBuffCount = visibleBuffCount + tempEnchantCount
       local enchantIndex = 1
 
       if buffsMoved % buffsPerRow ~= 0 then
-        -- This is necessary because buffCount did not include temp enchants in the loop above so iconspacing did not get added
+        -- This is necessary because visibleBuffCount did not include temp enchants in the loop above so iconspacing did not get added
         buffOffset = buffOffset + iconSpacing
       end
 
       buffsMoved = buffsMoved + 1
 
       -- Starting from the largest iterator value from the buff loop above, move the weapon enchant icons
-      for i = buffsMoved, buffCount do
+      for i = buffsMoved, visibleBuffCount do
         local enchant = _G['TempEnchant' .. enchantIndex]
         if enchantIndex <= tempEnchantCount then
           enchant:SetParent(UHCBuffFrame)
@@ -539,7 +562,7 @@ local function CenterPlayerBuffBar()
             buffOffset = buffOffset + iconSpacing
           end
 
-          if buffCount > buffsPerRow and i % buffsPerRow == 0 then
+          if visibleBuffCount > buffsPerRow and i % buffsPerRow == 0 then
             buffYOffset = buffYOffset + buffHeight + rowSpacing
             buffRows = buffRows + 1
             buffOffset = 0
@@ -553,18 +576,18 @@ local function CenterPlayerBuffBar()
     end
 
     -- Move debuff buttons into our custom frame (disabled to avoid anchor family loops)
-    if buffCount == 0 then return end
+    if visibleBuffCount == 0 then return end
     local firstBuffButton = _G['BuffButton1']
 
     if firstBuffButton then
       local width = firstBuffButton:GetWidth()
       local height = firstBuffButton:GetHeight()
 
-      -- buffCount + width is the total width of all buff icons
-      -- (buffCount - 1) * iconSpacing is the spacing between each icon
+      -- visibleBuffCount + width is the total width of all buff icons
+      -- (visibleBuffCount - 1) * iconSpacing is the spacing between each icon
       -- iconSpacing pixels is subtracted to account for spacing in front of the first icon
-      if buffCount < buffsPerRow then
-        newWidth = (buffCount * width) + ((buffCount - 1) * iconSpacing)
+      if visibleBuffCount < buffsPerRow then
+        newWidth = (visibleBuffCount * width) + ((visibleBuffCount - 1) * iconSpacing)
       else
         newWidth = (buffsPerRow * width) + ((buffsPerRow - 1) * iconSpacing)
       end
