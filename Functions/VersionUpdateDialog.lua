@@ -96,8 +96,13 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   closeButton:SetPoint('BOTTOM', frame, 'BOTTOM', 0, 25)
   closeButton:SetText('Continue')
   closeButton:SetScript('OnClick', function()
-    -- Mark this version as seen
-    SaveDBData('lastSeenVersion', currentVersion)
+    -- Mark this version as seen (persists to SavedVariables)
+    if UltraHardcoreDB then
+      UltraHardcoreDB.lastSeenVersion = currentVersion
+      if SaveDBData then
+        SaveDBData('lastSeenVersion', currentVersion)
+      end
+    end
     frame:Hide()
 
     -- Open UHC settings and navigate to Settings tab (index 2)
@@ -119,7 +124,13 @@ function ShowVersionUpdateDialog()
   -- Don't show patch notes if intro panel is showing
   if IsIntroPanelShowing and IsIntroPanelShowing() then return end
 
-  local currentVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
+  -- C_AddOns is Retail; Classic Era uses global GetAddOnMetadata
+  local currentVersion =
+    (C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(
+      'UltraHardcore',
+      'Version'
+    )) or GetAddOnMetadata('UltraHardcore', 'Version')
+  if not currentVersion or currentVersion == '' then return end
 
   -- Get last seen version from database
   local lastSeenVersion = UltraHardcoreDB.lastSeenVersion

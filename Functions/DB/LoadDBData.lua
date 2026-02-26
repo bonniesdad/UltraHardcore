@@ -9,10 +9,7 @@ function LoadDBData()
   lowestHealthScore = UltraHardcoreDB.lowestHealthScore or 100
   WELCOME_MESSAGE_CLOSED = UltraHardcoreDB.WELCOME_MESSAGE_CLOSED or false
 
-  -- Initialize version tracking if it doesn't exist
-  if not UltraHardcoreDB.lastSeenVersion then
-    UltraHardcoreDB.lastSeenVersion = nil
-  end
+  -- Leave lastSeenVersion exactly as loaded from SavedVariables (only updated when user confirms the update dialog)
 
   -- Initialize character settings if they don't exist
   if not UltraHardcoreDB.characterSettings then
