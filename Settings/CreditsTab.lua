@@ -1,16 +1,9 @@
--- Credits Tab Content
--- Initialize Credits Tab when called
+-- Credits Tab Content - Same pattern as UltraHardcore CreditsTab
 function InitializeCreditsTab(tabContents)
-  -- Check if tabContents[5] exists
   if not tabContents or not tabContents[5] then return end
-
-  -- Check if already initialized to prevent duplicates
   if tabContents[5].initialized then return end
-
-  -- Mark as initialized
   tabContents[5].initialized = true
 
-  -- Background frame with border for all content
   local contentBackground = CreateFrame('Frame', nil, tabContents[5], 'BackdropTemplate')
   contentBackground:SetPoint('TOP', tabContents[5], 'TOP', 0, -60)
   contentBackground:SetPoint('LEFT', tabContents[5], 'LEFT', 10, 0)
@@ -32,61 +25,85 @@ function InitializeCreditsTab(tabContents)
   contentBackground:SetBackdropColor(0.1, 0.1, 0.1, 0.95)
   contentBackground:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
-  -- About the Author section (reusable component, wider)
+  local contentBgW = contentBackground:GetWidth()
+  local aboutAuthorW = (contentBgW and contentBgW > 100) and (contentBgW - 40) or 470
   local aboutAuthorFrame =
-    UHC_CreateAboutAuthorSection(contentBackground, 'TOP', contentBackground, 'TOP', 0, -20, 560)
+    UHC_CreateAboutAuthorSection(
+      contentBackground,
+      'TOPLEFT',
+      contentBackground,
+      'TOPLEFT',
+      20,
+      -20,
+      aboutAuthorW
+    )
 
-  -- The Team section
-  local teamTitle = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
-  teamTitle:SetPoint('TOPLEFT', aboutAuthorFrame, 'BOTTOMLEFT', 0, 30)
-  teamTitle:SetText('The Team')
-  teamTitle:SetTextColor(0.922, 0.871, 0.761)
+  local familyTitle = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
+  familyTitle:SetPoint('TOP', aboutAuthorFrame, 'BOTTOM', 0, 40)
+  familyTitle:SetText('Ultra Family Addons')
+  familyTitle:SetTextColor(0.922, 0.871, 0.761)
 
-  -- Developers subsection
-  local developersLabel = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  developersLabel:SetPoint('TOPLEFT', teamTitle, 'BOTTOMLEFT', 0, -10)
-  developersLabel:SetText('Developers:')
-  developersLabel:SetTextColor(0.922, 0.871, 0.761)
+  local ADDON_BOX_SIZE = 80
+  local ADDON_BOX_GAP = 12
+  local ADDON_TITLE_GAP = 12
+  local addonTitles = { 'Ultra HC', 'Ultra Stats', 'Ultra Found' }
+  local addonTextures = {
+    'Interface\\AddOns\\UltraHardcore\\Textures\\Ultra HC Icon.png', -- Ultra Hardcore
+    'Interface\\AddOns\\UltraHardcore\\Textures\\stats.png', -- Ultra Statistics
+    'Interface\\AddOns\\UltraHardcore\\Textures\\bonnie-round.png', -- Ultra Found
+  }
+  local contentW = (contentBgW and contentBgW > 100) and (contentBgW - 20) or 490
+  local numAddons = #addonTitles
+  local rowWidth = (ADDON_BOX_SIZE * numAddons) + (ADDON_BOX_GAP * (numAddons - 1))
+  local rowStartX = (contentW - rowWidth) / 2
 
-  local developersNames = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  developersNames:SetPoint('TOPLEFT', developersLabel, 'BOTTOMLEFT', 0, -4)
-  developersNames:SetText('Chills, PtchBlvck, Booji, Wootenblatz')
-  developersNames:SetTextColor(0.8, 0.8, 0.8)
+  local addonRowBottom = familyTitle
 
-  -- Design subsection
-  local designLabel = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  designLabel:SetPoint('TOPLEFT', developersNames, 'BOTTOMLEFT', 0, -10)
-  designLabel:SetText('Design:')
-  designLabel:SetTextColor(0.922, 0.871, 0.761)
+  for i = 1, numAddons do
+    local colX = rowStartX + (i - 1) * (ADDON_BOX_SIZE + ADDON_BOX_GAP)
 
-  local designName = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  designName:SetPoint('TOPLEFT', designLabel, 'BOTTOMLEFT', 0, -4)
-  designName:SetText('Vivi')
-  designName:SetTextColor(0.8, 0.8, 0.8)
+    local titleLabel = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+    titleLabel:SetPoint('TOP', familyTitle, 'BOTTOM', 0, -ADDON_TITLE_GAP)
+    titleLabel:SetPoint('LEFT', contentBackground, 'LEFT', colX, 0)
+    titleLabel:SetWidth(ADDON_BOX_SIZE)
+    titleLabel:SetJustifyH('CENTER')
+    titleLabel:SetText(addonTitles[i])
+    titleLabel:SetTextColor(0.922, 0.871, 0.761)
 
-  -- QA subsection
-  local qaLabel = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  qaLabel:SetPoint('TOPLEFT', designName, 'BOTTOMLEFT', 0, -10)
-  qaLabel:SetText('QA:')
-  qaLabel:SetTextColor(0.922, 0.871, 0.761)
+    local box = CreateFrame('Frame', nil, contentBackground, 'BackdropTemplate')
+    box:SetSize(ADDON_BOX_SIZE, ADDON_BOX_SIZE)
+    box:SetPoint('TOP', titleLabel, 'BOTTOM', 0, -ADDON_TITLE_GAP)
+    box:SetPoint('LEFT', contentBackground, 'LEFT', colX, 0)
+    local tex = box:CreateTexture(nil, 'BACKGROUND')
+    tex:SetTexture(addonTextures[i])
+    tex:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+    tex:SetPoint('CENTER', box, 'CENTER', 0, 0)
+    tex:SetSize(ADDON_BOX_SIZE * 0.9, ADDON_BOX_SIZE * 0.9)
+    box:SetBackdrop({
+      edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
+      edgeSize = 12,
+      insets = {
+        left = 3,
+        right = 3,
+        top = 3,
+        bottom = 3,
+      },
+    })
+    box:SetBackdropBorderColor(0.6, 0.5, 0.35, 0.9)
 
-  local qaNames = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  qaNames:SetPoint('TOPLEFT', qaLabel, 'BOTTOMLEFT', 0, -4)
-  qaNames:SetText('Tulhur, Moltera')
-  qaNames:SetTextColor(0.8, 0.8, 0.8)
+    addonRowBottom = box
+  end
 
-  -- Join the Developer text (wider, centered in tab)
   local joinDeveloperText = contentBackground:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  joinDeveloperText:SetPoint('TOP', qaNames, 'BOTTOM', 240, -30)
+  joinDeveloperText:SetPoint('TOP', addonRowBottom, 'BOTTOM', -90, -30)
   joinDeveloperText:SetText(
-    'Join the developers\' Discord community and Twitch channel to help \nsupport us and have your say on the future of this addon!'
+    "Join the developers' Discord community and Twitch channel to help support us and have your say on the future of this addon!"
   )
   joinDeveloperText:SetJustifyH('CENTER')
   joinDeveloperText:SetTextColor(0.95, 0.95, 0.9)
-  joinDeveloperText:SetWidth(560)
+  joinDeveloperText:SetWidth(360)
   joinDeveloperText:SetNonSpaceWrap(true)
 
-  -- Discord invite button (centered in tab)
   local discordButton =
     UHC_CreateDiscordInviteButton(
       contentBackground,
@@ -99,12 +116,10 @@ function InitializeCreditsTab(tabContents)
       24,
       'Discord Invite Link'
     )
-  -- Center the button horizontally in the tab
   discordButton:ClearAllPoints()
   discordButton:SetPoint('TOP', joinDeveloperText, 'BOTTOM', 0, -10)
   discordButton:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)
 
-  -- Twitch invite button (centered in tab)
   local twitchButton =
     UHC_CreateTwitchInviteButton(
       contentBackground,
@@ -117,7 +132,6 @@ function InitializeCreditsTab(tabContents)
       28,
       'Twitch Channel'
     )
-  -- Center the button horizontally in the tab
   twitchButton:ClearAllPoints()
   twitchButton:SetPoint('TOP', discordButton, 'BOTTOM', 0, 0)
   twitchButton:SetPoint('CENTER', tabContents[5], 'CENTER', 0, 0)

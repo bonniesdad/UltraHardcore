@@ -32,7 +32,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   local font, _, flags = title:GetFont()
   title:SetFont(font, 18, flags)
   title:SetTextColor(1, 1, 0)
-  title:SetText('ULTRA Updated!')
+  title:SetText('Ultra Hardcore Updated!')
 
   -- Version info
   local versionText = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
@@ -117,9 +117,7 @@ function ShowVersionUpdateDialog()
   end
 
   -- Don't show patch notes if intro panel is showing
-  if IsIntroPanelShowing and IsIntroPanelShowing() then
-    return
-  end
+  if IsIntroPanelShowing and IsIntroPanelShowing() then return end
 
   local currentVersion = C_AddOns.GetAddOnMetadata('UltraHardcore', 'Version')
 

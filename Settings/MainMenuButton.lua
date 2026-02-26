@@ -1,22 +1,14 @@
 -- Create the button (parented to UIParent so it can sit outside GameMenuFrame across clients)
 local button = _G.GameMenuButtonUltraHardcore
 if not button then
-  button =
-    CreateFrame(
-      'Button',
-      'GameMenuButtonUltraHardcore',
-      UIParent,
-      'GameMenuButtonTemplate'
-    )
+  button = CreateFrame('Button', 'GameMenuButtonUltraHardcore', UIParent, 'GameMenuButtonTemplate')
 end
 
 button:Hide()
 
 -- Make it look less like a default Blizzard button (works in Classic + TBC)
 local function SkinUltraButton()
-  if button._uhcSkinned then
-    return
-  end
+  if button._uhcSkinned then return end
   button._uhcSkinned = true
 
   button:SetSize(160, 28)
@@ -35,7 +27,7 @@ local function SkinUltraButton()
   label:SetPoint('LEFT', button, 'LEFT', 34, 0)
   label:SetPoint('RIGHT', button, 'RIGHT', -34, 0)
   label:SetJustifyH('CENTER')
-  label:SetText('ULTRA')
+  label:SetText('Ultra Hardcore')
   label:SetTextColor(1, 0.82, 0.2)
   button._uhcLabel = label
 

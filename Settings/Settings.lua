@@ -130,8 +130,14 @@ titleBarBackground:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\heade
 titleBarBackground:SetTexCoord(0, 1, 0, 1)
 local settingsTitleLabel = titleBar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
 settingsTitleLabel:SetPoint('CENTER', titleBar, 'CENTER', 0, 4)
-settingsTitleLabel:SetText('ULTRA')
+settingsTitleLabel:SetText('Ultra Hardcore')
 settingsTitleLabel:SetTextColor(0.922, 0.871, 0.761)
+
+local settingsTitleIcon = titleBar:CreateTexture(nil, 'ARTWORK')
+settingsTitleIcon:SetSize(40, 40)
+settingsTitleIcon:SetPoint('LEFT', titleBar, 'LEFT', 18, 4)
+settingsTitleIcon:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\bonnie-round.png')
+settingsTitleIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
 local dividerFrame = CreateFrame('Frame', nil, settingsFrame)
 dividerFrame:SetSize(670, 24)
@@ -251,7 +257,7 @@ initializeTempSettings()
 -- Create LibDataBroker object for minimap button
 local addonLDB = LibStub('LibDataBroker-1.1'):NewDataObject('UltraHardcore', {
   type = 'data source',
-  text = 'ULTRA',
+  text = 'Ultra Hardcore',
   icon = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png',
   OnClick = function(self, btn)
     if btn == 'LeftButton' then
