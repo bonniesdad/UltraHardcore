@@ -1,5 +1,12 @@
 # Patch Notes
 
+## Version 2.2.0 - 2026-02-26
+
+### UI Improvements
+
+- Statistic moved to it's own addon
+- Compatability with Utra Found and Ultra Statistics addons
+
 ## Version 2.1.3 - 2026-01-16
 
 ### UI Improvements

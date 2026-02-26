@@ -1,5 +1,22 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '2.2.0',
+  date = '2026-02-26',
+  notes = {
+    'UI IMPROVEMENTS:',
+    "• Statistic moved to it's own addon.",
+    '• Compatability with Utra Found and Ultra Statistics addons.',
+  },
+}, {
+  version = '2.2.0',
+  date = '2026-02-26',
+  expansion = 'TBC',
+  notes = {
+    'UI IMPROVEMENTS:',
+    "• Statistic moved to it's own addon.",
+    '• Compatability with Utra Found and Ultra Statistics addons.',
+  },
+}, {
   version = '2.1.3',
   date = '2026-01-16',
   expansion = 'TBC',
