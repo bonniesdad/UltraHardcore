@@ -1,10 +1,10 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
-  version = '2.2.1',
+  version = '2.3.0',
   date = '2026-03-01',
   notes = { 'NEW FEATURES:', '• PvP Active Warning Overlay' },
 }, {
-  version = '2.2.1',
+  version = '2.3.0',
   date = '2026-03-01',
   expansion = 'TBC',
   notes = { 'NEW FEATURES:', '• PvP Active Warning Overlay' },
