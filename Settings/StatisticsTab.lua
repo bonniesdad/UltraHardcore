@@ -115,19 +115,19 @@ function InitializeStatisticsTab(tabContents)
   subtitle:SetShadowOffset(1, -1)
   subtitle:SetShadowColor(0, 0, 0, 0.6)
 
-  local downloadRow = container:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  downloadRow:SetPoint('TOP', subtitle, 'BOTTOM', 0, -16)
-  downloadRow:SetText('Download Ultra Statistics by BonniesDad')
-  downloadRow:SetTextColor(0.6, 0.75, 1, 1)
-  downloadRow:SetShadowOffset(1, -1)
-  downloadRow:SetShadowColor(0, 0, 0, 0.6)
-
   local curseforgeButton = CreateFrame('Button', nil, container, 'UIPanelButtonTemplate')
   curseforgeButton:SetSize(260, 26)
-  curseforgeButton:SetPoint('TOP', downloadRow, 'BOTTOM', 0, -18)
-  curseforgeButton:SetText('CurseForge: Ultra Statistics')
+  curseforgeButton:SetPoint('TOP', subtitle, 'BOTTOM', 0, -18)
+  curseforgeButton:SetText('Open Statistics Menu')
   curseforgeButton:SetScript('OnClick', function()
-    ShowUltraStatsCurseforgeDialog()
+    if _G.ToggleUltraStatistics then
+      _G.ToggleUltraStatistics()
+      if _G.UltraHardcoreSettingsFrame then
+        _G.UltraHardcoreSettingsFrame:Hide()
+      end
+    else
+      ShowUltraStatsCurseforgeDialog()
+    end
   end)
 
   -- No-op stubs so callers (TabManager, Settings) do not error

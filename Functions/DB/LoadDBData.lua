@@ -75,6 +75,7 @@ function LoadDBData()
     playPlayerDeathSoundbite = false,
     spookyTunnelVision = false,
     roachHearthstoneInPartyCombat = false,
+    showPvPOverlayWhenActive = true,
     guildSelfFound = false,
     groupSelfFound = false,
     showDruidFormResourceBar = true,

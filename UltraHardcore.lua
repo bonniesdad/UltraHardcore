@@ -133,6 +133,19 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
       -- Show default WoW XP bar by default
       ShowDefaultExpBar()
     end
+
+    -- Initial PvP overlay state (player may log in with PvP already active)
+    if GLOBAL_SETTINGS.showPvPOverlayWhenActive and ShowPvPOverlay and HidePvPOverlay then
+      C_Timer.After(0.5, function()
+        UltraHardcore_UpdatePvPOverlay()
+      end)
+      UltraHardcore_StartPvPOverlayTimer()
+    end
+  elseif event == 'PLAYER_ENTERING_WORLD' then
+    -- Update PvP overlay when zoning (PvP state can change in contested zones)
+    if GLOBAL_SETTINGS.showPvPOverlayWhenActive and UltraHardcore_UpdatePvPOverlay then
+      UltraHardcore_UpdatePvPOverlay()
+    end
   elseif event == 'UNIT_HEALTH_FREQUENT' then
     local unit = ...
     TunnelVision(self, event, unit, GLOBAL_SETTINGS.showTunnelVision or false)
