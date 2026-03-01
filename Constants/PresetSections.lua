@@ -73,6 +73,7 @@ local PRESET_SECTIONS = { {
     'hideDebuffs',
     'spookyTunnelVision',
     'roachHearthstoneInPartyCombat',
+    'showPvPOverlayWhenActive',
     'showDruidFormResourceBar',
     'showSoulshardIndicator',
   },

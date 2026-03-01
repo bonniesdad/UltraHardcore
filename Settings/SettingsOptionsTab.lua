@@ -184,6 +184,10 @@ local settingsCheckboxOptions = { {
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',
 }, {
+  name = 'PvP Active Warning Overlay',
+  dbSettingsValueName = 'showPvPOverlayWhenActive',
+  tooltip = 'Show an overlay warning on screen when PvP is active on your character',
+}, {
   name = 'Show XP Bar',
   dbSettingsValueName = 'showExpBar',
   tooltip = 'Shows experience percentage and current XP/max XP in a bar at the top of the screen',
@@ -463,11 +467,12 @@ function InitializeSettingsOptionsTab(tabContents)
     selectedPreset:SetBackdropBorderColor(1, 1, 0)
   end
 
+  local resourceIndicatorShown = UltraHardcoreDB and UltraHardcoreDB.resourceIndicatorShown
   local presetIcons =
     {
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
-      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (UltraHardcoreDB.resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (resourceIndicatorShown and '01_bonnie_light.png' or 'skull1_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (resourceIndicatorShown and '02_bonnie_recommended.png' or 'skull2_100.png'),
+      'Interface\\AddOns\\UltraHardcore\\textures\\' .. (resourceIndicatorShown and '03_bonnie_extreme.png' or 'skull3_100.png'),
     }
 
   local buttonSize = 100
