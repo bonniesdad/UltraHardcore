@@ -64,13 +64,13 @@ local function postWarningMessage()
     if hasOtherMembers then
       local messageSuffix = ''
       if GLOBAL_SETTINGS.announceDungeonsCompletedOnGroupJoin then
-        local dungeonsCompleted = CharacterStats:GetStat('dungeonsCompleted') or 0
+        local dungeonsCompleted = UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0
         messageSuffix =
           ' ' .. 'I have completed ' .. dungeonsCompleted .. (dungeonsCompleted == 1 and ' dungeon' or ' dungeons') .. '.'
       end
 
       if GLOBAL_SETTINGS.announcePartyDeathsOnGroupJoin then
-        local partyDeathsWitnessed = CharacterStats:GetStat('partyMemberDeaths') or 0
+        local partyDeathsWitnessed = UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0
         messageSuffix =
           messageSuffix .. ' ' .. partyDeathsWitnessed .. ' ' .. (partyDeathsWitnessed == 1 and 'person has' or 'people have') .. ' died in my party so far.'
       end

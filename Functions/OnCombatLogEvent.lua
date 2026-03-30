@@ -37,11 +37,6 @@ function OnCombatLogEvent(self, event)
   CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
   CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
 
-  -- Handle party kills
-  if subEvent == 'PARTY_KILL' then
-    KillTracker.HandlePartyKill(destGUID)
-  end
-
   -- Handle dazed effect
   DazedEffectHandler.HandleDazedEffect(subEvent, destGUID, spellID)
 

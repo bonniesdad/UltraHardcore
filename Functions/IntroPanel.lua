@@ -488,9 +488,9 @@ function ShowIntroPanel(forceShow)
   if not forceShow then
     -- Try to check stats if CharacterStats is available
     local hasPlayed = false
-    if _G.CharacterStats and _G.CharacterStats.GetStat then
+    if _G.UltraStatisticsCharacterStats and _G.UltraStatisticsCharacterStats.GetStat then
       local success, jumps, kills = pcall(function()
-        return _G.CharacterStats:GetStat('playerJumps') or 0, _G.CharacterStats:GetStat(
+        return _G.UltraStatisticsCharacterStats:GetStat('playerJumps') or 0, _G.UltraStatisticsCharacterStats:GetStat(
           'enemiesSlain'
         ) or 0
       end)
@@ -503,8 +503,8 @@ function ShowIntroPanel(forceShow)
       end
     else
       -- If CharacterStats is not available, check database directly
-      if UltraHardcoreDB and UltraHardcoreDB.characterStats and characterGUID then
-        local stats = UltraHardcoreDB.characterStats[characterGUID]
+      if UltraStatisticsCharacterStats and UltraStatisticsCharacterStats.characterStats and characterGUID then
+        local stats = UltraStatisticsCharacterStats.characterStats[characterGUID]
         if stats then
           local jumps = stats.playerJumps or 0
           local kills = stats.enemiesSlain or 0
