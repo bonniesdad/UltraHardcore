@@ -1,10 +1,10 @@
 -- 🟢 Save score persistently
-function SaveDBData(name, newValue)
+function UHC_SaveDBData(name, newValue)
   UltraHardcoreDB[name] = newValue
 end
 
 -- 🟢 Save settings for current character
-function SaveCharacterSettings(settings)
+function UHC_SaveCharacterSettings(settings)
   local characterGUID = UnitGUID('player')
 
   -- Initialize character settings if they don't exist

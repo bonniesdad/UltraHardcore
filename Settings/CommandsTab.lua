@@ -31,7 +31,7 @@ function InitializeCommandsTab(tabContents)
   commandsFrame:SetPoint('TOP', explainer, 'BOTTOM', 0, -20)
   commandsFrame:SetPoint('LEFT', parent, 'LEFT', 10, 0)
   commandsFrame:SetPoint('RIGHT', parent, 'RIGHT', -10, 0)
-  commandsFrame:SetPoint('BOTTOM', parent, 'BOTTOM', 0, -25)
+  commandsFrame:SetPoint('BOTTOM', parent, 'BOTTOM', 0, 36)
   commandsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',

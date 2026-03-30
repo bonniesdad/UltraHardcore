@@ -9,7 +9,7 @@ local TAB_SPACING = 3
 
 -- Tab-specific widths
 local TAB_WIDTHS = {
-  [1] = TAB_WIDTH, -- Stats
+  [1] = TAB_WIDTH, -- Verify
   [2] = TAB_WIDTH, -- Settings
   [3] = TAB_WIDTH, -- Info
   [4] = TAB_WIDTH, -- Commands
@@ -118,7 +118,7 @@ end
 -- Create tab content frames
 local function createTabContent(index, parentFrame)
   local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(620, 600) -- Increased width and height to match larger frame
+  content:SetSize(620, 650) -- Use space down to settings frame bottom (~50px was unused at 600)
   content:SetPoint('TOP', parentFrame, 'TOP', 0, -50) -- Positioned below tabs
   content:Hide()
   return content
@@ -133,14 +133,14 @@ function TabManagerInitializeTabs(settingsFrame)
   if tabButtons[1] then return end
 
   -- Create tab buttons
-  tabButtons[1] = createTabButton('Stats', 1, settingsFrame)
+  tabButtons[1] = createTabButton('Verification', 1, settingsFrame)
   tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
   tabButtons[3] = createTabButton('Info', 3, settingsFrame)
   tabButtons[4] = createTabButton('Commands', 4, settingsFrame)
   tabButtons[5] = createTabButton('Need Help?', 5, settingsFrame)
 
   -- Create tab content frames
-  tabContents[1] = createTabContent(1, settingsFrame) -- Statistics tab
+  tabContents[1] = createTabContent(1, settingsFrame) -- XP Verification tab
   tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
   tabContents[3] = createTabContent(3, settingsFrame) -- Info tab
   tabContents[4] = createTabContent(4, settingsFrame) -- Commands tab
@@ -211,29 +211,26 @@ function TabManagerSwitchToTab(index)
   -- Persist last opened settings tab per character
   if GLOBAL_SETTINGS then
     GLOBAL_SETTINGS.lastOpenedSettingsTab = index
-    if SaveCharacterSettings then
-      SaveCharacterSettings(GLOBAL_SETTINGS)
+    if UHC_SaveCharacterSettings then
+      UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
     end
   end
 
-  -- Initialize Statistics tab if it's being shown
-  if index == 1 and InitializeStatisticsTab then
-    InitializeStatisticsTab(tabContents)
-    -- Update radio buttons after Statistics tab is initialized
+  -- Initialize Verification tab if it's being shown
+  if index == 1 and InitializeVerificationTab then
+    InitializeVerificationTab(tabContents)
     if updateRadioButtons then
       updateRadioButtons()
     end
-    -- Ensure stat bars/graphs are filled when the Stats tab becomes visible.
-    -- Some bar widths are 0 until after the first layout pass, so defer by one frame.
-    if UpdateLowestHealthDisplay then
+    if RefreshVerificationTab then
       if C_Timer and C_Timer.After then
         C_Timer.After(0, function()
-          if TabManagerGetActiveTab and TabManagerGetActiveTab() == 1 and UpdateLowestHealthDisplay then
-            UpdateLowestHealthDisplay()
+          if TabManagerGetActiveTab and TabManagerGetActiveTab() == 1 and RefreshVerificationTab then
+            RefreshVerificationTab()
           end
         end)
       else
-        UpdateLowestHealthDisplay()
+        RefreshVerificationTab()
       end
     end
   end
@@ -258,7 +255,7 @@ function TabManagerSwitchToTab(index)
   end
 end
 
--- Set the default tab (Statistics tab)
+-- Set the default tab (Verification tab)
 function TabManagerSetDefaultTab()
   local defaultIndex = 1
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.lastOpenedSettingsTab then

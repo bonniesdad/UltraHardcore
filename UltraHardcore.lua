@@ -33,7 +33,10 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   -- this was PLAYER_ENTERING_WORLD or ADDON_LOADED, but these are before all the UI elements are available.
   -- Switched to PLAYER_LOGIN which happens after ADDON_LOADED and all UI elements are available
   if event == 'PLAYER_LOGIN' then
-    LoadDBData()
+    UHC_LoadDBData()
+    if UHC_XPVerification and UHC_XPVerification.Init then
+      UHC_XPVerification.Init()
+    end
     HidePlayerMapIndicators()
     -- Show intro panel first if it's a first time character
     -- Delay 1 second to ensure everything is loaded
@@ -42,14 +45,14 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
         ShowIntroPanel()
         -- Check if intro panel is showing after a brief delay
         C_Timer.After(0.2, function()
-          if not (IsIntroPanelShowing and IsIntroPanelShowing()) then
-            ShowVersionUpdateDialog()
+          if not (UHC_IsIntroPanelShowing and UHC_IsIntroPanelShowing()) then
+            UHC_ShowVersionUpdateDialog()
           end
         end)
       end)
     else
       -- If ShowIntroPanel doesn't exist, show version dialog normally
-      ShowVersionUpdateDialog()
+      UHC_ShowVersionUpdateDialog()
     end
     SetPlayerFrameDisplay()
 

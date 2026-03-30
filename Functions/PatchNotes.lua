@@ -1,5 +1,15 @@
 -- Patch notes data structure - update this for each release
-PATCH_NOTES = { {
+UHC_PATCH_NOTES = { {
+  version = '3.0.0',
+  date = '2026-03-31',
+  notes = {
+    'NEW FEATURES:',
+    '• Verification tab added to settings menu.',
+    '',
+    'CODE IMPROVEMENTS:',
+    '• Remove duplicated function names with sister addons.',
+  },
+}, {
   version = '2.4.0',
   date = '2026-03-17',
   notes = { 'NEW FEATURES:', '• Sister addon compatability' },

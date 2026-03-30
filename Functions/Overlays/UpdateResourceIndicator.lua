@@ -18,8 +18,8 @@ local function SaveResourceIndicatorPosition()
     x = x,
     y = y,
   }
-  if SaveDBData then
-    SaveDBData('resourceIndicatorPosition', UltraHardcoreDB.resourceIndicatorPosition)
+  if UHC_SaveDBData then
+    UHC_SaveDBData('resourceIndicatorPosition', UltraHardcoreDB.resourceIndicatorPosition)
   end
 end
 
@@ -44,8 +44,8 @@ local function ResetResourceIndicatorPosition()
   if UltraHardcoreDB then
     UltraHardcoreDB.resourceIndicatorPosition = nil
   end
-  if SaveDBData then
-    SaveDBData('resourceIndicatorPosition', nil)
+  if UHC_SaveDBData then
+    UHC_SaveDBData('resourceIndicatorPosition', nil)
   end
   print('|cfff44336[ULTRA]|r Resource indicator position reset to default.')
 end
@@ -123,8 +123,8 @@ SlashCmdList.TOGGLEBONNIE = function()
     resourceIndicator:Show()
     UltraHardcoreDB.resourceIndicatorShown = true
   end
-  if SaveDBData then
-    SaveDBData('resourceIndicatorShown', UltraHardcoreDB.resourceIndicatorShown)
+  if UHC_SaveDBData then
+    UHC_SaveDBData('resourceIndicatorShown', UltraHardcoreDB.resourceIndicatorShown)
   end
 end
 

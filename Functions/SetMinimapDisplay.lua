@@ -231,7 +231,7 @@ function ShowTrackingButton()
       x = x,
       y = y,
     }
-    SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+    UHC_SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
   end)
   showTrackingInitialized = true
 end
@@ -261,7 +261,7 @@ function ShowClock()
       x = x,
       y = y,
     }
-    SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
+    UHC_SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
   end)
   showClockInitialized = true
 end
@@ -295,7 +295,7 @@ function ShowMail()
       x = x,
       y = y,
     }
-    SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
+    UHC_SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
   end)
   showMailInitialized = true
 end
@@ -561,7 +561,7 @@ local function ResetClockPosition()
     x = x,
     y = y,
   }
-  SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
+  UHC_SaveDBData('minimapClockPosition', UltraHardcoreDB.minimapClockPosition)
   print('|cfff44336[ULTRA]|r Clock position reset to default.')
 end
 
@@ -596,7 +596,7 @@ local function ResetMailPosition()
     x = x,
     y = y,
   }
-  SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
+  UHC_SaveDBData('minimapMailPosition', UltraHardcoreDB.minimapMailPosition)
   print('|cfff44336[ULTRA]|r Mail position reset to default.')
 end
 
@@ -630,7 +630,7 @@ local function ResetTrackingPosition()
     x = x,
     y = y,
   }
-  SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
+  UHC_SaveDBData('MiniMapTrackingPosition', UltraHardcoreDB.MiniMapTrackingPosition)
   print('|cfff44336[ULTRA]|r Tracking position reset to default.')
 end
 
