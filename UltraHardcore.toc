@@ -1,6 +1,6 @@
 ## Interface: 11508, 20505
 ## Title: Ultra
-## Version: 2.4.0
+## Version: 3.0.0
 ## Author: BonniesDad
 ## Notes: Making the game more immersive in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -31,7 +31,6 @@ Functions/VersionUpdateDialog.lua
 Functions/IntroPanel.lua
 Functions/Utils/AudioUtils.lua
 Functions/HidePlayerCastBar.lua
-Functions/JoinParty.lua
 Functions/SetActionBarVisibility.lua
 Functions/HidePartyInformation.lua
 Functions/SetPartyHealthIndicator.lua
@@ -47,6 +46,9 @@ Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
 Functions/ExpBar.lua
+Constants/PresetSections.lua
+Functions/XPVerification.lua
+Functions/JoinParty.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua
@@ -97,12 +99,9 @@ Functions/Overlays/VitalsOverlay.lua
 
 Settings/Settings.lua
 Settings/TabManager.lua
-Settings/StatisticsTab.lua
+Settings/VerificationTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/InfoTab.lua
 Settings/CommandsTab.lua
 Settings/CreditsTab.lua
 Settings/MainMenuButton.lua
-
-## Constants
-Constants/PresetSections.lua

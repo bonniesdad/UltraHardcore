@@ -1332,8 +1332,8 @@ function InitializeSettingsOptionsTab(tabContents)
         sectionFrame:SetHeight(collapsed and collapsedHeight or expandedHeight)
         -- Persist state
         GLOBAL_SETTINGS.collapsedSettingsSections.presetSection[section.title] = collapsed
-        if SaveCharacterSettings then
-          SaveCharacterSettings(GLOBAL_SETTINGS)
+        if UHC_SaveCharacterSettings then
+          UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
         end
         if recalcContentHeight then
           recalcContentHeight()
@@ -1490,7 +1490,7 @@ function InitializeSettingsOptionsTab(tabContents)
             UpdateExpBarHeight()
           end
 
-          SaveCharacterSettings(GLOBAL_SETTINGS)
+          UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
           ReloadUI()
         end,
         nil,
@@ -1536,7 +1536,7 @@ function InitializeSettingsOptionsTab(tabContents)
         UpdateExpBarHeight()
       end
 
-      SaveCharacterSettings(GLOBAL_SETTINGS)
+      UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
       ReloadUI()
     end
   end)
@@ -2502,8 +2502,8 @@ function InitializeSettingsOptionsTab(tabContents)
     toggleUICollapsing()
 
     GLOBAL_SETTINGS.collapsedSettingsSections.uiColour = colorCollapsed
-    if SaveCharacterSettings then
-      SaveCharacterSettings(GLOBAL_SETTINGS)
+    if UHC_SaveCharacterSettings then
+      UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
     end
     if recalcContentHeight then
       recalcContentHeight()

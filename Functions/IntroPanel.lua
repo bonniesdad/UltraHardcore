@@ -61,7 +61,7 @@ local presetData = { {
 } }
 
 -- Helper function to clear all checkbox settings (set all booleans to false)
-function CreateIntroPanel()
+function UHC_CreateIntroPanel()
   -- Create a nice custom panel frame
   local frame = CreateFrame('Frame', 'UltraHardcoreIntroPanel', UIParent, 'BackdropTemplate')
 
@@ -131,8 +131,8 @@ function CreateIntroPanel()
       UltraHardcoreDB.introSeen = {}
     end
     UltraHardcoreDB.introSeen[characterGUID] = true
-    if SaveDBData then
-      SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+    if UHC_SaveDBData then
+      UHC_SaveDBData('introSeen', UltraHardcoreDB.introSeen)
     end
     frame:Hide()
     introPanelOpen = false
@@ -425,8 +425,8 @@ function CreateIntroPanel()
       end
 
       -- Save the settings
-      if SaveCharacterSettings then
-        SaveCharacterSettings(GLOBAL_SETTINGS)
+      if UHC_SaveCharacterSettings then
+        UHC_SaveCharacterSettings(GLOBAL_SETTINGS)
       end
     end
 
@@ -436,8 +436,8 @@ function CreateIntroPanel()
       UltraHardcoreDB.introSeen = {}
     end
     UltraHardcoreDB.introSeen[characterGUID] = true
-    if SaveDBData then
-      SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+    if UHC_SaveDBData then
+      UHC_SaveDBData('introSeen', UltraHardcoreDB.introSeen)
     end
 
     -- Hide the intro panel
@@ -490,9 +490,9 @@ function ShowIntroPanel(forceShow)
     local hasPlayed = false
     if _G.UltraStatisticsCharacterStats and _G.UltraStatisticsCharacterStats.GetStat then
       local success, jumps, kills = pcall(function()
-        return _G.UltraStatisticsCharacterStats:GetStat('playerJumps') or 0, _G.UltraStatisticsCharacterStats:GetStat(
-          'enemiesSlain'
-        ) or 0
+        return _G.UltraStatisticsCharacterStats:GetStat(
+          'playerJumps'
+        ) or 0, _G.UltraStatisticsCharacterStats:GetStat('enemiesSlain') or 0
       end)
 
       if success then
@@ -520,8 +520,8 @@ function ShowIntroPanel(forceShow)
     if hasPlayed then
       -- Mark as seen so we don't check again
       UltraHardcoreDB.introSeen[characterGUID] = true
-      if SaveDBData then
-        SaveDBData('introSeen', UltraHardcoreDB.introSeen)
+      if UHC_SaveDBData then
+        UHC_SaveDBData('introSeen', UltraHardcoreDB.introSeen)
       end
       return
     end
@@ -531,7 +531,7 @@ function ShowIntroPanel(forceShow)
   if not introPanelOpen then
     introPanelOpen = true
     selectedPresetIndex = nil -- Reset selection
-    local introFrame = CreateIntroPanel()
+    local introFrame = UHC_CreateIntroPanel()
     if introFrame then
       -- Set lastSeenVersion so we don't show the patch notes modal for this first-time character
       local addonVersion
@@ -540,8 +540,8 @@ function ShowIntroPanel(forceShow)
       end
       if addonVersion then
         UltraHardcoreDB.lastSeenVersion = addonVersion
-        if SaveDBData then
-          SaveDBData('lastSeenVersion', addonVersion)
+        if UHC_SaveDBData then
+          UHC_SaveDBData('lastSeenVersion', addonVersion)
         end
       end
       introFrame:Show()
@@ -553,7 +553,7 @@ function ShowIntroPanel(forceShow)
 end
 
 -- Function to check if intro panel is currently showing
-function IsIntroPanelShowing()
+function UHC_IsIntroPanelShowing()
   return introPanelOpen
 end
 

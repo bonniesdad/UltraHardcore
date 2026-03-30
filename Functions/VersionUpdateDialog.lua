@@ -1,6 +1,6 @@
 -- Patch notes are now loaded from PatchNotes.lua
 
-function CreateVersionUpdateFrame(previousVersion, currentVersion)
+function UHC_CreateVersionUpdateFrame(previousVersion, currentVersion)
   local frame =
     CreateFrame('Frame', 'UltraHardcoreVersionUpdateFrame', UIParent, 'BackdropTemplate')
   frame:SetSize(500, 600) -- Increased height to accommodate important info and button spacing
@@ -58,9 +58,7 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
   patchNotesLabel:SetFont(font, 16, flags)
   patchNotesLabel:SetTextColor(1, 1, 0)
   patchNotesLabel:SetText('Patch Notes:')
-
-  -- Create patch notes display using reusable component
-  local patchNotesScrollFrame = CreatePatchNotesDisplay(frame, 430, 320, 35, -100)
+  UHC_CreatePatchNotesDisplay(frame, 430, 320, 35, -100)
 
   -- Divider line after patch notes
   local divider = frame:CreateTexture(nil, 'OVERLAY')
@@ -99,8 +97,8 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
     -- Mark this version as seen (persists to SavedVariables)
     if UltraHardcoreDB then
       UltraHardcoreDB.lastSeenVersion = currentVersion
-      if SaveDBData then
-        SaveDBData('lastSeenVersion', currentVersion)
+      if UHC_SaveDBData then
+        UHC_SaveDBData('lastSeenVersion', currentVersion)
       end
     end
     frame:Hide()
@@ -115,14 +113,14 @@ function CreateVersionUpdateFrame(previousVersion, currentVersion)
 end
 
 local versionUpdateOpen = false
-function ShowVersionUpdateDialog()
+function UHC_ShowVersionUpdateDialog()
   if not UltraHardcoreDB then
     print('UltraHardcore: UltraHardcoreDB not found')
     return
   end
 
   -- Don't show patch notes if intro panel is showing
-  if IsIntroPanelShowing and IsIntroPanelShowing() then return end
+  if UHC_IsIntroPanelShowing and UHC_IsIntroPanelShowing() then return end
 
   -- C_AddOns is Retail; Classic Era uses global GetAddOnMetadata
   local currentVersion =
@@ -138,7 +136,7 @@ function ShowVersionUpdateDialog()
   -- Only show dialog if version has changed and dialog isn't already open
   if currentVersion ~= lastSeenVersion and not versionUpdateOpen then
     versionUpdateOpen = true
-    local versionFrame = CreateVersionUpdateFrame(lastSeenVersion, currentVersion)
+    local versionFrame = UHC_CreateVersionUpdateFrame(lastSeenVersion, currentVersion)
     versionFrame:Show()
   end
 end

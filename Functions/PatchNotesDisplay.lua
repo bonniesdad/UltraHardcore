@@ -1,7 +1,7 @@
 -- Reusable Patch Notes Display Component
 -- This component can be used in multiple places (version dialog, settings info tab, etc.)
 
-function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
+function UHC_CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
   -- Create scrollable frame for patch notes
   local patchNotesScrollFrame =
     CreateFrame('ScrollFrame', nil, parent, 'UIPanelScrollFrameTemplate')
@@ -66,7 +66,7 @@ function CreatePatchNotesDisplay(parent, width, height, xOffset, yOffset)
   local function generatePatchNotes()
     local yOffset = 0
 
-    for i, patch in ipairs(PATCH_NOTES) do
+    for i, patch in ipairs(UHC_PATCH_NOTES) do
       -- Filter patch notes based on expansion
       -- Skip TBC notes if we're in Classic
       -- Skip Classic notes (no expansion field) if we're in TBC

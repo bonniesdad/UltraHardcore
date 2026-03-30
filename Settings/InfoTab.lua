@@ -74,5 +74,5 @@ function InitializeInfoTab(tabContents)
   patchNotesFrame:SetBackdropBorderColor(0.4, 0.4, 0.4, 0.8)
 
   -- Create patch notes display using reusable component (larger to fill new space)
-  CreatePatchNotesDisplay(patchNotesFrame, 560, 360, 10, -10)
+  UHC_CreatePatchNotesDisplay(patchNotesFrame, 560, 360, 10, -10)
 end

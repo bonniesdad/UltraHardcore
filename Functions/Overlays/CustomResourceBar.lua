@@ -30,7 +30,7 @@ local function SaveResourceBarPosition()
     yOfs = yOfs,
   }
 
-  SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
+  UHC_SaveDBData('resourceBarPosition', UltraHardcoreDB.resourceBarPosition)
 end
 
 local function LoadResourceBarPosition()
@@ -210,7 +210,7 @@ local function SaveDruidFormResourceBarPosition()
     yOfs = yOfs,
   }
 
-  SaveDBData('druidFormResourceBarPosition', UltraHardcoreDB.druidFormResourceBarPosition)
+  UHC_SaveDBData('druidFormResourceBarPosition', UltraHardcoreDB.druidFormResourceBarPosition)
 end
 
 local function LoadDruidFormResourceBarPosition()

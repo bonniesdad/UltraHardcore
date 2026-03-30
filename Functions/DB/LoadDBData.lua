@@ -1,5 +1,5 @@
 -- 🟢 Load saved score on login
-function LoadDBData()
+function UHC_LoadDBData()
   if not UltraHardcoreDB then
     UltraHardcoreDB = {}
   end
