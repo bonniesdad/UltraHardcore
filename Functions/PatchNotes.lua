@@ -1,5 +1,14 @@
 -- Patch notes data structure - update this for each release
 PATCH_NOTES = { {
+  version = '2.4.0',
+  date = '2026-03-17',
+  notes = { 'NEW FEATURES:', '• Sister addon compatability' },
+}, {
+  version = '2.4.0',
+  date = '2026-03-17',
+  expansion = 'TBC',
+  notes = { 'NEW FEATURES:', '• Sister addon compatability' },
+}, {
   version = '2.3.0',
   date = '2026-03-01',
   notes = { 'NEW FEATURES:', '• PvP Active Warning Overlay' },
