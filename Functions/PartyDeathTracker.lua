@@ -85,9 +85,8 @@ function PartyDeathTracker.HandlePartyMemberDeath(destGUID)
 
   -- Only increment death count if they're not feigning death
   if not isFeigningDeath then
-    local currentPartyDeaths = CharacterStats:GetStat('partyMemberDeaths') or 0
+    local currentPartyDeaths = UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0
     local newCount = currentPartyDeaths + 1
-    CharacterStats:UpdateStat('partyMemberDeaths', newCount)
 
     if GLOBAL_SETTINGS.playPartyDeathSoundbite then
       local randomNumber = random(1, 4)

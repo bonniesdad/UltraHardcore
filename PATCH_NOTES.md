@@ -1,5 +1,13 @@
 # Patch Notes
 
+
+## Version 2.3.0 - 2026-03-30
+
+- Fix function names to avoid duplication across sister addons
+- Use saved variables from Statistics addon
+- Update About Author text
+
+
 ## Version 2.2.0 - 2026-02-26
 
 ### UI Improvements

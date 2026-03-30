@@ -42,9 +42,8 @@ function CritTracker.TrackCriticalHit(subEvent, sourceGUID, amount)
     if critical then
       -- Only trigger crit effects when PLAYER crits an enemy
       if sourceGUID == UnitGUID('player') then
-        local currentHighestCrit = CharacterStats:GetStat('highestCritValue') or 0
+        local currentHighestCrit = UltraStatisticsCharacterStats:GetStat('highestCritValue') or 0
         if amount > currentHighestCrit then
-          CharacterStats:UpdateStat('highestCritValue', amount)
           if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
             PlayRandomCritSound()
           end
@@ -62,9 +61,8 @@ function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
 
     if critical then
       if sourceGUID == UnitGUID('player') then
-        local currentHighestHealCrit = CharacterStats:GetStat('highestHealCritValue') or 0
+        local currentHighestHealCrit = UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0
         if amount > currentHighestHealCrit then
-          CharacterStats:UpdateStat('highestHealCritValue', amount)
           if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
             PlayRandomCritSound()
           end

@@ -80,11 +80,8 @@ Functions/Checks/HasBuff.lua
 Functions/Checks/TargetTamperCheck.lua
 
 Functions/CritTracker.lua
-Functions/KillTracker.lua
-Functions/ItemTracker.lua
 Functions/PartyDeathTracker.lua
 Functions/deathDetails.lua
-Functions/DuelTracker.lua
 Functions/DazedEffectHandler.lua
 
 Functions/Overlays/ShowTunnelVision.lua
