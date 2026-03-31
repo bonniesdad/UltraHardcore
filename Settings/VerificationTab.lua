@@ -12,6 +12,7 @@ local TEX_SUMMARY_FAILED = 'Interface\\AddOns\\UltraHardcore\\Textures\\bonnie0.
 
 local ui = {
   summaryVerdict = nil,
+  summaryBackdated = nil,
   summaryTier = nil,
   summaryCertainty = nil,
   summaryIcon = nil,
@@ -524,9 +525,20 @@ function RefreshVerificationTab()
   end
 
   if ui.summaryVerdict then
+    local isBackdated = snap and snap.xpVerificationBackfilled == true
     ui.summaryVerdict:SetText(verdict)
     vr, vg, vb = verificationDullRgb(vr, vg, vb)
     ui.summaryVerdict:SetTextColor(vr, vg, vb, 1)
+  end
+  if ui.summaryBackdated then
+    local isBackdated = snap and snap.xpVerificationBackfilled == true
+    if isBackdated then
+      ui.summaryBackdated:SetText('(Backdated)')
+      ui.summaryBackdated:Show()
+    else
+      ui.summaryBackdated:SetText('')
+      ui.summaryBackdated:Hide()
+    end
   end
 
   local mix = tierMixName(sumLite, sumRec, sumExt)
@@ -649,7 +661,6 @@ function InitializeVerificationTab(tabContents)
 
   local verdictStr = summary:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightHuge')
   verdictStr:SetPoint('TOPLEFT', summaryHeadingRule, 'BOTTOMLEFT', 0, -20)
-  verdictStr:SetPoint('RIGHT', summary, 'RIGHT', -SUMMARY_TEXT_RIGHT_INSET, 0)
   verdictStr:SetJustifyH('LEFT')
   verdictStr:SetJustifyV('TOP')
   verdictStr:SetText('Sceptical')
@@ -660,6 +671,17 @@ function InitializeVerificationTab(tabContents)
   verdictStr:SetShadowOffset(1, -1)
   verdictStr:SetShadowColor(0, 0, 0, 0.8)
   ui.summaryVerdict = verdictStr
+
+  local backdatedStr = summary:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+  backdatedStr:SetPoint('LEFT', verdictStr, 'RIGHT', 8, -2)
+  backdatedStr:SetJustifyH('LEFT')
+  backdatedStr:SetJustifyV('TOP')
+  do
+    local br, bg, bb = verificationDullRgb(0.78, 0.74, 0.68)
+    backdatedStr:SetTextColor(br, bg, bb, 1)
+  end
+  backdatedStr:Hide()
+  ui.summaryBackdated = backdatedStr
 
   local tierStr = summary:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   tierStr:SetPoint('TOPLEFT', verdictStr, 'BOTTOMLEFT', 0, -8)
@@ -691,10 +713,10 @@ function InitializeVerificationTab(tabContents)
   summaryDivider:SetHeight(1)
 
   local desc = root:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-  desc:SetPoint('TOP', summary, 'BOTTOM', 0, -22)
+  desc:SetPoint('TOP', summary, 'BOTTOM', 0, -17)
   desc:SetPoint('LEFT', root, 'LEFT', 8, 0)
   desc:SetPoint('RIGHT', root, 'RIGHT', -8, 0)
-  desc:SetHeight(105)
+  desc:SetHeight(135)
   desc:SetJustifyH('LEFT')
   desc:SetJustifyV('TOP')
   desc:SetNonSpaceWrap(true)
@@ -703,14 +725,18 @@ function InitializeVerificationTab(tabContents)
     desc:SetTextColor(dr, dg, db, 1)
   end
   desc:SetText(
-    '• Verification only reflects time played on this computer.\n\n' .. '• On another PC, copy your WTF folder there before you play so settings still match.\n\n' .. '• To verify at a difficulty, turn on every option for that tier and every easier tier.\n\n' .. "• Certainty may move a little over time - that's normal, not a mistake on your part."
+    '• Verification only reflects time played on this computer.\n\n'
+      .. '• On another PC, copy your WTF folder there before you play so settings still match.\n\n'
+      .. '• Characters played before this feature existed will show full verification marked as "Backdated".\n\n'
+      .. '• To verify at a difficulty, turn on every option for that tier and every easier tier.\n\n'
+      .. "• Certainty may move a little over time - that's normal, not a mistake on your part."
   )
 
   local breakdownSection = CreateFrame('Frame', nil, root, 'BackdropTemplate')
-  breakdownSection:SetPoint('TOP', desc, 'BOTTOM', 0, -4)
+  breakdownSection:SetPoint('TOP', desc, 'BOTTOM', 0, 0)
   breakdownSection:SetPoint('LEFT', root, 'LEFT', 8, 0)
   breakdownSection:SetPoint('RIGHT', root, 'RIGHT', -8, 0)
-  breakdownSection:SetPoint('BOTTOM', root, 'BOTTOM', 0, 8)
+  breakdownSection:SetPoint('BOTTOM', root, 'BOTTOM', 0, 18)
   breakdownSection:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',

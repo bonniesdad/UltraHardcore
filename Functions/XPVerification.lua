@@ -592,7 +592,9 @@ function UHC_XPVerification.BuildVerificationPartyBroadcastPayload()
   local l = tiers.lite and 1 or 0
   local r = tiers.recommended and 1 or 0
   local e = tiers.extreme and 1 or 0
-  return string.format('1|%s|%s|%d|%d|%d', verdict, tierLabel, l, r, e)
+  local b = UHC_XPVerification.WasXpVerificationBackfilled and UHC_XPVerification.WasXpVerificationBackfilled() and 1
+    or 0
+  return string.format('1|%s|%s|%d|%d|%d|%d', verdict, tierLabel, l, r, e, b)
 end
 
 local eventFrame = CreateFrame('Frame')

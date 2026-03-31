@@ -107,7 +107,7 @@ local function sendVerificationBroadcast()
 end
 
 local function onVerificationAddonMessage(message, sender)
-  local version, verdict, tierLabel = strsplit('|', message or '')
+  local version, verdict, tierLabel, _lite, _rec, _ext, backdatedFlag = strsplit('|', message or '')
   if version ~= '1' or not verdict or not tierLabel then
     return
   end
@@ -115,7 +115,9 @@ local function onVerificationAddonMessage(message, sender)
     return
   end
   local name = senderDisplayName(sender)
-  local line = string.format('[ULTRA] %s %s: %s', name, verdict, tierLabel)
+  local isBackdated = tostring(backdatedFlag) == '1'
+  local backdatedSuffix = isBackdated and ' (Backdated)' or ''
+  local line = string.format('[ULTRA] %s %s%s: %s', name, verdict, backdatedSuffix, tierLabel)
   if DEFAULT_CHAT_FRAME and DEFAULT_CHAT_FRAME.AddMessage then
     DEFAULT_CHAT_FRAME:AddMessage(line, 1, 0.82, 0)
   else
