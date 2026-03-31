@@ -227,7 +227,22 @@ local function shouldBackdateXpVerification(data)
       return false
     end
   end
-  return true
+
+  -- IMPORTANT: Only backdate when we have evidence the character has already been played.
+  -- Otherwise, a brand-new character (level 1, 0 XP, no stats) would be incorrectly labeled "Backdated".
+  local function hasPlayedEvidence()
+    local pl = UnitLevel('player') or 0
+    if pl > 1 then
+      return true
+    end
+    local xp = UnitXP('player') or 0
+    if xp > 0 then
+      return true
+    end
+    return false
+  end
+
+  return hasPlayedEvidence()
 end
 
 --- One-time: assume all past and current XP was earned under today's tier toggles (chain rules).
