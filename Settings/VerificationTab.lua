@@ -725,11 +725,7 @@ function InitializeVerificationTab(tabContents)
     desc:SetTextColor(dr, dg, db, 1)
   end
   desc:SetText(
-    '• Verification only reflects time played on this computer.\n\n'
-      .. '• On another PC, copy your WTF folder there before you play so settings still match.\n\n'
-      .. '• Characters played before this feature existed will show full verification marked as "Backdated".\n\n'
-      .. '• To verify at a difficulty, turn on every option for that tier and every easier tier.\n\n'
-      .. "• Certainty may move a little over time - that's normal, not a mistake on your part."
+    '• Verification only reflects time played on this computer.\n\n' .. '• On another PC, copy your WTF folder there before you play so settings still match.\n\n' .. '• Characters played before this feature existed will show full verification marked as "Backdated".\n\n' .. '• To verify at a difficulty, turn on every option for that tier and every easier tier.\n\n' .. "• Certainty may move a little over time - that's normal, not a mistake on your part."
   )
 
   local breakdownSection = CreateFrame('Frame', nil, root, 'BackdropTemplate')

@@ -1,8 +1,7 @@
 -- Function to abandon pet when it dies
 function CheckAndAbandonPet()
-
   if not GLOBAL_SETTINGS.petsDiePermanently then return end
-  
+
   -- Check if player has a pet
   if not UnitExists('pet') then return end
 

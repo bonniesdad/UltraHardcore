@@ -794,12 +794,19 @@ function InitializeSettingsOptionsTab(tabContents)
     end
   end)
 
+  -- Fixed footer so Save button never scrolls off-screen
+  local footerFrame = CreateFrame('Frame', nil, tabContents[2])
+  footerFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
+  footerFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
+  footerFrame:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, 10)
+  footerFrame:SetHeight(44)
+
   -- Create main container frame with background (similar to StatisticsTab)
   local optionsFrame = CreateFrame('Frame', nil, tabContents[2], 'BackdropTemplate')
   optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
   optionsFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
   optionsFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
-  optionsFrame:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, 10)
+  optionsFrame:SetPoint('BOTTOM', footerFrame, 'TOP', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
     edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
@@ -1407,9 +1414,9 @@ function InitializeSettingsOptionsTab(tabContents)
   end
 
   -- Create save button
-  local saveButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  local saveButton = CreateFrame('Button', nil, footerFrame, 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
-  saveButton:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, -35)
+  saveButton:SetPoint('CENTER', footerFrame, 'CENTER', 0, 0)
   saveButton:SetText('Save and Reload')
 
   -- Function to update save button state (defined after saveButton is created)

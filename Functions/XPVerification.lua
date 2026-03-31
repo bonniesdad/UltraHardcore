@@ -99,14 +99,22 @@ end
 
 --- Every setting in PRESET_SECTIONS[tierIndex] must be truthy on GLOBAL_SETTINGS.
 local function tierAllEnabled(tierIndex)
-  if not GLOBAL_SETTINGS then return false end
+  if not GLOBAL_SETTINGS then
+    return false
+  end
   local sections = _G.PRESET_SECTIONS
-  if not sections then return false end
+  if not sections then
+    return false
+  end
   local sec = sections[tierIndex]
-  if not sec or not sec.settings then return false end
+  if not sec or not sec.settings then
+    return false
+  end
   for _, key in ipairs(sec.settings) do
     local v = GLOBAL_SETTINGS[key]
-    if v == nil or v == false then return false end
+    if v == nil or v == false then
+      return false
+    end
   end
   return true
 end
@@ -165,19 +173,29 @@ function UHC_XPVerification.GetTierTrackingFlags()
 end
 
 function UHC_XPVerification.GetMaxXpForLevel(level)
-  if not level or level < 1 then return nil end
+  if not level or level < 1 then
+    return nil
+  end
   local t = UHC_XPVerification.LEVEL_XP_MAX[level]
-  if t then return t end
+  if t then
+    return t
+  end
   if UnitLevel('player') == level then
     local m = UnitXPMax('player')
-    if m and m > 0 then return m end
+    if m and m > 0 then
+      return m
+    end
   end
   return nil
 end
 
 local function normalizeCompletedEntry(v)
   if type(v) == 'number' and v >= 0 then
-    return { lite = v, recommended = v, extreme = v }
+    return {
+      lite = v,
+      recommended = v,
+      extreme = v,
+    }
   end
   if type(v) == 'table' then
     return {
@@ -443,7 +461,9 @@ function UHC_XPVerification.GetSnapshot()
   local completed = {}
   for L, t in pairs(state.completed) do
     local n = normalizeCompletedEntry(t)
-    if n then completed[L] = n end
+    if n then
+      completed[L] = n
+    end
   end
 
   local current
@@ -592,8 +612,8 @@ function UHC_XPVerification.BuildVerificationPartyBroadcastPayload()
   local l = tiers.lite and 1 or 0
   local r = tiers.recommended and 1 or 0
   local e = tiers.extreme and 1 or 0
-  local b = UHC_XPVerification.WasXpVerificationBackfilled and UHC_XPVerification.WasXpVerificationBackfilled() and 1
-    or 0
+  local b =
+    UHC_XPVerification.WasXpVerificationBackfilled and UHC_XPVerification.WasXpVerificationBackfilled() and 1 or 0
   return string.format('1|%s|%s|%d|%d|%d|%d', verdict, tierLabel, l, r, e, b)
 end
 

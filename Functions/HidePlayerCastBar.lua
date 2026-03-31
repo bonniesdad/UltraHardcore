@@ -7,9 +7,9 @@ function HidePlayerCastBar()
     CastingBarFrame:SetAlpha(0)
   end
 
-    -- TBC
-    if PlayerCastingBarFrame then
-      PlayerCastingBarFrame:Hide()
-      PlayerCastingBarFrame:SetAlpha(0)
-    end
+  -- TBC
+  if PlayerCastingBarFrame then
+    PlayerCastingBarFrame:Hide()
+    PlayerCastingBarFrame:SetAlpha(0)
+  end
 end

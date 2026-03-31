@@ -52,7 +52,7 @@ function UHC_CreateAboutAuthorSection(parent, point, relativeTo, relativePoint, 
   aboutText:SetPoint('TOPLEFT', profilePictureFrame, 'BOTTOMLEFT', 0, -15)
   aboutText:SetWidth(width) -- Full width
   aboutText:SetText(
-    'BonniesDadTV develops this addon live on Twitch and is always happy to answer any questions about the addon.\n\nFound a bug? Report bugs directly to him and he will fix them live. New suggestions are a great way to keep the addon alive, so please feel free to pop by and give yours.\n\nWant to contribute? You are more than welcome, and wouldn\'t be the first! We have built a friendly, lively community from people wanting to get involved and learn more about development and addon creation.'
+    "BonniesDadTV develops this addon live on Twitch and is always happy to answer any questions about the addon.\n\nFound a bug? Report bugs directly to him and he will fix them live. New suggestions are a great way to keep the addon alive, so please feel free to pop by and give yours.\n\nWant to contribute? You are more than welcome, and wouldn't be the first! We have built a friendly, lively community from people wanting to get involved and learn more about development and addon creation."
   )
   aboutText:SetJustifyH('LEFT')
   aboutText:SetNonSpaceWrap(false) -- Allow line breaks

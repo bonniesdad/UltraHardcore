@@ -9,8 +9,7 @@ MIN_LEVEL_HIDE_ACTION_BARS = 6
 
 -- all frames to hide
 ACTIOBAR_FRAMES_TO_HIDE = { -- Classic Frames
-MainMenuBar, MultiBarBottomLeft, MultiBarBottomRight, MultiBarLeft, MultiBarRight, -- TBC Frames
-PetActionBar, StanceBar, MicroMenu, MainActionBar, BagsBar, MainStatusTrackingBarContainer, MultiBar5, MultiBar6, MultiBar7 }
+MainMenuBar, MultiBarBottomLeft, MultiBarBottomRight, MultiBarLeft, MultiBarRight, PetActionBar, StanceBar, MicroMenu, MainActionBar, BagsBar, MainStatusTrackingBarContainer, MultiBar5, MultiBar6, MultiBar7 } -- TBC Frames
 
 -- TBC-only: remember which Blizzard UI elements were enabled/visible before Ultra hides them,
 -- so when we "show bars" in rested areas we don't force-show bars the user has hidden via
