@@ -175,7 +175,7 @@ end
 
 -- Create or update an indicator for a specific CompactRaidFrame index
 function SetRaidHealthIndicator(enabled, raidIndex)
-  local raidFrame = (select(1, UHC_GetCompactGroupFrame(raidIndex)))
+  local raidFrame = select(1, UHC_GetCompactGroupFrame(raidIndex))
   if not raidFrame then return end
 
   if not enabled then
@@ -218,7 +218,7 @@ function UpdateRaidHealthIndicator(raidIndex)
   local indicator = RAID_HEALTH_INDICATOR_FRAMES[raidIndex]
   if not indicator then return end
 
-  local raidFrame = (select(1, UHC_GetCompactGroupFrame(raidIndex)))
+  local raidFrame = select(1, UHC_GetCompactGroupFrame(raidIndex))
   if not raidFrame then
     indicator:Hide()
     return
@@ -264,7 +264,7 @@ end
 function UpdateRaidHealthIndicatorForUnit(unit)
   -- Find all compact raid frames that correspond to this unit and update
   for i = 1, UHC_GetCompactGroupMaxIndex() do
-    local raidFrame = (select(1, UHC_GetCompactGroupFrame(i)))
+    local raidFrame = select(1, UHC_GetCompactGroupFrame(i))
     if raidFrame then
       local frameUnit = GetRaidFrameUnit(raidFrame, nil)
       if frameUnit == unit then
@@ -289,7 +289,7 @@ local function UHC_TryUpdateCompactIndicatorForUnit(unit)
     -- Scan the 5 frames and update whichever one corresponds to this unit token.
     local updated = false
     for i = 1, 5 do
-      local frame = (select(1, UHC_GetCompactGroupFrame(i)))
+      local frame = select(1, UHC_GetCompactGroupFrame(i))
       local frameUnit = GetRaidFrameUnit(frame, nil)
       if frameUnit == unit then
         UpdateRaidHealthIndicator(i)
@@ -322,7 +322,7 @@ function SetAllRaidHealthIndicators(enabled)
   end
 
   for i = 1, UHC_GetCompactGroupMaxIndex() do
-    local raidFrame = (select(1, UHC_GetCompactGroupFrame(i)))
+    local raidFrame = select(1, UHC_GetCompactGroupFrame(i))
     if raidFrame then
       local indicator = RAID_HEALTH_INDICATOR_FRAMES[i]
       if indicator and indicator.GetParent and indicator:GetParent() ~= raidFrame then

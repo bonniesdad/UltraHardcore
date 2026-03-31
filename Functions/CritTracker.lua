@@ -61,7 +61,8 @@ function CritTracker.TrackHealingCriticalHit(subEvent, sourceGUID)
 
     if critical then
       if sourceGUID == UnitGUID('player') then
-        local currentHighestHealCrit = UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0
+        local currentHighestHealCrit =
+          UltraStatisticsCharacterStats:GetStat('highestHealCritValue') or 0
         if amount > currentHighestHealCrit then
           if GLOBAL_SETTINGS.newHighCritAppreciationSoundbite then
             PlayRandomCritSound()

@@ -23,7 +23,12 @@ function ShowPvPOverlay()
       pvpOverlayFrame:SetBackdrop({
         edgeFile = 'Interface\\Tooltips\\UI-Tooltip-Border',
         edgeSize = 12,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 },
+        insets = {
+          left = 4,
+          right = 4,
+          top = 4,
+          bottom = 4,
+        },
       })
       pvpOverlayFrame:SetBackdropBorderColor(1, 0.3, 0.3, 1)
 

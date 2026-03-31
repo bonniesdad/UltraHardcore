@@ -11,9 +11,9 @@ UltraHiddenParent:SetIgnoreParentScale(true)
 UltraHiddenParent:SetIgnoreParentAlpha(true)
 
 local function SnapshotFramePoints(frame)
-  if not frame or type(frame.GetNumPoints) ~= 'function' or type(frame.GetPoint) ~= 'function' then
-    return
-  end
+  if not frame or type(frame.GetNumPoints) ~= 'function' or type(
+    frame.GetPoint
+  ) ~= 'function' then return end
 
   local numPoints = frame:GetNumPoints() or 0
   if numPoints <= 0 then
@@ -37,12 +37,8 @@ end
 
 local function RestoreFramePoints(frame)
   local points = frame and frame._UltraOriginalPoints
-  if not points then
-    return
-  end
-  if type(frame.ClearAllPoints) ~= 'function' or type(frame.SetPoint) ~= 'function' then
-    return
-  end
+  if not points then return end
+  if type(frame.ClearAllPoints) ~= 'function' or type(frame.SetPoint) ~= 'function' then return end
 
   frame:ClearAllPoints()
   for _, p in ipairs(points) do

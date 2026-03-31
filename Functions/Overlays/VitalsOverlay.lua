@@ -196,19 +196,43 @@ local function createOverlayFrame()
       if overlayFrame.healthText then
         overlayFrame.healthText:SetParent(characterModelFrame)
         overlayFrame.healthText:ClearAllPoints()
-        overlayFrame.healthText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 34 + yOffset)
+        overlayFrame.healthText:SetPoint(
+          'BOTTOMLEFT',
+          characterModelFrame,
+          'BOTTOMLEFT',
+          20,
+          34 + yOffset
+        )
         overlayFrame.healthIcon:SetParent(characterModelFrame)
         overlayFrame.healthIcon:ClearAllPoints()
-        overlayFrame.healthIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 34 + yOffset)
+        overlayFrame.healthIcon:SetPoint(
+          'BOTTOMLEFT',
+          characterModelFrame,
+          'BOTTOMLEFT',
+          6,
+          34 + yOffset
+        )
       end
 
       if overlayFrame.manaText then
         overlayFrame.manaText:SetParent(characterModelFrame)
         overlayFrame.manaText:ClearAllPoints()
-        overlayFrame.manaText:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 20, 18 + yOffset)
+        overlayFrame.manaText:SetPoint(
+          'BOTTOMLEFT',
+          characterModelFrame,
+          'BOTTOMLEFT',
+          20,
+          18 + yOffset
+        )
         overlayFrame.manaIcon:SetParent(characterModelFrame)
         overlayFrame.manaIcon:ClearAllPoints()
-        overlayFrame.manaIcon:SetPoint('BOTTOMLEFT', characterModelFrame, 'BOTTOMLEFT', 6, 18 + yOffset)
+        overlayFrame.manaIcon:SetPoint(
+          'BOTTOMLEFT',
+          characterModelFrame,
+          'BOTTOMLEFT',
+          6,
+          18 + yOffset
+        )
       end
 
       if overlayFrame.petHealthText then

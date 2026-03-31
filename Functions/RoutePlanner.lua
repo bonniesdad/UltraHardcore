@@ -32,8 +32,7 @@ function MakeMapUnusable()
   if WorldMapFrame:IsShown() then
     ToggleWorldMap()
   end
-  ToggleWorldMap = function()
-  end
+  ToggleWorldMap = function() end
 
   if BattlefieldMapFrame and BattlefieldMapFrame:IsShown() then
     ToggleBattlefieldMap()

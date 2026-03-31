@@ -227,7 +227,6 @@ local function PositionAurasFor(framePrefix, portraitFrame, showBuffs, showDebuf
   local spacing = 5 -- spacing between icons
   local size = 16 -- icon size
   local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
-
   -- Buffs
   local buffRowsUsed = 0
   if showBuffs then
@@ -397,16 +396,28 @@ local function ApplyMask()
 
   local function ApplyTargetMask()
     if targetFrameMask.all then
-      if TargetFrame then TargetFrame:SetAlpha(1) end
-      if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(1) end
-      if TargetFrameToT then TargetFrameToT:SetAlpha(1) end
+      if TargetFrame then
+        TargetFrame:SetAlpha(1)
+      end
+      if TargetFrameTextureFrame then
+        TargetFrameTextureFrame:SetAlpha(1)
+      end
+      if TargetFrameToT then
+        TargetFrameToT:SetAlpha(1)
+      end
       return
     end
 
     if not UnitExists('target') then
-      if TargetFrame then TargetFrame:SetAlpha(0) end
-      if TargetFrameTextureFrame then TargetFrameTextureFrame:SetAlpha(0) end
-      if TargetFrameToT then TargetFrameToT:SetAlpha(0) end
+      if TargetFrame then
+        TargetFrame:SetAlpha(0)
+      end
+      if TargetFrameTextureFrame then
+        TargetFrameTextureFrame:SetAlpha(0)
+      end
+      if TargetFrameToT then
+        TargetFrameToT:SetAlpha(0)
+      end
       return
     end
 
@@ -421,21 +432,27 @@ local function ApplyMask()
   end
 
   local function ApplyFocusMask()
-    if not IsTBCClient() or not FocusFrame then
-      return
-    end
+    if not IsTBCClient() or not FocusFrame then return end
 
     if targetFrameMask.all then
       FocusFrame:SetAlpha(1)
-      if FocusFrameTextureFrame then FocusFrameTextureFrame:SetAlpha(1) end
-      if FocusFrameToT then FocusFrameToT:SetAlpha(1) end
+      if FocusFrameTextureFrame then
+        FocusFrameTextureFrame:SetAlpha(1)
+      end
+      if FocusFrameToT then
+        FocusFrameToT:SetAlpha(1)
+      end
       return
     end
 
     if not UnitExists('focus') then
       FocusFrame:SetAlpha(0)
-      if FocusFrameTextureFrame then FocusFrameTextureFrame:SetAlpha(0) end
-      if FocusFrameToT then FocusFrameToT:SetAlpha(0) end
+      if FocusFrameTextureFrame then
+        FocusFrameTextureFrame:SetAlpha(0)
+      end
+      if FocusFrameToT then
+        FocusFrameToT:SetAlpha(0)
+      end
       return
     end
 
@@ -450,7 +467,10 @@ local function ApplyMask()
     HideSubFrames('FocusFrame')
     -- Hide the focus frame artwork textures but keep the portrait visible.
     if FocusFrameTextureFrame then
-      HideTextureRegionsExcept(FocusFrameTextureFrame, { focusPortrait, FocusFrameTextureFrameRaidTargetIcon })
+      HideTextureRegionsExcept(FocusFrameTextureFrame, {
+        focusPortrait,
+        FocusFrameTextureFrameRaidTargetIcon,
+      })
     end
     ApplyPortraitFor(focusPortrait)
     ApplyRaidIconFor(FocusFrameTextureFrameRaidTargetIcon)
@@ -530,9 +550,7 @@ function SetTargetFrameDisplay(mask)
         ApplyMask()
       elseif event == 'PLAYER_FOCUS_CHANGED' then
         ApplyMask()
-      elseif
-        event == 'UNIT_AURA' or event == 'UNIT_FACTION' or event == 'UNIT_PORTRAIT_UPDATE' or
-          event == 'UNIT_TARGET' then
+      elseif event == 'UNIT_AURA' or event == 'UNIT_FACTION' or event == 'UNIT_PORTRAIT_UPDATE' or event == 'UNIT_TARGET' then
         if unit == 'target' or unit == 'targettarget' or unit == 'focus' or unit == 'focustarget' then
           ApplyMask()
         end

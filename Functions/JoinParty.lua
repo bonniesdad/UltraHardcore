@@ -79,24 +79,16 @@ local function senderDisplayName(sender)
   if type(Ambiguate) == 'function' then
     return Ambiguate(sender, 'short')
   end
-  return (sender:match('^([^%-]+)')) or sender
+  return sender:match('^([^%-]+)') or sender
 end
 
 local function sendVerificationBroadcast()
-  if not groupHasOtherMembers() then
-    return
-  end
+  if not groupHasOtherMembers() then return end
   local now = (GetTime and GetTime()) or 0
-  if now - lastVerifyBroadcast < 2.0 then
-    return
-  end
-  if not (UHC_XPVerification and UHC_XPVerification.BuildVerificationPartyBroadcastPayload) then
-    return
-  end
+  if now - lastVerifyBroadcast < 2.0 then return end
+  if not (UHC_XPVerification and UHC_XPVerification.BuildVerificationPartyBroadcastPayload) then return end
   local payload = UHC_XPVerification.BuildVerificationPartyBroadcastPayload()
-  if not payload or payload == '' or #payload > 255 then
-    return
-  end
+  if not payload or payload == '' or #payload > 255 then return end
   local chatType = IsInRaid() and 'RAID' or 'PARTY'
   if C_ChatInfo and C_ChatInfo.SendAddonMessage then
     C_ChatInfo.SendAddonMessage(VERIFY_PREFIX, payload, chatType)
@@ -108,12 +100,8 @@ end
 
 local function onVerificationAddonMessage(message, sender)
   local version, verdict, tierLabel, _lite, _rec, _ext, backdatedFlag = strsplit('|', message or '')
-  if version ~= '1' or not verdict or not tierLabel then
-    return
-  end
-  if not VALID_VERDICT[verdict] then
-    return
-  end
+  if version ~= '1' or not verdict or not tierLabel then return end
+  if not VALID_VERDICT[verdict] then return end
   local name = senderDisplayName(sender)
   local isBackdated = tostring(backdatedFlag) == '1'
   local backdatedSuffix = isBackdated and ' (Backdated)' or ''
@@ -129,9 +117,7 @@ end
 local function postWarningMessage()
   local isHardcoreActive = C_GameRules.IsHardcoreActive()
 
-  if not isHardcoreActive then
-    return
-  end
+  if not isHardcoreActive then return end
 
   if IsInGroup() then
     -- Check if there are other members besides ourselves
@@ -164,22 +150,13 @@ local function postWarningMessage()
       if GLOBAL_SETTINGS.announceDungeonsCompletedOnGroupJoin then
         local dungeonsCompleted = UltraStatisticsCharacterStats:GetStat('dungeonsCompleted') or 0
         messageSuffix =
-          ' '
-          .. 'I have completed '
-          .. dungeonsCompleted
-          .. (dungeonsCompleted == 1 and ' dungeon' or ' dungeons')
-          .. '.'
+          ' ' .. 'I have completed ' .. dungeonsCompleted .. (dungeonsCompleted == 1 and ' dungeon' or ' dungeons') .. '.'
       end
 
       if GLOBAL_SETTINGS.announcePartyDeathsOnGroupJoin then
         local partyDeathsWitnessed = UltraStatisticsCharacterStats:GetStat('partyMemberDeaths') or 0
         messageSuffix =
-          messageSuffix
-          .. ' '
-          .. partyDeathsWitnessed
-          .. ' '
-          .. (partyDeathsWitnessed == 1 and 'person has' or 'people have')
-          .. ' died in my party so far.'
+          messageSuffix .. ' ' .. partyDeathsWitnessed .. ' ' .. (partyDeathsWitnessed == 1 and 'person has' or 'people have') .. ' died in my party so far.'
       end
 
       local chatType = IsInRaid() and 'RAID' or 'PARTY'

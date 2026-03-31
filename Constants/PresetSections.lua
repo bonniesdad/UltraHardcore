@@ -20,7 +20,13 @@ local PRESET_SECTIONS = { {
   },
 }, {
   title = 'Extreme:',
-  settings = { 'hideMinimap', 'petsDiePermanently', 'hideActionBars', 'tunnelVisionMaxStrata', 'routePlanner' },
+  settings = {
+    'hideMinimap',
+    'petsDiePermanently',
+    'hideActionBars',
+    'tunnelVisionMaxStrata',
+    'routePlanner',
+  },
 }, {
   title = 'Experimental:',
   settings = {

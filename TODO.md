@@ -1,10 +1,11 @@
 ### Check all settings work
 
 Ultra Player Frame
+
 - When turned off, we still see combo points when playing rogue/feral druid.
 
 Pops problem
-Party frames move so you are unable to see ! !! and !!! 
+Party frames move so you are unable to see ! !! and !!!
 Happened when playing as a healer, in Deadmines, and doing some dps
 
 Verification Tab
@@ -90,3 +91,10 @@ Below is the correct XP per level table, which we should use for verification.
 | 41–60 | 58 | 202,300 |
 | 41–60 | 59 | 209,800 |
 | 41–60 | 60 | 217,400 |
+
+
+## Verification 60s
+
+Send addon messages to uhc chat channel if lvl 60 and verified and not backdated
+Send every 5 minutes?
+Only I will listen and create a list of player names and the settings tier
