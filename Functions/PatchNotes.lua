@@ -1,5 +1,15 @@
 -- Patch notes data structure - update this for each release
 UHC_PATCH_NOTES = { {
+  version = '3.0.1',
+  date = '2026-04-01',
+  notes = {
+    'NEW FEATURES:',
+    '• Rune Broker dialog banned.',
+    '• Death = invalidated character.',
+    '• Anti cheat protection for death.',
+    '',
+  },
+}, {
   version = '3.0.0',
   date = '2026-03-31',
   notes = {
