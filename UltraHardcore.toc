@@ -1,6 +1,6 @@
 ## Interface: 11508, 20505
 ## Title: Ultra
-## Version: 3.0.0
+## Version: 3.0.1
 ## Author: BonniesDad
 ## Notes: Making the game more immersive in various ways.
 ## SavedVariables: UltraHardcoreDB
@@ -49,6 +49,7 @@ Functions/ExpBar.lua
 Constants/PresetSections.lua
 Functions/XPVerification.lua
 Functions/JoinParty.lua
+Functions/RuneBrokerGossip.lua
 
 Functions/Utils/Frame/CreateComboPointOrb.lua
 Functions/Utils/Frame/MakeFrameDraggable.lua
