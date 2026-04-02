@@ -16,6 +16,11 @@ function UHC_LoadDBData()
     UltraHardcoreDB.characterSettings = {}
   end
 
+  -- Account-wide saved option profiles (Settings tab → Save Profile)
+  if not UltraHardcoreDB.optionProfiles then
+    UltraHardcoreDB.optionProfiles = {}
+  end
+
   -- Default settings for new characters (ordered to match settingsCheckboxOptions)
   local defaultSettings = {
     -- Lite Preset Settings

@@ -343,6 +343,76 @@ function updateRadioButtons()
   end
 end
 
+-- Snapshot of Settings tab options (account-wide profiles); tempSettings is global from Settings.lua
+function UHC_BuildOptionsProfileSnapshot()
+  local snap = {}
+  for _, item in ipairs(settingsCheckboxOptions) do
+    snap[item.dbSettingsValueName] = UHC_DeepCopy(tempSettings[item.dbSettingsValueName])
+  end
+  for _, item in ipairs(settingsSliderOptions) do
+    snap[item.dbSettingsValueName] = UHC_DeepCopy(tempSettings[item.dbSettingsValueName])
+  end
+  local extras = {
+    'soundbiteChannel',
+    'lockResourceBar',
+    'resourceBarColors',
+    'selectedDifficulty',
+    'rotateMinimapOnResourceMap',
+    'statisticsBackgroundOpacity',
+    'statisticsBorderOpacity',
+    'minimapClockScale',
+    'minimapMailScale',
+    'minimapTrackingScale',
+  }
+  for _, k in ipairs(extras) do
+    snap[k] = UHC_DeepCopy(tempSettings[k])
+  end
+  return snap
+end
+
+local function UHC_EnsureSaveProfilePopup()
+  if StaticPopupDialogs and StaticPopupDialogs['UHC_SAVE_OPTIONS_PROFILE'] then
+    return
+  end
+  StaticPopupDialogs['UHC_SAVE_OPTIONS_PROFILE'] = {
+    text = 'Enter a name for this settings profile (saved for all characters on this account):',
+    button1 = ACCEPT,
+    button2 = CANCEL,
+    hasEditBox = 1,
+    maxLetters = 32,
+    timeout = 0,
+    whileDead = 1,
+    hideOnEscape = 1,
+    OnShow = function(self)
+      local eb = self.editBox or self.EditBox
+      if eb then
+        eb:SetText('')
+        eb:SetFocus()
+      end
+    end,
+    OnAccept = function(self)
+      local eb = self.editBox or self.EditBox
+      local raw = (eb and eb:GetText()) or ''
+      local name = string.match(raw, '^%s*(.-)%s*$') or ''
+      if name == '' then
+        print('|cfff44336[ULTRA]|r Profile name cannot be empty.')
+        return
+      end
+      if not UltraHardcoreDB.optionProfiles then
+        UltraHardcoreDB.optionProfiles = {}
+      end
+      UltraHardcoreDB.optionProfiles[name] = UHC_BuildOptionsProfileSnapshot()
+      print('|cfff44336[ULTRA]|r Saved settings profile: ' .. name)
+    end,
+    EditBoxOnEnterPressed = function(editBox)
+      local parent = editBox:GetParent() and editBox:GetParent():GetParent()
+      if parent then
+        StaticPopup_OnClick(parent, 1)
+      end
+    end,
+  }
+end
+
 -- Initialize Settings Options Tab when called
 function InitializeSettingsOptionsTab(tabContents)
   -- Check if tabContents[2] exists
@@ -1282,6 +1352,11 @@ function InitializeSettingsOptionsTab(tabContents)
             end
           end)
 
+          _G.__UHC_SoundbiteChannelDropdown = dropdown
+          _G.__UHC_UpdateSoundbiteDropdownLabel = function()
+            UIDropDownMenu_SetText(dropdown, GetDisplayTextForChannel(tempSettings.soundbiteChannel or 'Master'))
+          end
+
           -- Tooltip anchored to the dropdown so it lines up with the control
           dropdown:EnableMouse(true)
           dropdown:SetScript('OnEnter', function(self)
@@ -1413,10 +1488,10 @@ function InitializeSettingsOptionsTab(tabContents)
     return UnitAffectingCombat('player') == true
   end
 
-  -- Create save button
+  -- Save and Reload on the left; profile controls stay right-aligned on the same row
   local saveButton = CreateFrame('Button', nil, footerFrame, 'UIPanelButtonTemplate')
   saveButton:SetSize(120, 30)
-  saveButton:SetPoint('CENTER', footerFrame, 'CENTER', 0, 0)
+  saveButton:SetPoint('LEFT', footerFrame, 'LEFT', 0, 0)
   saveButton:SetText('Save and Reload')
 
   -- Function to update save button state (defined after saveButton is created)
@@ -1443,6 +1518,68 @@ function InitializeSettingsOptionsTab(tabContents)
 
   -- Initial state
   updateSaveButtonState()
+
+  local saveProfileButton = CreateFrame('Button', nil, footerFrame, 'UIPanelButtonTemplate')
+  saveProfileButton:SetSize(115, 30)
+  saveProfileButton:SetPoint('RIGHT', footerFrame, 'RIGHT', 0, 0)
+  saveProfileButton:SetText('Save Profile')
+  saveProfileButton:SetScript('OnEnter', function(self)
+    GameTooltip:SetOwner(self, 'ANCHOR_TOP')
+    GameTooltip:SetText('Save Profile', 1, 1, 1)
+    GameTooltip:AddLine(
+      'Stores the current options on this tab (including colours and scales) for all characters on this account. Use Load profile on another character, then Save and Reload.',
+      1,
+      0.82,
+      0,
+      true
+    )
+    GameTooltip:Show()
+  end)
+  saveProfileButton:SetScript('OnLeave', function()
+    GameTooltip:Hide()
+  end)
+  saveProfileButton:SetScript('OnClick', function()
+    UHC_EnsureSaveProfilePopup()
+    StaticPopup_Show('UHC_SAVE_OPTIONS_PROFILE')
+  end)
+
+  local loadProfileDropdown = CreateFrame('Frame', nil, footerFrame, 'UIDropDownMenuTemplate')
+  loadProfileDropdown:SetPoint('RIGHT', saveProfileButton, 'LEFT', 0, -2)
+  UIDropDownMenu_SetWidth(loadProfileDropdown, 145)
+  UIDropDownMenu_SetText(loadProfileDropdown, 'Load profile')
+
+  UIDropDownMenu_Initialize(loadProfileDropdown, function(_, level)
+    local info
+    local profiles = UltraHardcoreDB and UltraHardcoreDB.optionProfiles
+    local names = {}
+    if profiles then
+      for name, _ in pairs(profiles) do
+        table.insert(names, name)
+      end
+    end
+    table.sort(names)
+    if #names == 0 then
+      info = UIDropDownMenu_CreateInfo()
+      info.text = 'No saved profiles'
+      info.notCheckable = 1
+      info.disabled = true
+      info.func = function() end
+      UIDropDownMenu_AddButton(info, level)
+      return
+    end
+    for _, name in ipairs(names) do
+      info = UIDropDownMenu_CreateInfo()
+      info.text = name
+      info.func = function()
+        local snap = profiles[name]
+        if snap and _G.UHC_ApplyOptionsProfileSnapshot then
+          _G.UHC_ApplyOptionsProfileSnapshot(snap)
+        end
+        UIDropDownMenu_SetText(loadProfileDropdown, name)
+      end
+      UIDropDownMenu_AddButton(info, level)
+    end
+  end)
 
   saveButton:SetScript('OnClick', function()
     if ShowConfirmationDialog then
@@ -1701,6 +1838,8 @@ function InitializeSettingsOptionsTab(tabContents)
       _G.UHC_XPBar:SetBarColor()
     end
   end
+
+  _G.UHC_ApplyResourceBarColorsInstantly = ApplyResourceBarColorsInstantly
 
   local lockResourceBarCheckbox =
     CreateFrame('CheckButton', nil, colorSectionFrame, 'ChatConfigCheckButtonTemplate')
@@ -2468,6 +2607,123 @@ function InitializeSettingsOptionsTab(tabContents)
   resetUIButton:SetScript('OnLeave', function()
     GameTooltip:Hide()
   end)
+
+  _G.UHC_ApplyOptionsProfileSnapshot = function(snap)
+    if type(snap) ~= 'table' then
+      return
+    end
+    for k, v in pairs(snap) do
+      tempSettings[k] = UHC_DeepCopy(v)
+    end
+    if tempSettings.selectedDifficulty ~= nil then
+      GLOBAL_SETTINGS.selectedDifficulty = tempSettings.selectedDifficulty
+    end
+    if tempSettings.statisticsBackgroundOpacity ~= nil then
+      GLOBAL_SETTINGS.statisticsBackgroundOpacity = tempSettings.statisticsBackgroundOpacity
+    end
+    if tempSettings.statisticsBorderOpacity ~= nil then
+      GLOBAL_SETTINGS.statisticsBorderOpacity = tempSettings.statisticsBorderOpacity
+    end
+    if tempSettings.minimapClockScale ~= nil then
+      GLOBAL_SETTINGS.minimapClockScale = tempSettings.minimapClockScale
+    end
+    if tempSettings.minimapMailScale ~= nil then
+      GLOBAL_SETTINGS.minimapMailScale = tempSettings.minimapMailScale
+    end
+    if tempSettings.minimapTrackingScale ~= nil then
+      GLOBAL_SETTINGS.minimapTrackingScale = tempSettings.minimapTrackingScale
+    end
+
+    if SetPlayerFrameDisplay then
+      SetPlayerFrameDisplay()
+    end
+    if updateCheckboxes then
+      updateCheckboxes()
+    end
+    if updateSliders then
+      updateSliders()
+    end
+    if updateRadioButtons then
+      updateRadioButtons()
+    end
+    if updatePresetSelectionDisplay then
+      updatePresetSelectionDisplay()
+    end
+
+    if lockResourceBarCheckbox then
+      lockResourceBarCheckbox:SetChecked(tempSettings.lockResourceBar or false)
+      if UltraHardcoreApplyResourceBarLockState then
+        UltraHardcoreApplyResourceBarLockState(tempSettings.lockResourceBar or false)
+      end
+    end
+
+    if percentText and slider and tempSettings.statisticsBackgroundOpacity ~= nil then
+      local pct = math.floor(tempSettings.statisticsBackgroundOpacity * 100 + 0.5)
+      percentText:SetText(pct .. '%')
+      slider:SetValue(pct)
+      if _G.ApplyStatsBackgroundOpacity then
+        _G.ApplyStatsBackgroundOpacity()
+      end
+    end
+
+    if borderPercentText and borderSlider and tempSettings.statisticsBorderOpacity ~= nil then
+      local pct = math.floor(tempSettings.statisticsBorderOpacity * 100 + 0.5)
+      borderPercentText:SetText(pct .. '%')
+      borderSlider:SetValue(pct)
+      if _G.ApplyStatsBackgroundOpacity then
+        _G.ApplyStatsBackgroundOpacity()
+      end
+    end
+
+    if minimapClockScalePercentText and minimapClockScaleSlider and tempSettings.minimapClockScale ~= nil then
+      local steps = math.floor(tempSettings.minimapClockScale * 10 + 0.5)
+      minimapClockScalePercentText:SetText((steps * 10) .. '%')
+      minimapClockScaleSlider:SetValue(steps)
+      if TimeManagerClockButton then
+        TimeManagerClockButton:SetScale(GLOBAL_SETTINGS.minimapClockScale or 1)
+      end
+    end
+
+    if minimapMailScalePercentText and minimapMailScaleSlider and tempSettings.minimapMailScale ~= nil then
+      local steps = math.floor(tempSettings.minimapMailScale * 10 + 0.5)
+      minimapMailScalePercentText:SetText((steps * 10) .. '%')
+      minimapMailScaleSlider:SetValue(steps)
+      if MiniMapMailFrame then
+        MiniMapMailFrame:SetScale(GLOBAL_SETTINGS.minimapMailScale or 1)
+      end
+    end
+
+    if minimapTrackingScalePercentText
+      and minimapTrackingScaleSlider
+      and tempSettings.minimapTrackingScale ~= nil
+    then
+      local steps = math.floor(tempSettings.minimapTrackingScale * 10 + 0.5)
+      minimapTrackingScalePercentText:SetText((steps * 10) .. '%')
+      minimapTrackingScaleSlider:SetValue(steps)
+      if MiniMapTracking then
+        MiniMapTracking:SetScale(GLOBAL_SETTINGS.minimapTrackingScale or 0.9)
+      end
+    end
+
+    if _G.UHC_UpdateSoundbiteDropdownLabel then
+      _G.UHC_UpdateSoundbiteDropdownLabel()
+    end
+
+    if _G.UHC_ApplyResourceBarColorsInstantly then
+      _G.UHC_ApplyResourceBarColorsInstantly()
+    end
+
+    if _G.updateSectionCounts then
+      updateSectionCounts()
+    end
+    if _G.UHC_ApplySettingsSearchFilter then
+      _G.UHC_ApplySettingsSearchFilter(_G.__UHC_CurrentSearchQuery or '')
+    end
+
+    print(
+      '|cfff44336[ULTRA]|r Loaded profile into the options panel. Click Save and Reload to apply everything in-game.'
+    )
+  end
 
   local function toggleUICollapsing(forceCollapse)
     if forceCollapse ~= nil then
