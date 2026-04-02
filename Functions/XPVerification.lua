@@ -81,10 +81,31 @@ local state = {
   completed = {},
   --- True if this character's verification XP was seeded from settings (no prior live logging).
   xpVerificationBackfilled = false,
+  --- Sticky: once true, remains true for this character.
+  hasCharacterDied = false,
 }
 
 local function getGuid()
   return UnitGUID('player')
+end
+
+local function unitDeadOrGhost()
+  -- UnitIsDeadOrGhost covers dead + ghost; keep explicit fallbacks for older API edge cases.
+  return (UnitIsDeadOrGhost and UnitIsDeadOrGhost('player'))
+    or (UnitIsDead and UnitIsDead('player'))
+    or (UnitIsGhost and UnitIsGhost('player'))
+    or false
+end
+
+local function syncDeathFlag()
+  if state.hasCharacterDied then
+    return false
+  end
+  if unitDeadOrGhost() then
+    state.hasCharacterDied = true
+    return true
+  end
+  return false
 end
 
 local function dbRoot()
@@ -295,6 +316,7 @@ function UHC_XPVerification.Save()
     segmentExtreme = state.segmentExtreme,
     completed = state.completed,
     xpVerificationBackfilled = state.xpVerificationBackfilled and true or nil,
+    hasCharacterDied = state.hasCharacterDied and true or nil,
   }
 end
 
@@ -309,6 +331,7 @@ function UHC_XPVerification.LoadFromDB()
   state.segmentExtreme = 0
   state.trackedLevel = 0
   state.xpVerificationBackfilled = false
+  state.hasCharacterDied = false
 
   if data then
     if type(data.completed) == 'table' then
@@ -324,6 +347,7 @@ function UHC_XPVerification.LoadFromDB()
     state.trackedLevel = tonumber(data.trackedLevel) or 0
     state.xpVerificationBackfilled =
       data.xpVerificationBackfilled == true or data.backfilledFromSettingsV1 == true
+    state.hasCharacterDied = data.hasCharacterDied == true
 
     local legacy = tonumber(data.segmentRecorded)
     if data.segmentLite ~= nil or data.segmentRecommended ~= nil or data.segmentExtreme ~= nil then
@@ -340,6 +364,11 @@ function UHC_XPVerification.LoadFromDB()
   if shouldBackdateXpVerification(data) then
     backdateXpVerificationFromCurrentSettings()
     state.xpVerificationBackfilled = true
+    UHC_XPVerification.Save()
+  end
+
+  -- If we load a character that's already dead/ghost (or dies before we save), stick the flag.
+  if syncDeathFlag() then
     UHC_XPVerification.Save()
   end
 end
@@ -499,6 +528,7 @@ function UHC_XPVerification.GetSnapshot()
     current = current,
     tiersActive = UHC_XPVerification.GetTierTrackingFlags(),
     xpVerificationBackfilled = state.xpVerificationBackfilled == true,
+    hasCharacterDied = (state.hasCharacterDied == true) or unitDeadOrGhost(),
   }
 end
 
@@ -595,7 +625,7 @@ function UHC_XPVerification.GetVerificationVerdictAndSettingLabel()
   local inconclusive = not hasGraded and not hasCurrentXp
 
   local verdict
-  if fail > 0 or currentFail then
+  if snap.hasCharacterDied == true or fail > 0 or currentFail then
     verdict = 'Failed'
   elseif warn > 0 or currentWarn or inconclusive then
     verdict = 'Sceptical'
@@ -629,13 +659,15 @@ function UHC_XPVerification.BuildVerificationPartyBroadcastPayload()
   local e = tiers.extreme and 1 or 0
   local b =
     UHC_XPVerification.WasXpVerificationBackfilled and UHC_XPVerification.WasXpVerificationBackfilled() and 1 or 0
-  return string.format('1|%s|%s|%d|%d|%d|%d', verdict, tierLabel, l, r, e, b)
+  local d = (state.hasCharacterDied == true or unitDeadOrGhost()) and 1 or 0
+  return string.format('2|%s|%s|%d|%d|%d|%d|%d', verdict, tierLabel, l, r, e, b, d)
 end
 
 local eventFrame = CreateFrame('Frame')
 eventFrame:RegisterEvent('PLAYER_XP_UPDATE')
 eventFrame:RegisterEvent('PLAYER_LEVEL_UP')
 eventFrame:RegisterEvent('PLAYER_ENTERING_WORLD')
+eventFrame:RegisterEvent('PLAYER_DEAD')
 eventFrame:RegisterEvent('PLAYER_LOGOUT')
 eventFrame:SetScript('OnEvent', function(_, event, ...)
   if event == 'PLAYER_XP_UPDATE' then
@@ -645,6 +677,19 @@ eventFrame:SetScript('OnEvent', function(_, event, ...)
     UHC_XPVerification.OnPlayerLevelUp(newLevel)
   elseif event == 'PLAYER_ENTERING_WORLD' then
     UHC_XPVerification.OnEnteringWorld()
+    if syncDeathFlag() then
+      UHC_XPVerification.Save()
+      if RefreshVerificationTabIfVisible then
+        RefreshVerificationTabIfVisible()
+      end
+    end
+  elseif event == 'PLAYER_DEAD' then
+    if syncDeathFlag() then
+      UHC_XPVerification.Save()
+      if RefreshVerificationTabIfVisible then
+        RefreshVerificationTabIfVisible()
+      end
+    end
   elseif event == 'PLAYER_LOGOUT' then
     UHC_XPVerification.Save()
   end
