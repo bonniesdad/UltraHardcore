@@ -513,7 +513,8 @@ function RefreshVerificationTab()
   local inconclusive = not hasGraded and not hasCurrentXp
 
   local verdict, vr, vg, vb
-  if fail > 0 or currentFail then
+  local hasCharacterDied = snap and snap.hasCharacterDied == true
+  if hasCharacterDied or fail > 0 or currentFail then
     verdict = 'Failed'
     vr, vg, vb = 0.92, 0.28, 0.22
   elseif warn > 0 or currentWarn or inconclusive then
@@ -525,14 +526,16 @@ function RefreshVerificationTab()
   end
 
   if ui.summaryVerdict then
-    local isBackdated = snap and snap.xpVerificationBackfilled == true
     ui.summaryVerdict:SetText(verdict)
     vr, vg, vb = verificationDullRgb(vr, vg, vb)
     ui.summaryVerdict:SetTextColor(vr, vg, vb, 1)
   end
   if ui.summaryBackdated then
     local isBackdated = snap and snap.xpVerificationBackfilled == true
-    if isBackdated then
+    if hasCharacterDied then
+      ui.summaryBackdated:SetText('(Died)')
+      ui.summaryBackdated:Show()
+    elseif isBackdated then
       ui.summaryBackdated:SetText('(Backdated)')
       ui.summaryBackdated:Show()
     else
@@ -563,15 +566,33 @@ function RefreshVerificationTab()
       yOfs = -6
     end
     ui.summaryCertainty:SetPoint('TOP', above, 'BOTTOM', 0, yOfs)
-    if certCount > 0 then
+    if hasCharacterDied then
+      ui.summaryCertainty:SetText('Character died - playthrough invalid.')
+      do
+        local rr, rg, rb = verificationDullRgb(0.92, 0.28, 0.22)
+        ui.summaryCertainty:SetTextColor(rr, rg, rb, 1)
+      end
+    elseif certCount > 0 then
       local pct = certSum / certCount
-      ui.summaryCertainty:SetText(string.format('%.0f%% certainty of valid playthrough', pct))
+      if verdict == 'Failed' then
+        ui.summaryCertainty:SetText(string.format('Failed verification checks — %.0f%% certainty of valid playthrough', pct))
+      elseif verdict == 'Sceptical' then
+        ui.summaryCertainty:SetText(string.format('%.0f%% certainty of valid playthrough (inconclusive)', pct))
+      else
+        ui.summaryCertainty:SetText(string.format('%.0f%% certainty of valid playthrough', pct))
+      end
       do
         local xr, xg, xb = verificationDullRgb(0.78, 0.74, 0.68)
         ui.summaryCertainty:SetTextColor(xr, xg, xb, 1)
       end
     else
-      ui.summaryCertainty:SetText('Not enough logged XP checks to estimate certainty.')
+      if verdict == 'Failed' then
+        ui.summaryCertainty:SetText('Failed verification checks.')
+      elseif verdict == 'Sceptical' then
+        ui.summaryCertainty:SetText('Inconclusive — not enough logged XP checks to estimate certainty.')
+      else
+        ui.summaryCertainty:SetText('Not enough logged XP checks to estimate certainty.')
+      end
       do
         local yr, yg, yb = verificationDullRgb(0.62, 0.59, 0.54)
         ui.summaryCertainty:SetTextColor(yr, yg, yb, 1)
