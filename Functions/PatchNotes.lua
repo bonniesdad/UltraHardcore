@@ -7,6 +7,9 @@ UHC_PATCH_NOTES = { {
     '• Rune Broker dialog banned.',
     '• Death = invalidated character.',
     '• Anti cheat protection for death.',
+    '• Save settings profile.',
+    '• Ultra Status Icon.',
+    '• Guild in Main Screen Statistics.',
     '',
   },
 }, {

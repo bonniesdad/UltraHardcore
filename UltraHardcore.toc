@@ -74,6 +74,7 @@ Functions/Utils/ResetUI.lua
 
 Functions/DB/LoadDBData.lua
 Functions/DB/SaveDBData.lua
+Functions/DB/OptionsProfile.lua
 
 Functions/Checks/IsEnemyElite.lua
 Functions/Checks/IsEnemyRareElite.lua
