@@ -180,6 +180,10 @@ local settingsCheckboxOptions = { {
   tooltip = 'Use the latest holiday themed tunnel vision overlay',
   dependsOn = 'showTunnelVision',
 }, {
+  name = 'Heartbeat Sound on Low Health',
+  dbSettingsValueName = 'heartbeatSoundOnLowHealth',
+  tooltip = 'Play a heartbeat sound when your health is low',
+}, {
   name = 'Roach Hearthstone In Party Combat',
   dbSettingsValueName = 'roachHearthstoneInPartyCombat',
   tooltip = 'Show a roach overlay on screen when using hearthstone whilst a party member is in combat',

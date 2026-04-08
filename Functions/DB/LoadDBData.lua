@@ -79,6 +79,7 @@ function UHC_LoadDBData()
     playPartyDeathSoundbite = false,
     playPlayerDeathSoundbite = false,
     spookyTunnelVision = false,
+    heartbeatSoundOnLowHealth = true,
     roachHearthstoneInPartyCombat = false,
     showPvPOverlayWhenActive = true,
     guildSelfFound = false,

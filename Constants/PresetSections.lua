@@ -78,6 +78,7 @@ local PRESET_SECTIONS = { {
     'hideBuffsCompletely',
     'hideDebuffs',
     'spookyTunnelVision',
+    'heartbeatSoundOnLowHealth',
     'roachHearthstoneInPartyCombat',
     'showPvPOverlayWhenActive',
     'showDruidFormResourceBar',
