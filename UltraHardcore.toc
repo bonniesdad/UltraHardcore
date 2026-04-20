@@ -45,6 +45,7 @@ Functions/FirstPersonCamera.lua
 Functions/RoutePlanner.lua
 Functions/RoutePlannerCompass.lua
 Functions/GroupButtons.lua
+Functions/ProfessionPanel.lua
 Functions/ExpBar.lua
 Constants/PresetSections.lua
 Functions/XPVerification.lua
