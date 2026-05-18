@@ -415,14 +415,14 @@ end
 
 -- Initialize Settings Options Tab when called
 function InitializeSettingsOptionsTab(tabContents)
-  -- Check if tabContents[2] exists
-  if not tabContents or not tabContents[2] then return end
+  -- Check if tabContents[3] exists
+  if not tabContents or not tabContents[3] then return end
 
   -- Check if already initialized to prevent duplicates
-  if tabContents[2].initialized then return end
+  if tabContents[3].initialized then return end
 
   -- Mark as initialized
-  tabContents[2].initialized = true
+  tabContents[3].initialized = true
 
   -- Ensure collapsed state storage exists
   if not GLOBAL_SETTINGS.collapsedSettingsSections then
@@ -454,9 +454,9 @@ function InitializeSettingsOptionsTab(tabContents)
     end
   end
 
-  local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[2])
+  local presetButtonsFrame = CreateFrame('Frame', nil, tabContents[3])
   presetButtonsFrame:SetSize(LAYOUT.PAGE_WIDTH, 150) -- Increased width to match new layout
-  presetButtonsFrame:SetPoint('TOP', tabContents[2], 'TOP', 0, -10)
+  presetButtonsFrame:SetPoint('TOP', tabContents[3], 'TOP', 0, -10)
 
   local checkboxes = {}
   local sliders = {}
@@ -620,21 +620,21 @@ function InitializeSettingsOptionsTab(tabContents)
   updatePresetSelectionDisplay()
 
   -- Search bar (filters options below)
-  local searchBox = CreateFrame('EditBox', nil, tabContents[2], 'InputBoxTemplate')
+  local searchBox = CreateFrame('EditBox', nil, tabContents[3], 'InputBoxTemplate')
   searchBox:SetSize(LAYOUT.SEARCH_WIDTH, 24) -- Reduced width to fit Collapse button
   searchBox:SetAutoFocus(false)
-  searchBox:SetPoint('TOPLEFT', tabContents[2], 'TOPLEFT', 25, -180)
+  searchBox:SetPoint('TOPLEFT', tabContents[3], 'TOPLEFT', 25, -180)
 
   local searchPlaceholder = searchBox:CreateFontString(nil, 'OVERLAY', 'GameFontDisableSmall')
   searchPlaceholder:SetPoint('LEFT', searchBox, 'LEFT', 6, 0)
   searchPlaceholder:SetText('Search options...')
 
-  local clearSearchButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  local clearSearchButton = CreateFrame('Button', nil, tabContents[3], 'UIPanelButtonTemplate')
   clearSearchButton:SetSize(56, 22)
   clearSearchButton:SetPoint('LEFT', searchBox, 'RIGHT', 6, 0)
   clearSearchButton:SetText('Clear')
 
-  local collapseAllButton = CreateFrame('Button', nil, tabContents[2], 'UIPanelButtonTemplate')
+  local collapseAllButton = CreateFrame('Button', nil, tabContents[3], 'UIPanelButtonTemplate')
   collapseAllButton:SetSize(96, 22)
   collapseAllButton:SetPoint('LEFT', clearSearchButton, 'RIGHT', 6, 0)
   collapseAllButton:SetText('Collapse All')
@@ -865,17 +865,17 @@ function InitializeSettingsOptionsTab(tabContents)
   end)
 
   -- Fixed footer so Save button never scrolls off-screen
-  local footerFrame = CreateFrame('Frame', nil, tabContents[2])
-  footerFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
-  footerFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
-  footerFrame:SetPoint('BOTTOM', tabContents[2], 'BOTTOM', 0, 10)
+  local footerFrame = CreateFrame('Frame', nil, tabContents[3])
+  footerFrame:SetPoint('LEFT', tabContents[3], 'LEFT', 10, 0)
+  footerFrame:SetPoint('RIGHT', tabContents[3], 'RIGHT', -10, 0)
+  footerFrame:SetPoint('BOTTOM', tabContents[3], 'BOTTOM', 0, 10)
   footerFrame:SetHeight(44)
 
   -- Create main container frame with background (similar to StatisticsTab)
-  local optionsFrame = CreateFrame('Frame', nil, tabContents[2], 'BackdropTemplate')
+  local optionsFrame = CreateFrame('Frame', nil, tabContents[3], 'BackdropTemplate')
   optionsFrame:SetPoint('TOP', searchBox, 'BOTTOM', 0, -10)
-  optionsFrame:SetPoint('LEFT', tabContents[2], 'LEFT', 10, 0)
-  optionsFrame:SetPoint('RIGHT', tabContents[2], 'RIGHT', -10, 0)
+  optionsFrame:SetPoint('LEFT', tabContents[3], 'LEFT', 10, 0)
+  optionsFrame:SetPoint('RIGHT', tabContents[3], 'RIGHT', -10, 0)
   optionsFrame:SetPoint('BOTTOM', footerFrame, 'TOP', 0, 10)
   optionsFrame:SetBackdrop({
     bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',

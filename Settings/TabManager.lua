@@ -3,17 +3,26 @@
 
 local TabManager = {}
 
-local TAB_WIDTH = 128 -- Default width
+local TAB_WIDTH = 160 -- Default width
 local TAB_HEIGHT = 32
 local TAB_SPACING = 3
+local TAB_COUNT = 4
 
--- Tab-specific widths
+-- Visible tabs: 1 Verification, 2 Leaderboard, 3 Settings, 4 Need Help?
+-- InfoTab.lua and CommandsTab.lua remain in the addon but are not shown here.
 local TAB_WIDTHS = {
-  [1] = TAB_WIDTH, -- Verify
-  [2] = TAB_WIDTH, -- Settings
-  [3] = TAB_WIDTH, -- Info
-  [4] = TAB_WIDTH, -- Commands
-  [5] = TAB_WIDTH, -- Credits
+  [1] = TAB_WIDTH, -- Verification
+  [2] = TAB_WIDTH, -- Leaderboard
+  [3] = TAB_WIDTH, -- Settings
+  [4] = TAB_WIDTH, -- Need Help?
+}
+
+local LEGACY_TAB_REMAP = {
+  [2] = 3, -- old Settings (was tab 2)
+  [3] = 1, -- old Info (removed)
+  [4] = 1, -- old Commands (removed)
+  [5] = 4, -- old Need Help? (was tab 5)
+  [6] = 2, -- old Leaderboard (was tab 6)
 }
 
 local BASE_TEXT_COLOR = {
@@ -35,49 +44,39 @@ local function getPlayerClassColor()
   return r, g, b
 end
 
--- Tab-related variables
 local tabButtons = {}
 local tabContents = {}
 local activeTab = 1
 
--- Calculate cumulative horizontal offset for variable-width tabs
 local function calculateTabOffset(index)
-  -- Calculate total width of all tabs
   local totalWidth = 0
-  for i = 1, 5 do
+  for i = 1, TAB_COUNT do
     local width = TAB_WIDTHS[i] or TAB_WIDTH
-    if i < 5 then
+    if i < TAB_COUNT then
       totalWidth = totalWidth + width + TAB_SPACING
     else
       totalWidth = totalWidth + width
     end
   end
 
-  -- Calculate the left edge of the first tab (centered)
   local leftEdge = -totalWidth / 2
 
-  -- Calculate cumulative width up to this tab
   local cumulativeWidth = 0
   for i = 1, index - 1 do
     local width = TAB_WIDTHS[i] or TAB_WIDTH
     cumulativeWidth = cumulativeWidth + width + TAB_SPACING
   end
 
-  -- Position this tab's center
   local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
-  local tabCenter = leftEdge + cumulativeWidth + (tabWidth / 2)
-
-  return tabCenter
+  return leftEdge + cumulativeWidth + (tabWidth / 2)
 end
 
--- Create proper folder tabs with angled edges
 local function createTabButton(text, index, parentFrame)
   local button = CreateFrame('Button', nil, parentFrame, 'BackdropTemplate')
   local tabWidth = TAB_WIDTHS[index] or TAB_WIDTH
   button:SetSize(tabWidth, TAB_HEIGHT)
-  local horizontalOffset = calculateTabOffset(index)
-  button:SetPoint('TOP', parentFrame, 'TOP', horizontalOffset, -57) -- Position below title bar with spacing
-  -- Create the main tab background with the custom texture
+  button:SetPoint('TOP', parentFrame, 'TOP', calculateTabOffset(index), -57)
+
   local background = button:CreateTexture(nil, 'BACKGROUND')
   background:SetAllPoints()
   background:SetTexture('Interface\\AddOns\\UltraHardcore\\Textures\\tab_texture.png')
@@ -96,65 +95,53 @@ local function createTabButton(text, index, parentFrame)
   })
   button:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
 
-  -- Set the text
   local buttonText = button:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
   buttonText:SetPoint('CENTER', button, 'CENTER', 0, -2)
   buttonText:SetText(text)
   buttonText:SetTextColor(BASE_TEXT_COLOR.r, BASE_TEXT_COLOR.g, BASE_TEXT_COLOR.b)
   button.text = buttonText
 
-  -- Set up click handler
   button:SetScript('OnClick', function()
     TabManagerSwitchToTab(index)
   end)
 
-  -- Set initial appearance
   button.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
   button:SetAlpha(0.9)
 
   return button
 end
 
--- Create tab content frames
 local function createTabContent(index, parentFrame)
   local content = CreateFrame('Frame', nil, parentFrame)
-  content:SetSize(620, 650) -- Use space down to settings frame bottom (~50px was unused at 600)
-  content:SetPoint('TOP', parentFrame, 'TOP', 0, -50) -- Positioned below tabs
+  content:SetSize(620, 650)
+  content:SetPoint('TOP', parentFrame, 'TOP', 0, -50)
   content:Hide()
   return content
 end
 
--- Initialize tabs for the settings frame
 function TabManagerInitializeTabs(settingsFrame)
-  -- Store the settings frame reference
   TabManager.settingsFrame = settingsFrame
 
-  -- Check if tabs are already initialized to prevent duplicates
   if tabButtons[1] then return end
 
-  -- Create tab buttons
   tabButtons[1] = createTabButton('Verification', 1, settingsFrame)
-  tabButtons[2] = createTabButton('Settings', 2, settingsFrame)
-  tabButtons[3] = createTabButton('Info', 3, settingsFrame)
-  tabButtons[4] = createTabButton('Commands', 4, settingsFrame)
-  tabButtons[5] = createTabButton('Need Help?', 5, settingsFrame)
+  tabButtons[2] = createTabButton('Leaderboard', 2, settingsFrame)
+  tabButtons[3] = createTabButton('Settings', 3, settingsFrame)
+  tabButtons[4] = createTabButton('Need Help?', 4, settingsFrame)
 
-  -- Create tab content frames
-  tabContents[1] = createTabContent(1, settingsFrame) -- XP Verification tab
-  tabContents[2] = createTabContent(2, settingsFrame) -- Settings tab
-  tabContents[3] = createTabContent(3, settingsFrame) -- Info tab
-  tabContents[4] = createTabContent(4, settingsFrame) -- Commands tab
-  tabContents[5] = createTabContent(5, settingsFrame) -- Credits tab
+  tabContents[1] = createTabContent(1, settingsFrame)
+  tabContents[2] = createTabContent(2, settingsFrame)
+  tabContents[3] = createTabContent(3, settingsFrame)
+  tabContents[4] = createTabContent(4, settingsFrame)
 end
 
--- Switch to a specific tab
 function TabManagerSwitchToTab(index)
-  -- Hide all tab contents
+  if not tabContents[index] or not tabButtons[index] then return end
+
   for i, content in ipairs(tabContents) do
     content:Hide()
   end
 
-  -- Reset all tab button appearances
   for i, tabButton in ipairs(tabButtons) do
     if tabButton.backgroundTexture then
       tabButton.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
@@ -179,7 +166,6 @@ function TabManagerSwitchToTab(index)
     tabButton:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.6)
   end
 
-  -- Show selected tab content and highlight button
   tabContents[index]:Show()
   if tabButtons[index].backgroundTexture then
     tabButtons[index].backgroundTexture:SetVertexColor(1, 1, 1, 1)
@@ -208,7 +194,6 @@ function TabManagerSwitchToTab(index)
   tabButtons[index]:SetBackdropBorderColor(fadedR, fadedG, fadedB, 1)
   activeTab = index
 
-  -- Persist last opened settings tab per character
   if GLOBAL_SETTINGS then
     GLOBAL_SETTINGS.lastOpenedSettingsTab = index
     if UHC_SaveCharacterSettings then
@@ -216,7 +201,6 @@ function TabManagerSwitchToTab(index)
     end
   end
 
-  -- Initialize Verification tab if it's being shown
   if index == 1 and InitializeVerificationTab then
     InitializeVerificationTab(tabContents)
     if updateRadioButtons then
@@ -235,31 +219,37 @@ function TabManagerSwitchToTab(index)
     end
   end
 
-  -- Initialize Settings Options tab if it's being shown
-  if index == 2 and InitializeSettingsOptionsTab then
+  if index == 2 and InitializeGuildLeaderboardTab then
+    InitializeGuildLeaderboardTab(tabContents, index)
+    if RefreshGuildLeaderboardTabUI then
+      if C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+          if TabManagerGetActiveTab and TabManagerGetActiveTab() == 2 and RefreshGuildLeaderboardTabUI then
+            RefreshGuildLeaderboardTabUI()
+          end
+        end)
+      else
+        RefreshGuildLeaderboardTabUI()
+      end
+    end
+  end
+
+  if index == 3 and InitializeSettingsOptionsTab then
     InitializeSettingsOptionsTab(tabContents)
   end
-  -- Initialize Info tab if it's being shown
-  if index == 3 and InitializeInfoTab then
-    InitializeInfoTab(tabContents)
-  end
 
-  -- Initialize Commands tab if it's being shown
-  if index == 4 and InitializeCommandsTab then
-    InitializeCommandsTab(tabContents)
-  end
-
-  -- Initialize Credits tab if it's being shown
-  if index == 5 and InitializeCreditsTab then
+  if index == 4 and InitializeCreditsTab then
     InitializeCreditsTab(tabContents)
   end
 end
 
--- Set the default tab (Verification tab)
 function TabManagerSetDefaultTab()
   local defaultIndex = 1
   if GLOBAL_SETTINGS and GLOBAL_SETTINGS.lastOpenedSettingsTab then
     local saved = GLOBAL_SETTINGS.lastOpenedSettingsTab
+    if LEGACY_TAB_REMAP[saved] then
+      saved = LEGACY_TAB_REMAP[saved]
+    end
     if type(saved) == 'number' and tabContents[saved] then
       defaultIndex = saved
     end
@@ -267,22 +257,18 @@ function TabManagerSetDefaultTab()
   TabManagerSwitchToTab(defaultIndex)
 end
 
--- Get the currently active tab
 function TabManagerGetActiveTab()
   return activeTab
 end
 
--- Get tab content frame by index
 function TabManagerGetTabContent(index)
   return tabContents[index]
 end
 
--- Get tab button by index
 function TabManagerGetTabButton(index)
   return tabButtons[index]
 end
 
--- Hide all tabs
 function TabManagerHideAllTabs()
   for i, content in ipairs(tabContents) do
     content:Hide()
@@ -312,12 +298,9 @@ function TabManagerHideAllTabs()
   end
 end
 
--- Reset tab state (called when settings window is closed)
 function TabManagerResetTabState()
-  -- Reset active tab to default
   activeTab = 1
 
-  -- Hide all tabs and reset all button appearances to initial state
   for i, content in ipairs(tabContents) do
     content:Hide()
   end
@@ -327,7 +310,6 @@ function TabManagerResetTabState()
         tabButton.backgroundTexture:SetVertexColor(0.6, 0.6, 0.6, 1)
       end
       tabButton:SetAlpha(0.9)
-      -- Ensure the button is fully opaque and visible
       tabButton:Show()
       tabButton:SetHeight(TAB_HEIGHT)
       if tabButton.text then

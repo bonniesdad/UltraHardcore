@@ -450,7 +450,7 @@ function UHC_CreateIntroPanel()
     else
       -- Choose Later or no preset: open settings to tab 2 (Settings Options tab)
       if OpenSettingsToTab then
-        OpenSettingsToTab(2)
+        OpenSettingsToTab(3)
       end
     end
   end)

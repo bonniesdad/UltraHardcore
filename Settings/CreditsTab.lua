@@ -1,10 +1,10 @@
 -- Credits Tab Content - Same pattern as UltraHardcore CreditsTab
 function InitializeCreditsTab(tabContents)
-  if not tabContents or not tabContents[5] then return end
-  if tabContents[5].initialized then return end
-  tabContents[5].initialized = true
+  if not tabContents or not tabContents[4] then return end
+  if tabContents[4].initialized then return end
+  tabContents[4].initialized = true
 
-  local parent = tabContents[5]
+  local parent = tabContents[4]
 
   local contentBackground = CreateFrame('Frame', nil, parent, 'BackdropTemplate')
   contentBackground:SetPoint('TOP', parent, 'TOP', 0, -60)

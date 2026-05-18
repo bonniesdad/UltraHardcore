@@ -105,7 +105,7 @@ function UHC_CreateVersionUpdateFrame(previousVersion, currentVersion)
 
     -- Open UHC settings and navigate to Settings tab (index 2)
     if OpenSettingsToTab then
-      OpenSettingsToTab(2)
+      OpenSettingsToTab(3)
     end
   end)
 

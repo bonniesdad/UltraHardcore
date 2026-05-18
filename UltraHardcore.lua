@@ -1,9 +1,6 @@
 addonName = ...
 UltraHardcore = CreateFrame('Frame')
 
--- Temporary feature flag: hide Guild Found UI until phase 2
-_G.UHC_ENABLE_GUILD_FOUND_UI = false
-
 -- DB Values
 WELCOME_MESSAGE_CLOSED = false
 GLOBAL_SETTINGS = {} -- Will be populated by LoadDBData()
@@ -34,6 +31,9 @@ UltraHardcore:SetScript('OnEvent', function(self, event, ...)
   -- Switched to PLAYER_LOGIN which happens after ADDON_LOADED and all UI elements are available
   if event == 'PLAYER_LOGIN' then
     UHC_LoadDBData()
+    if UHC_EnsureGuildLeaderboardDBDefaults then
+      UHC_EnsureGuildLeaderboardDBDefaults()
+    end
     if UHC_XPVerification and UHC_XPVerification.Init then
       UHC_XPVerification.Init()
     end

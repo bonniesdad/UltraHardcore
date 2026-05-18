@@ -4,6 +4,7 @@
 ## Author: BonniesDad
 ## Notes: Making the game more immersive in various ways.
 ## SavedVariables: UltraHardcoreDB
+## OptionalDeps: HardcoreAchievements, UltraStatistics
 
 UltraHardcore.lua
 
@@ -99,8 +100,19 @@ Functions/Overlays/ShowHearthOverlay.lua
 Functions/Overlays/ShowPvPOverlay.lua
 Functions/Overlays/VitalsOverlay.lua
 
+Functions/GuildLeaderboard/GetGuildLeaderboardAchievementPoints.lua
+Functions/GuildLeaderboard/GetGuildLeaderboardStatistics.lua
+Functions/GuildLeaderboard/GuildLeaderboardData.lua
+Functions/GuildLeaderboard/ApplyGuildRosterRow.lua
+Functions/GuildLeaderboard/MergeGuildRosterIntoLeaderboard.lua
+Functions/GuildLeaderboard/GuildLeaderboardSync.lua
+Functions/GuildLeaderboard/MainScreenGuildLeaderboard.lua
+
 Settings/Settings.lua
 Settings/TabManager.lua
+Settings/GuildChampionSection.lua
+Settings/GuildLeaderboardOptions.lua
+Settings/GuildLeaderboardTab.lua
 Settings/VerificationTab.lua
 Settings/SettingsOptionsTab.lua
 Settings/InfoTab.lua

@@ -21,6 +21,14 @@ function UHC_LoadDBData()
     UltraHardcoreDB.optionProfiles = {}
   end
 
+  -- Guild leaderboard (account-wide peer cache + display prefs)
+  if not UltraHardcoreDB.guildPeers then
+    UltraHardcoreDB.guildPeers = {}
+  end
+  if UltraHardcoreDB.showOnScreenGuildLeaderboard == nil then
+    UltraHardcoreDB.showOnScreenGuildLeaderboard = true
+  end
+
   -- Default settings for new characters (ordered to match settingsCheckboxOptions)
   local defaultSettings = {
     -- Lite Preset Settings
