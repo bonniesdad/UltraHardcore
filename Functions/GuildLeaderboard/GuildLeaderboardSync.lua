@@ -64,6 +64,7 @@ local function mergeGuildPeer(entry)
   end
   ensureGuildPeers()
   local now = time and time() or 0
+  local prev = UltraHardcoreDB.guildPeers[entry.playerId]
   UltraHardcoreDB.guildPeers[entry.playerId] = {
     name = entry.name,
     playerId = entry.playerId,
@@ -72,6 +73,8 @@ local function mergeGuildPeer(entry)
     dungeonsCompleted = entry.dungeonsCompleted or 0,
     playerJumps = entry.playerJumps or 0,
     level = entry.level,
+    ultraVerificationStatus = entry.ultraVerificationStatus
+      or (prev and prev.ultraVerificationStatus),
     lastSeen = now,
   }
 end
@@ -96,6 +99,8 @@ local function parseGuildPayload(message)
     fname, playerId, apStr, lvlStr, dcStr, jumpsStr = fields[2], fields[3], fields[4], fields[5], fields[6], fields[7]
     enemiesStr = '0'
   elseif version == '3' and #fields == 8 then
+    fname, playerId, apStr, lvlStr, enemiesStr, dcStr, jumpsStr = fields[2], fields[3], fields[4], fields[5], fields[6], fields[7], fields[8]
+  elseif version == '4' and #fields == 9 then
     fname, playerId, apStr, lvlStr, enemiesStr, dcStr, jumpsStr = fields[2], fields[3], fields[4], fields[5], fields[6], fields[7], fields[8]
   else
     return nil
@@ -123,7 +128,7 @@ local function parseGuildPayload(message)
   if playerJumps < 0 then
     playerJumps = 0
   end
-  return {
+  local entry = {
     name = fname,
     playerId = playerId,
     achievementPoints = ap,
@@ -132,6 +137,10 @@ local function parseGuildPayload(message)
     playerJumps = playerJumps,
     level = level,
   }
+  if version == '4' and fields[9] and UHC_NormalizeGuildLeaderboardUltraStatus then
+    entry.ultraVerificationStatus = UHC_NormalizeGuildLeaderboardUltraStatus(fields[9])
+  end
+  return entry
 end
 
 local function fireGuildLeaderboardNotify()
@@ -210,8 +219,12 @@ function UHC_BroadcastGuildLeaderboardPing()
   if UHC_GetGuildLeaderboardJumpCount then
     playerJumps = UHC_GetGuildLeaderboardJumpCount()
   end
+  local ultraCode = 'U'
+  if UHC_GetGuildLeaderboardUltraBroadcastCode then
+    ultraCode = UHC_GetGuildLeaderboardUltraBroadcastCode()
+  end
   local payload = table.concat({
-    '3',
+    '4',
     name,
     guid,
     tostring(ap),
@@ -219,6 +232,7 @@ function UHC_BroadcastGuildLeaderboardPing()
     tostring(enemiesSlain),
     tostring(dungeonsCompleted),
     tostring(playerJumps),
+    ultraCode,
   }, MSG_SEP)
   if #payload > 255 then
     return
@@ -242,6 +256,7 @@ function UHC_BroadcastGuildLeaderboardPing()
     dungeonsCompleted = dungeonsCompleted,
     playerJumps = playerJumps,
     level = level,
+    ultraVerificationStatus = UHC_NormalizeGuildLeaderboardUltraStatus(ultraCode),
   })
   notifyDataChangedDeferred()
 end
@@ -288,6 +303,7 @@ syncFrame:SetScript('OnEvent', function(_, event, ...)
     end
   elseif event == 'PLAYER_LEVEL_UP' then
     if IsInGuild() then
+      UHC_BroadcastGuildLeaderboardPing()
       notifyDataChanged()
     end
   elseif event == 'CHAT_MSG_ADDON' then

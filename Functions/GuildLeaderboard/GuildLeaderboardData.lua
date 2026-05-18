@@ -6,6 +6,65 @@ function UHC_GetGuildLeaderboardRowTint()
   return { r = 0.13, g = 0.19, b = 0.40, a = 0.30 }
 end
 
+local ULTRA_TEX_VALID = 'Interface\\AddOns\\UltraHardcore\\Textures\\valid.png'
+local ULTRA_TEX_FAILED = 'Interface\\AddOns\\UltraHardcore\\Textures\\failed.png'
+local ULTRA_TEX_UNSURE = 'Interface\\AddOns\\UltraHardcore\\Textures\\unsure.png'
+
+--- @return 'valid'|'failed'|'unsure'
+function UHC_NormalizeGuildLeaderboardUltraStatus(code)
+  local c = type(code) == 'string' and string.upper(code) or ''
+  if c == 'V' or c == 'VALID' then
+    return 'valid'
+  end
+  if c == 'F' or c == 'FAILED' then
+    return 'failed'
+  end
+  return 'unsure'
+end
+
+--- Single-letter code for guild addon messages (v4 payload).
+function UHC_GetGuildLeaderboardUltraBroadcastCode()
+  if not UHC_XPVerification or not UHC_XPVerification.GetVerificationVerdictAndSettingLabel then
+    return 'U'
+  end
+  local verdict = UHC_XPVerification.GetVerificationVerdictAndSettingLabel()
+  if verdict == 'Verified' then
+    return 'V'
+  end
+  if verdict == 'Failed' or verdict == 'Sceptical' then
+    return 'F'
+  end
+  return 'U'
+end
+
+function UHC_GetLocalGuildLeaderboardUltraStatus()
+  return UHC_NormalizeGuildLeaderboardUltraStatus(UHC_GetGuildLeaderboardUltraBroadcastCode())
+end
+
+function UHC_GetGuildLeaderboardUltraStatusForRow(row)
+  if not row then
+    return 'unsure'
+  end
+  if UHC_IsLocalGuildLeaderboardRow and UHC_IsLocalGuildLeaderboardRow(row) then
+    return UHC_GetLocalGuildLeaderboardUltraStatus()
+  end
+  if row.ultraVerificationStatus then
+    return UHC_NormalizeGuildLeaderboardUltraStatus(row.ultraVerificationStatus)
+  end
+  return 'unsure'
+end
+
+function UHC_GetGuildLeaderboardUltraTexture(status)
+  status = UHC_NormalizeGuildLeaderboardUltraStatus(status)
+  if status == 'valid' then
+    return ULTRA_TEX_VALID
+  end
+  if status == 'failed' then
+    return ULTRA_TEX_FAILED
+  end
+  return ULTRA_TEX_UNSURE
+end
+
 function UHC_GetGuildLeaderboardPlayerAchievementPoints()
   if type(UHC_GetGuildLeaderboardAchievementPoints) == 'function' then
     return UHC_GetGuildLeaderboardAchievementPoints()
@@ -28,6 +87,7 @@ function UHC_GetGuildLeaderboardPlayerRow()
     enemiesSlain = (UHC_GetGuildLeaderboardEnemiesSlain and UHC_GetGuildLeaderboardEnemiesSlain()) or 0,
     dungeonsCompleted = (UHC_GetGuildLeaderboardDungeonCompletions and UHC_GetGuildLeaderboardDungeonCompletions()) or 0,
     playerJumps = (UHC_GetGuildLeaderboardJumpCount and UHC_GetGuildLeaderboardJumpCount()) or 0,
+    ultraVerificationStatus = UHC_GetLocalGuildLeaderboardUltraStatus(),
   }
 end
 
@@ -113,6 +173,7 @@ function UHC_GetSortedGuildLeaderboardCopy()
             dungeonsCompleted = e.dungeonsCompleted or 0,
             playerJumps = e.playerJumps or 0,
             level = e.level or 1,
+            ultraVerificationStatus = e.ultraVerificationStatus,
             _ts = ts,
           }
         end
@@ -138,6 +199,7 @@ function UHC_GetSortedGuildLeaderboardCopy()
         rows[i].dungeonsCompleted = player.dungeonsCompleted
         rows[i].playerJumps = player.playerJumps
         rows[i].level = player.level
+        rows[i].ultraVerificationStatus = player.ultraVerificationStatus
         found = true
         break
       end

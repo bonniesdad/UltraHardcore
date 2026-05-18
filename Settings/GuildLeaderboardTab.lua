@@ -20,6 +20,8 @@ local AP_COLUMN_PAD = 32
 local ENEMIES_COLUMN_PAD = 32
 local DUNGEONS_COLUMN_PAD = 26
 local JUMPS_COLUMN_PAD = 8
+local ULTRA_COLUMN_PAD = 8
+local ULTRA_ICON_SIZE = 14
 local NAME_COL_SHRINK = 22
 local NAME_TO_LEVEL_SHIFT = 14
 local PANEL_BACKDROP = {
@@ -114,8 +116,12 @@ parent,
   local ENEMIES_LABEL = 'Enemies'
   local DUNGEONS_LABEL = 'Dungeons'
   local JUMPS_LABEL = 'Jumps'
+  local ULTRA_LABEL = 'Ultra'
 
   local measureFs = panel:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  measureFs:SetText(ULTRA_LABEL)
+  local colUltraW = math.max(ULTRA_ICON_SIZE + 6, math.ceil(measureFs:GetStringWidth()) + ULTRA_COLUMN_PAD)
+  measureFs:SetText(ACHIEVEMENT_POINTS_LABEL)
   measureFs:SetText(ACHIEVEMENT_POINTS_LABEL)
   local colApW = math.ceil(measureFs:GetStringWidth()) + AP_COLUMN_PAD
   measureFs:SetText('12450')
@@ -140,13 +146,16 @@ parent,
   local restW =
     math.max(
       40,
-      dataInnerW - colRankW - colApW - colEnemiesW - colDungeonsW - colJumpsW - colLevelW
+      dataInnerW - colRankW - colUltraW - colApW - colEnemiesW - colDungeonsW - colJumpsW - colLevelW
     )
   local colNameW = math.max(48, restW - NAME_COL_SHRINK)
-  local xAp = colRankW + colNameW
+  local xName = colRankW
+  local xAp = xName + colNameW
   local xEnemies = xAp + colApW
   local xDungeons = xEnemies + colEnemiesW
   local xJumps = xDungeons + colDungeonsW
+  local xLevel = xJumps + colJumpsW
+  local xUltra = xLevel + colLevelW
 
   local headerBg = CreateFrame('Frame', nil, tableTop, 'BackdropTemplate')
   headerBg:SetHeight(HEADER_ROW_HEIGHT)
@@ -168,7 +177,7 @@ parent,
   hRank:SetTextColor(1, 0.92, 0.62)
 
   local hName = headerBg:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  hName:SetPoint('TOPLEFT', headerBg, 'TOPLEFT', colRankW + 2, -3)
+  hName:SetPoint('TOPLEFT', headerBg, 'TOPLEFT', xName + 2, -3)
   hName:SetWidth(colNameW - 4)
   hName:SetJustifyH('LEFT')
   hName:SetText('Character Name')
@@ -200,11 +209,18 @@ parent,
   hJumps:SetTextColor(1, 0.92, 0.62)
 
   local hLvl = headerBg:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-  hLvl:SetPoint('TOPRIGHT', headerBg, 'TOPRIGHT', -(SCROLL_BAR_WIDTH + 4), -3)
-  hLvl:SetWidth(colLevelW - 4)
-  hLvl:SetJustifyH('RIGHT')
+  hLvl:SetPoint('TOPLEFT', headerBg, 'TOPLEFT', xLevel, -3)
+  hLvl:SetWidth(colLevelW)
+  hLvl:SetJustifyH('LEFT')
   hLvl:SetText('Level')
   hLvl:SetTextColor(1, 0.92, 0.62)
+
+  local hUltra = headerBg:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+  hUltra:SetPoint('TOPLEFT', headerBg, 'TOPLEFT', xUltra, -3)
+  hUltra:SetWidth(colUltraW)
+  hUltra:SetJustifyH('CENTER')
+  hUltra:SetText(ULTRA_LABEL)
+  hUltra:SetTextColor(1, 0.92, 0.62)
 
   local rowStep = ROW_HEIGHT + ROW_GAP
 
@@ -322,7 +338,7 @@ parent,
     row.rankFs:SetJustifyH('CENTER')
 
     row.nameFs = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    row.nameFs:SetPoint('LEFT', row, 'LEFT', colRankW + 2, 0)
+    row.nameFs:SetPoint('LEFT', row, 'LEFT', xName + 2, 0)
     row.nameFs:SetWidth(colNameW - 4)
     row.nameFs:SetJustifyH('LEFT')
 
@@ -344,12 +360,43 @@ parent,
     row.jumpsFs:SetJustifyH('LEFT')
 
     row.lvlFs = row:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-    row.lvlFs:SetPoint('RIGHT', row, 'RIGHT', -(SCROLL_BAR_WIDTH + 4), 0)
-    row.lvlFs:SetWidth(colLevelW - 4)
-    row.lvlFs:SetJustifyH('RIGHT')
+    row.lvlFs:SetPoint('LEFT', row, 'LEFT', xLevel, 0)
+    row.lvlFs:SetWidth(colLevelW)
+    row.lvlFs:SetJustifyH('LEFT')
+
+    row.ultraIcon = row:CreateTexture(nil, 'OVERLAY')
+    row.ultraIcon:SetSize(ULTRA_ICON_SIZE, ULTRA_ICON_SIZE)
+    row.ultraIcon:SetPoint('LEFT', row, 'LEFT', xUltra + math.floor((colUltraW - ULTRA_ICON_SIZE) / 2), 0)
+
+    row.ultraHit = CreateFrame('Frame', nil, row)
+    row.ultraHit:SetSize(colUltraW, ROW_HEIGHT)
+    row.ultraHit:SetPoint('LEFT', row, 'LEFT', xUltra, 0)
+    row.ultraHit:EnableMouse(true)
+    row.ultraHit:SetScript('OnEnter', function(self)
+      local tip = self._ultraTip
+      if not tip then
+        return
+      end
+      GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+      GameTooltip:SetText(tip, 1, 1, 1)
+      GameTooltip:Show()
+    end)
+    row.ultraHit:SetScript('OnLeave', GameTooltip_Hide)
 
     rowPool[i] = row
     return row
+  end
+
+  local function ultraStatusTooltip(status)
+    status = UHC_NormalizeGuildLeaderboardUltraStatus and UHC_NormalizeGuildLeaderboardUltraStatus(status)
+      or status
+    if status == 'valid' then
+      return 'Ultra: Verified'
+    end
+    if status == 'failed' then
+      return 'Ultra: Not verified'
+    end
+    return 'Ultra: No status received yet'
   end
 
   function panel:UpdateRows(newRows, newRowTint)
@@ -385,6 +432,9 @@ parent,
         row:SetBackdropColor(0.55, 0.38, 0.14, 1)
         row:SetBackdropBorderColor(1, 0.85, 0.25, 1)
         row.rankFs:SetTextColor(1, 0.95, 0.5)
+        if row.ultraIcon then
+          row.ultraIcon:SetAlpha(1)
+        end
         row.nameFs:SetTextColor(1, 0.95, 0.5)
         row.apFs:SetTextColor(1, 0.92, 0.55)
         row.enemiesFs:SetTextColor(1, 0.92, 0.55)
@@ -400,6 +450,9 @@ parent,
         })
         row:SetBackdropColor(tint.r, tint.g, tint.b, tint.a)
         row.rankFs:SetTextColor(0.85, 0.85, 0.78)
+        if row.ultraIcon then
+          row.ultraIcon:SetAlpha(0.95)
+        end
         row.nameFs:SetTextColor(0.95, 0.95, 0.9)
         row.apFs:SetTextColor(0.9, 0.88, 0.82)
         row.enemiesFs:SetTextColor(0.9, 0.88, 0.82)
@@ -409,6 +462,17 @@ parent,
       end
       local displayName =
         UHC_GuildLeaderboardDisplayName and UHC_GuildLeaderboardDisplayName(data.name) or data.name
+      local ultraStatus = 'unsure'
+      if UHC_GetGuildLeaderboardUltraStatusForRow then
+        ultraStatus = UHC_GetGuildLeaderboardUltraStatusForRow(data)
+      end
+      if row.ultraIcon and UHC_GetGuildLeaderboardUltraTexture then
+        row.ultraIcon:SetTexture(UHC_GetGuildLeaderboardUltraTexture(ultraStatus))
+        row.ultraIcon:Show()
+      end
+      if row.ultraHit then
+        row.ultraHit._ultraTip = ultraStatusTooltip(ultraStatus)
+      end
       row.rankFs:SetText(tostring(i))
       row.nameFs:SetText(displayName)
       row.apFs:SetText(tostring(data.achievementPoints or 0))
