@@ -1,17 +1,72 @@
 # Patch Notes
 
-## Version 2.3.0 - 2026-03-30
+## Version 3.0.1 - 2026-04-01
 
-- Fix function names to avoid duplication across sister addons
-- Use saved variables from Statistics addon
-- Update About Author text
+### New Features
+
+- SoD - Rune Broker dialog banned.
+- Death = invalidated character.
+- Anti cheat protection for death.
+- Save settings profile.
+
+### UI Improvements
+
+- Frame Ring Overlay.
+- Remove invisible player frame clickable area.
+
+## Version 3.0.0 - 2026-03-31
+
+### New Features
+
+- Verification tab added to settings menu.
+
+### Code Improvements
+
+- Remove duplicated function names with sister addons.
+
+## Version 2.4.0 - 2026-03-17
+
+### New Features
+
+- Sister addon compatability
+
+## Version 2.4.0 - 2026-03-17 (TBC)
+
+### New Features
+
+- Sister addon compatability
+
+## Version 2.3.0 - 2026-03-01
+
+### New Features
+
+- PvP Active Warning Overlay
+
+## Version 2.3.0 - 2026-03-01 (TBC)
+
+### New Features
+
+- PvP Active Warning Overlay
 
 ## Version 2.2.0 - 2026-02-26
 
 ### UI Improvements
 
-- Statistic moved to it's own addon
-- Compatability with Utra Found and Ultra Statistics addons
+- Statistic moved to it's own addon.
+- Compatability with Utra Found and Ultra Statistics addons.
+
+## Version 2.2.0 - 2026-02-26 (TBC)
+
+### UI Improvements
+
+- Statistic moved to it's own addon.
+- Compatability with Utra Found and Ultra Statistics addons.
+
+## Version 2.1.3 - 2026-01-16 (TBC)
+
+### UI Improvements
+
+- Better intro panel for first time characters.
 
 ## Version 2.1.3 - 2026-01-16
 
@@ -20,6 +75,12 @@
 - Better intro panel for first time characters.
 
 ## Version 2.1.2 - 2026-01-16
+
+### UI Improvements
+
+- Intro panel for first time characters.
+
+## Version 2.1.2 - 2026-01-16 (TBC)
 
 ### UI Improvements
 
@@ -43,7 +104,25 @@
 
 ### Other
 
-- Added /ultra command to open settings menu.
+- Added /ultra commant to open settings menu.
+
+## Version 2.0.0 - 2026-01-13 (TBC)
+
+- TBC Initial Release
+- Initial release of the addon for TBC.
+- All of the features from the Classic version are now available in TBC.
+
+## Version 2.0.0 - 2026-01-13
+
+### New Features
+
+- TBC Compatible version.
+
+### UI Improvements
+
+- Intro dialog for new users.
+- Gold gained icons for each type of coin.
+- Update content of "Need Help?" tab.
 
 ## Version 1.4.0 - 2026-01-05
 
@@ -102,7 +181,7 @@
 
 ## Version 1.2.10 - 2025-11-20
 
-- ### Bug Fixes
+### Bug Fixes
 
 - Fix: Route planner blocking map in combat even when disabled.
 
@@ -119,8 +198,6 @@
 
 ### New Statistics
 
-- Map attempts blocked
-  - A statistic for the amount of times the player attempts to open the map and routep lanner blocks it
 - Map key presses while map blocked
   - Tracks the number of times the map key has been pressed whilst blocked by the Route Planner Extreme option.
 
@@ -139,21 +216,16 @@
   - The addon will show a message on the screen explaining how to use the resource tracking feature when the minimap is hidden.
 - Stop the preselected difficulties from overriding the misc settings
 - Added setting tab to show all the available commands to the user
-  - Added the "/uhcverify" command to verify party members
 
 ### Bug Fixes
 
-- Route planner added to xp gained tracker
+- Fix: Route planner added to xp gained tracker
 
 ### Other
 
 - Don't send the join party message on non-Hardcore servers
 
 ## Version 1.2.8 - 2025-11-04
-
-### New Features
-
-### New Statistics
 
 ### UI Improvements
 
@@ -199,6 +271,7 @@
 
 ### UI Improvements
 
+- Revamp the settings menu UI.
 - Add collapseable sections to the settings menu.
 - Show selection count on each option section header.
 - Escape key now closes the settings menu.
@@ -218,24 +291,26 @@
 
 ### New Features
 
-- **Tunnel Vision Covers Everything**
-  - Moved to ULTRA preset settings from Recommended
-- **Super Spooky Tunnel Vision**
+- Added Tunnel Vision Covers Everything to ULTRA preset settings
+- Added Super Spooky Tunnel Vision
   - When enabled, the tunnel vision will be displayed in a spooky Halloween theme.
-- **Terrifying Pumpkin Themed Settings Presets**
-  - New pumpkin themed ultra preset icons, a big thanks to the talented Vivi!
-- **Highest Crit Appreciation Soundbite**
-  - Play a soundbite when you achieve a new highest crit score
-- **Party Death Soundbite**
+- Added Terrifying Pumpkin Themed Settings Presets
+- Added Highest Crit Appreciation Soundbite
+  - Play a soundbite when you achieve a new highest crit value
+- Added Party Death Soundbite
   - Play a soundbite when a party member dies
-- **Player Death Soundbite**
+- Added Player Death Soundbite
   - Play a soundbite when you die
-- **Completely Remove Target Frame** - Added to EXPERIMENTAL settings
+- Added "Completely Remove Target Frame" to EXPERIMENTAL settings
   - When enabled, the target frame will be completely removed from the screen.
-- **Completely Remove Player Frame** - Added to EXPERIMENTAL settings
+- Added "Completely Remove Player Frame" to EXPERIMENTAL settings
   - When enabled, the player frame will be completely removed from the screen.
-- **Tooltips to Statistics labels**
+- Added Tooltips to Statistics labels
   - When you hover over a statistic label, a tooltip will be displayed with the statistic description.
+- Added Slash command to set lowest health
+  - /setlowesthealth <value> (e.g. /setlowesthealth 20)
+  - <value> is a number between 0 and 100
+  - This command will only set the value if it is higher than the current lowest health.
 
 ### Bug Fixes
 
@@ -252,62 +327,45 @@
 
 ## Version 1.2.5 - 2025-10-21
 
-### Bug Fixes
-
 - Auto run save resource bar position if the value is not set.
 
 ## Version 1.2.4 - 2025-10-21
 
-### New Features
-
-- **Added Slash command to reset resource bar position**
+- Added Slash command to reset resource bar position
   - /resetresourcebar or /rrb
 
 ## Version 1.2.3 - 2025-10-20
 
-### New Features
-
-- **Patch notes and version update dialog**
+- Added Patch notes and version update dialog
   - Each time you update the addon, you will see this dialog with the patch notes.
-- **On screen statistics are toggleable in settings menu**
+- On screen statistics are toggleable in settings menu.
   - Each player can decide which statistics they want to see on screen.
-- **Pet resource bar attached to custom resource bar**
-
-### Settings Menu Updates
-
-- **Ultra options in settings menu**
+- Pet resource bar attached to custom resource bar.
+- Ultra options in settings menu
   - Pets die permanently when killed.
   - Hide Actions bars when not resting or under Cozy Fire.
   - These settings have been moved from the Experimental section.
-- **Misc options in settings menu**
+- Misc options in settings menu
   - Several options in the addon have been moved to the misc section.
   - These settings do not belong in any 'difficult' section.
-- **Misc options do not show in XP Gained tracking**
+- Misc options do not show in XP Gained tracking
   - These settings have nothing to do with the 'difficulty' of the addon, and so are not tracked for XP gained without them.
-
-### New Options
-
-- **Announce ULTRA player info on join party (misc option)**
+- Announce ULTRA player info on join party (misc option)
   - Dungeons completed.
   - Party member deaths.
   - Both, either or non of these options can be enabled.
-- **Buffs & Debuffs on resource bar (misc option)**
+- Buffs & Debuffs on resource bar (misc option)
   - When enabled, buffs and debuffs will be displayed above and below the custom resource bar.
-
-### Bug Fixes
-
-- **Fixed player name right click issues**
+- Fixed player name right click issues.
   - Whisper tab would not update after leaving the tab.
   - Report player would not work properly.
   - Copy player name would not copy to clipboard.
-- **Fixed LFG search error**
-
-### New Statistics
-
-- Close Escapes statistic
-- Highest Crit statistic
-- Dungeon Bosses Killed statistic
-- Dungeons Completed statistic
-- Rare Elites Slain statistic
-- World Bosses Slain statistic
-- Party Deaths Witnessed statistic
+- Added New Statistics:
+  - Close Escapes statistic
+  - Highest Crit statistic
+  - Dungeon Bosses Killed statistic
+  - Dungeons Completed statistic
+  - Rare Elites Slain statistic
+  - World Bosses Slain statistic
+  - Party Deaths Witnessed statistic
+- Fixed LFG search error.

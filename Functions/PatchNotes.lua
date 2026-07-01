@@ -4,12 +4,14 @@ UHC_PATCH_NOTES = { {
   date = '2026-04-01',
   notes = {
     'NEW FEATURES:',
-    '• Rune Broker dialog banned.',
+    '• SoD - Rune Broker dialog banned.',
     '• Death = invalidated character.',
     '• Anti cheat protection for death.',
     '• Save settings profile.',
-    '• Ultra Status Icon.',
-    '• Guild in Main Screen Statistics.',
+    '',
+    'UI IMPROVEMENTS:',
+    '• Frame Ring Overlay.',
+    '• Remove invisible player frame clickable area.',
     '',
   },
 }, {
