@@ -5,14 +5,14 @@ local FRAME_RING_TEXTURE = 'Interface\\AddOns\\UltraHardcore\\Textures\\frame-ri
 -- Portrait is 64x64 in Blizzard XML; the decorative ring extends slightly beyond it.
 local PORTRAIT_RING_PADDING = 4
 local RING_SIZE_SCALE = 1.2
-local RING_POSITION_OFFSET_X = 20
-local RING_POSITION_OFFSET_Y = 20
+local RING_POSITION_OFFSET_X = 0
+local RING_POSITION_OFFSET_Y = 0
 
 -- Portrait ring center offsets from the unit-frame texture center (see PlayerFrame.xml / TargetFrame.xml).
 local PLAYER_RING_CENTER_OFFSET_X = -63
 local PLAYER_RING_CENTER_OFFSET_Y = -16
-local TARGET_RING_CENTER_OFFSET_X = 23
-local TARGET_RING_CENTER_OFFSET_Y = -16
+local TARGET_RING_CENTER_OFFSET_X = 40
+local TARGET_RING_CENTER_OFFSET_Y = 5
 
 local playerRing, targetRing, targetToTRing, focusRing, focusToTRing
 local initialized = false
@@ -112,13 +112,22 @@ function UpdateFrameRingOverlay()
     if not playerRing then
       playerRing = CreateRing(PlayerFrame)
     end
-    PositionRing(
-      playerRing,
-      PlayerFrameTexture,
-      PlayerPortrait,
-      PLAYER_RING_CENTER_OFFSET_X,
-      PLAYER_RING_CENTER_OFFSET_Y
-    )
+    if ShouldShowPlayerRing() then
+      PositionRingOnPortrait(
+        playerRing,
+        PlayerPortrait,
+        RING_POSITION_OFFSET_X,
+        RING_POSITION_OFFSET_Y
+      )
+    else
+      PositionRing(
+        playerRing,
+        PlayerFrameTexture,
+        PlayerPortrait,
+        PLAYER_RING_CENTER_OFFSET_X,
+        PLAYER_RING_CENTER_OFFSET_Y
+      )
+    end
     playerRing:SetAlpha(ShouldShowPlayerRing() and 1 or 0)
   end
 
