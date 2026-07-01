@@ -54,7 +54,13 @@ function SetPlayerFrameDisplay()
   if GLOBAL_SETTINGS.completelyRemovePlayerFrame then
     -- Completely hide the Player Frame
     ForceHideFrame(PlayerFrame)
+    if UpdateFrameRingOverlay then
+      UpdateFrameRingOverlay()
+    end
     return
   end
   ApplyPlayerMask()
+  if UpdateFrameRingOverlay then
+    UpdateFrameRingOverlay()
+  end
 end

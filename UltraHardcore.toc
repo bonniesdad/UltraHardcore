@@ -97,6 +97,7 @@ Functions/Overlays/ShowFullHealthOverlay.lua
 Functions/Overlays/ShowHealingOverlay.lua
 Functions/Overlays/ShowHearthOverlay.lua
 Functions/Overlays/ShowPvPOverlay.lua
+Functions/Overlays/FrameRingOverlay.lua
 Functions/Overlays/VitalsOverlay.lua
 
 Settings/Settings.lua

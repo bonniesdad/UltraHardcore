@@ -481,6 +481,10 @@ local function ApplyMask()
 
   ApplyTargetMask()
   ApplyFocusMask()
+
+  if UpdateFrameRingOverlay then
+    UpdateFrameRingOverlay()
+  end
 end
 
 -- In some clients (notably TBC variants), parts of Blizzard's TargetFrame implementation
@@ -568,4 +572,7 @@ function SetTargetFrameDisplay(mask)
   -- Update cached frames and apply mask immediately
   UpdateCachedFrames()
   ApplyMask()
+  if UpdateFrameRingOverlay then
+    UpdateFrameRingOverlay()
+  end
 end
