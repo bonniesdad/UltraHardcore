@@ -1,21 +1,10 @@
 -- XP Verification tab: per-level recorded XP vs expected (Lite / Recommended / Extreme tiers)
 
-local SUMMARY_ICON_SIZE = 72
-local SUMMARY_ICON_MARGIN = 8
---- Reserve space on the right so verdict / tier / certainty text does not overlap the icon.
-local SUMMARY_TEXT_RIGHT_INSET = SUMMARY_ICON_SIZE + SUMMARY_ICON_MARGIN
-
-local TEX_SKULL_LITE = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull1_100.png'
-local TEX_SKULL_RECOMMENDED = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull2_100.png'
-local TEX_SKULL_EXTREME = 'Interface\\AddOns\\UltraHardcore\\Textures\\skull3_100.png'
-local TEX_SUMMARY_FAILED = 'Interface\\AddOns\\UltraHardcore\\Textures\\bonnie0.png'
-
 local ui = {
   summaryVerdict = nil,
   summaryBackdated = nil,
   summaryTier = nil,
   summaryCertainty = nil,
-  summaryIcon = nil,
   summaryFrame = nil,
   rows = {},
   rowsLayoutVer = 0,
@@ -100,28 +89,6 @@ local function levelCertaintyFromLogRatio(ratio)
     return 0
   end
   return ratio / 0.7 * 70
-end
-
-local function getSummaryStatusTexture(verdict, mixName)
-  if verdict == 'Failed' then
-    return TEX_SUMMARY_FAILED
-  end
-  if mixName == 'Extreme' then
-    return TEX_SKULL_EXTREME
-  end
-  if mixName == 'Recommended' then
-    return TEX_SKULL_RECOMMENDED
-  end
-  if mixName == 'Lite' then
-    return TEX_SKULL_LITE
-  end
-  if mixName == 'Mixed' then
-    return TEX_SKULL_RECOMMENDED
-  end
-  if verdict == 'Sceptical' then
-    return TEX_SKULL_RECOMMENDED
-  end
-  return TEX_SKULL_LITE
 end
 
 --- Bar fill length is in-game XP for this level only (UnitXP); never inflate from logged tier totals.
@@ -558,7 +525,7 @@ function RefreshVerificationTab()
   if ui.summaryCertainty and ui.summaryFrame then
     ui.summaryCertainty:ClearAllPoints()
     ui.summaryCertainty:SetPoint('LEFT', ui.summaryFrame, 'LEFT', 12, 0)
-    ui.summaryCertainty:SetPoint('RIGHT', ui.summaryFrame, 'RIGHT', -SUMMARY_TEXT_RIGHT_INSET, 0)
+    ui.summaryCertainty:SetPoint('RIGHT', ui.summaryFrame, 'RIGHT', -12, 0)
     ui.summaryCertainty:SetJustifyH('LEFT')
     local above, yOfs = ui.summaryVerdict, -8
     if mix and ui.summaryTier then
@@ -599,12 +566,6 @@ function RefreshVerificationTab()
       end
     end
     ui.summaryCertainty:Show()
-  end
-
-  if ui.summaryIcon then
-    ui.summaryIcon:SetTexture(getSummaryStatusTexture(verdict, mix))
-    ui.summaryIcon:SetTexCoord(0, 1, 0, 1)
-    ui.summaryIcon:Show()
   end
 end
 
@@ -649,22 +610,9 @@ function InitializeVerificationTab(tabContents)
   summary:SetBackdropBorderColor(0.36, 0.35, 0.34, 0.78)
   ui.summaryFrame = summary
 
-  local summaryIcon = summary:CreateTexture(nil, 'ARTWORK')
-  summaryIcon:SetSize(SUMMARY_ICON_SIZE, SUMMARY_ICON_SIZE)
-  summaryIcon:SetPoint(
-    'CENTER',
-    summary,
-    'RIGHT',
-    -(SUMMARY_ICON_SIZE / 2 + SUMMARY_ICON_MARGIN / 2),
-    -12
-  )
-  summaryIcon:SetTexCoord(0, 1, 0, 1)
-  summaryIcon:SetTexture(getSummaryStatusTexture('Sceptical', nil))
-  ui.summaryIcon = summaryIcon
-
   local summaryHeading = summary:CreateFontString(nil, 'OVERLAY', 'GameFontNormalLarge')
   summaryHeading:SetPoint('TOPLEFT', summary, 'TOPLEFT', 12, -12)
-  summaryHeading:SetPoint('RIGHT', summary, 'RIGHT', -SUMMARY_TEXT_RIGHT_INSET, 0)
+  summaryHeading:SetPoint('RIGHT', summary, 'RIGHT', -12, 0)
   summaryHeading:SetText('Verification Status')
   summaryHeading:SetJustifyH('LEFT')
   do
@@ -706,7 +654,7 @@ function InitializeVerificationTab(tabContents)
 
   local tierStr = summary:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   tierStr:SetPoint('TOPLEFT', verdictStr, 'BOTTOMLEFT', 0, -8)
-  tierStr:SetPoint('RIGHT', summary, 'RIGHT', -SUMMARY_TEXT_RIGHT_INSET, 0)
+  tierStr:SetPoint('RIGHT', summary, 'RIGHT', -12, 0)
   tierStr:SetJustifyH('LEFT')
   tierStr:SetJustifyV('TOP')
   do
@@ -718,7 +666,7 @@ function InitializeVerificationTab(tabContents)
 
   local certaintyStr = summary:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
   certaintyStr:SetPoint('TOPLEFT', tierStr, 'BOTTOMLEFT', 0, -6)
-  certaintyStr:SetPoint('RIGHT', summary, 'RIGHT', -SUMMARY_TEXT_RIGHT_INSET, 0)
+  certaintyStr:SetPoint('RIGHT', summary, 'RIGHT', -12, 0)
   certaintyStr:SetJustifyH('LEFT')
   certaintyStr:SetJustifyV('TOP')
   do
