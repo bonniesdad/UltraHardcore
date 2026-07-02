@@ -1,5 +1,12 @@
 # Patch Notes
 
+## Version 3.0.2 - 2026-07-02
+
+### New Features
+
+- SoD: Rune Broker dialog re-enabled
+
+
 ## Version 3.0.1 - 2026-04-01
 
 ### New Features
