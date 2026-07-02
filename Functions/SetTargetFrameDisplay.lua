@@ -141,7 +141,7 @@ end
 local function PositionAuras()
   local spacing = 5 -- spacing between icons
   local size = 16 -- icon size
-  local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
+  local maxPerRow = 5 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
   -- Buffs
   local buffRowsUsed = 0
 
@@ -226,7 +226,7 @@ local function PositionAurasFor(framePrefix, portraitFrame, showBuffs, showDebuf
 
   local spacing = 5 -- spacing between icons
   local size = 16 -- icon size
-  local maxPerRow = 10 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
+  local maxPerRow = 5 -- how many buffs/debuffs before we start a new row - TODO:  make this configurable
   -- Buffs
   local buffRowsUsed = 0
   if showBuffs then
