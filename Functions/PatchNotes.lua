@@ -1,5 +1,9 @@
 -- Patch notes data structure - update this for each release
 UHC_PATCH_NOTES = { {
+  version = '3.0.2',
+  date = '2026-04-01',
+  notes = { 'NEW FEATURES:', '• Bump for blizzard.' },
+}, {
   version = '3.0.1',
   date = '2026-04-01',
   notes = {

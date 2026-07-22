@@ -1,6 +1,6 @@
-## Interface: 11508, 20505
+## Interface: 11509, 20505
 ## Title: Ultra
-## Version: 3.0.2
+## Version: 3.0.3
 ## Author: BonniesDad
 ## Notes: Making the game more immersive in various ways.
 ## SavedVariables: UltraHardcoreDB
